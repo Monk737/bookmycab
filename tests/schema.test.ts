@@ -114,3 +114,27 @@ describe("0003 conversations + bookings", () => {
     expect(checks).toContain("voice");        // messages.message_type
   });
 });
+
+describe("0004 billing + audit", () => {
+  it("creates subscriptions, setup_fees, audit_log", async () => {
+    const tables = await withPostgres(async (c) => {
+      const { rows } = await c.query(
+        `select table_name from information_schema.tables
+         where table_schema='public' and table_name in ('subscriptions','setup_fees','audit_log')`,
+      );
+      return rows.map((r) => r.table_name as string);
+    });
+    expect(tables.sort()).toEqual(["audit_log", "setup_fees", "subscriptions"]);
+  });
+
+  it("audit_log id is a bigserial (append-only ledger)", async () => {
+    const def = await withPostgres(async (c) => {
+      const { rows } = await c.query(
+        `select column_default from information_schema.columns
+         where table_schema='public' and table_name='audit_log' and column_name='id'`,
+      );
+      return rows[0]?.column_default as string;
+    });
+    expect(def).toContain("nextval");
+  });
+});
