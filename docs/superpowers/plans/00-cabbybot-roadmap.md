@@ -1,0 +1,102 @@
+# CabbyBot — Master Build Roadmap (Plan Index)
+
+> **Source spec:** [`CabbyBot - PRD.md`](../../../CabbyBot%20-%20PRD.md) v1.0
+> **Brand rule:** "n8n" must **never** appear on any customer-facing surface. Always "CabbyBot Automation Engine" or "your automation." Never "CabLab."
+
+This is the **index** for the CabbyBot build. The PRD covers 12 epics that are independent subsystems, so each epic gets its **own** implementation plan that produces working, testable software on its own. Build them **in order** — each plan lists the earlier plan(s) it depends on.
+
+Each plan, when written, lives in this folder as `YYYY-MM-DD-epic-N-<name>.md` and is executed with the `superpowers:subagent-driven-development` or `superpowers:executing-plans` skill.
+
+---
+
+## Locked product decisions (from §17 open questions)
+
+These were confirmed before the Foundations plan and apply across all epics:
+
+| § | Question | Decision |
+|---|---|---|
+| Q1 | AI/LLM token costs | **Customer brings own key** (stored in credentials vault). No usage-metering table. |
+| Q3 | Currency | **Multi-currency per tenant** — `GBP`/`EUR`/`USD` per `tenants.currency`. |
+| Q8 | Renewal | **Roll to monthly** after the 12-month term. `tenants.renewal_mode` default `rolling_monthly`. |
+
+Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCabbi/Cordic stubs vs defer), Q4 (setup-fee refundability), Q5 (mid-contract upgrades/pro-rata), Q6 (demo geography), Q7 (custom domain model), Q9 (n8n editor access granularity), Q10 (brand assets), Q11 (discovery-call tool), Q12 (demo WA number).
+
+---
+
+## Plan sequence
+
+### ✅ Plan 1 — Epic 1: Foundations  → `2026-05-31-epic-1-foundations.md`
+**Depends on:** nothing (greenfield).
+**Produces:** Next.js 15 + TS + Tailwind v4 app that builds; full Supabase schema (§8.1) + RLS (§8.2) as versioned migrations running on local Supabase; JWT custom-claims auth hook; server/browser/middleware Supabase client wrappers; `middleware.ts` route protection; zod-validated env; GitHub Actions CI (lint + typecheck + migration dry-run + tests).
+**Done when:** `pnpm build` passes, `pnpm test` (schema + RLS isolation + middleware) passes, CI is green.
+**Frontend skill:** not yet — no UI surfaces.
+
+### ⬜ Plan 2 — Epic 2: Marketing Site
+**Depends on:** Plan 1.
+**Produces:** Public pages (Home, How It Works, Channels, Pricing A/B/C, Custom Solutions, Case Studies, About, Contact, Legal), `#FFD400` editorial design system, transparency section, ROI calculator, dispatch badges (AutoCab/iCabbi/Cordic), discovery-call CTA, "Try the Dashboard" → demo. **No public signup.**
+**Open qs to resolve at start:** Q10 (brand assets finalised?), Q11 (Calendly/Cal.com/HubSpot).
+**Frontend skill:** **use `ui-ux-pro-max`** for the design system + every page.
+
+### ⬜ Plan 3 — Epic 3: Internal Admin Console
+**Depends on:** Plans 1, 4 (auth). Built **before** the tenant dashboard.
+**Produces:** Tenant provisioning form, automation registry, build queue (Kanban), Supabase `invite()` integration, channel credentials vault (Supabase Vault/`pgcrypto`), Stripe panel + renewal alerts, read-only impersonation (audit-logged, 15-min expiry), platform analytics.
+**Open qs:** Q9 (n8n editor deeplink — senior eng only?).
+**Frontend skill:** **use `ui-ux-pro-max`** for admin UI.
+
+### ⬜ Plan 4 — Epic 4: Auth & Invite-Only Login
+**Depends on:** Plan 1.
+**Produces:** Supabase Auth SSR + browser flows, invite → set-password flow, MFA (TOTP) enforced for Owner/Admin, login/logout/reset UI, middleware finalised (Plan 1 ships the skeleton; this completes the flows).
+**Note:** Plan 1 lays the auth-hook + middleware skeleton so Plans 2–3 can be developed; Plan 4 completes user-facing auth. Can be sequenced before Plan 3 if preferred.
+**Frontend skill:** **use `ui-ux-pro-max`** for auth screens.
+
+### ⬜ Plan 5 — Epic 5: Automation Engine Integration
+**Depends on:** Plans 1, 3.
+**Produces:** Engine (n8n) API client (start/stop/restart/status/runs — **internal label only**), webhook gateway with channel→automation resolver (Supabase lookup cached in Upstash Redis 5-min TTL), per-channel signature verification, async forward + idempotency key, status sync into Supabase, audit logging for control-plane actions.
+**Perf target:** webhook ACK p95 ≤300ms.
+
+### ⬜ Plan 6 — Epic 6: Dispatch Adapter Layer
+**Depends on:** Plan 5.
+**Produces:** `DispatchAdapter` TS interface (§7.6); **AutoCab** full adapter (address/zones/capabilities/quote/booking CRUD/flights); LHR terminal zone mapping (T1/T2/T3→`LHR T123`, T4→`LHR T4`, T5→`LHR T5`); IATA→airline lookup; airport buffer logic; per-tenant adapter selection; iCabbi/Cordic stubs.
+**Open qs:** Q2 (stubs that error gracefully vs defer selector).
+
+### ⬜ Plan 7 — Epic 7: Tenant Dashboard
+**Depends on:** Plans 1, 4, 5, 6.
+**Produces (in PRD order of complexity):** (1) Org overview grid + Realtime; (2) Per-automation overview + live feed; (3) Bookings table + filters + CSV + slide-over; (4) Conversations + transcript; (5) Analytics (10 sections, recharts); (6) Bot config; (7) Channels; (8) Team; (9) Billing; (10) Support.
+**Realtime rule:** one Realtime channel per automation view, auto-unsubscribe on unmount; never org-wide.
+**Perf target:** dashboard p95 ≤1.5s warm.
+**Frontend skill:** **use `ui-ux-pro-max`** throughout — this is the largest UI surface. Consider splitting into 7a (overviews + bookings + conversations) and 7b (analytics + config + channels + team + billing + support) when the plan is written.
+
+### ⬜ Plan 8 — Epic 8: Stripe Billing
+**Depends on:** Plans 1, 3.
+**Produces:** Setup-fee one-time invoice on contract-signed; monthly subscription on go-live (billing start = go-live date); Stripe Tax (UK VAT); Customer Portal session API; webhook handlers (`customer.subscription.*`, `invoice.payment_failed` → Resend to ops + customer, no auto-suspend; `invoice.paid` → log). Honour `renewal_mode = rolling_monthly`.
+**Open qs:** Q4 (setup-fee refundability), Q5 (mid-contract upgrade pro-rata).
+
+### ⬜ Plan 9 — Epic 9: Demo Tenant
+**Depends on:** Plans 1, 7.
+**Produces:** Supabase seed script (6 months deterministic mock data — bookings ASAP/Scheduled/Airport, voice/location/bilingual/manage/cancel conversations, all analytics populated, 3 automations); one-click `/demo` read-only session pinned to `DEMO_TENANT_ID`; read-only enforcement (writes → 403 + banner); 24h reset via Supabase Edge Function cron.
+**Open qs:** Q6 (UK-only vs international demo geography).
+
+### ⬜ Plan 10 — Epic 10: Voice Pipeline Integration
+**Depends on:** Plans 5, 7.
+**Produces:** `WA Voice Booking Processor` sub-workflow wired to WhatsApp automations (Whisper transcribe → GPT slot extraction → merge at intent router); dashboard conversation view renders transcript + extracted slots; voice analytics section; Whisper language auto-detect → `conversations.language`.
+**Perf target:** voice note → reply p95 ≤8s.
+
+### ⬜ Plan 11 — Epic 11: Observability & QA
+**Depends on:** Plans 5, 7.
+**Produces:** OpenTelemetry in route handlers + engine; Grafana Cloud dashboards (latency, error rate, webhook throughput, dispatch latency per adapter); Sentry (frontend + server); Playwright E2E (text + voice booking, manage booking, admin provisioning, demo tenant); webhook load test @100 concurrent.
+
+### ⬜ Plan 12 — Epic 12: Launch Readiness
+**Depends on:** all prior.
+**Produces:** Legal pages (Privacy, Terms, DPA, Cookie Policy); status page; live demo WhatsApp number; sales collateral; ops runbook (provisioning SOP, credential rotation, incident response).
+**Open qs:** Q12 (demo WA number budget + sandbox vs mock).
+
+---
+
+## Cross-cutting rules every plan must honour
+
+- **Multi-tenancy:** every business table has `tenant_id`; automation-scoped tables also carry `automation_id`. RLS enforces isolation at the DB layer (§8.2).
+- **Brand language:** never expose "n8n"/"workflow"/"execution"/"CabLab" on customer surfaces — use the §18.1 substitution table.
+- **Auth:** public signup disabled; all accounts via admin `invite()`; MFA for Owner/Admin; JWT claims `{ tenant_id, role, is_flowmo_staff, automation_restrictions[] }`.
+- **Data residency:** UK/EU regions only.
+- **Perf budgets:** §11 targets are acceptance criteria, not aspirations.
+- **TDD + frequent commits:** every plan is bite-sized, test-first, commit-per-task.
