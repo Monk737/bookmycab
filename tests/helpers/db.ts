@@ -40,3 +40,19 @@ export async function asUser(
     await c.end();
   }
 }
+
+/**
+ * Connect as the `supabase_admin` superuser, which (unlike `postgres`) may
+ * assume reserved roles such as `supabase_auth_admin`. Used to exercise the
+ * real token-issuance role under RLS.
+ */
+export async function withSuperuser<T>(fn: (c: Client) => Promise<T>): Promise<T> {
+  const url = DB_URL.replace(/\/\/[^@]+@/, "//supabase_admin:postgres@");
+  const c = new Client({ connectionString: url });
+  await c.connect();
+  try {
+    return await fn(c);
+  } finally {
+    await c.end();
+  }
+}
