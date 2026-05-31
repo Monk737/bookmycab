@@ -31,8 +31,9 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Done when:** `pnpm build` passes, `pnpm test` (schema + RLS isolation + middleware) passes, CI is green.
 **Frontend skill:** not yet — no UI surfaces.
 
-### ⬜ Plan 2 — Epic 2: Marketing Site
+### 🚧 Plan 2 — Epic 2: Marketing Site  → `2026-05-31-epic-2-marketing-site.md`
 **Depends on:** Plan 1.
+**Decisions locked:** Discovery CTA → Cal.com (`NEXT_PUBLIC_CAL_LINK`); brand assets → #FFD400 editorial + placeholder wordmark; multi-currency pricing GBP/EUR/USD.
 **Produces:** Public pages (Home, How It Works, Channels, Pricing A/B/C, Custom Solutions, Case Studies, About, Contact, Legal), `#FFD400` editorial design system, transparency section, ROI calculator, dispatch badges (AutoCab/iCabbi/Cordic), discovery-call CTA, "Try the Dashboard" → demo. **No public signup.**
 **Open qs to resolve at start:** Q10 (brand assets finalised?), Q11 (Calendly/Cal.com/HubSpot).
 **Frontend skill:** **use `ui-ux-pro-max`** for the design system + every page.
