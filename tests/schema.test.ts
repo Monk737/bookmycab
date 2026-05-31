@@ -82,3 +82,35 @@ describe("0002 automations + channels", () => {
     expect(checks).toContain("widget");
   });
 });
+
+describe("0003 conversations + bookings", () => {
+  it("creates bookings with dispatch + airport audit fields", async () => {
+    const cols = await withPostgres(async (c) => {
+      const { rows } = await c.query(
+        `select column_name from information_schema.columns
+         where table_schema='public' and table_name='bookings'`,
+      );
+      return rows.map((r) => r.column_name as string);
+    });
+    expect(cols).toEqual(
+      expect.arrayContaining([
+        "tenant_id", "automation_id", "conversation_id", "dispatch_ref",
+        "pickup_address", "destination_address", "airport_json", "raw_dispatch_json",
+        "your_reference_1", "your_reference_2", "your_reference_3",
+      ]),
+    );
+  });
+
+  it("creates conversations.outcome and messages.message_type with PRD enums", async () => {
+    const checks = (await withPostgres(async (c) => {
+      const { rows } = await c.query(
+        `select cc.check_clause from information_schema.table_constraints tc
+         join information_schema.check_constraints cc using (constraint_schema, constraint_name)
+         where tc.table_schema='public' and tc.table_name in ('conversations','messages')`,
+      );
+      return rows.map((r) => r.check_clause as string);
+    })).join(" | ");
+    expect(checks).toContain("abandoned");   // conversations.outcome
+    expect(checks).toContain("voice");        // messages.message_type
+  });
+});
