@@ -42,6 +42,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Start the local stack (applies all migrations) — this is the migration gate.
       - run: supabase start
+      # Lint migrations for SQL issues (migration dry-run gate).
+      - run: supabase db lint --level warning
       - name: Run tests (schema + RLS + hook + access)
         run: pnpm test
         env:
