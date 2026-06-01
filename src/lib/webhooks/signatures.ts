@@ -10,7 +10,12 @@ function safeEqual(a: string | null | undefined, b: string | null | undefined): 
   return timingSafeEqual(ab, bb);
 }
 
-/** Meta (WhatsApp/Messenger/Instagram): x-hub-signature-256: sha256=<hmac hex>. */
+/**
+ * Meta (WhatsApp/Messenger/Instagram): x-hub-signature-256: sha256=<hmac hex>.
+ * @param rawBody The EXACT HTTP body bytes as received, before any parse or
+ *   re-serialize. HMAC is computed over the raw bytes; re-serializing will
+ *   produce a different digest and cause verification to fail.
+ */
 export function verifyMetaSignature(
   rawBody: string,
   header: string | null | undefined,
@@ -29,7 +34,12 @@ export function verifyTelegramSecret(
   return safeEqual(header, expectedSecret);
 }
 
-/** Widget: x-cabby-signature: <hmac hex> over the raw body. */
+/**
+ * Widget: x-cabby-signature: <hmac hex> over the raw body.
+ * @param rawBody The EXACT HTTP body bytes as received, before any parse or
+ *   re-serialize. HMAC is computed over the raw bytes; re-serializing will
+ *   produce a different digest and cause verification to fail.
+ */
 export function verifyWidgetSignature(
   rawBody: string,
   header: string | null | undefined,

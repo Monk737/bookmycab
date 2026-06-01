@@ -57,6 +57,9 @@ describe("verifyWidgetSignature", () => {
     expect(verifyWidgetSignature(rawBody, good, "other")).toBe(false);
     expect(verifyWidgetSignature(rawBody, "", key)).toBe(false);
   });
+  it("rejects a null header (parity with Meta null-header case)", () => {
+    expect(verifyWidgetSignature(rawBody, null, key)).toBe(false);
+  });
 });
 
 describe("verifyMetaSubscribe", () => {

@@ -28,6 +28,20 @@ run("redis primitives (live SRH)", () => {
     await del(`${uniq}:cache`);
   });
 
+  it("getOrSet negative-caches a null loader result (loader runs exactly once)", async () => {
+    let calls = 0;
+    const nullLoader = async (): Promise<null> => {
+      calls += 1;
+      return null;
+    };
+    const a = await getOrSet(`${uniq}:null`, 30, nullLoader);
+    const b = await getOrSet(`${uniq}:null`, 30, nullLoader);
+    expect(a).toBeNull();  // first call returns null
+    expect(b).toBeNull();  // second call returns cached null, not a re-run
+    expect(calls).toBe(1); // loader ran exactly once — null was cached via sentinel
+    await del(`${uniq}:null`);
+  });
+
   it("claimOnce returns true once then false within the window", async () => {
     const first = await claimOnce(`${uniq}:idem`, 30);
     const second = await claimOnce(`${uniq}:idem`, 30);
@@ -43,5 +57,6 @@ run("redis primitives (live SRH)", () => {
     expect(r1.allowed).toBe(true);
     expect(r2.allowed).toBe(true);
     expect(r3.allowed).toBe(false);
+    await del(k);
   });
 });
