@@ -45,10 +45,14 @@ async function recordLogin(userId: string): Promise<void> {
     env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  await serviceClient
+  const { error } = await serviceClient
     .from("users")
     .update({ last_login_at: new Date().toISOString() })
     .eq("id", userId);
+
+  if (error) {
+    console.error("recordLogin failed", error);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -92,6 +96,9 @@ export async function signIn(
   // 4. Read claims and redirect to the appropriate target.
   //    The middleware handles the MFA gate on the next request.
   const claims = await getCurrentClaims();
+  if (!claims) {
+    console.warn("signIn: getCurrentClaims() returned null after successful sign-in — falling back to /dashboard. Check custom access token hook.");
+  }
   const target = claims ? redirectTargetFor(claims) : "/dashboard";
 
   redirect(target);

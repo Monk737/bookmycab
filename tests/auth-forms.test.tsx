@@ -65,14 +65,12 @@ describe("LoginForm", () => {
 
   it("does not show a form error banner on initial render", () => {
     render(<LoginForm />);
-    // The alert element is always in the DOM (aria-live) but contains no text.
-    const alert = screen.getByRole("alert", { hidden: true });
     // Only the card-level alert matters here — its text should be empty.
     const cardAlert = document.querySelector('[role="alert"][aria-live="polite"]');
     expect(cardAlert?.textContent?.trim()).toBe("");
   });
 
-  it("empty submit shows client-side validation errors in the DOM", async () => {
+  it("empty submit: action returns field errors and they render in the DOM", async () => {
     // When both fields are empty the action returns field-level errors via Zod.
     mockSignIn.mockResolvedValue({
       fieldErrors: {
