@@ -75,4 +75,9 @@ describe("evaluateAccess", () => {
     const claims: Claims = { sub: "s1", tenant_id: null, role: "Owner", is_flowmo_staff: true, aal: "aal1" };
     expect(evaluateAccess("/admin", claims)).toEqual({ kind: "redirect", to: "/mfa" });
   });
+
+  it("redirects Owner with aal: null to /mfa when visiting /dashboard (safe default for absent aal claim)", () => {
+    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, aal: null };
+    expect(evaluateAccess("/dashboard", claims)).toEqual({ kind: "redirect", to: "/mfa" });
+  });
 });

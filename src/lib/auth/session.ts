@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Claims } from "@/middleware/access";
+import { parseClaims, type Claims } from "@/middleware/access";
 
 /** Returns the currently authenticated Supabase user, or null if not signed in. */
 export async function getUser() {
@@ -15,13 +15,7 @@ export async function getCurrentClaims(): Promise<Claims | null> {
   const { data } = await supabase.auth.getClaims();
   const raw = data?.claims as Record<string, unknown> | undefined;
   if (!raw) return null;
-  return {
-    sub: String(raw.sub),
-    tenant_id: (raw.tenant_id as string) ?? null,
-    role: (raw.role as Claims["role"]) ?? null,
-    is_flowmo_staff: Boolean(raw.is_flowmo_staff),
-    aal: (raw.aal as Claims["aal"]) ?? null,
-  };
+  return parseClaims(raw);
 }
 
 /**

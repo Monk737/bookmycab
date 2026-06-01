@@ -23,7 +23,18 @@ export const PUBLIC_PAGES = new Set([
 export const AUTH_ROUTES = ["/login", "/forgot-password", "/reset-password", "/accept-invite", "/mfa"];
 
 // Roles that require MFA (aal2) to access protected routes.
-const MFA_REQUIRED_ROLES = new Set(["Owner", "Admin"]);
+const MFA_REQUIRED_ROLES = new Set<NonNullable<Claims["role"]>>(["Owner", "Admin"]);
+
+/** Maps a raw JWT payload into the typed Claims shape. */
+export function parseClaims(raw: Record<string, unknown>): Claims {
+  return {
+    sub: String(raw.sub),
+    tenant_id: (raw.tenant_id as string) ?? null,
+    role: (raw.role as Claims["role"]) ?? null,
+    is_flowmo_staff: Boolean(raw.is_flowmo_staff),
+    aal: (raw.aal as Claims["aal"]) ?? null,
+  };
+}
 
 function isPublic(pathname: string): boolean {
   if (PUBLIC_PAGES.has(pathname)) return true;
