@@ -188,8 +188,11 @@ export function TenantForm() {
           label="Slug"
           value={slug}
           onChange={(e) => {
-            setSlugEdited(true);
-            setSlug(e.target.value);
+            const next = e.target.value;
+            // Clearing the field resumes auto-derive from the org name so the
+            // slug never gets stuck empty.
+            setSlugEdited(next !== "");
+            setSlug(next);
           }}
           placeholder="speedy-cabs"
           hint="Lowercase, hyphenated. Auto-derived from the org name."

@@ -6,7 +6,6 @@ import { z } from "zod";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
-import { getCurrentClaims } from "@/lib/auth/session";
 import { writeAudit } from "@/lib/admin/audit";
 import { CURRENCIES } from "@/lib/marketing/pricing";
 import { PLAN_BANDS } from "@/lib/admin/plan-bands";
@@ -78,7 +77,7 @@ export async function createTenant(
   _prevState: TenantFormState,
   formData: FormData,
 ): Promise<TenantFormState> {
-  await requireStaff();
+  const claims = await requireStaff();
 
   const raw = {
     name: formData.get("name"),
@@ -120,6 +119,7 @@ export async function createTenant(
       currency: data.currency,
       dispatch_adapter: data.dispatch_adapter,
       dispatch_company_id: data.dispatch_company_id ?? null,
+      contact_email: data.contact_email,
       stripe_customer_id: data.stripe_customer_id ?? null,
       contract_start: data.contract_start ?? null,
       monthly_price: data.monthly_price ?? null,
@@ -129,8 +129,12 @@ export async function createTenant(
     .single();
 
   if (insertError || !inserted) {
-    // 23505 = unique_violation (duplicate slug).
-    const isDuplicateSlug = insertError?.code === "23505";
+    // 23505 = unique_violation; only treat it as a slug clash when the failing
+    // constraint actually references slug (otherwise surface a generic error).
+    const isDuplicateSlug =
+      insertError?.code === "23505" &&
+      (insertError.message?.includes("slug") ||
+        insertError.details?.includes("slug"));
     return {
       fieldErrors: isDuplicateSlug
         ? { slug: ["That slug is already taken."] }
@@ -156,21 +160,23 @@ export async function createTenant(
     }
   }
 
-  // Audit the provisioning action against the acting staff user.
-  const claims = await getCurrentClaims();
-  if (claims) {
-    await writeAudit({
-      actorUserId: claims.sub,
-      tenantId,
-      action: "tenant.create",
-      targetType: "tenant",
-      targetId: tenantId,
-      metadata: {
-        name: data.name,
-        plan_band: data.plan_band,
-        currency: data.currency,
-      },
-    });
+  // Audit the provisioning action against the acting staff user. `requireStaff`
+  // guarantees `claims` is non-null, so the audit always fires after a
+  // successful insert.
+  const audited = await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "tenant.create",
+    targetType: "tenant",
+    targetId: tenantId,
+    metadata: {
+      name: data.name,
+      plan_band: data.plan_band,
+      currency: data.currency,
+    },
+  });
+  if (!audited) {
+    console.error("audit write failed for tenant.create", { tenantId });
   }
 
   redirect(`/admin/tenants/${tenantId}`);

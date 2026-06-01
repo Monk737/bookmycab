@@ -76,6 +76,10 @@ describe("slugify", () => {
     expect(slugify("24/7 Cabs")).toBe("24-7-cabs");
   });
 
+  it("transliterates accented Latin characters instead of dropping them", () => {
+    expect(slugify("Éclair Cabs")).toBe("eclair-cabs");
+  });
+
   it("returns an empty string for input with no alphanumerics", () => {
     expect(slugify("---")).toBe("");
     expect(slugify("   ")).toBe("");

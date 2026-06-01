@@ -2,6 +2,7 @@ import "server-only";
 import Link from "next/link";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
+import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { StatCard } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -22,6 +23,7 @@ type TenantRow = {
   monthly_price: number | string | null;
   contract_renewal: string | null;
   created_at: string | null;
+  last_login_at?: string | null;
 };
 
 function formatDate(value: string | null): string {
@@ -42,6 +44,10 @@ function formatDate(value: string | null): string {
  * component; the client never sees the key.
  */
 export default async function TenantsListPage() {
+  // Defense-in-depth: the admin layout already gates, but this server component
+  // reads every tenant via the service-role key, so it re-checks staff itself.
+  await requireStaff();
+
   const serviceClient = createSupabaseJS(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
@@ -55,6 +61,29 @@ export default async function TenantsListPage() {
     .order("created_at", { ascending: false });
 
   const tenants = (data ?? []) as TenantRow[];
+
+  // Last login per tenant = most recent members' users.last_login_at. One extra
+  // query (not N+1): pull all memberships with their user's last_login_at, then
+  // reduce to a max per tenant in memory.
+  const { data: memberships } = await serviceClient
+    .from("tenant_users")
+    .select("tenant_id, users(last_login_at)");
+
+  const lastLoginByTenant = new Map<string, string>();
+  for (const m of (memberships ?? []) as Array<{
+    tenant_id: string;
+    users: { last_login_at: string | null } | { last_login_at: string | null }[] | null;
+  }>) {
+    // The embedded relation may come back as an object or a single-element array.
+    const userRel = Array.isArray(m.users) ? m.users[0] : m.users;
+    const ts = userRel?.last_login_at;
+    if (!ts) continue;
+    const current = lastLoginByTenant.get(m.tenant_id);
+    if (!current || ts > current) lastLoginByTenant.set(m.tenant_id, ts);
+  }
+  for (const t of tenants) {
+    t.last_login_at = lastLoginByTenant.get(t.id) ?? null;
+  }
 
   const counts = tenants.reduce(
     (acc, t) => {
@@ -102,6 +131,11 @@ export default async function TenantsListPage() {
       key: "created_at",
       header: "Created",
       render: (t) => formatDate(t.created_at),
+    },
+    {
+      key: "last_login_at",
+      header: "Last login",
+      render: (t) => formatDate(t.last_login_at ?? null),
     },
   ];
 
