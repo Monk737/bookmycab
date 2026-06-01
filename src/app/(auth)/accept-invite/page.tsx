@@ -3,7 +3,10 @@ import { getCurrentClaims, redirectTargetFor } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { AcceptForm } from "./accept-form";
 
-export const metadata = { title: "Accept Invitation — CabbyBot" };
+export const metadata = {
+  title: "Accept Invitation — CabbyBot",
+  robots: { index: false },
+};
 
 /**
  * Invite acceptance page.

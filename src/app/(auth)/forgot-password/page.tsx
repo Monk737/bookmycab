@@ -1,5 +1,10 @@
 import { ForgotForm } from "./forgot-form";
 
+export const metadata = {
+  title: "Forgot password — CabbyBot",
+  robots: { index: false },
+};
+
 /**
  * Forgot-password page — server component.
  * The (auth) layout centres this in the page shell.

@@ -9,7 +9,17 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Keep authenticated and internal surfaces out of the index.
-      disallow: ["/dashboard", "/admin", "/api", "/login", "/auth"],
+      disallow: [
+        "/dashboard",
+        "/admin",
+        "/api",
+        "/login",
+        "/auth",
+        "/mfa",
+        "/accept-invite",
+        "/forgot-password",
+        "/reset-password",
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
