@@ -27,3 +27,27 @@ export async function loadAutomationFromDb(
     engineWebhookUrl: data.engine_webhook_url,
   };
 }
+
+/** Reads the inbound-verify secret for a channel from the Epic-3 vault. */
+export async function loadChannelVerifySecret(
+  automationId: string,
+  credentialType: string,
+): Promise<string | null> {
+  const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  // Find the channel_credentials row id for this automation's channel + type,
+  // then decrypt via the key-param RPC wrapper (Epic 3 migration 0010).
+  const { data: cred } = await supabase
+    .from("channel_credentials")
+    .select("id, channels!inner(automation_id)")
+    .eq("credential_type", credentialType)
+    .eq("channels.automation_id", automationId)
+    .maybeSingle();
+  if (!cred) return null;
+  const { data: secret, error } = await supabase.rpc("vault_read_credential_rpc", {
+    p_id: (cred as { id: string }).id,
+    p_accessed_by: null,
+    p_key: env.SUPABASE_VAULT_KEY,
+  });
+  if (error) return null;
+  return (secret as string) ?? null;
+}
