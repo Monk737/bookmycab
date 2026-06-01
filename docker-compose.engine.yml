@@ -1,0 +1,33 @@
+# Local CabbyBot Automation Engine + Redis stack.
+# Brings up: n8n (REST API), redis, and serverless-redis-http (SRH) so the
+# Upstash REST client works locally against real redis.
+#   docker compose -f docker-compose.engine.yml up -d
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+
+  serverless-redis-http:
+    image: hiett/serverless-redis-http:latest
+    ports: ["8079:80"]
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: local-dev-srh-token
+      SRH_CONNECTION_STRING: "redis://redis:6379"
+    depends_on: [redis]
+
+  n8n:
+    image: n8nio/n8n:latest
+    ports: ["5678:5678"]
+    environment:
+      N8N_PUBLIC_API_DISABLED: "false"
+      N8N_ENCRYPTION_KEY: local-dev-n8n-encryption-key
+      DB_TYPE: sqlite
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:

@@ -32,6 +32,10 @@ const schema = z.object({
 
   // Gateway / demo / internal
   WEBHOOK_RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(60),
+
+  // Gateway tuning (defaults match PRD §7 + Epic 5).
+  CHANNEL_CACHE_TTL_SEC: z.coerce.number().int().positive().default(300),
+  IDEMPOTENCY_TTL_SEC: z.coerce.number().int().positive().default(86400),
   DEMO_TENANT_ID: z.string().uuid().optional(),
   FLOWMO_STAFF_EMAIL_DOMAIN: z.string().default("flowmoai.com"),
 
