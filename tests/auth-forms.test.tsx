@@ -39,11 +39,20 @@ vi.mock("@/app/(auth)/actions", () => ({
 // ResetForm uses onAuthStateChange (PASSWORD_RECOVERY event) to detect a
 // recovery session — getSession is no longer called by that component.
 const mockOnAuthStateChange = vi.fn();
+
+// MFA method stubs — used by MfaEnroll and MfaChallenge.
+const mockMfaEnroll = vi.fn();
+const mockMfaChallengeAndVerify = vi.fn();
+
 vi.mock("@/lib/supabase/browser", () => ({
   createClient: () => ({
     auth: {
       onAuthStateChange: (...args: Parameters<typeof mockOnAuthStateChange>) =>
         mockOnAuthStateChange(...args),
+      mfa: {
+        enroll: (...args: unknown[]) => mockMfaEnroll(...args),
+        challengeAndVerify: (...args: unknown[]) => mockMfaChallengeAndVerify(...args),
+      },
     },
   }),
 }));
@@ -55,6 +64,8 @@ import { LoginForm } from "@/app/(auth)/login/login-form";
 import { ForgotForm } from "@/app/(auth)/forgot-password/forgot-form";
 import { ResetForm } from "@/app/(auth)/reset-password/reset-form";
 import { AcceptForm } from "@/app/(auth)/accept-invite/accept-form";
+import { MfaEnroll } from "@/app/(auth)/mfa/mfa-enroll";
+import { MfaChallenge } from "@/app/(auth)/mfa/mfa-challenge";
 
 afterEach(() => {
   cleanup();
@@ -569,5 +580,231 @@ describe("AcceptForm", () => {
 
     const banner = document.querySelector('[role="alert"][aria-live="polite"]');
     expect(banner?.textContent).toContain("Failed to set up your account");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// MfaEnroll tests
+// ---------------------------------------------------------------------------
+
+// Stable mock QR/secret values used across enroll tests.
+const MOCK_FACTOR_ID = "factor-abc-123";
+const MOCK_QR_CODE = "data:image/svg+xml;utf-8,<svg/>";
+const MOCK_SECRET = "JBSWY3DPEHPK3PXP";
+
+// Helper: configures mockMfaEnroll to resolve with a valid TOTP enroll response.
+function mockEnrollSuccess() {
+  mockMfaEnroll.mockResolvedValue({
+    data: {
+      id: MOCK_FACTOR_ID,
+      type: "totp",
+      totp: { qr_code: MOCK_QR_CODE, secret: MOCK_SECRET, uri: "otpauth://totp/test" },
+    },
+    error: null,
+  });
+}
+
+// Helper: configures mockMfaEnroll to resolve with an error.
+function mockEnrollError(message: string) {
+  mockMfaEnroll.mockResolvedValue({
+    data: null,
+    error: { message },
+  });
+}
+
+// Mock window.location.assign so tests can assert on navigation without errors.
+const mockLocationAssign = vi.fn();
+Object.defineProperty(window, "location", {
+  value: { assign: mockLocationAssign },
+  writable: true,
+});
+
+describe("MfaEnroll", () => {
+  it("shows a loading state while enroll is pending", () => {
+    // enroll never resolves during this render.
+    mockMfaEnroll.mockReturnValue(new Promise(() => {}));
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+    expect(screen.getByText(/preparing your setup/i)).toBeInTheDocument();
+  });
+
+  it("renders the QR image and secret after enroll resolves", async () => {
+    mockEnrollSuccess();
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    // QR image should appear with the correct src.
+    const qr = await screen.findByRole("img", { name: /totp qr code/i });
+    expect(qr).toHaveAttribute("src", MOCK_QR_CODE);
+
+    // Secret text should appear somewhere in the document (inside <details>).
+    expect(screen.getByText(MOCK_SECRET)).toBeInTheDocument();
+  });
+
+  it("renders a 6-digit code input field", async () => {
+    mockEnrollSuccess();
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    const input = await screen.findByLabelText(/6-digit code/i);
+    expect(input).toBeInTheDocument();
+  });
+
+  it("calls challengeAndVerify with the entered code on submit", async () => {
+    mockEnrollSuccess();
+    mockMfaChallengeAndVerify.mockResolvedValue({ error: null });
+
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    const input = await screen.findByLabelText(/6-digit code/i);
+    fireEvent.change(input, { target: { value: "123456" } });
+    fireEvent.click(screen.getByRole("button", { name: /verify and enable/i }));
+
+    await waitFor(() =>
+      expect(mockMfaChallengeAndVerify).toHaveBeenCalledWith({
+        factorId: MOCK_FACTOR_ID,
+        code: "123456",
+      }),
+    );
+  });
+
+  it("calls window.location.assign to the redirect target on success", async () => {
+    mockEnrollSuccess();
+    mockMfaChallengeAndVerify.mockResolvedValue({ error: null });
+
+    render(<MfaEnroll redirectTarget="/admin" />);
+
+    const input = await screen.findByLabelText(/6-digit code/i);
+    fireEvent.change(input, { target: { value: "654321" } });
+    fireEvent.click(screen.getByRole("button", { name: /verify and enable/i }));
+
+    await waitFor(() => expect(mockLocationAssign).toHaveBeenCalledWith("/admin"));
+  });
+
+  it("shows an inline error when challengeAndVerify returns an error", async () => {
+    mockEnrollSuccess();
+    mockMfaChallengeAndVerify.mockResolvedValue({
+      error: { message: "Invalid TOTP code entered. Please try again." },
+    });
+
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    const input = await screen.findByLabelText(/6-digit code/i);
+    fireEvent.change(input, { target: { value: "000000" } });
+    fireEvent.click(screen.getByRole("button", { name: /verify and enable/i }));
+
+    // The Field component renders the error in a <p role="alert"> element.
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/invalid totp code/i);
+    });
+  });
+
+  it("shows an error card when enroll itself fails", async () => {
+    mockEnrollError("Too many enrolled factors.");
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/too many enrolled factors/i)).toBeInTheDocument(),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// MfaChallenge tests
+// ---------------------------------------------------------------------------
+
+describe("MfaChallenge", () => {
+  it("renders a 6-digit code input and a verify button", () => {
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+
+    expect(screen.getByLabelText(/6-digit code/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^verify$/i })).toBeInTheDocument();
+  });
+
+  it("renders instructional copy", () => {
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+    expect(screen.getByText(/open your authenticator app/i)).toBeInTheDocument();
+  });
+
+  it("does not show an error message on initial render", () => {
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+    // The Field error paragraph is only rendered when an error exists.
+    // Look for a non-empty error: the AuthCard aria-live banner is sr-only and empty.
+    const alertBanner = document.querySelector('[role="alert"][aria-live="polite"]');
+    expect(alertBanner?.textContent?.trim()).toBe("");
+    // No Field-level error paragraph should be present.
+    expect(document.querySelector('p[role="alert"]')).not.toBeInTheDocument();
+  });
+
+  it("calls challengeAndVerify with the factorId and entered code on submit", async () => {
+    mockMfaChallengeAndVerify.mockResolvedValue({ error: null });
+
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+
+    fireEvent.change(screen.getByLabelText(/6-digit code/i), {
+      target: { value: "112233" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^verify$/i }));
+
+    await waitFor(() =>
+      expect(mockMfaChallengeAndVerify).toHaveBeenCalledWith({
+        factorId: "factor-xyz",
+        code: "112233",
+      }),
+    );
+  });
+
+  it("navigates to redirectTarget on success", async () => {
+    mockMfaChallengeAndVerify.mockResolvedValue({ error: null });
+
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/admin" />);
+
+    fireEvent.change(screen.getByLabelText(/6-digit code/i), {
+      target: { value: "998877" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^verify$/i }));
+
+    await waitFor(() => expect(mockLocationAssign).toHaveBeenCalledWith("/admin"));
+  });
+
+  it("shows an inline error when challengeAndVerify returns an error", async () => {
+    mockMfaChallengeAndVerify.mockResolvedValue({
+      error: { message: "Invalid TOTP code entered. Please try again." },
+    });
+
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+
+    fireEvent.change(screen.getByLabelText(/6-digit code/i), {
+      target: { value: "000000" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^verify$/i }));
+
+    // The Field component renders the error in a <p role="alert"> element.
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/invalid totp code/i);
+    });
+  });
+
+  it("does not navigate when an error is returned", async () => {
+    mockMfaChallengeAndVerify.mockResolvedValue({
+      error: { message: "Code expired." },
+    });
+
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+
+    fireEvent.change(screen.getByLabelText(/6-digit code/i), {
+      target: { value: "111111" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^verify$/i }));
+
+    // Wait for the inline error to appear.
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/code expired/i);
+    });
+
+    expect(mockLocationAssign).not.toHaveBeenCalled();
   });
 });
