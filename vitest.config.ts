@@ -14,6 +14,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+    // Load .env.local/.env before any test module imports the validated @/env
+    // accessor (live Redis/engine integration tests need the real vars).
+    setupFiles: ["tests/setup-env.ts"],
     hookTimeout: 30_000,
     testTimeout: 30_000,
     fileParallelism: false, // DB tests share one local Postgres
