@@ -113,3 +113,88 @@ export async function signOut(): Promise<never> {
   await supabase.auth.signOut();
   redirect("/login");
 }
+
+// ---------------------------------------------------------------------------
+// requestReset server action
+// ---------------------------------------------------------------------------
+
+const requestResetSchema = z.object({
+  email: z.string().email("Please enter a valid email address."),
+});
+
+export type RequestResetState = AuthState & {
+  /** Neutral confirmation message shown on success (avoids account enumeration). */
+  successMessage: string | null;
+};
+
+export async function requestReset(
+  _prevState: RequestResetState,
+  formData: FormData,
+): Promise<RequestResetState> {
+  const raw = { email: formData.get("email") };
+
+  const parsed = requestResetSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      formError: null,
+      successMessage: null,
+    };
+  }
+
+  const supabase = await createClient();
+  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+  });
+
+  // Always return a neutral message — never reveal whether the email exists.
+  return {
+    fieldErrors: {},
+    formError: null,
+    successMessage: "If that email exists, we've sent a reset link.",
+  };
+}
+
+// ---------------------------------------------------------------------------
+// updatePassword server action
+// ---------------------------------------------------------------------------
+
+const updatePasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters."),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+export async function updatePassword(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const raw = {
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  };
+
+  const parsed = updatePasswordSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      formError: null,
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+
+  if (error) {
+    return {
+      fieldErrors: {},
+      formError: "Failed to update password. Your reset link may have expired. Please request a new one.",
+    };
+  }
+
+  redirect("/login?reset=1");
+}
