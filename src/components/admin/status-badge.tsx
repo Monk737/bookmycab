@@ -1,7 +1,8 @@
 /**
  * Small colored pill for a status string. Maps known tenant statuses
- * (onboarding/active/suspended/churned) and automation statuses
- * (building/uat/live/stopped/error) to sensible colors; unknown values fall
+ * (onboarding/active/suspended/churned), automation runtime statuses
+ * (building/uat/live/stopped/error), and build-pipeline stages
+ * (Requested/Scoped/Building/UAT/Live) to sensible colors; unknown values fall
  * back to a neutral zinc pill. Color is paired with the visible label text so
  * status is never conveyed by color alone.
  */
@@ -28,6 +29,9 @@ const STATUS_TONE: Record<string, Tone> = {
   live: "emerald",
   stopped: "zinc",
   error: "red",
+  // automations.build_stage (lowercased keys; building/uat/live overlap above)
+  requested: "zinc",
+  scoped: "blue",
 };
 
 export function StatusBadge({ status }: { status: string }) {
