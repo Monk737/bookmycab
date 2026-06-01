@@ -39,9 +39,11 @@ type RenewalRow = {
   monthly_price: number | string | null;
   contract_renewal: string;
   days: number;
+  stripe_customer_id: string | null;
 };
 
 type FeeRow = {
+  id: string;
   tenant_id: string;
   name: string;
   amount: number;
@@ -56,6 +58,7 @@ function formatDate(value: string | null): string {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
@@ -111,7 +114,7 @@ export default async function BillingPage() {
       .order("contract_renewal", { ascending: true, nullsFirst: false }),
     serviceClient
       .from("setup_fees")
-      .select("tenant_id, amount, currency, paid_at"),
+      .select("id, tenant_id, amount, currency, paid_at"),
     // Epic-8 mirror — read only to report whether it has populated. // TODO(epic-8)
     serviceClient.from("subscriptions").select("id", { count: "exact", head: true }),
   ]);
@@ -143,6 +146,7 @@ export default async function BillingPage() {
       monthly_price: t.monthly_price,
       contract_renewal: t.contract_renewal as string,
       days: daysUntil(t.contract_renewal as string, today),
+      stripe_customer_id: t.stripe_customer_id,
     }))
     .filter((r) => !Number.isNaN(r.days) && r.days >= 0)
     .sort((a, b) => a.days - b.days);
@@ -150,6 +154,7 @@ export default async function BillingPage() {
   // --- Outstanding setup fees joined to tenant names ---
   const nameById = new Map(tenants.map((t) => [t.id, t.name]));
   const feeRows: FeeRow[] = pipeline.outstanding.map((f) => ({
+    id: f.id,
     tenant_id: f.tenant_id,
     name: nameById.get(f.tenant_id) ?? f.tenant_id,
     amount: f.amount,
@@ -193,13 +198,12 @@ export default async function BillingPage() {
       key: "stripe",
       header: "Stripe",
       render: (r) => {
-        const t = tenants.find((x) => x.id === r.id);
-        if (!t?.stripe_customer_id) {
+        if (!r.stripe_customer_id) {
           return <span className="text-zinc-400">—</span>;
         }
         return (
           <a
-            href={`https://dashboard.stripe.com/customers/${t.stripe_customer_id}`}
+            href={`https://dashboard.stripe.com/customers/${r.stripe_customer_id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="font-mono text-[11px] font-medium uppercase tracking-wider text-emerald-700 underline-offset-2 outline-none hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-emerald-500"
@@ -292,7 +296,7 @@ export default async function BillingPage() {
             Renewal alerts
           </h2>
           <p className="text-xs text-zinc-500">
-            Soonest first. Highlighted rows renew within 14 days.
+            Soonest first. Days until colour-coded: red &le; 7 days, amber &le; 14 days.
           </p>
         </div>
         <div className="mt-3">
@@ -338,7 +342,7 @@ export default async function BillingPage() {
           <DataTable
             columns={feeColumns}
             rows={feeRows}
-            getRowKey={(f) => `${f.tenant_id}-${f.currency}-${f.amount}`}
+            getRowKey={(f) => f.id}
             emptyMessage="No outstanding setup fees."
           />
         </div>

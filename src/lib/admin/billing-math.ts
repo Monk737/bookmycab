@@ -33,6 +33,7 @@ export type BillingTenant = {
 
 /** Minimal setup-fee shape. Mirrors `setup_fees` columns. */
 export type BillingSetupFee = {
+  id: string;
   tenant_id: string;
   amount: number | string | null;
   currency: Currency;
@@ -167,6 +168,7 @@ export function renewalBuckets(
 
 /** One outstanding setup fee, plus the resolved numeric amount. */
 export type OutstandingSetupFee = {
+  id: string;
   tenant_id: string;
   amount: number;
   currency: Currency;
@@ -192,6 +194,7 @@ export function setupFeePipeline(
     const amount = toPrice(f.amount);
     totalByCurrency[f.currency] += amount;
     outstanding.push({
+      id: f.id,
       tenant_id: f.tenant_id,
       amount,
       currency: f.currency,

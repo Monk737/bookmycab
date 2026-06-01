@@ -197,15 +197,16 @@ describe("renewalBuckets (cumulative, boundary-inclusive)", () => {
 describe("setupFeePipeline", () => {
   it("lists only unpaid fees and totals them per currency", () => {
     const fees: BillingSetupFee[] = [
-      { tenant_id: "t1", amount: 1000, currency: "GBP", paid_at: null },
-      { tenant_id: "t2", amount: 1200, currency: "USD", paid_at: null },
+      { id: "f1", tenant_id: "t1", amount: 1000, currency: "GBP", paid_at: null },
+      { id: "f2", tenant_id: "t2", amount: 1200, currency: "USD", paid_at: null },
       {
+        id: "f3",
         tenant_id: "t3",
         amount: 1000,
         currency: "GBP",
         paid_at: "2026-05-01T00:00:00Z",
       },
-      { tenant_id: "t4", amount: 1000, currency: "EUR", paid_at: null },
+      { id: "f4", tenant_id: "t4", amount: 1000, currency: "EUR", paid_at: null },
     ];
     const { totalByCurrency, outstanding } = setupFeePipeline(fees);
     expect(totalByCurrency).toEqual({ GBP: 1000, EUR: 1000, USD: 1200 });
@@ -215,8 +216,9 @@ describe("setupFeePipeline", () => {
 
   it("coerces null/string amounts and never mixes currencies", () => {
     const fees: BillingSetupFee[] = [
-      { tenant_id: "t1", amount: null, currency: "GBP", paid_at: null },
+      { id: "f1", tenant_id: "t1", amount: null, currency: "GBP", paid_at: null },
       {
+        id: "f2",
         tenant_id: "t2",
         amount: "1200" as unknown as number,
         currency: "USD",
