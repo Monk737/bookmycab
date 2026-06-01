@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useId, useEffect, useState } from "react";
-import Link from "next/link";
 import { updatePassword, type AuthState } from "../actions";
 import { AuthCard } from "@/components/auth/auth-card";
+import { ButtonLink } from "@/components/auth/button-link";
 import { Field } from "@/components/auth/field";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { createClient } from "@/lib/supabase/browser";
@@ -66,12 +66,9 @@ export function ResetForm() {
         <p className="mb-4 text-sm text-slate-600 text-center">
           This password reset link is invalid or has expired.
         </p>
-        <Link
-          href="/forgot-password"
-          className="block w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white text-center bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 cursor-pointer"
-        >
+        <ButtonLink href="/forgot-password">
           Request a new reset link
-        </Link>
+        </ButtonLink>
       </AuthCard>
     );
   }
