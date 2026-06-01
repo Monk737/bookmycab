@@ -127,7 +127,11 @@ export async function revealCredential(
 ): Promise<{ ok: true; secret: string } | { ok: false; error: string }> {
   const claims = await requireStaff();
 
-  const credId = idSchema.parse(id);
+  const parsed = idSchema.safeParse(id);
+  if (!parsed.success) {
+    return { ok: false, error: "Invalid credential id." };
+  }
+  const credId = parsed.data;
 
   // Read tenant/channel for the audit metadata WITHOUT touching secret_encrypted.
   const { data: row } = await serviceClient()
@@ -185,7 +189,11 @@ export async function rotateCredential(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const claims = await requireStaff();
 
-  const credId = idSchema.parse(id);
+  const parsed = idSchema.safeParse(id);
+  if (!parsed.success) {
+    return { ok: false, error: "Invalid credential id." };
+  }
+  const credId = parsed.data;
   const secret = z.string().min(1).safeParse(newSecret);
   if (!secret.success) {
     return { ok: false, error: "The new secret value is required." };

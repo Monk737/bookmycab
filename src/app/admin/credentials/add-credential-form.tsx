@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId, useMemo, useState } from "react";
+import { useActionState, useEffect, useId, useMemo, useRef, useState } from "react";
 import { addCredential, CREDENTIAL_TYPES, type ActionState } from "./actions";
 
 type ChannelOption = {
@@ -58,6 +58,14 @@ function fieldWrap(label: string, id: string, children: React.ReactNode, error?:
 export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
   const [state, formAction, pending] = useActionState(addCredential, initialState);
 
+  const formRef = useRef<HTMLFormElement>(null);
+  // On a successful store, reset the form so the masked secret value doesn't
+  // linger in the DOM longer than necessary. The success banner stays (driven
+  // by state.ok), and the controlled channel/type selects keep their values.
+  useEffect(() => {
+    if (state.ok) formRef.current?.reset();
+  }, [state.ok]);
+
   const channelId = useId();
   const typeId = useId();
   const secretId = useId();
@@ -83,7 +91,7 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
   }
 
   return (
-    <form action={formAction} noValidate className="flex flex-col gap-5">
+    <form ref={formRef} action={formAction} noValidate className="flex flex-col gap-5">
       {state.formError && (
         <p
           role="alert"

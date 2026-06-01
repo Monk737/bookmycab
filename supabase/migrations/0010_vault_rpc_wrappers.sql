@@ -19,13 +19,18 @@
 -- in a server-only env var (SUPABASE_VAULT_KEY) and passes it per call; it is
 -- never logged and never returned. The key stays out of the schema/DB config.
 --
--- Security: the wrappers are SECURITY INVOKER (default) and delegate to the
--- SECURITY DEFINER inner functions, which already enforce
---   current_user in ('postgres','service_role','supabase_admin')
--- So even though we grant EXECUTE narrowly here, the inner caller-role guard is
--- the real gate — anon/authenticated calling a wrapper still hits that raise.
--- We additionally revoke EXECUTE from PUBLIC and from anon/authenticated, and
--- set_config(..., true) keeps the key transaction-local (auto-reset at commit).
+-- SECURITY: the REVOKE EXECUTE ... FROM PUBLIC, anon, authenticated below is the
+-- gate that blocks tenant users from calling these store/read wrappers. The
+-- wrappers are SECURITY INVOKER and delegate to the SECURITY DEFINER inner
+-- functions; the inner functions' current_user in ('postgres','service_role',
+-- 'supabase_admin') check runs in SECURITY DEFINER context, so current_user is
+-- the function owner (postgres) and that check ALWAYS passes regardless of who
+-- called the wrapper — it does NOT guard the calling identity here. Do NOT drop
+-- the REVOKEs believing the inner guard will catch unauthorized callers; it
+-- will not. (vault_rotate_credential_rpc below is itself SECURITY DEFINER and
+-- re-checks current_user, but that likewise sees the owner, so it too relies on
+-- the REVOKE as the real caller gate.) set_config(..., true) keeps the key
+-- transaction-local (auto-reset at commit).
 
 create or replace function public.vault_store_credential_rpc(
   p_tenant_id uuid,
@@ -100,8 +105,9 @@ end;
 $$;
 
 -- Lock down EXECUTE: revoke the default PUBLIC grant, then revoke from tenant
--- roles. service_role / postgres / supabase_admin retain it (and the inner
--- functions re-check current_user regardless).
+-- roles. service_role / postgres / supabase_admin retain it. This REVOKE is the
+-- actual caller gate (see SECURITY note above) — the inner current_user check
+-- runs as the function owner and does not screen the wrapper's caller.
 revoke execute on function public.vault_store_credential_rpc(uuid, uuid, text, text, uuid, text) from public;
 revoke execute on function public.vault_read_credential_rpc(uuid, uuid, text) from public;
 revoke execute on function public.vault_rotate_credential_rpc(uuid, text, text) from public;

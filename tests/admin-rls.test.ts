@@ -246,13 +246,19 @@ describe("0010 vault RPC wrappers (key-as-param path)", () => {
     });
   });
 
-  it("authenticated cannot call the *_rpc wrappers (inner caller-role guard fires)", async () => {
+  it("authenticated cannot call the *_rpc wrappers (REVOKE EXECUTE blocks the caller)", async () => {
     await asUser(USER, async (q) => {
       await expect(
         q(
           "select public.vault_store_credential_rpc($1::uuid, $2::uuid, 'whatsapp_token', 'x', $3::uuid, $4)",
           [TENANT, CHANNEL, USER, VAULT_KEY],
         ),
+      ).rejects.toThrow();
+      await expect(
+        q("select public.vault_read_credential_rpc('00000000-0000-0000-0000-000000000000'::uuid, $1::uuid, $2) as secret", [
+          USER,
+          VAULT_KEY,
+        ]),
       ).rejects.toThrow();
       await expect(
         q("select public.vault_rotate_credential_rpc('00000000-0000-0000-0000-000000000000'::uuid, 'x', $1)", [
