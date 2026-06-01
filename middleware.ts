@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
         tenant_id: (raw.tenant_id as string) ?? null,
         role: (raw.role as Claims["role"]) ?? null,
         is_flowmo_staff: Boolean(raw.is_flowmo_staff),
+        aal: (raw.aal as Claims["aal"]) ?? null,
       }
     : null;
 
