@@ -9,12 +9,17 @@ import { SubmitButton } from "@/components/auth/submit-button";
 
 const initialState: AuthState = { fieldErrors: {}, formError: null };
 
+type LoginFormProps = {
+  /** Optional informational notice (e.g. session_error redirect from MFA page). */
+  notice?: string;
+};
+
 /**
  * Login form — client component.
  * Uses `useActionState` to receive server-action state (field/form errors)
  * and surfaces them accessibly via aria-live regions in AuthCard and Field.
  */
-export function LoginForm() {
+export function LoginForm({ notice }: LoginFormProps) {
   const emailId = useId();
   const passwordId = useId();
 
@@ -25,6 +30,15 @@ export function LoginForm() {
 
   return (
     <AuthCard heading="Sign in to CabbyBot" error={state.formError}>
+      {notice && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700"
+        >
+          {notice}
+        </p>
+      )}
       <form action={formAction} noValidate className="flex flex-col gap-4">
         <Field
           id={emailId}

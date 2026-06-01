@@ -27,13 +27,20 @@ export function MfaChallenge({ factorId, redirectTarget = "/dashboard" }: Props)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    const trimmed = code.trim();
+    if (!/^\d{6}$/.test(trimmed)) {
+      setError("Please enter your 6-digit code.");
+      return;
+    }
+
     setError(null);
     setSubmitting(true);
 
     const supabase = createClient();
     const { error: mfaError } = await supabase.auth.mfa.challengeAndVerify({
       factorId,
-      code: code.trim(),
+      code: trimmed,
     });
 
     setSubmitting(false);
@@ -63,6 +70,7 @@ export function MfaChallenge({ factorId, redirectTarget = "/dashboard" }: Props)
             inputMode="numeric"
             autoComplete="one-time-code"
             placeholder="000000"
+            minLength={6}
             maxLength={6}
             value={code}
             onChange={(e) => setCode(e.target.value)}

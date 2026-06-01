@@ -103,6 +103,20 @@ describe("LoginForm", () => {
     expect(cardAlert?.textContent?.trim()).toBe("");
   });
 
+  it("renders a session-expired notice when the notice prop is provided", () => {
+    render(<LoginForm notice="Your session expired. Please sign in again." />);
+    expect(
+      screen.getByText("Your session expired. Please sign in again."),
+    ).toBeInTheDocument();
+  });
+
+  it("does not render a notice when the notice prop is omitted", () => {
+    render(<LoginForm />);
+    expect(
+      screen.queryByRole("status"),
+    ).not.toBeInTheDocument();
+  });
+
   it("empty submit: action returns field errors and they render in the DOM", async () => {
     // When both fields are empty the action returns field-level errors via Zod.
     mockSignIn.mockResolvedValue({
@@ -706,6 +720,43 @@ describe("MfaEnroll", () => {
       expect(screen.getByText(/too many enrolled factors/i)).toBeInTheDocument(),
     );
   });
+
+  it("short code: shows length-guard error and does NOT call challengeAndVerify", async () => {
+    mockEnrollSuccess();
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    const input = await screen.findByLabelText(/6-digit code/i);
+    // Enter a code that is too short (only 4 digits)
+    fireEvent.change(input, { target: { value: "1234" } });
+    fireEvent.click(screen.getByRole("button", { name: /verify and enable/i }));
+
+    // The length-guard error must appear inline.
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/please enter your 6-digit code/i);
+    });
+
+    // challengeAndVerify must NOT have been called.
+    expect(mockMfaChallengeAndVerify).not.toHaveBeenCalled();
+  });
+
+  it("non-numeric code: shows length-guard error and does NOT call challengeAndVerify", async () => {
+    mockEnrollSuccess();
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    const input = await screen.findByLabelText(/6-digit code/i);
+    fireEvent.change(input, { target: { value: "abcdef" } });
+    fireEvent.click(screen.getByRole("button", { name: /verify and enable/i }));
+
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/please enter your 6-digit code/i);
+    });
+
+    expect(mockMfaChallengeAndVerify).not.toHaveBeenCalled();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -806,5 +857,42 @@ describe("MfaChallenge", () => {
     });
 
     expect(mockLocationAssign).not.toHaveBeenCalled();
+  });
+
+  it("short code: shows length-guard error and does NOT call challengeAndVerify", async () => {
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+
+    // Enter a code that is too short (only 3 digits)
+    fireEvent.change(screen.getByLabelText(/6-digit code/i), {
+      target: { value: "123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^verify$/i }));
+
+    // The length-guard error must appear inline.
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/please enter your 6-digit code/i);
+    });
+
+    // challengeAndVerify must NOT have been called.
+    expect(mockMfaChallengeAndVerify).not.toHaveBeenCalled();
+  });
+
+  it("non-numeric code: shows length-guard error and does NOT call challengeAndVerify", async () => {
+    render(<MfaChallenge factorId="factor-xyz" redirectTarget="/dashboard" />);
+
+    fireEvent.change(screen.getByLabelText(/6-digit code/i), {
+      target: { value: "abc123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^verify$/i }));
+
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/please enter your 6-digit code/i);
+    });
+
+    expect(mockMfaChallengeAndVerify).not.toHaveBeenCalled();
   });
 });

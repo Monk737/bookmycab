@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Field } from "@/components/auth/field";
@@ -32,12 +32,17 @@ type EnrollState =
 export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
   const codeId = useId();
 
+  const enrolledRef = useRef(false);
+
   const [enrollState, setEnrollState] = useState<EnrollState>({ phase: "loading" });
   const [code, setCode] = useState("");
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (enrolledRef.current) return;
+    enrolledRef.current = true;
+
     const supabase = createClient();
 
     supabase.auth.mfa
@@ -55,7 +60,7 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
         const rawQr = data.totp.qr_code;
         const qrCode = rawQr.startsWith("data:")
           ? rawQr
-          : `data:image/svg+xml;utf-8,${rawQr}`;
+          : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(rawQr)}`;
 
         setEnrollState({
           phase: "ready",
@@ -76,13 +81,19 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
     e.preventDefault();
     if (enrollState.phase !== "ready") return;
 
+    const trimmed = code.trim();
+    if (!/^\d{6}$/.test(trimmed)) {
+      setVerifyError("Please enter your 6-digit code.");
+      return;
+    }
+
     setVerifyError(null);
     setSubmitting(true);
 
     const supabase = createClient();
     const { error } = await supabase.auth.mfa.challengeAndVerify({
       factorId: enrollState.factorId,
-      code: code.trim(),
+      code: trimmed,
     });
 
     setSubmitting(false);
@@ -164,6 +175,7 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
             inputMode="numeric"
             autoComplete="one-time-code"
             placeholder="000000"
+            minLength={6}
             maxLength={6}
             value={code}
             onChange={(e) => setCode(e.target.value)}
