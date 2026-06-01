@@ -183,7 +183,9 @@ const updatePasswordSchema = z
 
 const acceptInviteSchema = z
   .object({
-    fullName: z.string().trim().optional(),
+    // Empty string from an unfilled input becomes undefined so downstream
+    // `if (fullName)` guards are never tripped by a blank submission.
+    fullName: z.string().trim().transform((v) => v || undefined).optional(),
     password: z.string().min(8, "Password must be at least 8 characters."),
     confirmPassword: z.string().min(1, "Please confirm your password."),
   })

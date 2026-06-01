@@ -422,21 +422,12 @@ describe("ResetForm", () => {
 // AcceptForm tests
 // ---------------------------------------------------------------------------
 
-// Re-use the same mockOnAuthStateChange helper defined above for ResetForm.
-// Helper: fires the given event immediately and returns a no-op subscription.
-function mockInviteEvent(event: string) {
-  return mockOnAuthStateChange.mockImplementation((callback: (event: string) => void) => {
-    callback(event);
-    return { data: { subscription: { unsubscribe: vi.fn() } } };
-  });
-}
-
-// Helper: never fires the callback (loading state).
-function mockInvitePendingEvent() {
-  return mockOnAuthStateChange.mockImplementation(() => ({
-    data: { subscription: { unsubscribe: vi.fn() } },
-  }));
-}
+// Re-use mockRecoveryEvent / mockPendingEvent defined above for ResetForm —
+// they share the same mockOnAuthStateChange stub so the helpers are identical.
+// mockInviteEvent  → alias for mockRecoveryEvent (fires event immediately)
+// mockInvitePendingEvent → alias for mockPendingEvent (never fires callback)
+const mockInviteEvent = mockRecoveryEvent;
+const mockInvitePendingEvent = mockPendingEvent;
 
 describe("AcceptForm", () => {
   it("shows a loading state while the session check is pending", () => {
