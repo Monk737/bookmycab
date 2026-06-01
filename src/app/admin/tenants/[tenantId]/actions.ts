@@ -128,8 +128,10 @@ async function setStatus(
     .eq("id", tenantId);
 
   if (error) {
+    // Throw so Next surfaces an error to the staff member rather than silently
+    // returning — a failed suspend/reinstate/churn must NOT look successful.
     console.error(`${action} failed`, error);
-    return;
+    throw new Error(`Failed to update tenant status (${action}).`);
   }
 
   const audited = await writeAudit({
@@ -213,7 +215,26 @@ export async function sendInvite(
 
   let userId = invited?.user?.id ?? null;
 
-  if (inviteError || !userId) {
+  if (inviteError) {
+    // Only fall through to the existing-user path when the error genuinely means
+    // the email is already registered. The Supabase AuthError exposes `status`
+    // (HTTP) and `code` (machine code); an already-registered email is 422 /
+    // `email_exists`. Any other error (429 rate-limit, 503, network) is a hard
+    // failure — attaching some other user who shares this email would be wrong,
+    // and reporting success when no email was sent is worse. So short-circuit.
+    const msg = inviteError.message?.toLowerCase() ?? "";
+    const alreadyRegistered =
+      inviteError.status === 422 ||
+      inviteError.code === "email_exists" ||
+      msg.includes("already");
+
+    if (!alreadyRegistered) {
+      return {
+        fieldErrors: {},
+        formError: "Could not send the invite, please try again.",
+      };
+    }
+
     // Existing-user path: find their id and link them to this tenant instead of
     // failing. `public.users.id` mirrors the auth user id (FK to auth.users).
     const { data: existing } = await client
@@ -232,6 +253,15 @@ export async function sendInvite(
     userId = existing.id as string;
   }
 
+  if (!userId) {
+    // No error but also no user id — treat as a hard failure rather than
+    // proceeding with a null id.
+    return {
+      fieldErrors: {},
+      formError: "Could not send the invite, please try again.",
+    };
+  }
+
   // Ensure a public.users row exists (the invite creates the auth user, but the
   // public mirror row is owned by us). Upsert is idempotent on the PK.
   const { error: userUpsertError } = await client
@@ -247,7 +277,12 @@ export async function sendInvite(
       tenant_id: tenantId,
       user_id: userId,
       role,
-      invited_by: claims.sub,
+      // invited_by FKs to public.users(id). A FlowMo staff auth user may have no
+      // public.users row (no handle_new_user trigger), so claims.sub could
+      // violate the FK (23503) and block the invite. The column is nullable;
+      // actor attribution lives in audit_log, which is the source of truth for
+      // who invited whom.
+      invited_by: null,
       invited_at: new Date().toISOString(),
     },
     { onConflict: "tenant_id,user_id" },

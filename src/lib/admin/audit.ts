@@ -45,20 +45,30 @@ export async function writeAudit(entry: AuditEntry): Promise<boolean> {
     env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  const { error } = await serviceClient.from("audit_log").insert({
-    tenant_id: entry.tenantId ?? null,
-    actor_user_id: entry.actorUserId,
-    action: entry.action,
-    target_type: entry.targetType ?? null,
-    target_id: entry.targetId ?? null,
-    metadata: entry.metadata ?? null,
-    ip_address: null,
-  });
+  // Wrapped in try/catch so any unexpected throw (transport failure, or a thrown
+  // FK violation on actor_user_id when a staff user has no public.users row) is
+  // logged and downgraded to `false` rather than crashing the calling action.
+  // A FK error normally surfaces as the returned `error`, but we guard against
+  // throws too so the "never throws, never blocks" contract holds.
+  try {
+    const { error } = await serviceClient.from("audit_log").insert({
+      tenant_id: entry.tenantId ?? null,
+      actor_user_id: entry.actorUserId,
+      action: entry.action,
+      target_type: entry.targetType ?? null,
+      target_id: entry.targetId ?? null,
+      metadata: entry.metadata ?? null,
+      ip_address: null,
+    });
 
-  if (error) {
-    console.error("writeAudit failed", error);
+    if (error) {
+      console.error("writeAudit failed", error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("writeAudit threw", err);
     return false;
   }
-
-  return true;
 }

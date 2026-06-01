@@ -207,6 +207,19 @@ describe("InviteForm", () => {
     expect(formData.get("email")).toBe("owner@speedycabs.co.uk");
     expect(formData.get("role")).toBe("Admin");
   });
+
+  it("renders the success banner when sendInvite returns ok:true", async () => {
+    mockSendInvite.mockResolvedValue({ fieldErrors: {}, formError: null, ok: true });
+
+    render(<InviteForm tenantId="t-1" defaultEmail="owner@speedycabs.co.uk" />);
+    fireEvent.click(screen.getByRole("button", { name: /send invite/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Invite sent.")).toBeInTheDocument(),
+    );
+    const banner = document.querySelector('[role="status"][aria-live="polite"]');
+    expect(banner?.textContent).toContain("Invite sent.");
+  });
 });
 
 describe("LifecycleControls", () => {
