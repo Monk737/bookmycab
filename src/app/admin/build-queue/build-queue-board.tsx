@@ -2,7 +2,7 @@
 
 import { useId, useTransition } from "react";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { BUILD_STAGES, setBuildStage, goLive } from "./actions";
+import { BUILD_STAGES, EDITABLE_BUILD_STAGES, setBuildStage, goLive } from "./actions";
 
 export type BuildCard = {
   id: string;
@@ -86,7 +86,7 @@ function Card({ card }: { card: BuildCard }) {
   function handleStageChange(next: string) {
     if (next === card.buildStage) return;
     startTransition(async () => {
-      await setBuildStage(card.id, next, card.buildStage);
+      await setBuildStage(card.id, next);
     });
   }
 
@@ -134,22 +134,33 @@ function Card({ card }: { card: BuildCard }) {
       )}
 
       <div className="mt-3 flex flex-col gap-2">
-        <label htmlFor={selectId} className="sr-only">
-          Build stage for {card.name}
-        </label>
-        <select
-          id={selectId}
-          value={card.buildStage}
-          disabled={pending}
-          onChange={(e) => handleStageChange(e.target.value)}
-          className="w-full cursor-pointer rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {BUILD_STAGES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        {card.buildStage === "Live" ? (
+          // A card already AT Live shows its stage as a static label. Staff never
+          // move OFF Live via the select, and never back ONTO it except through
+          // the dedicated Go Live button (which keeps build_stage ↔ status atomic).
+          <span className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-1.5 text-center font-mono text-[11px] font-medium uppercase tracking-wider text-emerald-700">
+            Live
+          </span>
+        ) : (
+          <>
+            <label htmlFor={selectId} className="sr-only">
+              Build stage for {card.name}
+            </label>
+            <select
+              id={selectId}
+              value={card.buildStage}
+              disabled={pending}
+              onChange={(e) => handleStageChange(e.target.value)}
+              className="w-full cursor-pointer rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-xs text-zinc-900 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {EDITABLE_BUILD_STAGES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
         {card.buildStage === "UAT" && (
           <button

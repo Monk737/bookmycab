@@ -2,6 +2,7 @@ import "server-only";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
+import { resolveEngineerEmails } from "@/lib/admin/resolve-engineers";
 import { BuildQueueBoard, type BuildCard } from "./build-queue-board";
 
 // Always read fresh — stage moves and Go Live should be reflected immediately.
@@ -43,20 +44,11 @@ export default async function BuildQueuePage() {
 
   const automations = (data ?? []) as AutomationRow[];
 
-  // Resolve assigned_engineer (uuid) → email (one query, not N+1).
-  const engineerIds = Array.from(
-    new Set(automations.map((a) => a.assigned_engineer).filter((v): v is string => !!v)),
+  // Resolve assigned_engineer (uuid) → email (one batched query, not N+1).
+  const emailByUser = await resolveEngineerEmails(
+    serviceClient,
+    automations.map((a) => a.assigned_engineer),
   );
-  const emailByUser = new Map<string, string>();
-  if (engineerIds.length > 0) {
-    const { data: users } = await serviceClient
-      .from("users")
-      .select("id, email")
-      .in("id", engineerIds);
-    for (const u of (users ?? []) as Array<{ id: string; email: string | null }>) {
-      if (u.email) emailByUser.set(u.id, u.email);
-    }
-  }
 
   const cards: BuildCard[] = automations.map((a) => ({
     id: a.id,

@@ -6,6 +6,7 @@ import { DataTable, type Column } from "@/components/admin/data-table";
 import { StatCard } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { buildEngineDeeplink } from "@/lib/admin/engine-links";
+import { resolveEngineerEmails } from "@/lib/admin/resolve-engineers";
 
 // Always read fresh — build-stage moves and new automations should appear
 // immediately, and runtime status (Epic 5) will be live.
@@ -65,21 +66,11 @@ export default async function AutomationsRegistryPage({
   const { data, error } = await query;
   const automations = (data ?? []) as AutomationRow[];
 
-  // Resolve assigned_engineer (uuid) → user email. One extra query, not N+1:
-  // pull every referenced engineer's email and map in memory.
-  const engineerIds = Array.from(
-    new Set(automations.map((a) => a.assigned_engineer).filter((v): v is string => !!v)),
+  // Resolve assigned_engineer (uuid) → user email (one batched query, not N+1).
+  const emailByUser = await resolveEngineerEmails(
+    serviceClient,
+    automations.map((a) => a.assigned_engineer),
   );
-  const emailByUser = new Map<string, string>();
-  if (engineerIds.length > 0) {
-    const { data: users } = await serviceClient
-      .from("users")
-      .select("id, email")
-      .in("id", engineerIds);
-    for (const u of (users ?? []) as Array<{ id: string; email: string | null }>) {
-      if (u.email) emailByUser.set(u.id, u.email);
-    }
-  }
 
   const columns: Column<AutomationRow>[] = [
     { key: "tenant", header: "Tenant", render: (a) => tenantName(a) },

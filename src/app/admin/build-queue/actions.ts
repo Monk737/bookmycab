@@ -17,6 +17,19 @@ export const BUILD_STAGES = [
 ] as const;
 export type BuildStage = (typeof BUILD_STAGES)[number];
 
+/**
+ * The stages staff may set directly via the Kanban select. "Live" is excluded:
+ * reaching Live MUST go through `goLive`, which sets build_stage='Live' AND
+ * status='live' atomically. Letting the select set "Live" would move only the
+ * pipeline stage and break the Live-stage ↔ live-status invariant.
+ */
+export const EDITABLE_BUILD_STAGES = [
+  "Requested",
+  "Scoped",
+  "Building",
+  "UAT",
+] as const;
+
 function serviceClient() {
   return createSupabaseJS(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -24,7 +37,7 @@ function serviceClient() {
   );
 }
 
-const stageSchema = z.enum(BUILD_STAGES);
+const editableStageSchema = z.enum(EDITABLE_BUILD_STAGES);
 const idSchema = z.string().uuid();
 
 /**
@@ -50,12 +63,29 @@ function notifyStageChange(): void {
 export async function setBuildStage(
   automationId: string,
   stage: string,
-  fromStage?: string,
 ): Promise<void> {
   const claims = await requireStaff();
 
   const id = idSchema.parse(automationId);
-  const to = stageSchema.parse(stage);
+  // "Live" is intentionally not accepted here — reaching Live goes through
+  // goLive() so build_stage and runtime status stay atomic.
+  const to = editableStageSchema.parse(stage);
+
+  // Read the PREVIOUS stage authoritatively from the DB in the same service-role
+  // call (not from a client-supplied value, which could be stale or forged) so
+  // the append-only audit "from" reflects DB truth.
+  const { data: before, error: readError } = await serviceClient()
+    .from("automations")
+    .select("build_stage")
+    .eq("id", id)
+    .single();
+
+  if (readError || !before) {
+    console.error("setBuildStage read failed", readError);
+    throw new Error("Failed to update build stage.");
+  }
+
+  const from = (before as { build_stage: string }).build_stage;
 
   const { error } = await serviceClient()
     .from("automations")
@@ -72,7 +102,7 @@ export async function setBuildStage(
     action: "automation.build_stage",
     targetType: "automation",
     targetId: id,
-    metadata: { from: fromStage ?? null, to },
+    metadata: { from, to },
   });
   if (!audited) {
     console.error("audit write failed for automation.build_stage", { automationId: id });
@@ -93,18 +123,28 @@ export async function goLive(automationId: string): Promise<void> {
 
   const id = idSchema.parse(automationId);
 
-  const { error } = await serviceClient()
+  // Enforce the UAT precondition server-side: only an automation currently in
+  // UAT may be promoted. The `.eq('build_stage', 'UAT')` filter means a replayed
+  // or forged call against a Requested/Scoped automation matches no row; we then
+  // confirm a row actually came back via .select().
+  const { data: updated, error } = await serviceClient()
     .from("automations")
     .update({
       build_stage: "Live",
       status: "live",
       updated_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("build_stage", "UAT")
+    .select("id");
 
   if (error) {
     console.error("goLive failed", error);
     throw new Error("Failed to take the automation live.");
+  }
+
+  if (!updated || updated.length === 0) {
+    throw new Error("Automation must be in UAT to go live");
   }
 
   const audited = await writeAudit({
