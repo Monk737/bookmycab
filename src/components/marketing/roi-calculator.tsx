@@ -20,7 +20,7 @@ const INPUT_CLASS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink " +
   "focus-visible:border-ink";
 
-const LABEL_CLASS = "block text-sm font-medium text-gray-700";
+const LABEL_CLASS = "block text-sm font-medium text-gray-600";
 
 /**
  * Interactive ROI calculator: estimates the booking revenue a cab company
@@ -54,7 +54,6 @@ export function RoiCalculator() {
           <input
             id={missedId}
             type="number"
-            inputMode="numeric"
             min={0}
             step={1}
             value={missedBookingsPerDay}
@@ -70,7 +69,6 @@ export function RoiCalculator() {
           <input
             id={fareId}
             type="number"
-            inputMode="decimal"
             min={0}
             step={1}
             value={avgFare}
@@ -98,8 +96,13 @@ export function RoiCalculator() {
         </div>
       </div>
 
-      {/* Output */}
-      <div className="grid gap-5">
+      {/* Output — announced to assistive tech as inputs change */}
+      <div
+        className="grid gap-5"
+        aria-live="polite"
+        aria-atomic="true"
+        aria-label="Recovered revenue estimate"
+      >
         <div className="rounded-2xl bg-accent p-6 text-accent-ink">
           <p className="text-sm font-medium uppercase tracking-[0.12em]">
             Recovered every year

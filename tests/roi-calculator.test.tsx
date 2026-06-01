@@ -59,4 +59,15 @@ describe("RoiCalculator", () => {
     const yearly = screen.getByTestId("roi-per-year");
     expect(yearly).toHaveTextContent(formatPrice("GBP", expected.perYear));
   });
+
+  it("floors to zero (not NaN) when the missed-bookings field is cleared", () => {
+    render(<RoiCalculator />);
+
+    const missed = screen.getByLabelText(/missed bookings per day/i);
+    fireEvent.change(missed, { target: { value: "" } });
+
+    expect(screen.getByTestId("roi-per-year")).toHaveTextContent(
+      formatPrice("GBP", 0),
+    );
+  });
 });
