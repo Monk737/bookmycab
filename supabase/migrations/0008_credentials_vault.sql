@@ -10,12 +10,13 @@ create table public.channel_credentials (
   id               uuid primary key default gen_random_uuid(),
   tenant_id        uuid not null references public.tenants(id) on delete cascade,
   channel_id       uuid references public.channels(id) on delete cascade,
-  credential_type  text not null,
+  credential_type  text not null
+    check (credential_type in ('whatsapp_token','telegram_token','messenger_token','instagram_token','widget_secret')),
   secret_encrypted bytea not null,            -- pgp_sym_encrypt ciphertext; never plaintext
-  created_by       uuid references public.users(id),
+  created_by       uuid references public.users(id) on delete set null,
   created_at       timestamptz default now(),
   last_accessed_at timestamptz,
-  last_accessed_by uuid references public.users(id)
+  last_accessed_by uuid references public.users(id) on delete set null
 );
 create index channel_credentials_tenant_idx on public.channel_credentials (tenant_id);
 create index channel_credentials_channel_idx on public.channel_credentials (channel_id);
@@ -47,6 +48,9 @@ declare
   v_key text := current_setting('app.vault_key', true);
   v_id uuid;
 begin
+  if current_user not in ('postgres','service_role','supabase_admin') then
+    raise exception 'access denied: vault functions are service-role only';
+  end if;
   if v_key is null or v_key = '' then
     raise exception 'vault encryption key (app.vault_key) is not configured';
   end if;
@@ -72,6 +76,9 @@ declare
   v_key text := current_setting('app.vault_key', true);
   v_plain text;
 begin
+  if current_user not in ('postgres','service_role','supabase_admin') then
+    raise exception 'access denied: vault functions are service-role only';
+  end if;
   if v_key is null or v_key = '' then
     raise exception 'vault encryption key (app.vault_key) is not configured';
   end if;
@@ -80,10 +87,17 @@ begin
         last_accessed_by = p_accessed_by
   where id = p_id
   returning pgp_sym_decrypt(secret_encrypted, v_key) into v_plain;
+  if not found then
+    raise exception 'credential % not found', p_id;
+  end if;
   return v_plain;
 end;
 $$;
 
--- Helper functions are owner-only (service_role / admin); revoke from tenant roles.
+-- Helper functions are owner-only (service_role / admin). Postgres grants EXECUTE
+-- to PUBLIC by default, so the per-role revokes below are not sufficient on their
+-- own; we must first revoke EXECUTE from PUBLIC, then also revoke from tenant roles.
+revoke execute on function public.vault_store_credential(uuid, uuid, text, text, uuid) from public;
+revoke execute on function public.vault_read_credential(uuid, uuid) from public;
 revoke all on function public.vault_store_credential(uuid, uuid, text, text, uuid) from anon, authenticated;
 revoke all on function public.vault_read_credential(uuid, uuid) from anon, authenticated;

@@ -168,6 +168,25 @@ describe("0008 credentials vault", () => {
       await expect(q("select * from public.channel_credentials")).rejects.toThrow();
     });
   });
+
+  it("authenticated cannot call vault_read_credential (function blocked)", async () => {
+    await asUser(USER, async (q) => {
+      await expect(
+        q("select public.vault_read_credential('00000000-0000-0000-0000-000000000000'::uuid, $1::uuid)", [USER]),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("authenticated cannot call vault_store_credential (function blocked)", async () => {
+    await asUser(USER, async (q) => {
+      await expect(
+        q(
+          "select public.vault_store_credential($1::uuid, $2::uuid, 'whatsapp_token', 'x', $3::uuid)",
+          [TENANT, CHANNEL, USER],
+        ),
+      ).rejects.toThrow();
+    });
+  });
 });
 
 describe("audit_log append-only guarantee still holds", () => {
