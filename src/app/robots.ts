@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { env } from "@/env";
 
-const SITE_URL = "https://cabbybot.com";
+const SITE_URL = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
 
 export default function robots(): MetadataRoute.Robots {
   return {

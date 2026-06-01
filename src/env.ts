@@ -30,6 +30,7 @@ const schema = z.object({
 
   // Marketing
   NEXT_PUBLIC_CAL_LINK: z.string().min(1).default("flowmo/discovery"),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://cabbybot.com"),
 });
 
 // Vars with no `.optional()`/`.default()` — a blank value here is a real

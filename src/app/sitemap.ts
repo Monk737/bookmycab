@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
+import { env } from "@/env";
 import { MARKETING_ROUTES } from "@/lib/marketing/nav";
 
-// Canonical public origin. Swap to an env-driven value if the domain changes.
-const SITE_URL = "https://cabbybot.com";
+// Canonical public origin (env-driven; defaults to https://cabbybot.com).
+const SITE_URL = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
