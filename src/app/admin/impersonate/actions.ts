@@ -10,7 +10,11 @@ import {
   mintImpersonation,
   IMPERSONATION_TTL_MS,
 } from "@/lib/admin/impersonation";
-import { IMPERSONATION_COOKIE } from "@/lib/admin/impersonation-cookie";
+import {
+  IMPERSONATION_COOKIE,
+  serializeImpersonation,
+  verifyImpersonation,
+} from "@/lib/admin/impersonation-cookie";
 
 const startSchema = z.object({
   tenantId: z.string().trim().uuid("A tenant must be selected."),
@@ -80,7 +84,7 @@ export async function startImpersonation(
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(IMPERSONATION_COOKIE, JSON.stringify(record), {
+  cookieStore.set(IMPERSONATION_COOKIE, serializeImpersonation(record), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -105,20 +109,11 @@ export async function endImpersonation(): Promise<void> {
   const cookieStore = await cookies();
   const raw = cookieStore.get(IMPERSONATION_COOKIE)?.value;
 
-  let tenantId: string | null = null;
-  let targetUserId: string | null = null;
-  if (raw) {
-    try {
-      const record = JSON.parse(raw) as {
-        tenantId?: string;
-        targetUserId?: string;
-      };
-      tenantId = record.tenantId ?? null;
-      targetUserId = record.targetUserId ?? null;
-    } catch {
-      // Corrupt cookie — still clear it below; audit with what we have (null).
-    }
-  }
+  // Only trust a signature-verified record; a forged/corrupt cookie audits with
+  // nulls. (Verification also re-checks the full shape.)
+  const record = raw ? verifyImpersonation(raw) : null;
+  const tenantId = record?.tenantId ?? null;
+  const targetUserId = record?.targetUserId ?? null;
 
   cookieStore.delete(IMPERSONATION_COOKIE);
 
@@ -128,7 +123,7 @@ export async function endImpersonation(): Promise<void> {
     action: "impersonate.end",
     targetType: "user",
     targetId: targetUserId,
-    metadata: { tenantId, targetUserId },
+    metadata: { tenantId, targetUserId, reason: record?.reason ?? null },
   });
   if (!audited) {
     console.error("audit write failed for impersonate.end", { tenantId });

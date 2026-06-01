@@ -80,8 +80,11 @@ describe("impersonation guard", () => {
 
   it("the start action zod-validates a non-empty reason before minting", () => {
     // The start action lives in src/app/admin/impersonate/actions.ts and cannot
-    // be imported here (it is "use server" + server-only). Assert the route-level
-    // guard EXISTS by checking the source enforces a min(1) reason rule.
+    // be imported here (it is "use server" + server-only, and transitively loads
+    // requireStaff/@/env which throw without runtime env). So this is a
+    // deliberate SOURCE-TEXT check, not a behavioural import — do not "fix" it by
+    // importing the action. Assert the route-level guard EXISTS by checking the
+    // source enforces a min(1) reason rule.
     const src = readFileSync(
       join(ADMIN_DIR, "impersonate/actions.ts"),
       "utf8",

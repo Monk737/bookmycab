@@ -39,7 +39,8 @@ export async function ImpersonationBanner() {
 
   return (
     <div
-      role="status"
+      role="region"
+      aria-label="Impersonation active"
       className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-500/50 bg-amber-500/15 px-8 py-2.5 text-sm text-amber-900"
     >
       <p>
@@ -53,6 +54,7 @@ export async function ImpersonationBanner() {
       <form action={endImpersonation}>
         <button
           type="submit"
+          aria-label="End impersonation"
           className="cursor-pointer rounded-md border border-amber-600/40 bg-white px-3 py-1 text-xs font-medium text-amber-800 outline-none transition-colors hover:bg-amber-50 focus-visible:ring-2 focus-visible:ring-amber-500"
         >
           End
