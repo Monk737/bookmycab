@@ -12,7 +12,7 @@ export type AccessDecision =
 
 // Paths reachable without a session.
 const PUBLIC_PREFIXES = ["/login", "/auth", "/webhooks", "/_next", "/favicon", "/demo"];
-const PUBLIC_PAGES = new Set([
+export const PUBLIC_PAGES = new Set([
   "/", "/pricing", "/how-it-works", "/channels", "/custom-solutions",
   "/case-studies", "/about", "/contact", "/privacy", "/terms", "/dpa", "/cookies",
 ]);

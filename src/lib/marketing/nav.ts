@@ -50,6 +50,24 @@ export const LEGAL_NAV: NavItem[] = [
   { label: "Cookies", href: "/cookies" },
 ];
 
+// Single source of truth for the public marketing routes (used by the sitemap
+// and the structure guard test). Must stay a subset of PUBLIC_PAGES in
+// src/middleware/access.ts.
+export const MARKETING_ROUTES = [
+  "/",
+  "/how-it-works",
+  "/channels",
+  "/pricing",
+  "/custom-solutions",
+  "/case-studies",
+  "/about",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/dpa",
+  "/cookies",
+] as const;
+
 export const COMPANY = {
   product: "CabbyBot",
   entity: "FlowMo AI LTD",
