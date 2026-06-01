@@ -21,8 +21,7 @@ export default async function DashboardPage() {
         </h1>
 
         <p className="mb-8 text-sm text-slate-500 leading-relaxed">
-          We&apos;ll notify you when it goes live. In the meantime, feel free to
-          reach out to your CabbyBot administrator if you have questions.
+          We&apos;ll notify you when it goes live.
         </p>
 
         <form action={signOut}>

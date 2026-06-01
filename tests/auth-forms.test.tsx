@@ -72,6 +72,30 @@ describe("LoginForm", () => {
     expect(cardAlert?.textContent?.trim()).toBe("");
   });
 
+  it("empty submit shows client-side validation errors in the DOM", async () => {
+    // When both fields are empty the action returns field-level errors via Zod.
+    mockSignIn.mockResolvedValue({
+      fieldErrors: {
+        email: ["Please enter a valid email address."],
+        password: ["Password is required."],
+      },
+      formError: null,
+    });
+
+    render(<LoginForm />);
+
+    // Submit without filling in either field.
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    // Both field error messages must appear in the DOM.
+    await waitFor(() =>
+      expect(
+        screen.getByText("Please enter a valid email address."),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByText("Password is required.")).toBeInTheDocument();
+  });
+
   it("shows a server-returned form error when the action resolves with formError", async () => {
     // Simulate a failed sign-in returning a form-level error.
     mockSignIn.mockResolvedValue({
@@ -89,8 +113,18 @@ describe("LoginForm", () => {
     fireEvent.change(passwordInput, { target: { value: "wrongpassword" } });
     fireEvent.click(submit);
 
-    // The mock action is invoked.
-    await waitFor(() => expect(mockSignIn).toHaveBeenCalled());
+    // The error message must actually appear in the aria-live alert banner.
+    await waitFor(() =>
+      expect(
+        screen.getByText("Invalid email or password. Please try again."),
+      ).toBeInTheDocument(),
+    );
+
+    // Confirm it is inside the role="alert" aria-live banner.
+    const banner = document.querySelector('[role="alert"][aria-live="polite"]');
+    expect(banner?.textContent).toBe(
+      "Invalid email or password. Please try again.",
+    );
   });
 
   it("submitting valid inputs calls the signIn action", async () => {
