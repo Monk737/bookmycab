@@ -45,8 +45,23 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
 
     const supabase = createClient();
 
+    // Clean up stale unverified TOTP factors before enrolling a new one.
+    // Without this, repeated visits to the enroll screen accumulate unverified
+    // factors and eventually hit Supabase's per-user factor limit.
     supabase.auth.mfa
-      .enroll({ factorType: "totp" })
+      .listFactors()
+      .then(async ({ data: listData, error: listError }) => {
+        if (!listError && listData) {
+          const stale = listData.all.filter(
+            (f) => f.factor_type === "totp" && f.status === "unverified",
+          );
+          for (const factor of stale) {
+            // Ignore individual unenroll errors — proceed to enroll regardless.
+            await supabase.auth.mfa.unenroll({ factorId: factor.id }).catch(() => {});
+          }
+        }
+        return supabase.auth.mfa.enroll({ factorType: "totp" });
+      })
       .then(({ data, error }) => {
         if (error || !data) {
           setEnrollState({

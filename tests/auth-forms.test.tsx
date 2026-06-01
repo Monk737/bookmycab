@@ -43,6 +43,8 @@ const mockOnAuthStateChange = vi.fn();
 // MFA method stubs — used by MfaEnroll and MfaChallenge.
 const mockMfaEnroll = vi.fn();
 const mockMfaChallengeAndVerify = vi.fn();
+const mockMfaListFactors = vi.fn();
+const mockMfaUnenroll = vi.fn();
 
 vi.mock("@/lib/supabase/browser", () => ({
   createClient: () => ({
@@ -52,6 +54,8 @@ vi.mock("@/lib/supabase/browser", () => ({
       mfa: {
         enroll: (...args: unknown[]) => mockMfaEnroll(...args),
         challengeAndVerify: (...args: unknown[]) => mockMfaChallengeAndVerify(...args),
+        listFactors: (...args: unknown[]) => mockMfaListFactors(...args),
+        unenroll: (...args: unknown[]) => mockMfaUnenroll(...args),
       },
     },
   }),
@@ -606,8 +610,17 @@ const MOCK_FACTOR_ID = "factor-abc-123";
 const MOCK_QR_CODE = "data:image/svg+xml;utf-8,<svg/>";
 const MOCK_SECRET = "JBSWY3DPEHPK3PXP";
 
+// Default listFactors stub — no stale factors; used by all enroll tests.
+function mockListFactorsEmpty() {
+  mockMfaListFactors.mockResolvedValue({
+    data: { all: [], totp: [] },
+    error: null,
+  });
+}
+
 // Helper: configures mockMfaEnroll to resolve with a valid TOTP enroll response.
 function mockEnrollSuccess() {
+  mockListFactorsEmpty();
   mockMfaEnroll.mockResolvedValue({
     data: {
       id: MOCK_FACTOR_ID,
@@ -620,6 +633,7 @@ function mockEnrollSuccess() {
 
 // Helper: configures mockMfaEnroll to resolve with an error.
 function mockEnrollError(message: string) {
+  mockListFactorsEmpty();
   mockMfaEnroll.mockResolvedValue({
     data: null,
     error: { message },
@@ -635,8 +649,8 @@ Object.defineProperty(window, "location", {
 
 describe("MfaEnroll", () => {
   it("shows a loading state while enroll is pending", () => {
-    // enroll never resolves during this render.
-    mockMfaEnroll.mockReturnValue(new Promise(() => {}));
+    // listFactors never resolves during this render — keeps the component loading.
+    mockMfaListFactors.mockReturnValue(new Promise(() => {}));
     render(<MfaEnroll redirectTarget="/dashboard" />);
     expect(screen.getByText(/preparing your setup/i)).toBeInTheDocument();
   });
@@ -710,6 +724,29 @@ describe("MfaEnroll", () => {
       expect(fieldError).toBeInTheDocument();
       expect(fieldError?.textContent).toMatch(/invalid totp code/i);
     });
+  });
+
+  it("does not navigate when challengeAndVerify returns an error", async () => {
+    mockEnrollSuccess();
+    mockMfaChallengeAndVerify.mockResolvedValue({
+      error: { message: "Invalid TOTP code entered. Please try again." },
+    });
+
+    render(<MfaEnroll redirectTarget="/dashboard" />);
+
+    const input = await screen.findByLabelText(/6-digit code/i);
+    fireEvent.change(input, { target: { value: "111111" } });
+    fireEvent.click(screen.getByRole("button", { name: /verify and enable/i }));
+
+    // Wait for the inline error to appear.
+    await waitFor(() => {
+      const fieldError = document.querySelector('p[role="alert"]');
+      expect(fieldError).toBeInTheDocument();
+      expect(fieldError?.textContent).toMatch(/invalid totp code/i);
+    });
+
+    // Navigation must NOT occur on error.
+    expect(mockLocationAssign).not.toHaveBeenCalled();
   });
 
   it("shows an error card when enroll itself fails", async () => {
