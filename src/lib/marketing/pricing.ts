@@ -9,7 +9,7 @@
 // §6.1 — supported currencies
 export type Currency = "GBP" | "EUR" | "USD";
 
-export const CURRENCIES: Currency[] = ["GBP", "EUR", "USD"];
+export const CURRENCIES = ["GBP", "EUR", "USD"] as const satisfies readonly Currency[];
 
 // §6.1 — minimum contract duration
 export const CONTRACT_MONTHS = 12;
@@ -79,11 +79,11 @@ export const PRICING: { A: PricingTierAB; B: PricingTierAB; C: PricingTierC } =
     },
   };
 
-// Currency display configuration — symbol and locale for Intl.NumberFormat
-const CURRENCY_CONFIG: Record<Currency, { symbol: string; locale: string }> = {
-  GBP: { symbol: "£", locale: "en-GB" },
-  EUR: { symbol: "€", locale: "en-IE" },
-  USD: { symbol: "$", locale: "en-US" },
+// Currency display symbols (prepended manually; see formatPrice).
+const CURRENCY_SYMBOL: Record<Currency, string> = {
+  GBP: "£",
+  EUR: "€",
+  USD: "$",
 };
 
 /**
@@ -93,14 +93,17 @@ const CURRENCY_CONFIG: Record<Currency, { symbol: string; locale: string }> = {
  * Examples: formatPrice("GBP", 500) → "£500"
  *           formatPrice("EUR", 1000) → "€1,000"
  *           formatPrice("USD", 1200) → "$1,200"
+ *
+ * Non-finite or negative amounts are coerced to 0 (prices are never negative),
+ * so display can never render "£NaN" or "£-5".
  */
 export function formatPrice(currency: Currency, amount: number): string {
-  const { symbol } = CURRENCY_CONFIG[currency];
+  const safe = Number.isFinite(amount) && amount > 0 ? Math.round(amount) : 0;
   // Use en-US locale to reliably get comma thousands separators across all
   // three currencies. We prepend the correct symbol manually.
   const formatted = new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
     minimumFractionDigits: 0,
-  }).format(amount);
-  return `${symbol}${formatted}`;
+  }).format(safe);
+  return `${CURRENCY_SYMBOL[currency]}${formatted}`;
 }

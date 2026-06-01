@@ -65,7 +65,9 @@ export function computeRoi(input: RoiInput): RoiResult {
       : DEFAULT_WORKING_DAYS_PER_MONTH;
 
   const perDay = Math.round(bookings * fare);
-  const perMonth = perDay * workingDaysPerMonth;
+  // Round the scaled figures too, so a fractional workingDays override can
+  // never produce a non-integer result.
+  const perMonth = Math.round(perDay * workingDaysPerMonth);
   const perYear = perDay * DAYS_PER_YEAR;
 
   return { perDay, perMonth, perYear };
