@@ -169,6 +169,104 @@ const updatePasswordSchema = z
     path: ["confirmPassword"],
   });
 
+// ---------------------------------------------------------------------------
+// acceptInvite server action
+//
+// Design note: after updateUser (password + display name), we use the
+// service-role client to mark acceptance in public.tenant_users and optionally
+// set the full_name in public.users. The invited user's RLS policies may not
+// yet allow self-writes at the point of acceptance (no UPDATE policy is
+// defined for authenticated users on either table), so we follow the same
+// service-role bypass pattern established by recordLogin above. The
+// service-role client is confined to these two targeted updates only.
+// ---------------------------------------------------------------------------
+
+const acceptInviteSchema = z
+  .object({
+    fullName: z.string().trim().optional(),
+    password: z.string().min(8, "Password must be at least 8 characters."),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+export async function acceptInvite(
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const raw = {
+    fullName: formData.get("fullName") ?? undefined,
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  };
+
+  const parsed = acceptInviteSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      formError: null,
+    };
+  }
+
+  const { fullName, password } = parsed.data;
+  const supabase = await createClient();
+
+  // 1. Update the user's password (and display name if provided).
+  const updatePayload: Parameters<typeof supabase.auth.updateUser>[0] = { password };
+  if (fullName) {
+    updatePayload.data = { full_name: fullName };
+  }
+
+  const { data: updateData, error: updateError } = await supabase.auth.updateUser(updatePayload);
+
+  if (updateError || !updateData.user) {
+    return {
+      fieldErrors: {},
+      formError: "Failed to set up your account. Your invite link may have expired. Please contact your administrator.",
+    };
+  }
+
+  const userId = updateData.user.id;
+
+  // 2. Mark acceptance via the service-role client (see note above).
+  const serviceClient = createSupabaseJS(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY,
+  );
+
+  if (fullName) {
+    const { error: nameError } = await serviceClient
+      .from("users")
+      .update({ full_name: fullName })
+      .eq("id", userId);
+
+    if (nameError) {
+      console.error("acceptInvite: failed to set full_name", nameError);
+    }
+  }
+
+  const { error: acceptError } = await serviceClient
+    .from("tenant_users")
+    .update({ accepted_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .is("accepted_at", null);
+
+  if (acceptError) {
+    console.error("acceptInvite: failed to set accepted_at", acceptError);
+  }
+
+  // 3. Redirect to the appropriate dashboard.
+  const claims = await getCurrentClaims();
+  if (!claims) {
+    console.warn("acceptInvite: getCurrentClaims() returned null after successful acceptance — falling back to /dashboard.");
+  }
+  const target = claims ? redirectTargetFor(claims) : "/dashboard";
+
+  redirect(target);
+}
+
 export async function updatePassword(
   _prevState: AuthState,
   formData: FormData,

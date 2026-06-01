@@ -27,10 +27,12 @@ vi.mock("next/link", () => ({
 const mockSignIn = vi.fn();
 const mockRequestReset = vi.fn();
 const mockUpdatePassword = vi.fn();
+const mockAcceptInvite = vi.fn();
 vi.mock("@/app/(auth)/actions", () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),
   requestReset: (...args: unknown[]) => mockRequestReset(...args),
   updatePassword: (...args: unknown[]) => mockUpdatePassword(...args),
+  acceptInvite: (...args: unknown[]) => mockAcceptInvite(...args),
 }));
 
 // Stub the browser Supabase client used by ResetForm for session detection.
@@ -52,6 +54,7 @@ vi.mock("@/lib/supabase/browser", () => ({
 import { LoginForm } from "@/app/(auth)/login/login-form";
 import { ForgotForm } from "@/app/(auth)/forgot-password/forgot-form";
 import { ResetForm } from "@/app/(auth)/reset-password/reset-form";
+import { AcceptForm } from "@/app/(auth)/accept-invite/accept-form";
 
 afterEach(() => {
   cleanup();
@@ -412,5 +415,168 @@ describe("ResetForm", () => {
     fireEvent.click(screen.getByRole("button", { name: /set new password/i }));
 
     await waitFor(() => expect(mockUpdatePassword).toHaveBeenCalled());
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AcceptForm tests
+// ---------------------------------------------------------------------------
+
+// Re-use the same mockOnAuthStateChange helper defined above for ResetForm.
+// Helper: fires the given event immediately and returns a no-op subscription.
+function mockInviteEvent(event: string) {
+  return mockOnAuthStateChange.mockImplementation((callback: (event: string) => void) => {
+    callback(event);
+    return { data: { subscription: { unsubscribe: vi.fn() } } };
+  });
+}
+
+// Helper: never fires the callback (loading state).
+function mockInvitePendingEvent() {
+  return mockOnAuthStateChange.mockImplementation(() => ({
+    data: { subscription: { unsubscribe: vi.fn() } },
+  }));
+}
+
+describe("AcceptForm", () => {
+  it("shows a loading state while the session check is pending", () => {
+    mockInvitePendingEvent();
+    render(<AcceptForm />);
+    expect(screen.getByText(/verifying your invite link/i)).toBeInTheDocument();
+  });
+
+  it("shows the invalid-invite state when a non-session event fires", async () => {
+    mockInviteEvent("SIGNED_OUT");
+    render(<AcceptForm />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/invitation invalid or expired/i)).toBeInTheDocument(),
+    );
+
+    // Guidance text must be present
+    expect(screen.getByText(/contact your administrator/i)).toBeInTheDocument();
+
+    // The set-up form must NOT be rendered
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
+  });
+
+  it("renders full name (optional), password, and confirm fields on a valid SIGNED_IN event", async () => {
+    mockInviteEvent("SIGNED_IN");
+    render(<AcceptForm />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Password")).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Confirm password")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /set up account/i })).toBeInTheDocument();
+  });
+
+  it("renders full name (optional), password, and confirm fields on INITIAL_SESSION event", async () => {
+    mockInviteEvent("INITIAL_SESSION");
+    render(<AcceptForm />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Password")).toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Confirm password")).toBeInTheDocument();
+  });
+
+  it("full name field is optional — form can be submitted without it", async () => {
+    mockInviteEvent("SIGNED_IN");
+    mockAcceptInvite.mockResolvedValue({ fieldErrors: {}, formError: null });
+    render(<AcceptForm />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Password")).toBeInTheDocument(),
+    );
+
+    // Leave full name empty
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "securepass99" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm password"), {
+      target: { value: "securepass99" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /set up account/i }));
+
+    await waitFor(() => expect(mockAcceptInvite).toHaveBeenCalled());
+  });
+
+  it("password mismatch: action returns field error and it renders in the DOM", async () => {
+    mockInviteEvent("SIGNED_IN");
+    mockAcceptInvite.mockResolvedValue({
+      fieldErrors: { confirmPassword: ["Passwords do not match."] },
+      formError: null,
+    });
+    render(<AcceptForm />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Password")).toBeInTheDocument(),
+    );
+
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "password1!" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm password"), {
+      target: { value: "password2!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /set up account/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Passwords do not match.")).toBeInTheDocument(),
+    );
+  });
+
+  it("valid submit calls the acceptInvite action", async () => {
+    mockInviteEvent("SIGNED_IN");
+    mockAcceptInvite.mockResolvedValue({ fieldErrors: {}, formError: null });
+    render(<AcceptForm />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Password")).toBeInTheDocument(),
+    );
+
+    fireEvent.change(screen.getByLabelText("Full name"), {
+      target: { value: "Jane Smith" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "securepass99" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm password"), {
+      target: { value: "securepass99" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /set up account/i }));
+
+    await waitFor(() => expect(mockAcceptInvite).toHaveBeenCalled());
+  });
+
+  it("shows a server form error in the aria-live banner", async () => {
+    mockInviteEvent("SIGNED_IN");
+    mockAcceptInvite.mockResolvedValue({
+      fieldErrors: {},
+      formError: "Failed to set up your account. Your invite link may have expired. Please contact your administrator.",
+    });
+    render(<AcceptForm />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Password")).toBeInTheDocument(),
+    );
+
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "securepass99" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm password"), {
+      target: { value: "securepass99" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /set up account/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText(/failed to set up your account/i)).toBeInTheDocument(),
+    );
+
+    const banner = document.querySelector('[role="alert"][aria-live="polite"]');
+    expect(banner?.textContent).toContain("Failed to set up your account");
   });
 });
