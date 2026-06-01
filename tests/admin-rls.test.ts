@@ -276,3 +276,52 @@ describe("audit_log append-only guarantee still holds", () => {
     });
   });
 });
+
+describe("0011 audit_log immutability trigger", () => {
+  // Even as the superuser `postgres` (which bypasses RLS, like service_role),
+  // the BEFORE UPDATE/DELETE trigger must block mutations. We insert a row,
+  // assert UPDATE and DELETE both throw, then ROLL BACK so nothing persists in
+  // the local test DB. (Each failed statement aborts only that statement; we
+  // run each on its own connection/tx so one failure doesn't poison the next.)
+  it("INSERT succeeds but UPDATE is rejected (tx rolled back, no row persists)", async () => {
+    await withPostgres(async (c) => {
+      await c.query("begin");
+      try {
+        const { rows } = await c.query(
+          `insert into public.audit_log (tenant_id, actor_user_id, action)
+           values ($1, $2, 'immutability_test') returning id`,
+          [TENANT, USER],
+        );
+        const id = rows[0].id as string;
+        expect(id).toBeTruthy();
+
+        await expect(
+          c.query(`update public.audit_log set action = 'tampered' where id = $1`, [id]),
+        ).rejects.toThrow(/append-only/i);
+      } finally {
+        await c.query("rollback");
+      }
+    });
+  });
+
+  it("INSERT succeeds but DELETE is rejected (tx rolled back, no row persists)", async () => {
+    await withPostgres(async (c) => {
+      await c.query("begin");
+      try {
+        const { rows } = await c.query(
+          `insert into public.audit_log (tenant_id, actor_user_id, action)
+           values ($1, $2, 'immutability_test') returning id`,
+          [TENANT, USER],
+        );
+        const id = rows[0].id as string;
+        expect(id).toBeTruthy();
+
+        await expect(
+          c.query(`delete from public.audit_log where id = $1`, [id]),
+        ).rejects.toThrow(/append-only/i);
+      } finally {
+        await c.query("rollback");
+      }
+    });
+  });
+});
