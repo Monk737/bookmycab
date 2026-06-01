@@ -189,6 +189,80 @@ describe("0008 credentials vault", () => {
   });
 });
 
+describe("0010 vault RPC wrappers (key-as-param path)", () => {
+  // Proves the app's PostgREST path works: a SINGLE call that takes the key as a
+  // parameter, set_config()s it transaction-locally, then delegates — without any
+  // pre-set session GUC (unlike the 0008 test which sets app.vault_key first).
+  it("store→read→rotate round-trip via *_rpc with the key passed per call", async () => {
+    const RPC_SECRET = "rpc-path-secret-abcdef";
+    let credId: string;
+    await withPostgres(async (c) => {
+      // Deliberately do NOT set app.vault_key on this session — the wrapper must
+      // supply it itself from the parameter.
+      const { rows } = await c.query(
+        `select public.vault_store_credential_rpc($1,$2,$3,$4,$5,$6) as id`,
+        [TENANT, CHANNEL, "whatsapp_token", RPC_SECRET, USER, VAULT_KEY],
+      );
+      credId = rows[0].id as string;
+      expect(credId).toMatch(/^[0-9a-f-]{36}$/);
+
+      // Ciphertext must not contain the plaintext.
+      const { rows: stored } = await c.query(
+        `select encode(secret_encrypted, 'escape') as as_text
+         from public.channel_credentials where id = $1`,
+        [credId],
+      );
+      expect(stored[0].as_text).not.toContain(RPC_SECRET);
+
+      // Read RPC decrypts and stamps last_accessed.
+      const { rows: read } = await c.query(
+        `select public.vault_read_credential_rpc($1, $2, $3) as secret`,
+        [credId, USER, VAULT_KEY],
+      );
+      expect(read[0].secret).toBe(RPC_SECRET);
+
+      const { rows: meta } = await c.query(
+        `select last_accessed_by, last_accessed_at from public.channel_credentials where id = $1`,
+        [credId],
+      );
+      expect(meta[0].last_accessed_by).toBe(USER);
+      expect(meta[0].last_accessed_at).not.toBeNull();
+
+      // Rotate RPC re-encrypts in place; read returns the new secret.
+      const ROTATED = "rotated-secret-zzz999";
+      const { rows: rot } = await c.query(
+        `select public.vault_rotate_credential_rpc($1, $2, $3) as ok`,
+        [credId, ROTATED, VAULT_KEY],
+      );
+      expect(rot[0].ok).toBe(true);
+
+      const { rows: read2 } = await c.query(
+        `select public.vault_read_credential_rpc($1, $2, $3) as secret`,
+        [credId, USER, VAULT_KEY],
+      );
+      expect(read2[0].secret).toBe(ROTATED);
+
+      await c.query("delete from public.channel_credentials where id = $1", [credId]);
+    });
+  });
+
+  it("authenticated cannot call the *_rpc wrappers (inner caller-role guard fires)", async () => {
+    await asUser(USER, async (q) => {
+      await expect(
+        q(
+          "select public.vault_store_credential_rpc($1::uuid, $2::uuid, 'whatsapp_token', 'x', $3::uuid, $4)",
+          [TENANT, CHANNEL, USER, VAULT_KEY],
+        ),
+      ).rejects.toThrow();
+      await expect(
+        q("select public.vault_rotate_credential_rpc('00000000-0000-0000-0000-000000000000'::uuid, 'x', $1)", [
+          VAULT_KEY,
+        ]),
+      ).rejects.toThrow();
+    });
+  });
+});
+
 describe("audit_log append-only guarantee still holds", () => {
   it("tenant users cannot read the audit_log", async () => {
     await asUser(USER, async (q) => {

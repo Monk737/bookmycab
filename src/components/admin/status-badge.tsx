@@ -32,6 +32,9 @@ const STATUS_TONE: Record<string, Tone> = {
   // automations.build_stage (lowercased keys; building/uat/live overlap above)
   requested: "zinc",
   scoped: "blue",
+  // channel token expiry (credentials vault)
+  expiring: "amber",
+  expired: "red",
 };
 
 export function StatusBadge({ status }: { status: string }) {

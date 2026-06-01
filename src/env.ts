@@ -6,6 +6,13 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
+  // Channel-credentials vault symmetric key (server-only). Passed per-call to the
+  // vault_*_rpc functions, which set it transaction-locally before delegating to
+  // the pgcrypto-backed vault. NEVER logged, NEVER returned to the client. In
+  // production this comes from the platform secret manager; the local-dev default
+  // below keeps `supabase start` + tests working without extra setup.
+  SUPABASE_VAULT_KEY: z.string().min(1).default("local-dev-vault-key-change-me"),
+
   // Engine (internal only; never exposed to customers)
   N8N_BASE_URL: z.string().url().optional(),
   N8N_API_KEY: z.string().optional(),
