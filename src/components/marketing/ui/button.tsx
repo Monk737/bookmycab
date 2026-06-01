@@ -1,4 +1,5 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import Link from "next/link";
 
 type Variant = "primary" | "secondary" | "ghost";
 type Size = "md" | "lg";
@@ -54,6 +55,15 @@ export function Button({
 
   if ("href" in props && props.href !== undefined) {
     const { href, ...rest } = props as ButtonAsLink;
+    // Internal routes use next/link (client-side nav + prefetch); external or
+    // anchor hrefs fall back to a plain <a>.
+    if (href.startsWith("/")) {
+      return (
+        <Link href={href} className={classes} {...rest}>
+          {children}
+        </Link>
+      );
+    }
     return (
       <a href={href} className={classes} {...rest}>
         {children}

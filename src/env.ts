@@ -32,10 +32,21 @@ const schema = z.object({
   NEXT_PUBLIC_CAL_LINK: z.string().min(1).default("flowmo/discovery"),
 });
 
-// Treat empty-string env vars (e.g. unset keys in .env files) as absent so
-// `.optional()` fields validate correctly instead of failing `.url()`/`.uuid()`.
+// Vars with no `.optional()`/`.default()` — a blank value here is a real
+// misconfiguration and must surface as a validation error, not be hidden.
+const REQUIRED_KEYS = new Set([
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "SUPABASE_SERVICE_ROLE_KEY",
+]);
+
+// Treat empty-string values for optional/defaulted vars as absent (a common
+// `.env` artifact, e.g. `N8N_BASE_URL=`) so they don't fail `.url()`/`.uuid()`.
+// Required vars keep their empty string so a blanked-out key still fails loudly.
 const rawEnv = Object.fromEntries(
-  Object.entries(process.env).filter(([, value]) => value !== ""),
+  Object.entries(process.env).filter(
+    ([key, value]) => value !== "" || REQUIRED_KEYS.has(key),
+  ),
 );
 
 const parsed = schema.safeParse(rawEnv);

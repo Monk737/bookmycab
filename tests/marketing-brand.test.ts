@@ -1,7 +1,21 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync, readFileSync, lstatSync } from "node:fs";
+import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
+
+// Only text source files are scanned — binary assets (logos, fonts) can neither
+// carry brand copy nor be decoded as UTF-8 reliably.
+const TEXT_EXTENSIONS = new Set([
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".css",
+  ".md",
+  ".mdx",
+  ".json",
+  ".svg",
+]);
 
 // Resolve project root from this test file (tests/ -> ..).
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -28,9 +42,16 @@ function collectFiles(dir: string): string[] {
   const files: string[] = [];
   for (const entry of entries) {
     const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
+    let stat;
+    try {
+      // lstat (not stat) so symlinks are inspected, never followed.
+      stat = lstatSync(full);
+    } catch {
+      continue;
+    }
+    if (stat.isDirectory()) {
       files.push(...collectFiles(full));
-    } else {
+    } else if (stat.isFile() && TEXT_EXTENSIONS.has(extname(full))) {
       files.push(full);
     }
   }

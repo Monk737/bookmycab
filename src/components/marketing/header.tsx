@@ -40,12 +40,6 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            href="/login"
-            className="text-sm text-gray-500 transition-colors duration-200 hover:text-ink"
-          >
-            Dashboard
-          </Link>
           <DiscoveryCta />
         </div>
 
@@ -95,13 +89,6 @@ export function Header() {
                 {item.label}
               </Link>
             ))}
-            <Link
-              href="/login"
-              className="rounded-md px-2 py-2 text-base text-gray-500 transition-colors duration-200 hover:bg-gray-100"
-              onClick={() => setOpen(false)}
-            >
-              Dashboard
-            </Link>
             <div className="px-2 pt-3">
               <DiscoveryCta size="lg" className="w-full" />
             </div>
