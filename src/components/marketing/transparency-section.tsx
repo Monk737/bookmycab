@@ -94,6 +94,9 @@ export function TransparencySection({
         <CostList title="Paid to your own providers" rows={PASS_THROUGH} />
         <CostList title="Paid to CabbyBot" rows={TO_CABBYBOT} />
       </div>
+      <p className="mt-8 font-display text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+        You bring your numbers. You own your customer base.
+      </p>
     </div>
   );
 }

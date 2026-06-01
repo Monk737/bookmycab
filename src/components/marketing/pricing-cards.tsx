@@ -178,6 +178,11 @@ export function PricingCards() {
           </p>
         </div>
       </div>
+
+      <p className="mt-5 text-sm leading-relaxed text-gray-500">
+        Support Bot, Driver Solution, and custom automations are quoted on
+        demand.
+      </p>
     </div>
   );
 }
