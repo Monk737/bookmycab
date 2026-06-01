@@ -1,3 +1,4 @@
+import "server-only";
 import { redirect } from "next/navigation";
 import { getCurrentClaims } from "@/lib/auth/session";
 import type { Claims } from "@/middleware/access";

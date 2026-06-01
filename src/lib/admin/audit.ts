@@ -1,3 +1,4 @@
+import "server-only";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 
@@ -32,8 +33,13 @@ export type AuditEntry = {
  *
  * `ip_address` is passed as null; capturing the request IP is the caller's
  * concern and is not trivially available here.
+ *
+ * @returns `true` when the row was inserted successfully, `false` when the
+ * insert errored. Never throws and never blocks the admin action — a failed
+ * audit write is logged via `console.error` and callers decide how to react
+ * to the returned boolean.
  */
-export async function writeAudit(entry: AuditEntry): Promise<void> {
+export async function writeAudit(entry: AuditEntry): Promise<boolean> {
   const serviceClient = createSupabaseJS(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
@@ -51,5 +57,8 @@ export async function writeAudit(entry: AuditEntry): Promise<void> {
 
   if (error) {
     console.error("writeAudit failed", error);
+    return false;
   }
+
+  return true;
 }

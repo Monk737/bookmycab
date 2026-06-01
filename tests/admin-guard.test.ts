@@ -3,6 +3,9 @@ import { describe, it, expect, vi } from "vitest";
 // guard.ts imports getCurrentClaims, which transitively loads the Supabase
 // server client + env validation. Mock the session + next/navigation modules
 // so this pure-logic suite loads without runtime env. (Mirrors auth-session.test.ts.)
+// `server-only` throws outside Next.js' react-server condition (e.g. Vitest),
+// so stub it to a no-op to let the module load under the test runner.
+vi.mock("server-only", () => ({}));
 vi.mock("@/lib/auth/session", () => ({ getCurrentClaims: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 
