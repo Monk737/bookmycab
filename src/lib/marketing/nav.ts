@@ -1,0 +1,59 @@
+// Marketing site navigation + company constants.
+// Brand rule: use "CabbyBot Automation Engine" / "your automation" on customer surfaces.
+
+export type NavItem = { label: string; href: string };
+
+export const MAIN_NAV: NavItem[] = [
+  { label: "Home", href: "/" },
+  { label: "How It Works", href: "/how-it-works" },
+  { label: "Channels", href: "/channels" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Custom Solutions", href: "/custom-solutions" },
+  { label: "Case Studies", href: "/case-studies" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+
+export type FooterColumn = { heading: string; items: NavItem[] };
+
+export const FOOTER_COLUMNS: FooterColumn[] = [
+  {
+    heading: "Product",
+    items: [
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "Channels", href: "/channels" },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Custom Solutions", href: "/custom-solutions" },
+    ],
+  },
+  {
+    heading: "Company",
+    items: [
+      { label: "About", href: "/about" },
+      { label: "Case Studies", href: "/case-studies" },
+      { label: "Contact", href: "/contact" },
+    ],
+  },
+  {
+    heading: "Get Started",
+    items: [
+      { label: "Try the Dashboard", href: "/demo" },
+      { label: "Book a Discovery Call", href: "/contact" },
+    ],
+  },
+];
+
+export const LEGAL_NAV: NavItem[] = [
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+  { label: "DPA", href: "/dpa" },
+  { label: "Cookies", href: "/cookies" },
+];
+
+export const COMPANY = {
+  product: "CabbyBot",
+  entity: "FlowMo AI LTD",
+  country: "United Kingdom",
+  tagline: "Your cab company. On every channel. On autopilot.",
+  transparency: "You bring your numbers. You own your customer base.",
+} as const;

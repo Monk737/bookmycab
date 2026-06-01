@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@calcom/embed-react": "^1.5.3",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.106.2",
     "next": "^15.1.0",

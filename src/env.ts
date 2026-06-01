@@ -27,9 +27,18 @@ const schema = z.object({
   WEBHOOK_RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(60),
   DEMO_TENANT_ID: z.string().uuid().optional(),
   FLOWMO_STAFF_EMAIL_DOMAIN: z.string().default("flowmoai.com"),
+
+  // Marketing
+  NEXT_PUBLIC_CAL_LINK: z.string().min(1).default("flowmo/discovery"),
 });
 
-const parsed = schema.safeParse(process.env);
+// Treat empty-string env vars (e.g. unset keys in .env files) as absent so
+// `.optional()` fields validate correctly instead of failing `.url()`/`.uuid()`.
+const rawEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([, value]) => value !== ""),
+);
+
+const parsed = schema.safeParse(rawEnv);
 if (!parsed.success) {
   console.error("❌ Invalid environment variables:", parsed.error.flatten().fieldErrors);
   throw new Error("Invalid environment variables");
