@@ -22,7 +22,9 @@ export class EngineClient {
   private async call(path: string, init?: RequestInit): Promise<Response> {
     return this.fetcher(`${this.baseUrl}/api/v1${path}`, {
       ...init,
-      headers: { "X-N8N-API-KEY": this.apiKey, "content-type": "application/json", ...(init?.headers ?? {}) },
+      // Caller headers first, then the auth + content-type headers (callee-wins)
+      // so a caller can never accidentally override the API key.
+      headers: { ...(init?.headers ?? {}), "X-N8N-API-KEY": this.apiKey, "content-type": "application/json" },
     });
   }
 

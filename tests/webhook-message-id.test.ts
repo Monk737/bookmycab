@@ -26,4 +26,15 @@ describe("extractProviderMessageId", () => {
     expect(extractProviderMessageId("whatsapp", {})).toBeNull();
     expect(extractProviderMessageId("telegram", {})).toBeNull();
   });
+  it("returns null (never throws) on malformed / hostile bodies", () => {
+    // Primitive bodies, wrong-typed nesting, and non-array where an array is
+    // expected must all return null rather than throw — the gateway forwards
+    // without dedupe instead of crashing on a malformed payload.
+    expect(extractProviderMessageId("whatsapp", "garbage")).toBeNull();
+    expect(extractProviderMessageId("whatsapp", 42)).toBeNull();
+    expect(extractProviderMessageId("whatsapp", null)).toBeNull();
+    expect(extractProviderMessageId("whatsapp", { entry: "notarray" })).toBeNull();
+    expect(extractProviderMessageId("messenger", { entry: [{ messaging: "nope" }] })).toBeNull();
+    expect(extractProviderMessageId("widget", { messageId: 123 })).toBeNull(); // numeric id rejected
+  });
 });
