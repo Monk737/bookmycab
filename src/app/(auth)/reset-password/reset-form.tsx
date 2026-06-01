@@ -14,8 +14,15 @@ const initialState: AuthState = { fieldErrors: {}, formError: null };
 
 /**
  * Reset-password form — client component.
- * Checks for a valid Supabase recovery session on mount.
- * If no session is present, renders an "invalid or expired link" state.
+ * Checks for a RECOVERY session specifically on mount using onAuthStateChange.
+ *
+ * Detection method: onAuthStateChange + PASSWORD_RECOVERY event.
+ * Why: @supabase/supabase-js@2.106.2 does NOT expose a `type` field on the
+ * Session object itself. The only reliable way to detect a recovery session
+ * (vs. a normal logged-in session) is to listen for the PASSWORD_RECOVERY
+ * AuthChangeEvent, which GoTrue fires when it exchanges a recovery code for
+ * a session. A plain logged-in user hitting this page would fire SIGNED_IN
+ * instead and be correctly rejected.
  */
 export function ResetForm() {
   const passwordId = useId();
@@ -26,14 +33,20 @@ export function ResetForm() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data }) => {
-      // A recovery session has session.user present; an unauthenticated visit does not.
-      if (data.session?.user) {
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
         setSessionState("valid");
       } else {
+        // Any other event (SIGNED_IN, SIGNED_OUT, etc.) on this page means
+        // the user did not arrive via a valid recovery link.
         setSessionState("invalid");
       }
     });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const passwordError = state.fieldErrors["password"]?.[0] ?? null;

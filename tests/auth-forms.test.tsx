@@ -34,11 +34,14 @@ vi.mock("@/app/(auth)/actions", () => ({
 }));
 
 // Stub the browser Supabase client used by ResetForm for session detection.
-const mockGetSession = vi.fn();
+// ResetForm uses onAuthStateChange (PASSWORD_RECOVERY event) to detect a
+// recovery session — getSession is no longer called by that component.
+const mockOnAuthStateChange = vi.fn();
 vi.mock("@/lib/supabase/browser", () => ({
   createClient: () => ({
     auth: {
-      getSession: () => mockGetSession(),
+      onAuthStateChange: (...args: Parameters<typeof mockOnAuthStateChange>) =>
+        mockOnAuthStateChange(...args),
     },
   }),
 }));
@@ -201,9 +204,6 @@ describe("ForgotForm", () => {
         screen.getByText("Please enter a valid email address."),
       ).toBeInTheDocument(),
     );
-    // The field error element has role="alert"
-    const fieldError = screen.getByText("Please enter a valid email address.");
-    expect(fieldError).toBeInTheDocument();
   });
 
   it("success: action returns successMessage and the confirmation renders — form hidden", async () => {
@@ -256,16 +256,34 @@ describe("ForgotForm", () => {
 // ResetForm tests
 // ---------------------------------------------------------------------------
 
+// Helper: returns a mock onAuthStateChange that immediately fires `event` then
+// returns a no-op subscription object.
+function mockRecoveryEvent(event: string) {
+  return mockOnAuthStateChange.mockImplementation((callback: (event: string) => void) => {
+    callback(event);
+    return { data: { subscription: { unsubscribe: vi.fn() } } };
+  });
+}
+
+// Helper: returns a mock onAuthStateChange whose callback is never invoked
+// (simulates a pending auth state — keeps the component in "loading").
+function mockPendingEvent() {
+  return mockOnAuthStateChange.mockImplementation(() => ({
+    data: { subscription: { unsubscribe: vi.fn() } },
+  }));
+}
+
 describe("ResetForm", () => {
   it("shows a loading state while the session check is pending", () => {
-    // getSession never resolves during this test
-    mockGetSession.mockReturnValue(new Promise(() => {}));
+    // onAuthStateChange never calls the callback → component stays in "loading"
+    mockPendingEvent();
     render(<ResetForm />);
     expect(screen.getByText(/verifying your reset link/i)).toBeInTheDocument();
   });
 
-  it("shows the invalid-link state when there is no active session", async () => {
-    mockGetSession.mockResolvedValue({ data: { session: null } });
+  it("shows the invalid-link state when a non-recovery auth event fires", async () => {
+    // A normally logged-in user hitting this page fires SIGNED_IN, not PASSWORD_RECOVERY
+    mockRecoveryEvent("SIGNED_IN");
     render(<ResetForm />);
 
     await waitFor(() =>
@@ -280,10 +298,8 @@ describe("ResetForm", () => {
     expect(screen.queryByLabelText(/new password/i)).not.toBeInTheDocument();
   });
 
-  it("renders password fields when a valid recovery session is present", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "user-123" } } },
-    });
+  it("renders password fields when a PASSWORD_RECOVERY event fires", async () => {
+    mockRecoveryEvent("PASSWORD_RECOVERY");
 
     render(<ResetForm />);
 
@@ -295,9 +311,7 @@ describe("ResetForm", () => {
   });
 
   it("password mismatch: action returns field error and it renders in the DOM", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "user-123" } } },
-    });
+    mockRecoveryEvent("PASSWORD_RECOVERY");
     mockUpdatePassword.mockResolvedValue({
       fieldErrors: { confirmPassword: ["Passwords do not match."] },
       formError: null,
@@ -323,9 +337,7 @@ describe("ResetForm", () => {
   });
 
   it("short password: action returns field error for minimum length", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "user-123" } } },
-    });
+    mockRecoveryEvent("PASSWORD_RECOVERY");
     mockUpdatePassword.mockResolvedValue({
       fieldErrors: { password: ["Password must be at least 8 characters."] },
       formError: null,
@@ -350,9 +362,7 @@ describe("ResetForm", () => {
   });
 
   it("form error: shows server error in the aria-live banner", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "user-123" } } },
-    });
+    mockRecoveryEvent("PASSWORD_RECOVERY");
     mockUpdatePassword.mockResolvedValue({
       fieldErrors: {},
       formError: "Failed to update password. Your reset link may have expired. Please request a new one.",
@@ -384,9 +394,7 @@ describe("ResetForm", () => {
   });
 
   it("submitting matching passwords calls the updatePassword action", async () => {
-    mockGetSession.mockResolvedValue({
-      data: { session: { user: { id: "user-123" } } },
-    });
+    mockRecoveryEvent("PASSWORD_RECOVERY");
     mockUpdatePassword.mockResolvedValue({ fieldErrors: {}, formError: null });
 
     render(<ResetForm />);
