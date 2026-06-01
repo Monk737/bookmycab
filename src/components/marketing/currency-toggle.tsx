@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { CURRENCIES, type Currency } from "@/lib/marketing/pricing";
 
 type CurrencyToggleProps = {
@@ -20,20 +21,42 @@ export function CurrencyToggle({
   onChange,
   className = "",
 }: CurrencyToggleProps) {
+  const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Arrow keys move selection AND focus between options (ARIA radiogroup contract).
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    const dir =
+      e.key === "ArrowRight" || e.key === "ArrowDown"
+        ? 1
+        : e.key === "ArrowLeft" || e.key === "ArrowUp"
+          ? -1
+          : 0;
+    if (dir === 0) return;
+    e.preventDefault();
+    const idx = CURRENCIES.indexOf(value);
+    const nextIdx = (idx + dir + CURRENCIES.length) % CURRENCIES.length;
+    onChange(CURRENCIES[nextIdx]);
+    buttonsRef.current[nextIdx]?.focus();
+  }
+
   return (
     <div
       role="radiogroup"
       aria-label="Display currency"
+      onKeyDown={handleKeyDown}
       className={
         "inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 p-1 " +
         className
       }
     >
-      {CURRENCIES.map((currency) => {
+      {CURRENCIES.map((currency, i) => {
         const selected = currency === value;
         return (
           <button
             key={currency}
+            ref={(el) => {
+              buttonsRef.current[i] = el;
+            }}
             type="button"
             role="radio"
             aria-checked={selected}
