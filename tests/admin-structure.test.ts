@@ -1,8 +1,9 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it, expect } from "vitest";
 import { evaluateAccess, PUBLIC_PAGES, type Claims } from "../src/middleware/access";
+import { mintImpersonation } from "../src/lib/admin/impersonation";
 
 // Resolve project root from this test file (tests/ -> ..).
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -44,5 +45,48 @@ describe("admin site structure", () => {
   it("ships an admin layout and overview page", () => {
     expect(existsSync(join(ADMIN_DIR, "layout.tsx"))).toBe(true);
     expect(existsSync(join(ADMIN_DIR, "page.tsx"))).toBe(true);
+  });
+
+  it("ships every admin route page file", () => {
+    const pages = [
+      "page.tsx", // /admin
+      "tenants/page.tsx",
+      "tenants/new/page.tsx",
+      "tenants/[tenantId]/page.tsx",
+      "automations/page.tsx",
+      "build-queue/page.tsx",
+      "credentials/page.tsx",
+      "billing/page.tsx",
+      "impersonate/page.tsx",
+    ];
+    for (const p of pages) {
+      expect(existsSync(join(ADMIN_DIR, p)), p).toBe(true);
+    }
+  });
+});
+
+describe("impersonation guard", () => {
+  it("the pure mint rejects an empty reason", () => {
+    expect(() =>
+      mintImpersonation({
+        staffUserId: "s1",
+        tenantId: "t1",
+        targetUserId: "u1",
+        reason: "",
+        now: Date.now(),
+      }),
+    ).toThrow();
+  });
+
+  it("the start action zod-validates a non-empty reason before minting", () => {
+    // The start action lives in src/app/admin/impersonate/actions.ts and cannot
+    // be imported here (it is "use server" + server-only). Assert the route-level
+    // guard EXISTS by checking the source enforces a min(1) reason rule.
+    const src = readFileSync(
+      join(ADMIN_DIR, "impersonate/actions.ts"),
+      "utf8",
+    );
+    expect(src).toMatch(/reason:\s*z\.string\(\)[^\n]*\.min\(1/);
+    expect(src).toContain('action: "impersonate.start"');
   });
 });

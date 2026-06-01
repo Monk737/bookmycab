@@ -1,0 +1,78 @@
+"use client";
+
+import { useActionState, useId, useState } from "react";
+import {
+  startImpersonation,
+  type StartImpersonationState,
+} from "./actions";
+
+const initialState: StartImpersonationState = { formError: null };
+
+/**
+ * Per-candidate "Impersonate" control. A mandatory reason input gates the start
+ * button: the button is disabled until a non-empty reason is entered (the
+ * server action and the pure mint also reject an empty reason, defense-in-depth).
+ */
+export function StartControl({
+  tenantId,
+  targetUserId,
+  label,
+}: {
+  tenantId: string;
+  targetUserId: string;
+  label: string;
+}) {
+  const [state, formAction, pending] = useActionState(
+    startImpersonation,
+    initialState,
+  );
+  const reasonId = useId();
+  const [reason, setReason] = useState("");
+  const ready = reason.trim().length > 0;
+
+  if (state.ok) {
+    return (
+      <p
+        role="status"
+        className="text-xs font-medium text-emerald-700"
+      >
+        Impersonation started — see the banner. Read-only, expires in 15 min.
+      </p>
+    );
+  }
+
+  return (
+    <form action={formAction} className="flex flex-col gap-2">
+      <input type="hidden" name="tenantId" value={tenantId} />
+      <input type="hidden" name="targetUserId" value={targetUserId} />
+      <label htmlFor={reasonId} className="sr-only">
+        Reason to impersonate {label}
+      </label>
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          id={reasonId}
+          name="reason"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          required
+          placeholder="Reason (required)"
+          aria-invalid={state.formError ? true : undefined}
+          className="min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+        />
+        <button
+          type="submit"
+          disabled={!ready || pending}
+          title={ready ? undefined : "Enter a reason to enable"}
+          className="shrink-0 cursor-pointer rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white outline-none transition-colors hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {pending ? "Starting…" : "Impersonate"}
+        </button>
+      </div>
+      {state.formError && (
+        <p role="alert" className="text-xs text-red-600">
+          {state.formError}
+        </p>
+      )}
+    </form>
+  );
+}

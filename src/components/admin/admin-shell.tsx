@@ -28,7 +28,14 @@ function isActive(pathname: string, href: string): boolean {
  * (zinc) palette, monospaced wordmark — deliberately distinct from the
  * marketing (#FFD400) and product-auth (indigo/slate) surfaces. Staff-only.
  */
-export function AdminShell({ children }: { children: ReactNode }) {
+export function AdminShell({
+  children,
+  banner,
+}: {
+  children: ReactNode;
+  /** Optional full-width slot rendered above the padded content (e.g. the impersonation banner). */
+  banner?: ReactNode;
+}) {
   const pathname = usePathname();
 
   return (
@@ -82,7 +89,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 overflow-y-auto px-8 py-8">{children}</main>
+      <main className="min-w-0 flex-1 overflow-y-auto">
+        {banner}
+        <div className="px-8 py-8">{children}</div>
+      </main>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { requireStaff } from "@/lib/admin/guard";
 
 export const metadata: Metadata = {
@@ -14,5 +15,5 @@ export const metadata: Metadata = {
  */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   await requireStaff();
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminShell banner={<ImpersonationBanner />}>{children}</AdminShell>;
 }
