@@ -17,7 +17,9 @@ vi.mock("@/lib/dashboard/queries", () => ({
 import { GET as listAutomations } from "@/app/api/orgs/[orgId]/automations/route";
 import { GET as listBookings } from "@/app/api/orgs/[orgId]/automations/[automationId]/bookings/route";
 import { PATCH as patchBooking } from "@/app/api/orgs/[orgId]/automations/[automationId]/bookings/[bookingId]/route";
+import { GET as listConversations } from "@/app/api/orgs/[orgId]/automations/[automationId]/conversations/route";
 import { getBookingsPage, updateBookingStatus } from "@/lib/dashboard/queries";
+import { getConversationsPage } from "@/lib/dashboard/queries";
 
 const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) });
 
@@ -52,6 +54,17 @@ describe("GET bookings", () => {
     (getBookingsPage as ReturnType<typeof vi.fn>).mockResolvedValue({ rows: [], total: 0 });
     await listBookings(new Request("http://x/api/orgs/o1/automations/a1/bookings?page=1"), ctx({ orgId: "o1", automationId: "a1" }));
     expect(requireOrgAccess).toHaveBeenCalledWith("o1", expect.objectContaining({ automationId: "a1" }));
+  });
+});
+
+describe("GET conversations", () => {
+  it("passes automationId to the guard and returns rows on allow", async () => {
+    requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
+    (getConversationsPage as ReturnType<typeof vi.fn>).mockResolvedValue({ rows: [], total: 0 });
+    const res = await listConversations(new Request("http://x/api/orgs/o1/automations/a1/conversations?page=1"), ctx({ orgId: "o1", automationId: "a1" }));
+    expect(requireOrgAccess).toHaveBeenCalledWith("o1", expect.objectContaining({ automationId: "a1" }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ rows: [], total: 0 });
   });
 });
 
