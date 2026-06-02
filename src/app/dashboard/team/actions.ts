@@ -43,6 +43,7 @@ export async function inviteMember(
     return { ok: false, error: "Not authorised." };
   }
   const { claims } = access;
+  if (claims.is_demo) return { ok: false, error: "Read-only in demo mode." };
 
   const parsed = inviteSchema.safeParse(input);
   if (!parsed.success) {
@@ -109,6 +110,7 @@ export async function changeRole(
     return { ok: false, error: "Not authorised." };
   }
   const { claims } = access;
+  if (claims.is_demo) return { ok: false, error: "Read-only in demo mode." };
 
   const parsedRole = roleSchema.safeParse(role);
   if (!parsedRole.success) {
@@ -175,6 +177,7 @@ export async function revokeMember(orgId: string, userId: string): Promise<Actio
     return { ok: false, error: "Not authorised." };
   }
   const { claims } = access;
+  if (claims.is_demo) return { ok: false, error: "Read-only in demo mode." };
 
   const client = serviceClient();
 

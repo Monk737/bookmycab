@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireOrgAccess } from "@/lib/api/guard";
+import { blockIfDemo } from "@/lib/demo/session";
 import { listTickets, createTicket } from "@/lib/dashboard/support-queries";
 import { getCurrentClaims } from "@/lib/auth/session";
 
@@ -20,6 +21,9 @@ export async function POST(req: Request, ctx: { params: Promise<Record<string, s
 
   const gate = await requireOrgAccess(orgId, { minRole: "Viewer" });
   if (gate instanceof NextResponse) return gate;
+  const claims = await getCurrentClaims();
+  const demoBlock = blockIfDemo(claims);
+  if (demoBlock) return demoBlock;
 
   const body = (await req.json()) as {
     subject?: string;
@@ -38,7 +42,6 @@ export async function POST(req: Request, ctx: { params: Promise<Record<string, s
     return NextResponse.json({ error: "description is required" }, { status: 400 });
   }
 
-  const claims = await getCurrentClaims();
   const result = await createTicket({
     tenantId: orgId,
     automationId: body.automationId ?? null,

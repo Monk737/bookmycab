@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireOrgAccess } from "@/lib/api/guard";
+import { blockIfDemo } from "@/lib/demo/session";
 import { getAutomationConfig, upsertAutomationConfig } from "@/lib/dashboard/config-queries";
 import { AutomationConfigSchema } from "@/lib/dashboard/config-types";
 import { getCurrentClaims } from "@/lib/auth/session";
@@ -19,6 +20,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<Record<string, 
 
   const gate = await requireOrgAccess(orgId, { minRole: "Admin", automationId });
   if (gate instanceof NextResponse) return gate;
+  const demoBlock = blockIfDemo(gate.claims);
+  if (demoBlock) return demoBlock;
 
   const body = await req.json();
   const parsed = AutomationConfigSchema.safeParse(body);
