@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      // server-only throws in non-Next.js environments; stub it out for tests.
+      "server-only": fileURLToPath(new URL("./tests/__mocks__/server-only.ts", import.meta.url)),
     },
   },
   test: {

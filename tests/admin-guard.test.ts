@@ -17,6 +17,7 @@ const staffClaims: Claims = {
   tenant_id: null,
   role: "Owner",
   is_flowmo_staff: true,
+  is_demo: false,
   aal: "aal2",
   automation_restrictions: [],
 };
@@ -26,6 +27,7 @@ const nonStaffOwner: Claims = {
   tenant_id: "org-1",
   role: "Owner",
   is_flowmo_staff: false,
+  is_demo: false,
   aal: "aal2",
   automation_restrictions: [],
 };

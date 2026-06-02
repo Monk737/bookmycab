@@ -74,6 +74,7 @@ describe("auth site structure", () => {
       tenant_id: "org-1",
       role: "Owner",
       is_flowmo_staff: false,
+      is_demo: false,
       aal: "aal1",
       automation_restrictions: [],
     };

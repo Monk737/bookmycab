@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { evaluateAccess, type Claims } from "@/middleware/access";
 
-const tenantClaims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, aal: "aal2", automation_restrictions: [] };
-const staffClaims: Claims = { sub: "s1", tenant_id: null, role: null, is_flowmo_staff: true, aal: "aal2", automation_restrictions: [] };
+const tenantClaims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, is_demo: false, aal: "aal2", automation_restrictions: [] };
+const staffClaims: Claims = { sub: "s1", tenant_id: null, role: null, is_flowmo_staff: true, is_demo: false, aal: "aal2", automation_restrictions: [] };
 
 describe("evaluateAccess", () => {
   it("allows public paths without auth", () => {
@@ -39,32 +39,32 @@ describe("evaluateAccess", () => {
 
   // MFA gate tests
   it("redirects Owner at aal1 to /mfa when visiting /dashboard", () => {
-    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, aal: "aal1", automation_restrictions: [] };
+    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, is_demo: false, aal: "aal1", automation_restrictions: [] };
     expect(evaluateAccess("/dashboard", claims)).toEqual({ kind: "redirect", to: "/mfa" });
   });
 
   it("redirects Admin at aal1 to /mfa when visiting /dashboard", () => {
-    const claims: Claims = { sub: "u2", tenant_id: "org-1", role: "Admin", is_flowmo_staff: false, aal: "aal1", automation_restrictions: [] };
+    const claims: Claims = { sub: "u2", tenant_id: "org-1", role: "Admin", is_flowmo_staff: false, is_demo: false, aal: "aal1", automation_restrictions: [] };
     expect(evaluateAccess("/dashboard", claims)).toEqual({ kind: "redirect", to: "/mfa" });
   });
 
   it("allows Viewer at aal1 to /dashboard (MFA optional for Viewer)", () => {
-    const claims: Claims = { sub: "u3", tenant_id: "org-1", role: "Viewer", is_flowmo_staff: false, aal: "aal1", automation_restrictions: [] };
+    const claims: Claims = { sub: "u3", tenant_id: "org-1", role: "Viewer", is_flowmo_staff: false, is_demo: false, aal: "aal1", automation_restrictions: [] };
     expect(evaluateAccess("/dashboard", claims)).toEqual({ kind: "allow" });
   });
 
   it("allows Owner at aal2 to /dashboard", () => {
-    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, aal: "aal2", automation_restrictions: [] };
+    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, is_demo: false, aal: "aal2", automation_restrictions: [] };
     expect(evaluateAccess("/dashboard", claims)).toEqual({ kind: "allow" });
   });
 
   it("allows Owner at aal1 to reach the /mfa page itself", () => {
-    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, aal: "aal1", automation_restrictions: [] };
+    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, is_demo: false, aal: "aal1", automation_restrictions: [] };
     expect(evaluateAccess("/mfa", claims)).toEqual({ kind: "allow" });
   });
 
   it("allows Owner at aal1 to reach auth-flow pages (no redirect loop)", () => {
-    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, aal: "aal1", automation_restrictions: [] };
+    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, is_demo: false, aal: "aal1", automation_restrictions: [] };
     expect(evaluateAccess("/login", claims)).toEqual({ kind: "allow" });
     expect(evaluateAccess("/accept-invite", claims)).toEqual({ kind: "allow" });
     expect(evaluateAccess("/forgot-password", claims)).toEqual({ kind: "allow" });
@@ -72,12 +72,12 @@ describe("evaluateAccess", () => {
   });
 
   it("redirects is_flowmo_staff Owner at aal1 to /mfa when visiting /admin (MFA gate before staff allow)", () => {
-    const claims: Claims = { sub: "s1", tenant_id: null, role: "Owner", is_flowmo_staff: true, aal: "aal1", automation_restrictions: [] };
+    const claims: Claims = { sub: "s1", tenant_id: null, role: "Owner", is_flowmo_staff: true, is_demo: false, aal: "aal1", automation_restrictions: [] };
     expect(evaluateAccess("/admin", claims)).toEqual({ kind: "redirect", to: "/mfa" });
   });
 
   it("redirects Owner with aal: null to /mfa when visiting /dashboard (safe default for absent aal claim)", () => {
-    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, aal: null, automation_restrictions: [] };
+    const claims: Claims = { sub: "u1", tenant_id: "org-1", role: "Owner", is_flowmo_staff: false, is_demo: false, aal: null, automation_restrictions: [] };
     expect(evaluateAccess("/dashboard", claims)).toEqual({ kind: "redirect", to: "/mfa" });
   });
 });

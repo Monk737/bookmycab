@@ -3,6 +3,7 @@ export type Claims = {
   tenant_id: string | null;
   role: "Owner" | "Admin" | "Viewer" | null;
   is_flowmo_staff: boolean;
+  is_demo: boolean;
   aal: "aal1" | "aal2" | null;
   automation_restrictions: string[];
 };
@@ -33,6 +34,7 @@ export function parseClaims(raw: Record<string, unknown>): Claims {
     tenant_id: (raw.tenant_id as string) ?? null,
     role: (raw.role as Claims["role"]) ?? null,
     is_flowmo_staff: Boolean(raw.is_flowmo_staff),
+    is_demo: Boolean(raw.is_demo),
     aal: (raw.aal as Claims["aal"]) ?? null,
     automation_restrictions: Array.isArray(raw.automation_restrictions)
       ? (raw.automation_restrictions as string[])

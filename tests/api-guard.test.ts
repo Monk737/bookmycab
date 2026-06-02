@@ -9,7 +9,7 @@ import type { Claims } from "@/middleware/access";
 beforeEach(() => getCurrentClaims.mockReset());
 
 const claims = (over: Partial<Claims>): Claims => ({
-  sub: "u1", tenant_id: "t1", role: "Viewer", is_flowmo_staff: false, aal: "aal2", automation_restrictions: [], ...over,
+  sub: "u1", tenant_id: "t1", role: "Viewer", is_flowmo_staff: false, is_demo: false, aal: "aal2", automation_restrictions: [], ...over,
 });
 
 describe("evaluateOrgAccess", () => {
