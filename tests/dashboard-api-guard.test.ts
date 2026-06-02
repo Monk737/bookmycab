@@ -15,12 +15,17 @@ vi.mock("@/lib/dashboard/queries", () => ({
 }));
 
 import { GET as listAutomations } from "@/app/api/orgs/[orgId]/automations/route";
+import { GET as listBookings } from "@/app/api/orgs/[orgId]/automations/[automationId]/bookings/route";
+import { PATCH as patchBooking } from "@/app/api/orgs/[orgId]/automations/[automationId]/bookings/[bookingId]/route";
+import { getBookingsPage, updateBookingStatus } from "@/lib/dashboard/queries";
 
 const ctx = (params: Record<string, string>) => ({ params: Promise.resolve(params) });
 
 beforeEach(() => {
   requireOrgAccess.mockReset();
   getAutomationCards.mockReset();
+  (getBookingsPage as ReturnType<typeof vi.fn>).mockReset();
+  (updateBookingStatus as ReturnType<typeof vi.fn>).mockReset();
 });
 
 describe("GET automations", () => {
@@ -38,5 +43,31 @@ describe("GET automations", () => {
     const res = await listAutomations(new Request("http://x/api/orgs/o1/automations"), ctx({ orgId: "o1" }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ automations: [{ id: "a1", name: "Booking Bot" }] });
+  });
+});
+
+describe("GET bookings", () => {
+  it("passes automationId to the guard for restriction enforcement", async () => {
+    requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
+    (getBookingsPage as ReturnType<typeof vi.fn>).mockResolvedValue({ rows: [], total: 0 });
+    await listBookings(new Request("http://x/api/orgs/o1/automations/a1/bookings?page=1"), ctx({ orgId: "o1", automationId: "a1" }));
+    expect(requireOrgAccess).toHaveBeenCalledWith("o1", expect.objectContaining({ automationId: "a1" }));
+  });
+});
+
+describe("PATCH booking status", () => {
+  it("requires Admin and enforces automation restriction", async () => {
+    requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
+    (updateBookingStatus as ReturnType<typeof vi.fn>).mockResolvedValue(true);
+    const req = new Request("http://x/api/orgs/o1/automations/a1/bookings/b1", { method: "PATCH", body: JSON.stringify({ status: "cancelled" }) });
+    const res = await patchBooking(req, ctx({ orgId: "o1", automationId: "a1", bookingId: "b1" }));
+    expect(requireOrgAccess).toHaveBeenCalledWith("o1", expect.objectContaining({ minRole: "Admin", automationId: "a1" }));
+    expect(res.status).toBe(200);
+  });
+  it("rejects an invalid status value with 400", async () => {
+    requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
+    const req = new Request("http://x/api/orgs/o1/automations/a1/bookings/b1", { method: "PATCH", body: JSON.stringify({ status: "bogus" }) });
+    const res = await patchBooking(req, ctx({ orgId: "o1", automationId: "a1", bookingId: "b1" }));
+    expect(res.status).toBe(400);
   });
 });
