@@ -7,9 +7,12 @@ export type SupabaseLike = Awaited<ReturnType<typeof createClient>>;
 export function reduceFunnel(convs: { outcome: string | null }[], bookingCount: number): Funnel {
   const inbound = convs.length;
   const reachedQuote = convs.filter((c) => c.outcome === "quoted" || c.outcome === "booked").length;
-  const booked = convs.filter((c) => c.outcome === "booked").length;
+  const bookedConvs = convs.filter((c) => c.outcome === "booked").length;
   const intent = convs.filter((c) => c.outcome && c.outcome !== "unknown").length;
-  return { inbound, greeted: inbound, intent, quoted: reachedQuote, confirmed: booked, booked };
+  // confirmed = conversations that reached a confirmed outcome; booked = actual
+  // booking records written (the dispatch source of truth). They usually match;
+  // bookingCount is authoritative for the final stage.
+  return { inbound, greeted: inbound, intent, quoted: reachedQuote, confirmed: bookedConvs, booked: bookingCount || bookedConvs };
 }
 
 function countBy<T>(rows: T[], key: (r: T) => string | null | undefined): NamedValue[] {
