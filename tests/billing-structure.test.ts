@@ -9,8 +9,8 @@ describe("epic-8 billing files exist", () => {
   for (const f of [
     "src/lib/billing/stripe.ts",
     "src/lib/billing/plan-price.ts",
-    // "src/lib/billing/dates.ts",
-    // "src/lib/billing/event-map.ts",
+    "src/lib/billing/dates.ts",
+    "src/lib/billing/event-map.ts",
     // "src/lib/billing/handle-event.ts",
     "src/lib/email/resend.ts",
     "src/lib/email/templates.ts",
