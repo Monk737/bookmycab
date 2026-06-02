@@ -50,3 +50,23 @@ describe("epic-8 admin billing wiring", () => {
     }
   });
 });
+
+describe("epic-8 portal + brand", () => {
+  it("portal route creates a real Stripe billing portal session", () => {
+    const src = readFileSync(p("src/app/api/orgs/[orgId]/billing/portal/route.ts"), "utf8");
+    expect(src).toMatch(/billingPortal\.sessions\.create/);
+    expect(src).not.toMatch(/Billing portal is being set up/); // old stub copy gone
+  });
+
+  it("no banned internal vocabulary on customer-facing billing surfaces", () => {
+    const banned = /\bn8n\b|\bCabLab\b|\bworkflow\b|\bexecution\b/i;
+    for (const f of [
+      "src/app/dashboard/billing/page.tsx",
+      "src/app/dashboard/billing/portal-button.tsx",
+      "src/lib/email/templates.ts",
+      "src/app/api/orgs/[orgId]/billing/portal/route.ts",
+    ]) {
+      expect(readFileSync(p(f), "utf8"), f).not.toMatch(banned);
+    }
+  });
+});
