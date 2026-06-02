@@ -12,11 +12,16 @@ vi.mock("@/lib/engine/control-db", () => ({
   setAutomationStatus: (...a: unknown[]) => updateStatus(...a),
   getEngineWorkflowId: vi.fn().mockResolvedValue("wf1"),
 }));
+const del = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/lib/redis/cache", () => ({ del: (...a: unknown[]) => del(...a) }));
+vi.mock("@/lib/webhooks/resolver", () => ({
+  automationCacheKey: (id: string) => `automation:${id}`,
+}));
 
-import { startAutomation, stopAutomation, getStatus } from "@/lib/engine/control";
+import { startAutomation, stopAutomation, restartAutomation, getStatus } from "@/lib/engine/control";
 import { neutralRunStatus } from "@/lib/engine/types";
 
-beforeEach(() => [activate, deactivate, isActive, listRuns, writeAudit, updateStatus].forEach((m) => m.mockClear()));
+beforeEach(() => [activate, deactivate, isActive, listRuns, writeAudit, updateStatus, del].forEach((m) => m.mockClear()));
 
 describe("control layer", () => {
   it("startAutomation activates, sets live, audits", async () => {
@@ -25,11 +30,30 @@ describe("control layer", () => {
     expect(updateStatus).toHaveBeenCalledWith("a1", "live");
     expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "automation.start", targetId: "a1", actorUserId: "u1" }));
   });
+  it("startAutomation invalidates the resolver cache", async () => {
+    await startAutomation({ automationId: "a1", tenantId: "t1", actorUserId: "u1" });
+    expect(del).toHaveBeenCalledWith("automation:a1");
+  });
   it("stopAutomation deactivates, sets stopped, audits", async () => {
     await stopAutomation({ automationId: "a1", tenantId: "t1", actorUserId: "u1" });
     expect(deactivate).toHaveBeenCalledWith("wf1");
     expect(updateStatus).toHaveBeenCalledWith("a1", "stopped");
     expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "automation.stop", actorUserId: "u1" }));
+  });
+  it("stopAutomation invalidates the resolver cache", async () => {
+    await stopAutomation({ automationId: "a1", tenantId: "t1", actorUserId: "u1" });
+    expect(del).toHaveBeenCalledWith("automation:a1");
+  });
+  it("restartAutomation deactivates, activates, sets live, audits", async () => {
+    await restartAutomation({ automationId: "a1", tenantId: "t1", actorUserId: "u1" });
+    expect(deactivate).toHaveBeenCalledWith("wf1");
+    expect(activate).toHaveBeenCalledWith("wf1");
+    expect(updateStatus).toHaveBeenCalledWith("a1", "live");
+    expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "automation.restart", actorUserId: "u1" }));
+  });
+  it("restartAutomation invalidates the resolver cache", async () => {
+    await restartAutomation({ automationId: "a1", tenantId: "t1", actorUserId: "u1" });
+    expect(del).toHaveBeenCalledWith("automation:a1");
   });
   it("getStatus maps engine active→live", async () => {
     isActive.mockResolvedValue(true);
