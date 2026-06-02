@@ -9,6 +9,7 @@ import {
   mapFlight,
   toQuoteBody,
   toBookingBody,
+  toBookingPatchBody,
 } from "@/lib/dispatch/autocab/mappers";
 import type { QuoteParams, BookingParams } from "@/lib/dispatch/types";
 
@@ -185,5 +186,26 @@ describe("toQuoteBody / toBookingBody", () => {
       price: 30,
       notes: "Meet at arrivals",
     });
+  });
+
+  it("builds a PARTIAL patch body, translating only present fields to AutoCab shapes", () => {
+    expect(
+      toBookingPatchBody({
+        pickup,
+        passengerName: "New Name",
+        quotedPrice: 42,
+      }),
+    ).toEqual({
+      pickup: { text: "A", zone: "Z1", postCode: "P1", latitude: 1, longitude: 2 },
+      passengerName: "New Name",
+      price: 42,
+    });
+  });
+
+  it("omits absent fields from the patch body (no undefined keys)", () => {
+    expect(toBookingPatchBody({ pickupTime: "2026-06-01T15:00:00.000Z" })).toEqual({
+      pickupTime: "2026-06-01T15:00:00.000Z",
+    });
+    expect(toBookingPatchBody({})).toEqual({});
   });
 });

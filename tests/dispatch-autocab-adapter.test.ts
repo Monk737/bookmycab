@@ -112,6 +112,20 @@ describe("AutoCabAdapter booking CRUD", () => {
     expect(calls[0].init?.method).toBe("PATCH");
   });
 
+  it("modifyBooking translates changed fields to AutoCab JSON shapes (not neutral DTO names)", async () => {
+    const { fetcher, calls } = fakeFetch({ bookingId: 9001, status: "Active" });
+    await new AutoCabAdapter(config, fetcher).modifyBooking("9001", {
+      pickup: { label: "A", zone: "Z1", postcode: "P1", lat: 1, lng: 2 },
+      quotedPrice: 42,
+    });
+    // The PATCH body must use AutoCab field names (text/postCode/latitude/price),
+    // never the neutral DTO names (label/postcode/lat/quotedPrice).
+    expect(JSON.parse(calls[0].init?.body as string)).toEqual({
+      pickup: { text: "A", zone: "Z1", postCode: "P1", latitude: 1, longitude: 2 },
+      price: 42,
+    });
+  });
+
   it("cancelBooking DELETEs /booking/{id}?companyId= and returns void", async () => {
     const { fetcher, calls } = fakeFetch({}, 204);
     const out = await new AutoCabAdapter(config, fetcher).cancelBooking("9001", 55);

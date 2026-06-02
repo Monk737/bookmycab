@@ -21,6 +21,7 @@ import {
   mapFlight,
   toQuoteBody,
   toBookingBody,
+  toBookingPatchBody,
 } from "./mappers";
 
 type Fetcher = typeof fetch;
@@ -106,7 +107,7 @@ export class AutoCabAdapter implements DispatchAdapter {
   ): Promise<BookingResult> {
     const json = await this.call(`/booking/${encodeURIComponent(bookingId)}`, {
       method: "PATCH",
-      body: JSON.stringify(params),
+      body: JSON.stringify(toBookingPatchBody(params)),
     });
     return mapBooking(json);
   }

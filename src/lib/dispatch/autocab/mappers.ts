@@ -142,3 +142,24 @@ export function toBookingBody(params: BookingParams) {
     notes: params.notes,
   };
 }
+
+/**
+ * Builds a PARTIAL AutoCab booking body for modify (PATCH). Only fields present
+ * on `params` are included, each translated to AutoCab's JSON shape — addresses
+ * via toAutoCabAddress, quotedPrice -> price. This keeps modifyBooking from
+ * sending neutral DTO field names (label/postcode/lat/quotedPrice) that AutoCab
+ * would silently ignore.
+ */
+export function toBookingPatchBody(params: Partial<BookingParams>) {
+  const body: Record<string, unknown> = {};
+  if (params.companyId !== undefined) body.companyId = params.companyId;
+  if (params.pickup) body.pickup = toAutoCabAddress(params.pickup);
+  if (params.destination) body.destination = toAutoCabAddress(params.destination);
+  if (params.pickupTime !== undefined) body.pickupTime = params.pickupTime;
+  if (params.vehicleType !== undefined) body.vehicleType = params.vehicleType;
+  if (params.passengerName !== undefined) body.passengerName = params.passengerName;
+  if (params.passengerPhone !== undefined) body.passengerPhone = params.passengerPhone;
+  if (params.quotedPrice !== undefined) body.price = params.quotedPrice;
+  if (params.notes !== undefined) body.notes = params.notes;
+  return body;
+}
