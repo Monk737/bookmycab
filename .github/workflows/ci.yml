@@ -44,6 +44,24 @@ jobs:
       - run: supabase start
       # Lint migrations for SQL issues (migration dry-run gate).
       - run: supabase db lint --level warning
+      # Bring up the automation engine stack (SRH + n8n) so the redis-integration
+      # test runs against a real SRH. The engine-client live test is exercised
+      # locally by the executor and stays optional in CI (it self-skips unless the
+      # N8N_API_KEY / N8N_TEST_WORKFLOW_ID secrets are present).
+      - name: Start automation engine stack
+        run: docker compose -f docker-compose.engine.yml up -d
+      - name: Wait for SRH + n8n
+        run: |
+          # SRH speaks the Upstash command-array protocol (POST / with ["PING"]),
+          # not path-based /set or /get URLs.
+          for i in $(seq 1 30); do
+            curl -sf -X POST http://localhost:8079/ -H "Authorization: Bearer local-dev-srh-token" -H 'content-type: application/json' -d '["PING"]' && break || sleep 2
+          done
+          for i in $(seq 1 30); do curl -sf http://localhost:5678/healthz && break || sleep 2; done
+      - name: Engine env for tests
+        run: |
+          echo "UPSTASH_REDIS_REST_URL=http://localhost:8079" >> "$GITHUB_ENV"
+          echo "UPSTASH_REDIS_REST_TOKEN=local-dev-srh-token" >> "$GITHUB_ENV"
       - name: Run tests (schema + RLS + hook + access)
         run: pnpm test
         env:
