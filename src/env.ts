@@ -37,6 +37,7 @@ const schema = z.object({
   CHANNEL_CACHE_TTL_SEC: z.coerce.number().int().positive().default(300),
   IDEMPOTENCY_TTL_SEC: z.coerce.number().int().positive().default(86400),
   DEMO_TENANT_ID: z.string().uuid().optional(),
+  DEMO_SESSION_SECRET: z.string().min(8).default("cabbybot-demo-2026"),
   FLOWMO_STAFF_EMAIL_DOMAIN: z.string().default("flowmoai.com"),
 
   // Marketing

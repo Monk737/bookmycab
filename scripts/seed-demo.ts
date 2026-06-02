@@ -403,16 +403,22 @@ async function main() {
 
   let totalConvs = 0, totalBookings = 0, totalMessages = 0;
 
-  for (const autoId of [AUTO_WA, AUTO_TG] as const) {
-    const chanId = autoId === AUTO_WA ? CHAN_WA : CHAN_TG;
+  for (const autoId of [AUTO_WA, AUTO_TG, AUTO_WG] as const) {
+    const chanId = autoId === AUTO_WA ? CHAN_WA : autoId === AUTO_TG ? CHAN_TG : CHAN_WG;
+    const isBookingAuto = autoId !== AUTO_WG;
     for (let day = 0; day < 180; day++) {
       for (let c = 0; c < randInt(1, 4); c++) {
         const convType = pickConvType();
+        // Widget Support Bot only generates manage/cancel/voice — no booking outcomes
+        const effectiveConvType: ConvType = !isBookingAuto
+          ? pick(["cancel", "manage", "voice"] as const)
+          : convType;
         const started = daysAgo(180 - day);
         const outcome: string =
-          convType === "cancel" ? "cancelled" :
-          convType === "manage" ? "managed" :
-          ["booking_asap", "booking_scheduled", "booking_airport"].includes(convType)
+          !isBookingAuto ? "managed" :
+          effectiveConvType === "cancel" ? "cancelled" :
+          effectiveConvType === "manage" ? "managed" :
+          ["booking_asap", "booking_scheduled", "booking_airport"].includes(effectiveConvType)
             ? (rng() > 0.08 ? "booked" : "abandoned") : "abandoned";
 
         const customerHandle = `+44 7${randInt(700, 999)} ${randInt(100000, 999999)}`;
@@ -435,16 +441,16 @@ async function main() {
         totalConvs++;
 
         const pickup = pick(LONDON_ADDRESSES);
-        const dest = convType === "booking_airport"
+        const dest = effectiveConvType === "booking_airport"
           ? pick(LHR_TERMINALS)
           : pick(LONDON_ADDRESSES.filter((a) => a !== pickup));
         const fare = randFloat(15, 85);
 
         let msgs: MsgRow[];
-        if (convType === "voice") msgs = buildVoiceMessages(convId);
-        else if (convType === "cancel") msgs = buildCancelMessages(convId);
-        else if (convType === "manage") msgs = buildManageMessages(convId);
-        else msgs = buildBookingMessages(convId, pickup.formatted, dest.formatted, customerName, `£${fare.toFixed(2)}`, convType === "booking_asap" ? "asap" : "scheduled");
+        if (effectiveConvType === "voice") msgs = buildVoiceMessages(convId);
+        else if (effectiveConvType === "cancel") msgs = buildCancelMessages(convId);
+        else if (effectiveConvType === "manage") msgs = buildManageMessages(convId);
+        else msgs = buildBookingMessages(convId, pickup.formatted, dest.formatted, customerName, `£${fare.toFixed(2)}`, effectiveConvType === "booking_asap" ? "asap" : "scheduled");
 
         if (msgs.length > 0) {
           const { error: msgErr } = await sb.from("messages").insert(msgs);
@@ -452,17 +458,17 @@ async function main() {
           else totalMessages += msgs.length;
         }
 
-        if (outcome === "booked") {
-          const isAirport = convType === "booking_airport";
-          const terminal = isAirport ? pick(LHR_TERMINALS) : null;
-          const mode = convType === "booking_asap" ? "asap" : "scheduled";
+        if (isBookingAuto && outcome === "booked") {
+          const isAirport = effectiveConvType === "booking_airport";
+          const terminal = isAirport ? (dest as { formatted: string; terminal: string; code: string; lat: number; lng: number }) : null;
+          const mode = effectiveConvType === "booking_asap" ? "asap" : "scheduled";
           const pickupAt = new Date(started.getTime() + (mode === "asap" ? randInt(5, 30) : randInt(60, 2880)) * 60_000);
 
           const { error: bookErr } = await sb.from("bookings").insert({
             tenant_id: DEMO_TENANT_ID,
             automation_id: autoId,
             conversation_id: convId,
-            channel_type: autoId === AUTO_WA ? "whatsapp" : "telegram",
+            channel_type: autoId === AUTO_WA ? "whatsapp" : autoId === AUTO_TG ? "telegram" : "widget",
             dispatch_ref: `DEMO-${randInt(100000, 999999)}`,
             dispatch_adapter: "autocab",
             passenger_name: customerName,
