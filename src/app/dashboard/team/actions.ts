@@ -117,6 +117,24 @@ export async function changeRole(
 
   const client = serviceClient();
 
+  // Last-Owner guard: demoting the sole Owner would leave the tenant with no one
+  // able to manage the team. Only check when the change moves a user OUT of Owner.
+  if (parsedRole.data !== "Owner") {
+    const { data: owners, error: countError } = await client
+      .from("tenant_users")
+      .select("user_id")
+      .eq("tenant_id", orgId)
+      .eq("role", "Owner");
+    if (countError) {
+      console.error("changeRole: owner count query failed", countError);
+      return { ok: false, error: "Could not verify team composition. Please try again." };
+    }
+    const ownerIds: string[] = (owners ?? []).map((r: { user_id: string }) => r.user_id);
+    if (ownerIds.includes(userId) && ownerIds.length === 1) {
+      return { ok: false, error: "Cannot demote the last owner." };
+    }
+  }
+
   const patch: Record<string, unknown> = { role: parsedRole.data };
   if (automationRestrictions !== undefined) {
     patch.automation_restrictions = automationRestrictions;

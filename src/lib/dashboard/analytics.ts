@@ -64,7 +64,12 @@ export async function getFunnel(automationId: string, r: AnalyticsRange, client?
   if (r.from) cq = cq.gte("started_at", r.from);
   if (r.to) cq = cq.lte("started_at", r.to);
   const { data: convs } = await cq;
-  const { count } = await supabase.from("bookings").select("id", { count: "exact", head: true }).eq("automation_id", automationId);
+  // Apply the same date window to the authoritative bookings count so the final
+  // funnel stage can't exceed the filtered inbound count for a narrow range.
+  let bq = supabase.from("bookings").select("id", { count: "exact", head: true }).eq("automation_id", automationId);
+  if (r.from) bq = bq.gte("created_at", r.from);
+  if (r.to) bq = bq.lte("created_at", r.to);
+  const { count } = await bq;
   return reduceFunnel((convs ?? []) as { outcome: string | null }[], count ?? 0);
 }
 
