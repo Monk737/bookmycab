@@ -22,6 +22,8 @@ describe("dashboard 7a — files exist", () => {
     "src/app/dashboard/automations/[automationId]/layout.tsx",
     "src/app/dashboard/automations/[automationId]/page.tsx",
     "src/app/dashboard/automations/[automationId]/live-feed.tsx",
+    "src/app/dashboard/automations/[automationId]/bookings/page.tsx",
+    "src/app/dashboard/automations/[automationId]/conversations/page.tsx",
   ];
   for (const f of files) {
     it(`exists: ${f}`, () => expect(existsSync(p(f)), f).toBe(true));
