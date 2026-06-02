@@ -19,6 +19,8 @@ describe("7b pages exist", () => {
     "src/app/dashboard/automations/[automationId]/config/page.tsx",
     "src/app/dashboard/automations/[automationId]/channels/page.tsx",
     "src/app/dashboard/team/page.tsx",
+    "src/app/dashboard/billing/page.tsx",
+    "src/app/dashboard/support/page.tsx",
   ]) {
     it(`exists: ${f}`, () => expect(existsSync(p(f)), f).toBe(true));
   }
