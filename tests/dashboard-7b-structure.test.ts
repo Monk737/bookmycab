@@ -16,6 +16,7 @@ describe("7b chart components exist", () => {
 describe("7b pages exist", () => {
   for (const f of [
     "src/app/dashboard/automations/[automationId]/analytics/page.tsx",
+    "src/app/dashboard/automations/[automationId]/config/page.tsx",
   ]) {
     it(`exists: ${f}`, () => expect(existsSync(p(f)), f).toBe(true));
   }
