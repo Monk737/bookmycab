@@ -11,7 +11,7 @@ describe("epic-8 billing files exist", () => {
     "src/lib/billing/plan-price.ts",
     "src/lib/billing/dates.ts",
     "src/lib/billing/event-map.ts",
-    // "src/lib/billing/handle-event.ts",
+    "src/lib/billing/handle-event.ts",
     "src/lib/email/resend.ts",
     "src/lib/email/templates.ts",
     // "src/app/webhooks/stripe/route.ts",
