@@ -75,7 +75,17 @@ describe("PATCH booking status", () => {
     const req = new Request("http://x/api/orgs/o1/automations/a1/bookings/b1", { method: "PATCH", body: JSON.stringify({ status: "cancelled" }) });
     const res = await patchBooking(req, ctx({ orgId: "o1", automationId: "a1", bookingId: "b1" }));
     expect(requireOrgAccess).toHaveBeenCalledWith("o1", expect.objectContaining({ minRole: "Admin", automationId: "a1" }));
+    // The write must be scoped to the automation, not just the booking id, so a
+    // restriction-scoped Admin can't mutate a sibling automation's booking.
+    expect(updateBookingStatus).toHaveBeenCalledWith("b1", "a1", "cancelled");
     expect(res.status).toBe(200);
+  });
+  it("returns 404 when the booking is not in this automation (update matched no row)", async () => {
+    requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
+    (updateBookingStatus as ReturnType<typeof vi.fn>).mockResolvedValue(false);
+    const req = new Request("http://x/api/orgs/o1/automations/a1/bookings/bX", { method: "PATCH", body: JSON.stringify({ status: "cancelled" }) });
+    const res = await patchBooking(req, ctx({ orgId: "o1", automationId: "a1", bookingId: "bX" }));
+    expect(res.status).toBe(404);
   });
   it("rejects an invalid status value with 400", async () => {
     requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });

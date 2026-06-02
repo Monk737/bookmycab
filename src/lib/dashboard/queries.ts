@@ -118,10 +118,27 @@ export async function getBookingDetail(bookingId: string, client?: SupabaseLike)
   };
 }
 
-export async function updateBookingStatus(bookingId: string, status: BookingRow["status"], client?: SupabaseLike): Promise<boolean> {
+/**
+ * Updates a booking's status, scoped to BOTH the booking id AND its automation.
+ * The automation_id constraint prevents a restriction-scoped Admin from mutating
+ * a sibling automation's booking in the same tenant by passing an allowed
+ * automationId in the URL with another automation's bookingId (RLS only checks
+ * tenant on the bookings UPDATE policy). Returns true only when a row matched.
+ */
+export async function updateBookingStatus(
+  bookingId: string,
+  automationId: string,
+  status: BookingRow["status"],
+  client?: SupabaseLike,
+): Promise<boolean> {
   const supabase = client ?? (await createClient());
-  const { error } = await supabase.from("bookings").update({ status, updated_at: new Date().toISOString() }).eq("id", bookingId);
-  return !error;
+  const { data, error } = await supabase
+    .from("bookings")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", bookingId)
+    .eq("automation_id", automationId)
+    .select("id");
+  return !error && (data?.length ?? 0) > 0;
 }
 
 const CONVERSATION_COLS = "id, customer_name, customer_handle, channel_id, started_at, ended_at, outcome, language";

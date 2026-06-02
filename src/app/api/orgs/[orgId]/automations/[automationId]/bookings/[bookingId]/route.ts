@@ -21,7 +21,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<Record<string, 
   if (!body?.status || !VALID.has(body.status)) {
     return new NextResponse("Invalid status", { status: 400 });
   }
-  const ok = await updateBookingStatus(bookingId, body.status as never);
-  if (!ok) return new NextResponse("Update failed", { status: 500 });
+  // Scope the write to this automation so a restriction-scoped Admin can't
+  // mutate a sibling automation's booking via an allowed automationId in the URL.
+  const ok = await updateBookingStatus(bookingId, automationId, body.status as never);
+  if (!ok) return new NextResponse("Not found", { status: 404 });
   return NextResponse.json({ ok: true });
 }
