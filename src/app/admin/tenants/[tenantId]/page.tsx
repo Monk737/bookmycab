@@ -13,6 +13,7 @@ import {
   InviteForm,
   LifecycleControls,
 } from "./tenant-detail-forms";
+import { BillingPanel } from "./billing-panel";
 
 // Always read fresh — lifecycle changes / invites must appear immediately.
 export const dynamic = "force-dynamic";
@@ -62,6 +63,7 @@ type Tenant = {
   dispatch_company_id: string | null;
   contact_email: string | null;
   stripe_customer_id: string | null;
+  setup_fee_paid: boolean | null;
 };
 
 type AutomationRow = {
@@ -159,7 +161,7 @@ export default async function TenantDetailPage({
   const { data: tenantData, error: tenantError } = await serviceClient
     .from("tenants")
     .select(
-      "id, name, slug, status, country, plan_band, currency, monthly_price, contract_start, contract_renewal, renewal_mode, dispatch_adapter, dispatch_company_id, contact_email, stripe_customer_id",
+      "id, name, slug, status, country, plan_band, currency, monthly_price, contract_start, contract_renewal, renewal_mode, dispatch_adapter, dispatch_company_id, contact_email, stripe_customer_id, setup_fee_paid",
     )
     .eq("id", tenantId)
     .maybeSingle();
@@ -440,6 +442,15 @@ export default async function TenantDetailPage({
           />
         </div>
       </div>
+
+      <Section title="Billing actions">
+        <BillingPanel
+          tenantId={tenant.id}
+          planBand={tenant.plan_band}
+          setupFeePaid={Boolean(tenant.setup_fee_paid)}
+          hasSubscription={(subsData ?? []).length > 0}
+        />
+      </Section>
 
       <Section title="Edit contract">
         <div className="rounded-lg border border-zinc-200 bg-white p-5">

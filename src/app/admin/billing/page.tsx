@@ -1,4 +1,5 @@
 import "server-only";
+import Link from "next/link";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
@@ -88,12 +89,9 @@ function MoneyByCurrency({
  * client. No mutation happens here, so no audit entry is written — reading
  * billing data for staff display is not an audited action.
  *
- * NO live Stripe calls. The "Manual sync" control is intentionally disabled
- * until Epic 8 wires up the Stripe API. // TODO(epic-8)
- *
- * MRR source of truth today is `tenants.monthly_price` (always present from
- * provisioning); `subscriptions` is an Epic-8 mirror and may be empty. We read
- * subscriptions only to show whether the mirror has populated yet. // TODO(epic-8)
+ * MRR source of truth is `tenants.monthly_price` (always present from
+ * provisioning); `subscriptions` is the Stripe mirror. We read subscriptions
+ * only to show whether the mirror has populated yet.
  */
 export default async function BillingPage() {
   // Defense-in-depth on top of the admin layout guard: this component reads
@@ -115,7 +113,6 @@ export default async function BillingPage() {
     serviceClient
       .from("setup_fees")
       .select("id, tenant_id, amount, currency, paid_at"),
-    // Epic-8 mirror — read only to report whether it has populated. // TODO(epic-8)
     serviceClient.from("subscriptions").select("id", { count: "exact", head: true }),
   ]);
 
@@ -244,20 +241,14 @@ export default async function BillingPage() {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          {/* Live Stripe sync arrives with Epic 8. Disabled, wired to nothing. */}
-          {/* TODO(epic-8): enable + call the Stripe API to reconcile mirrors. */}
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            title="Stripe sync available after Epic 8"
-            className="shrink-0 cursor-not-allowed rounded-md border border-zinc-300 bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-400"
+          {/* Live Stripe sync is per-tenant (tenant detail → Sync from Stripe). */}
+          <Link
+            href="/admin/tenants"
+            className="shrink-0 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
           >
-            Manual sync
-          </button>
-          <p className="text-xs text-zinc-500">
-            Stripe sync available after Epic&nbsp;8
-          </p>
+            Sync a tenant
+          </Link>
+          <p className="text-xs text-zinc-500">Open a tenant to sync from Stripe</p>
         </div>
       </div>
 
@@ -354,7 +345,7 @@ export default async function BillingPage() {
         {subscriptionCount > 0
           ? `holds ${subscriptionCount} row(s)`
           : "is empty"}{" "}
-        and will be reconciled against Stripe in Epic&nbsp;8.
+        and is reconciled from Stripe via webhooks and per-tenant Manual sync.
       </p>
     </div>
   );
