@@ -31,7 +31,7 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Done when:** `pnpm build` passes, `pnpm test` (schema + RLS isolation + middleware) passes, CI is green.
 **Frontend skill:** not yet — no UI surfaces.
 
-### 🚧 Plan 2 — Epic 2: Marketing Site  → `2026-05-31-epic-2-marketing-site.md`
+### ✅ Plan 2 — Epic 2: Marketing Site  → `2026-05-31-epic-2-marketing-site.md`  (DONE & merged to `master` 2026-06-01, HEAD `99d0607`)
 **Depends on:** Plan 1.
 **Decisions locked:** Discovery CTA → Cal.com (`NEXT_PUBLIC_CAL_LINK`); brand assets → #FFD400 editorial + placeholder wordmark; multi-currency pricing GBP/EUR/USD.
 **Produces:** Public pages (Home, How It Works, Channels, Pricing A/B/C, Custom Solutions, Case Studies, About, Contact, Legal), `#FFD400` editorial design system, transparency section, ROI calculator, dispatch badges (AutoCab/iCabbi/Cordic), discovery-call CTA, "Try the Dashboard" → demo. **No public signup.**
@@ -55,12 +55,12 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** Engine (n8n) API client (start/stop/restart/status/runs — **internal label only**), webhook gateway with channel→automation resolver (Supabase lookup cached in Upstash Redis 5-min TTL), per-channel signature verification, async forward + idempotency key, status sync into Supabase, audit logging for control-plane actions.
 **Perf target:** webhook ACK p95 ≤300ms.
 
-### ⬜ Plan 6 — Epic 6: Dispatch Adapter Layer
+### ✅ Plan 6 — Epic 6: Dispatch Adapter Layer  → `2026-06-01-epic-6-dispatch-adapter-layer.md`  (DONE & merged to `master` 2026-06-02, HEAD `638b4a8`)
 **Depends on:** Plan 5.
 **Produces:** `DispatchAdapter` TS interface (§7.6); **AutoCab** full adapter (address/zones/capabilities/quote/booking CRUD/flights); LHR terminal zone mapping (T1/T2/T3→`LHR T123`, T4→`LHR T4`, T5→`LHR T5`); IATA→airline lookup; airport buffer logic; per-tenant adapter selection; iCabbi/Cordic stubs.
 **Open qs:** Q2 (stubs that error gracefully vs defer selector).
 
-### 🚧 Plan 7 — Epic 7: Tenant Dashboard  → split into `2026-06-02-epic-7a-tenant-dashboard-core.md` (+ 7b to follow)
+### ✅ Plan 7 — Epic 7: Tenant Dashboard  → `2026-06-02-epic-7a-tenant-dashboard-core.md` + `2026-06-02-epic-7b-tenant-dashboard-extended.md`  (DONE & merged to `master` 2026-06-02, HEAD `9608185`)
 **7a (written):** shared foundation (recharts, dashboard shell/subnav, RLS data layer, Realtime hook, shared components/charts), tenant read-API layer, and the four core sections — Org Overview, Per-Automation Overview (live feed + charts), Bookings (table + slide-over + CSV), Conversations (transcript). Design system: ui-ux-pro-max "Data-Dense Dashboard" (blue #1E40AF / amber #F59E0B, Fira Sans), persisted at `design-system/cabbybot-dashboard/`.
 **7b (written):** `2026-06-02-epic-7b-tenant-dashboard-extended.md` — Analytics (10 sections, honest empty states for voice/response-time pending Epic 10), Config + Support (new tables `automation_config`/`support_tickets`, migration 0015), Channels, Team (Owner-gated service-role invite), Billing (read-only; Stripe portal/invoices stubbed for Epic 8).
 **Depends on:** Plans 1, 4, 5, 6.
@@ -75,7 +75,7 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Open qs resolved (2026-06-02):** Q4 — setup fee **non-refundable, manual-only** (no refund code). Q5 — mid-contract upgrades **deferred, admin-driven** (no proration endpoint; staff change subs in Stripe, webhook syncs mirror).
 **Plan written (8 tasks):** Stripe SDK + lazy singleton; pure modules (pricing→Stripe params, date math, event→mirror map, payment-failed email template, `handleStripeEvent` orchestrator); `/webhooks/stripe` route (raw-body verify + Redis `claimOnce` idempotency); admin setup-fee/subscription/sync actions + tenant-detail controls; live Customer Portal session (replaces Epic-3 503 stub). All Stripe I/O confined to `src/lib/billing/**`; new Resend sender in `src/lib/email/**`. No new migration (0004 `subscriptions`/`setup_fees` + 0001 `stripe_customer_id` already suffice).
 
-### ⬜ Plan 9 — Epic 9: Demo Tenant
+### ✅ Plan 9 — Epic 9: Demo Tenant  → `2026-06-02-epic-9-demo-tenant.md`  (DONE & merged to `master` 2026-06-02, HEAD `d3e5587`)
 **Depends on:** Plans 1, 7.
 **Produces:** Supabase seed script (6 months deterministic mock data — bookings ASAP/Scheduled/Airport, voice/location/bilingual/manage/cancel conversations, all analytics populated, 3 automations); one-click `/demo` read-only session pinned to `DEMO_TENANT_ID`; read-only enforcement (writes → 403 + banner); 24h reset via Supabase Edge Function cron.
 **Open qs:** Q6 (UK-only vs international demo geography).
