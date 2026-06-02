@@ -19,7 +19,10 @@ export function buildBillingDeps(): BillingDeps {
       const { error } = await db
         .from("subscriptions")
         .upsert(row, { onConflict: "stripe_sub_id" });
-      if (error) console.error("upsertSubscription failed", error);
+      // Throw on a real DB error so the webhook route returns 500, releases the
+      // idempotency claim, and Stripe retries. The upsert is idempotent, so a
+      // retry is safe.
+      if (error) throw new Error(`upsertSubscription failed: ${error.message}`);
     },
 
     async markSetupFeePaid(stripeInvoiceId) {
@@ -29,10 +32,9 @@ export function buildBillingDeps(): BillingDeps {
         .eq("stripe_invoice_id", stripeInvoiceId)
         .select("tenant_id, currency")
         .maybeSingle();
-      if (error) {
-        console.error("markSetupFeePaid failed", error);
-        return null;
-      }
+      // Throw on a DB error (retryable); a missing row is NOT an error — it just
+      // means this invoice isn't a tracked setup fee, so return null and ack.
+      if (error) throw new Error(`markSetupFeePaid failed: ${error.message}`);
       if (!fee) return null;
       const tenantId = (fee as { tenant_id: string }).tenant_id;
       await db.from("tenants").update({ setup_fee_paid: true }).eq("id", tenantId);

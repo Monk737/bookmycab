@@ -50,7 +50,7 @@ export async function handleStripeEvent(
 
     case "invoice.paid": {
       const invoice = event.data.object as Stripe.Invoice;
-      if (classifyInvoice(invoice) === "setup") {
+      if (classifyInvoice(invoice) === "setup" && invoice.id) {
         await deps.markSetupFeePaid(invoice.id);
         return { action: "setup_fee.paid" };
       }

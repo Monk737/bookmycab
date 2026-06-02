@@ -14,7 +14,7 @@ import {
 } from "@/lib/billing/plan-price";
 import { subscriptionToMirror } from "@/lib/billing/event-map";
 import { addMonthsUTC } from "@/lib/billing/dates";
-import { CONTRACT_MONTHS, type Currency } from "@/lib/marketing/pricing";
+import { CONTRACT_MONTHS, SETUP_FEE, type Currency } from "@/lib/marketing/pricing";
 import type { PlanBand } from "@/lib/admin/plan-bands";
 
 const idSchema = z.string().uuid();
@@ -95,15 +95,20 @@ export async function createSetupFeeInvoice(tenantId: string): Promise<void> {
     .eq("tenant_id", id)
     .is("paid_at", null)
     .maybeSingle();
+  // The setup-fee amount is the canonical §6.1 figure for the tenant's currency;
+  // persist it so the admin pipeline / invoice tables report a real number (not
+  // null → 0). Stripe is the payment ledger; this column is our local mirror.
+  const setupAmount = SETUP_FEE[tenant.currency];
   if (existing) {
     await db()
       .from("setup_fees")
-      .update({ stripe_invoice_id: invoice.id })
+      .update({ stripe_invoice_id: invoice.id, amount: setupAmount })
       .eq("id", (existing as { id: string }).id);
   } else {
     await db().from("setup_fees").insert({
       tenant_id: id,
       stripe_invoice_id: invoice.id,
+      amount: setupAmount,
       currency: tenant.currency,
       paid_at: null,
     });

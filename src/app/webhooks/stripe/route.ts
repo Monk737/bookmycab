@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { env } from "@/env";
 import { getStripe } from "@/lib/billing/stripe";
-import { claimOnce } from "@/lib/redis/idempotency";
+import { claimOnce, releaseClaim } from "@/lib/redis/idempotency";
 import { handleStripeEvent } from "@/lib/billing/handle-event";
 import { buildBillingDeps } from "@/lib/billing/webhook-deps";
 
@@ -32,7 +32,12 @@ export async function POST(req: Request): Promise<Response> {
     return new NextResponse("Invalid signature", { status: 400 });
   }
 
-  const fresh = await claimOnce(`stripe:evt:${event.id}`, EVENT_DEDUPE_TTL_SEC);
+  // Claim the event id BEFORE processing so a concurrent duplicate delivery is
+  // deduped (prevents e.g. double payment-failed emails). On a handler failure
+  // we RELEASE the claim and 500, so Stripe's retry is reprocessed rather than
+  // permanently dropped — the underlying DB writes are idempotent.
+  const dedupeKey = `stripe:evt:${event.id}`;
+  const fresh = await claimOnce(dedupeKey, EVENT_DEDUPE_TTL_SEC);
   if (!fresh) return NextResponse.json({ received: true, deduped: true });
 
   try {
@@ -40,6 +45,7 @@ export async function POST(req: Request): Promise<Response> {
     return NextResponse.json({ received: true, action: result.action });
   } catch (err) {
     console.error("/webhooks/stripe: handler failed", err);
+    await releaseClaim(dedupeKey);
     return new NextResponse("Handler error", { status: 500 });
   }
 }
