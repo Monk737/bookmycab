@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ orgId: string; automationId: string }> },
 ) {
   const { orgId, automationId } = await params;
-  const gate = await requireOrgAccess(orgId, { minRole: "Viewer" });
+  const gate = await requireOrgAccess(orgId, { minRole: "Viewer", automationId });
   if (gate instanceof NextResponse) return gate;
   try {
     return NextResponse.json(await getStatus({ automationId }));

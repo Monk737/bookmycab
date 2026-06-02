@@ -75,6 +75,7 @@ describe("auth site structure", () => {
       role: "Owner",
       is_flowmo_staff: false,
       aal: "aal1",
+      automation_restrictions: [],
     };
     for (const route of AUTH_ROUTES) {
       expect(evaluateAccess(route, aal1Owner)).toEqual({ kind: "allow" });

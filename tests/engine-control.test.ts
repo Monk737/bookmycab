@@ -23,13 +23,13 @@ describe("control layer", () => {
     await startAutomation({ automationId: "a1", tenantId: "t1", actorUserId: "u1" });
     expect(activate).toHaveBeenCalledWith("wf1");
     expect(updateStatus).toHaveBeenCalledWith("a1", "live");
-    expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "automation.start", targetId: "a1" }));
+    expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "automation.start", targetId: "a1", actorUserId: "u1" }));
   });
   it("stopAutomation deactivates, sets stopped, audits", async () => {
     await stopAutomation({ automationId: "a1", tenantId: "t1", actorUserId: "u1" });
     expect(deactivate).toHaveBeenCalledWith("wf1");
     expect(updateStatus).toHaveBeenCalledWith("a1", "stopped");
-    expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "automation.stop" }));
+    expect(writeAudit).toHaveBeenCalledWith(expect.objectContaining({ action: "automation.stop", actorUserId: "u1" }));
   });
   it("getStatus maps engine active→live", async () => {
     isActive.mockResolvedValue(true);

@@ -24,6 +24,10 @@ const META_CHANNELS = new Set<Channel>(["whatsapp", "messenger", "instagram"]);
 // keyspace with unbounded probe traffic and force a failing DB uuid cast.
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Fixed dummy key used only to equalize verify timing on the null-secret
+// (unknown automation) branch — never a real credential.
+const DUMMY_SECRET = "cabby-dummy-secret-not-a-real-key";
+
 function isChannel(v: string): v is Channel {
   return (CHANNELS as string[]).includes(v);
 }
@@ -110,16 +114,30 @@ async function verifyInbound(
 ): Promise<boolean> {
   if (META_CHANNELS.has(channel)) {
     const secret = await loadChannelVerifySecret(automationId, "meta_app_secret");
-    if (!secret) return false;
+    if (!secret) {
+      // No secret (unknown automation). Do a dummy constant-time HMAC verify so
+      // this path costs roughly the same as a real bad-signature check, removing
+      // the timing oracle that would otherwise reveal automation existence.
+      verifyMetaSignature(rawBody, req.headers.get("x-hub-signature-256"), DUMMY_SECRET);
+      return false;
+    }
     return verifyMetaSignature(rawBody, req.headers.get("x-hub-signature-256"), secret);
   }
   if (channel === "telegram") {
     const secret = await loadChannelVerifySecret(automationId, "telegram_webhook_secret");
-    if (!secret) return false;
+    if (!secret) {
+      // Equalize unknown-automation vs bad-signature timing (see above).
+      verifyTelegramSecret(req.headers.get("x-telegram-bot-api-secret-token"), DUMMY_SECRET);
+      return false;
+    }
     return verifyTelegramSecret(req.headers.get("x-telegram-bot-api-secret-token"), secret);
   }
   // widget
   const secret = await loadChannelVerifySecret(automationId, "widget_signing_key");
-  if (!secret) return false;
+  if (!secret) {
+    // Equalize unknown-automation vs bad-signature timing (see above).
+    verifyWidgetSignature(rawBody, req.headers.get("x-cabby-signature"), DUMMY_SECRET);
+    return false;
+  }
   return verifyWidgetSignature(rawBody, req.headers.get("x-cabby-signature"), secret);
 }

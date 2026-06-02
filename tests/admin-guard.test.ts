@@ -18,6 +18,7 @@ const staffClaims: Claims = {
   role: "Owner",
   is_flowmo_staff: true,
   aal: "aal2",
+  automation_restrictions: [],
 };
 
 const nonStaffOwner: Claims = {
@@ -26,6 +27,7 @@ const nonStaffOwner: Claims = {
   role: "Owner",
   is_flowmo_staff: false,
   aal: "aal2",
+  automation_restrictions: [],
 };
 
 describe("staffAccessDecision", () => {

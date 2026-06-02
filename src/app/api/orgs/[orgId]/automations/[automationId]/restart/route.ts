@@ -10,7 +10,7 @@ export async function POST(
   { params }: { params: Promise<{ orgId: string; automationId: string }> },
 ) {
   const { orgId, automationId } = await params;
-  const gate = await requireOrgAccess(orgId, { minRole: "Admin" });
+  const gate = await requireOrgAccess(orgId, { minRole: "Admin", automationId });
   if (gate instanceof NextResponse) return gate;
   try {
     await restartAutomation({ automationId, tenantId: orgId, actorUserId: gate.claims.sub });

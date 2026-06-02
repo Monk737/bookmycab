@@ -13,6 +13,7 @@ const staffClaims: Claims = {
   role: "Owner",
   is_flowmo_staff: true,
   aal: "aal2",
+  automation_restrictions: [],
 };
 
 const ownerClaims: Claims = {
@@ -21,6 +22,7 @@ const ownerClaims: Claims = {
   role: "Owner",
   is_flowmo_staff: false,
   aal: "aal2",
+  automation_restrictions: [],
 };
 
 const viewerClaims: Claims = {
@@ -29,6 +31,7 @@ const viewerClaims: Claims = {
   role: "Viewer",
   is_flowmo_staff: false,
   aal: "aal1",
+  automation_restrictions: [],
 };
 
 describe("redirectTargetFor", () => {

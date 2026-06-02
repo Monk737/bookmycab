@@ -4,6 +4,7 @@ export type Claims = {
   role: "Owner" | "Admin" | "Viewer" | null;
   is_flowmo_staff: boolean;
   aal: "aal1" | "aal2" | null;
+  automation_restrictions: string[];
 };
 
 export type AccessDecision =
@@ -33,6 +34,9 @@ export function parseClaims(raw: Record<string, unknown>): Claims {
     role: (raw.role as Claims["role"]) ?? null,
     is_flowmo_staff: Boolean(raw.is_flowmo_staff),
     aal: (raw.aal as Claims["aal"]) ?? null,
+    automation_restrictions: Array.isArray(raw.automation_restrictions)
+      ? (raw.automation_restrictions as string[])
+      : [],
   };
 }
 

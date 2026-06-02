@@ -17,6 +17,8 @@ export function fireAndForgetForward(
     headers: { "content-type": contentType },
     body: rawBody,
   }).catch((err) => {
-    console.error("engine forward failed", { engineWebhookUrl, err: String(err) });
+    // Do NOT log engineWebhookUrl — it is the internal engine host and must not
+    // leak to log drains.
+    console.error("engine forward failed", { err: String(err) });
   });
 }

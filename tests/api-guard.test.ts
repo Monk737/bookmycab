@@ -9,7 +9,7 @@ import type { Claims } from "@/middleware/access";
 beforeEach(() => getCurrentClaims.mockReset());
 
 const claims = (over: Partial<Claims>): Claims => ({
-  sub: "u1", tenant_id: "t1", role: "Viewer", is_flowmo_staff: false, aal: "aal2", ...over,
+  sub: "u1", tenant_id: "t1", role: "Viewer", is_flowmo_staff: false, aal: "aal2", automation_restrictions: [], ...over,
 });
 
 describe("evaluateOrgAccess", () => {
@@ -27,5 +27,45 @@ describe("evaluateOrgAccess", () => {
   });
   it("allows Owner for an Admin-min action", () => {
     expect(evaluateOrgAccess(claims({ role: "Owner" }), "t1", { minRole: "Admin" }).kind).toBe("allow");
+  });
+
+  it("forbids a restricted non-staff user from an automation outside their restrictions", () => {
+    expect(
+      evaluateOrgAccess(
+        claims({ role: "Admin", automation_restrictions: ["allowed-id"] }),
+        "t1",
+        { minRole: "Admin", automationId: "other-id" },
+      ).kind,
+    ).toBe("forbidden");
+  });
+
+  it("allows a restricted non-staff user for an automation within their restrictions", () => {
+    expect(
+      evaluateOrgAccess(
+        claims({ role: "Admin", automation_restrictions: ["allowed-id"] }),
+        "t1",
+        { minRole: "Admin", automationId: "allowed-id" },
+      ).kind,
+    ).toBe("allow");
+  });
+
+  it("empty restrictions → allowed for any automationId", () => {
+    expect(
+      evaluateOrgAccess(
+        claims({ role: "Admin", automation_restrictions: [] }),
+        "t1",
+        { minRole: "Admin", automationId: "any-id" },
+      ).kind,
+    ).toBe("allow");
+  });
+
+  it("staff bypass restrictions (still allowed even with restrictions set)", () => {
+    expect(
+      evaluateOrgAccess(
+        claims({ is_flowmo_staff: true, tenant_id: null, automation_restrictions: ["allowed-id"] }),
+        "t1",
+        { minRole: "Admin", automationId: "other-id" },
+      ).kind,
+    ).toBe("allow");
   });
 });
