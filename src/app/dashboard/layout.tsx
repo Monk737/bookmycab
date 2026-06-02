@@ -3,6 +3,7 @@ import { Fira_Sans, Fira_Code } from "next/font/google";
 import { requireUser } from "@/lib/auth/session";
 import { getOrgSummary } from "@/lib/dashboard/queries";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { DemoBanner } from "@/components/dashboard/demo-banner";
 
 const firaSans = Fira_Sans({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const org = claims.tenant_id ? await getOrgSummary(claims.tenant_id) : null;
   return (
     <div className={`${firaSans.variable} ${firaCode.variable} font-sans`}>
+      {claims.is_demo && <DemoBanner />}
       <DashboardShell orgName={org?.name ?? "Your organisation"}>{children}</DashboardShell>
     </div>
   );
