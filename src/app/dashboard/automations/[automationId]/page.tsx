@@ -170,6 +170,7 @@ export default async function AutomationOverviewPage({
           orgId={claims.tenant_id}
           automationId={automationId}
           status={card.status}
+          isDemo={claims.is_demo}
         />
       </div>
 

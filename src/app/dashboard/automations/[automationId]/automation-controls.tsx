@@ -31,14 +31,30 @@ export function AutomationControls({
   orgId,
   automationId,
   status,
+  isDemo = false,
 }: {
   orgId: string;
   automationId: string;
   status: string;
+  isDemo?: boolean;
 }): React.JSX.Element {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (isDemo) {
+    return (
+      <button
+        type="button"
+        disabled
+        aria-disabled="true"
+        title="Controls are disabled in demo mode"
+        className="cursor-not-allowed rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-600"
+      >
+        Demo — read only
+      </button>
+    );
+  }
 
   if (DISABLED_STATUSES.includes(status as AutomationStatus)) {
     return <DisabledReason status={status as AutomationStatus} />;
