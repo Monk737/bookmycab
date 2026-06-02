@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Fira_Sans, Fira_Code } from "next/font/google";
 import { requireUser } from "@/lib/auth/session";
+import { getOrgSummary } from "@/lib/dashboard/queries";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
 const firaSans = Fira_Sans({
@@ -18,11 +19,11 @@ const firaCode = Fira_Code({
 });
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  await requireUser(); // redirects to /login if unauthenticated
-  // NOTE: getOrgSummary is wired in Task 3; use a literal for now.
+  const claims = await requireUser();
+  const org = claims.tenant_id ? await getOrgSummary(claims.tenant_id) : null;
   return (
     <div className={`${firaSans.variable} ${firaCode.variable} font-sans`}>
-      <DashboardShell orgName="Your organisation">{children}</DashboardShell>
+      <DashboardShell orgName={org?.name ?? "Your organisation"}>{children}</DashboardShell>
     </div>
   );
 }
