@@ -8,12 +8,12 @@ describe("epic-8 billing files exist", () => {
   // TODO(epic-8): uncomment as later tasks land
   for (const f of [
     "src/lib/billing/stripe.ts",
-    // "src/lib/billing/plan-price.ts",
+    "src/lib/billing/plan-price.ts",
     // "src/lib/billing/dates.ts",
     // "src/lib/billing/event-map.ts",
     // "src/lib/billing/handle-event.ts",
-    // "src/lib/email/resend.ts",
-    // "src/lib/email/templates.ts",
+    "src/lib/email/resend.ts",
+    "src/lib/email/templates.ts",
     // "src/app/webhooks/stripe/route.ts",
     // "src/app/admin/tenants/[tenantId]/billing-actions.ts",
   ]) {
