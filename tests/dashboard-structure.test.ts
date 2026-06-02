@@ -57,8 +57,16 @@ describe("dashboard brand safety", () => {
 
 describe("no service-role key on tenant surfaces", () => {
   it("dashboard + api/orgs never reference the service-role key", () => {
+    // Allowlist: the Epic-7b team surface legitimately uses the service-role
+    // client server-side — `team/actions.ts` for Owner-gated invite/role/revoke,
+    // and `team/page.tsx` for the Owner-gated audit-log read (audit_log RLS denies
+    // tenant SELECT). Both are security-reviewed and never expose the key client-side.
+    const allow = new Set(
+      ["src/app/dashboard/team/actions.ts", "src/app/dashboard/team/page.tsx"].map((r) => p(r)),
+    );
     for (const d of ["src/app/dashboard", "src/components/dashboard", "src/lib/dashboard", "src/app/api/orgs"]) {
       for (const f of tsxFiles(p(d))) {
+        if (allow.has(f)) continue;
         expect(readFileSync(f, "utf8"), `${f} must not use the service-role key`).not.toMatch(/SERVICE_ROLE/);
       }
     }
