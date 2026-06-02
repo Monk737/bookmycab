@@ -29,4 +29,12 @@ describe("Epic 9: Demo Tenant file structure", () => {
   it("demo banner component exists", () => {
     expect(existsSync(`${root}/src/components/dashboard/demo-banner.tsx`)).toBe(true);
   });
+
+  it("seed script contains required markers", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const src = await readFile(resolve(root, "scripts/seed-demo.ts"), "utf-8");
+    expect(src).toContain("DEMO_TENANT_ID");
+    expect(src).toContain("seed-demo");
+    expect(src).toContain("is_demo: true");
+  });
 });
