@@ -62,7 +62,7 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 
 ### 🚧 Plan 7 — Epic 7: Tenant Dashboard  → split into `2026-06-02-epic-7a-tenant-dashboard-core.md` (+ 7b to follow)
 **7a (written):** shared foundation (recharts, dashboard shell/subnav, RLS data layer, Realtime hook, shared components/charts), tenant read-API layer, and the four core sections — Org Overview, Per-Automation Overview (live feed + charts), Bookings (table + slide-over + CSV), Conversations (transcript). Design system: ui-ux-pro-max "Data-Dense Dashboard" (blue #1E40AF / amber #F59E0B, Fira Sans), persisted at `design-system/cabbybot-dashboard/`.
-**7b (to write):** Analytics (10 sections), Config, Channels, Team, Billing, Support.
+**7b (written):** `2026-06-02-epic-7b-tenant-dashboard-extended.md` — Analytics (10 sections, honest empty states for voice/response-time pending Epic 10), Config + Support (new tables `automation_config`/`support_tickets`, migration 0015), Channels, Team (Owner-gated service-role invite), Billing (read-only; Stripe portal/invoices stubbed for Epic 8).
 **Depends on:** Plans 1, 4, 5, 6.
 **Produces (in PRD order of complexity):** (1) Org overview grid + Realtime; (2) Per-automation overview + live feed; (3) Bookings table + filters + CSV + slide-over; (4) Conversations + transcript; (5) Analytics (10 sections, recharts); (6) Bot config; (7) Channels; (8) Team; (9) Billing; (10) Support.
 **Realtime rule:** one Realtime channel per automation view, auto-unsubscribe on unmount; never org-wide.
