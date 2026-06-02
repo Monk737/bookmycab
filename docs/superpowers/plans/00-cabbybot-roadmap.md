@@ -69,10 +69,11 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Perf target:** dashboard p95 ≤1.5s warm.
 **Frontend skill:** **use `ui-ux-pro-max`** throughout — this is the largest UI surface. Consider splitting into 7a (overviews + bookings + conversations) and 7b (analytics + config + channels + team + billing + support) when the plan is written.
 
-### ⬜ Plan 8 — Epic 8: Stripe Billing
+### ✅ Plan 8 — Epic 8: Stripe Billing  → `2026-06-02-epic-8-stripe-billing.md`  (DONE & merged to `master` 2026-06-02, HEAD `692a279`)
 **Depends on:** Plans 1, 3.
 **Produces:** Setup-fee one-time invoice on contract-signed; monthly subscription on go-live (billing start = go-live date); Stripe Tax (UK VAT); Customer Portal session API; webhook handlers (`customer.subscription.*`, `invoice.payment_failed` → Resend to ops + customer, no auto-suspend; `invoice.paid` → log). Honour `renewal_mode = rolling_monthly`.
-**Open qs:** Q4 (setup-fee refundability), Q5 (mid-contract upgrade pro-rata).
+**Open qs resolved (2026-06-02):** Q4 — setup fee **non-refundable, manual-only** (no refund code). Q5 — mid-contract upgrades **deferred, admin-driven** (no proration endpoint; staff change subs in Stripe, webhook syncs mirror).
+**Plan written (8 tasks):** Stripe SDK + lazy singleton; pure modules (pricing→Stripe params, date math, event→mirror map, payment-failed email template, `handleStripeEvent` orchestrator); `/webhooks/stripe` route (raw-body verify + Redis `claimOnce` idempotency); admin setup-fee/subscription/sync actions + tenant-detail controls; live Customer Portal session (replaces Epic-3 503 stub). All Stripe I/O confined to `src/lib/billing/**`; new Resend sender in `src/lib/email/**`. No new migration (0004 `subscriptions`/`setup_fees` + 0001 `stripe_customer_id` already suffice).
 
 ### ⬜ Plan 9 — Epic 9: Demo Tenant
 **Depends on:** Plans 1, 7.
