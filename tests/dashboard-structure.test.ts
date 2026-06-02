@@ -19,6 +19,9 @@ describe("dashboard 7a — files exist", () => {
     "src/components/dashboard/charts/trend-chart.tsx",
     "src/components/dashboard/charts/donut-chart.tsx",
     "src/components/dashboard/charts/bar-chart.tsx",
+    "src/app/dashboard/automations/[automationId]/layout.tsx",
+    "src/app/dashboard/automations/[automationId]/page.tsx",
+    "src/app/dashboard/automations/[automationId]/live-feed.tsx",
   ];
   for (const f of files) {
     it(`exists: ${f}`, () => expect(existsSync(p(f)), f).toBe(true));
