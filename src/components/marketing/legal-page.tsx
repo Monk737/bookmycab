@@ -18,9 +18,9 @@ type LegalPageProps = {
 };
 
 /**
- * Shared layout for the placeholder legal pages (Privacy/Terms/DPA/Cookies).
- * Real legal copy lands in Epic 12; these are structured stubs that carry a
- * "Last updated" date and a clear notice that final terms are issued at contract.
+ * Shared layout for the public legal pages (Privacy/Terms/DPA/Cookies). These are
+ * the finalized customer-facing summaries; the binding, signed documents are still
+ * issued with each contract at provisioning (stated in the notice below).
  */
 export function LegalPage({ title, lastUpdated, intro, sections }: LegalPageProps) {
   const formatted = new Date(lastUpdated).toLocaleDateString("en-GB", {
