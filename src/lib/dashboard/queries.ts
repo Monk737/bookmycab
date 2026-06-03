@@ -8,6 +8,20 @@ import type { BookingFilter, ConversationFilter } from "./bookings-filter";
 
 export type SupabaseLike = Awaited<ReturnType<typeof createClient>>;
 
+export function reduceOrgKpis(bookings: { fare: number | null; status: string }[]): { bookings30d: number; revenue30d: number } {
+  const revenue30d = Math.round(
+    bookings.reduce((s, b) => s + (typeof b.fare === "number" ? b.fare : 0), 0),
+  );
+  return { bookings30d: bookings.length, revenue30d };
+}
+
+export async function getOrgKpis(tenantId: string, client?: SupabaseLike): Promise<{ bookings30d: number; revenue30d: number }> {
+  const supabase = client ?? (await createClient());
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const { data } = await supabase.from("bookings").select("fare, status").eq("tenant_id", tenantId).gte("created_at", since);
+  return reduceOrgKpis((data ?? []) as { fare: number | null; status: string }[]);
+}
+
 function startOfTodayUtcIso(): string {
   const now = new Date();
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
