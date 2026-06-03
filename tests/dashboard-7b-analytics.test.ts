@@ -84,8 +84,8 @@ describe("reduceVoiceStats", () => {
   it("breaks voice conversations down by language, descending", () => {
     const s = reduceVoiceStats(voiceMessages as never, conversations as never);
     expect(s.languages).toEqual([
-      { name: "en", value: 1 },
       { name: "ar", value: 1 },
+      { name: "en", value: 1 },
     ]);
   });
 
