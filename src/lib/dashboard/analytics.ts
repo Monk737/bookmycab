@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { Funnel, NamedValue, ZoneRow, HeatmapCell, AbandonmentRow, AnalyticsRange } from "./analytics-types";
+import type { Funnel, NamedValue, ZoneRow, HeatmapCell, AbandonmentRow, AnalyticsRange, VoiceStats } from "./analytics-types";
 
 export type SupabaseLike = Awaited<ReturnType<typeof createClient>>;
 
@@ -56,6 +56,41 @@ export function reduceAbandonment(rows: { abandonment_reason: string | null }[])
   const m = new Map<string, number>();
   for (const r of rows) { if (r.abandonment_reason) m.set(r.abandonment_reason, (m.get(r.abandonment_reason) ?? 0) + 1); }
   return [...m.entries()].map(([reason, count]) => ({ reason, count })).sort((a, b) => b.count - a.count);
+}
+
+export function reduceVoiceStats(
+  voiceMessages: { conversation_id: string; transcript: string | null }[],
+  conversations: { id: string; outcome: string | null; language: string | null }[],
+): VoiceStats {
+  const totalVoiceNotes = voiceMessages.length;
+  const voiceConvIds = new Set(voiceMessages.map((m) => m.conversation_id));
+  const voiceConversations = voiceConvIds.size;
+  const totalConversations = conversations.length;
+
+  const transcribed = voiceMessages.filter((m) => (m.transcript ?? "").trim().length > 0);
+  const transcribedPct = totalVoiceNotes ? Math.round((transcribed.length / totalVoiceNotes) * 100) : 0;
+  const avgTranscriptChars = transcribed.length
+    ? Math.round(transcribed.reduce((sum, m) => sum + (m.transcript ?? "").trim().length, 0) / transcribed.length)
+    : 0;
+
+  const voiceConvs = conversations.filter((c) => voiceConvIds.has(c.id));
+  const bookedVoice = voiceConvs.filter((c) => c.outcome === "booked").length;
+  const voiceBookingPct = voiceConversations ? Math.round((bookedVoice / voiceConversations) * 100) : 0;
+  const voiceSharePct = totalConversations ? Math.round((voiceConversations / totalConversations) * 100) : 0;
+
+  const langMap = new Map<string, number>();
+  for (const c of voiceConvs) {
+    const k = c.language ?? "unknown";
+    langMap.set(k, (langMap.get(k) ?? 0) + 1);
+  }
+  const languages = [...langMap.entries()]
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  return {
+    totalVoiceNotes, voiceConversations, totalConversations,
+    voiceSharePct, transcribedPct, voiceBookingPct, avgTranscriptChars, languages,
+  };
 }
 
 export async function getFunnel(automationId: string, r: AnalyticsRange, client?: SupabaseLike): Promise<Funnel> {
