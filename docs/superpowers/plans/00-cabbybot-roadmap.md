@@ -80,7 +80,7 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** Supabase seed script (6 months deterministic mock data — bookings ASAP/Scheduled/Airport, voice/location/bilingual/manage/cancel conversations, all analytics populated, 3 automations); one-click `/demo` read-only session pinned to `DEMO_TENANT_ID`; read-only enforcement (writes → 403 + banner); 24h reset via Supabase Edge Function cron.
 **Open qs:** Q6 (UK-only vs international demo geography).
 
-### ⬜ Plan 10 — Epic 10: Voice Pipeline Integration
+### ✅ Plan 10 — Epic 10: Voice Pipeline Integration  → `2026-06-02-epic-10-voice-pipeline.md`  (DONE & merged to `master` 2026-06-02, HEAD `faf2d77`)
 **Depends on:** Plans 5, 7.
 **Produces:** `WA Voice Booking Processor` sub-workflow wired to WhatsApp automations (Whisper transcribe → GPT slot extraction → merge at intent router); dashboard conversation view renders transcript + extracted slots; voice analytics section; Whisper language auto-detect → `conversations.language`.
 **Perf target:** voice note → reply p95 ≤8s.
