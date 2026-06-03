@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { env } from "@/env";
 import type { DispatchAdapter } from "./types";
+import { instrumentAdapter } from "@/lib/observability/instrument-adapter";
 import { DispatchConfigError } from "./errors";
 import { AutoCabAdapter } from "./autocab/adapter";
 import { ICabbiAdapter } from "./icabbi/adapter";
@@ -111,18 +112,23 @@ export async function getDispatchAdapter(
   deps: DispatchDeps = defaultDeps,
 ): Promise<DispatchAdapter> {
   const config = await loadDispatchConfig(tenantId, deps);
+  let adapter: DispatchAdapter;
   switch (config.adapter) {
     case "autocab": {
       if (!config.autoCab) {
         throw new DispatchConfigError("AutoCab config missing.");
       }
-      return new AutoCabAdapter(config.autoCab);
+      adapter = new AutoCabAdapter(config.autoCab);
+      break;
     }
     case "icabbi":
-      return new ICabbiAdapter();
+      adapter = new ICabbiAdapter();
+      break;
     case "cordic":
-      return new CordicAdapter();
+      adapter = new CordicAdapter();
+      break;
     default:
       throw new DispatchConfigError("Unknown dispatch adapter for this account.");
   }
+  return instrumentAdapter(adapter, config.adapter);
 }
