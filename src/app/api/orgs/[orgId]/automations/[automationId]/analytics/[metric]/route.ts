@@ -11,7 +11,7 @@ import {
   getVoiceStats,
 } from "@/lib/dashboard/analytics";
 import type { AnalyticsRange } from "@/lib/dashboard/analytics-types";
-import { getResponseStats, getRevenueSummary } from "@/lib/dashboard/insights";
+import { getResponseStats, getRevenueSummary, getAirportStats } from "@/lib/dashboard/insights";
 
 type MetricFn = (id: string, range: AnalyticsRange) => Promise<unknown>;
 
@@ -27,6 +27,7 @@ const METRICS: Record<string, MetricFn> = {
   voice: (id, r) => getVoiceStats(id, r),
   "response-time": (id, r) => getResponseStats(id, r),
   revenue: (id, r) => getRevenueSummary(id, r),
+  airport: (id, r) => getAirportStats(id, r),
 };
 
 const STUB_METRICS = new Set<string>([]);

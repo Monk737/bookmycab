@@ -12,6 +12,7 @@ vi.mock("@/lib/dashboard/analytics", () => ({
 vi.mock("@/lib/dashboard/insights", () => ({
   getResponseStats: vi.fn(async () => ({ sampleSize: 5, avgSeconds: 12, p50Seconds: 9, p95Seconds: 30 })),
   getRevenueSummary: vi.fn(async () => ({ totalFare: 1000, avgFare: 20, completedCount: 30, bookingCount: 50, completionPct: 60, byStatus: [] })),
+  getAirportStats: vi.fn(async () => ({ airportBookings: 10, totalBookings: 50, airportSharePct: 20, topAirports: [{ name: "LHR", value: 10 }], topTerminals: [{ name: "LHR T5", value: 6 }] })),
 }));
 const getAutomationConfig = vi.fn(async () => ({ automationId: "a1" }));
 const upsertAutomationConfig = vi.fn(async () => true);
@@ -70,6 +71,12 @@ describe("analytics GET", () => {
     const res = await analyticsGet(new Request("http://x"), ctx({ orgId: "o1", automationId: "a1", metric: "voice" }));
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ metric: "voice", data: { voiceSharePct: 20 } });
+  });
+  it("serves airport stats", async () => {
+    requireOrgAccess.mockResolvedValue({ tenant_id: "o1" });
+    const res = await analyticsGet(new Request("http://x"), ctx({ orgId: "o1", automationId: "a1", metric: "airport" }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ metric: "airport", data: { airportSharePct: 20, topAirports: [{ name: "LHR", value: 10 }] } });
   });
   it("404s an unknown metric", async () => {
     requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });

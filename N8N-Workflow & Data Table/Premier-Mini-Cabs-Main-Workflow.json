@@ -1,5 +1,4 @@
 {
-  "name": "Premier-Cab-In-Progress",
   "nodes": [
     {
       "parameters": {
@@ -10475,91 +10474,6 @@
       ]
     }
   ],
-  "pinData": {
-    "Webhook": [
-      {
-        "json": {
-          "headers": {
-            "host": "nayeemkevka.app.n8n.cloud",
-            "user-agent": "facebookexternalua",
-            "content-length": "866",
-            "accept": "*/*",
-            "accept-encoding": "gzip, br",
-            "cdn-loop": "cloudflare; loops=1; subreqs=1",
-            "cf-connecting-ip": "2a03:2880:10ff:40::",
-            "cf-ew-via": "15",
-            "cf-ipcountry": "US",
-            "cf-ray": "a02726ad29201711-DFW",
-            "cf-visitor": "{\"scheme\":\"https\"}",
-            "cf-worker": "n8n.cloud",
-            "content-type": "application/json",
-            "x-forwarded-for": "2a03:2880:10ff:40::, 162.159.106.119",
-            "x-forwarded-host": "nayeemkevka.app.n8n.cloud",
-            "x-forwarded-port": "443",
-            "x-forwarded-proto": "https",
-            "x-forwarded-server": "traefik-prod-users-gwc-73-5d7fb6959d-4v7rt",
-            "x-hub-signature": "sha1=99ba905f26428cf96d3dac5b397190c7b8593681",
-            "x-hub-signature-256": "sha256=c2d25027e885cf591daafd9af70a426d6e69db389c997e23c6ce849868a27e35",
-            "x-is-trusted": "yes",
-            "x-real-ip": "2a03:2880:10ff:40::"
-          },
-          "params": {},
-          "query": {},
-          "body": {
-            "object": "whatsapp_business_account",
-            "entry": [
-              {
-                "id": "970114292665391",
-                "changes": [
-                  {
-                    "value": {
-                      "messaging_product": "whatsapp",
-                      "metadata": {
-                        "display_phone_number": "15556511646",
-                        "phone_number_id": "1102508366287597"
-                      },
-                      "contacts": [
-                        {
-                          "profile": {
-                            "name": "F."
-                          },
-                          "wa_id": "919167139971",
-                          "user_id": "IN.1912905236090673"
-                        }
-                      ],
-                      "messages": [
-                        {
-                          "context": {
-                            "from": "15556511646",
-                            "id": "wamid.HBgMOTE5MTY3MTM5OTcxFQIAERgSNjIxRDNDNEU3MjM4NTdBRDZDAA=="
-                          },
-                          "from": "919167139971",
-                          "from_user_id": "IN.1912905236090673",
-                          "id": "wamid.HBgMOTE5MTY3MTM5OTcxFQIAEhggQUM0RkU1QjEzMUI1MDAwNDIwMjdERjY3ODUzNzBENzgA",
-                          "timestamp": "1779907257",
-                          "location": {
-                            "address": "Office Of The Airport Director, Terminal 1B Csi Airport, Santacruz, Mumbai, 400099, MH, IN",
-                            "latitude": 19.09576979,
-                            "longitude": 72.87583369,
-                            "name": "Mumbai International Airport",
-                            "url": "http://www.csia.in/"
-                          },
-                          "type": "location"
-                        }
-                      ]
-                    },
-                    "field": "messages"
-                  }
-                ]
-              }
-            ]
-          },
-          "webhookUrl": "https://nayeemkevka.app.n8n.cloud/webhook/whatsapp",
-          "executionMode": "production"
-        }
-      }
-    ]
-  },
   "connections": {
     "Webhook": {
       "main": [
@@ -10573,6 +10487,17 @@
         [
           {
             "node": "Route_Meta_Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract_WhatsApp_Data": {
+      "main": [
+        [
+          {
+            "node": "If2",
             "type": "main",
             "index": 0
           }
@@ -11461,6 +11386,17 @@
         ]
       ]
     },
+    "Update_State_From_Reply": {
+      "main": [
+        [
+          {
+            "node": "Apply_Voice_Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Existing_Conversation": {
       "main": [
         [
@@ -11479,6 +11415,17 @@
         ]
       ]
     },
+    "Parse_Date_Time": {
+      "main": [
+        [
+          {
+            "node": "Reflow_Quote_Steps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Save_Updated_Conversation": {
       "main": [
         [
@@ -11489,6 +11436,17 @@
           },
           {
             "node": "Check_Quote_Change",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save_New_Conversation": {
+      "main": [
+        [
+          {
+            "node": "Update_State_From_Reply",
             "type": "main",
             "index": 0
           }
@@ -12116,17 +12074,6 @@
         ]
       ]
     },
-    "Parse_Date_Time": {
-      "main": [
-        [
-          {
-            "node": "Reflow_Quote_Steps",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Reflow_Quote_Steps": {
       "main": [
         [
@@ -12149,11 +12096,11 @@
         ]
       ]
     },
-    "Update_State_From_Reply": {
+    "Execute_Voice": {
       "main": [
         [
           {
-            "node": "Apply_Voice_Slots",
+            "node": "Inject_Transcript",
             "type": "main",
             "index": 0
           }
@@ -12200,17 +12147,6 @@
         ]
       ]
     },
-    "Execute_Voice": {
-      "main": [
-        [
-          {
-            "node": "Inject_Transcript",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Inject_Transcript": {
       "main": [
         [
@@ -12221,44 +12157,12 @@
           }
         ]
       ]
-    },
-    "Extract_WhatsApp_Data": {
-      "main": [
-        [
-          {
-            "node": "If2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save_New_Conversation": {
-      "main": [
-        [
-          {
-            "node": "Update_State_From_Reply",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
-  "active": true,
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "timeSavedMode": "fixed",
-    "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": true
-  },
-  "versionId": "cee45c8d-2fe3-40fc-8723-a7acc0e57b06",
+  "pinData": {},
   "meta": {
     "aiBuilderAssisted": true,
     "builderVariant": "mcp",
     "instanceId": "872052c0e1dcd34d44174a45de30619075f8d741f0f30f8879b51e1429a95a16"
-  },
-  "id": "E0TClZFAOZAK0Ipb",
-  "tags": []
+  }
 }

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const VOICE_WF = join(process.cwd(), "N8N-Workflow & Data Table", "WA Voice Booking Processor.json");
+const VOICE_WF = join(process.cwd(), "N8N-Workflow & Data Table", "Premier-Mini-Cabs-Voice-Workflow.json");
 
 function loadVoiceWorkflow() {
   const j = JSON.parse(readFileSync(VOICE_WF, "utf8")) as { nodes: { name: string; parameters: Record<string, unknown> }[] };
@@ -32,7 +32,7 @@ describe("voice pipeline: previously-built wiring is intact", () => {
   });
 
   it("main workflow routes audio into the voice sub-workflow and merges at the intent router", () => {
-    const mainPath = join(process.cwd(), "N8N-Workflow & Data Table", "Premier-Cab-Main-Workflow.json");
+    const mainPath = join(process.cwd(), "N8N-Workflow & Data Table", "Premier-Mini-Cabs-Main-Workflow.json");
     expect(existsSync(mainPath)).toBe(true);
     const j = JSON.parse(readFileSync(mainPath, "utf8")) as { nodes: { name: string }[] };
     const names = new Set(j.nodes.map((n) => n.name));

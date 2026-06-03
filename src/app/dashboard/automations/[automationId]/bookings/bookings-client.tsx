@@ -101,14 +101,38 @@ function mapRealtimeRow(r: unknown): BookingRow | null {
 }
 
 interface AirportData {
-  flight?: string;
-  airline?: string;
-  terminal?: string;
-  arrival?: string;
-  buffer?: string | number;
-  pickup?: string;
+  code?: string;
+  name?: string;
+  flightNumber?: string;
+  arrivalTerminal?: string;
+  arrivalTimeUtc?: string;
+  bufferMinutes?: number;
+  pickupAtUtc?: string;
+  flightObject?: {
+    airline?: string;
+    airlineCode?: string;
+    departureAirport?: string;
+    departureAirportCode?: string;
+  };
+  flightSummary?: string;
   [key: string]: unknown;
 }
+
+interface RawDispatchData {
+  distanceMiles?: number;
+  journeyTime?: string;
+  tariff?: string;
+  bookingType?: string;
+  [key: string]: unknown;
+}
+
+const VEHICLE_LABELS: Record<string, string> = {
+  saloon: "Saloon",
+  estate: "Estate",
+  mpv: "MPV (6-seater)",
+  "8seater": "8-seater",
+  wheelchair: "Wheelchair (WAV)",
+};
 
 export function BookingsClient({
   orgId,
@@ -317,15 +341,39 @@ export function BookingsClient({
   function renderAirportSection(airportJson: unknown) {
     if (!airportJson || typeof airportJson !== "object") return null;
     const apt = airportJson as AirportData;
-    const fields: { label: string; key: keyof AirportData }[] = [
-      { label: "Flight", key: "flight" },
-      { label: "Airline", key: "airline" },
-      { label: "Terminal", key: "terminal" },
-      { label: "Arrival", key: "arrival" },
-      { label: "Buffer (min)", key: "buffer" },
-      { label: "Pickup", key: "pickup" },
+
+    type AptField = { label: string; value: string | undefined | null };
+    const fromCode = apt.flightObject?.departureAirportCode
+      ? `${apt.flightObject.departureAirport ?? ""} (${apt.flightObject.departureAirportCode})`
+      : apt.flightObject?.departureAirport;
+
+    const fields: AptField[] = [
+      { label: "Airport", value: apt.name },
+      { label: "Flight", value: apt.flightNumber },
+      { label: "Airline", value: apt.flightObject?.airline },
+      { label: "From", value: fromCode },
+      { label: "Terminal", value: apt.arrivalTerminal },
+      {
+        label: "Arrival",
+        value: apt.arrivalTimeUtc
+          ? formatDateTime(apt.arrivalTimeUtc, "Europe/London")
+          : undefined,
+      },
+      {
+        label: "Driver ready",
+        value: apt.bufferMinutes != null
+          ? `${apt.bufferMinutes} min after arrival`
+          : undefined,
+      },
+      {
+        label: "Pickup",
+        value: apt.pickupAtUtc
+          ? formatDateTime(apt.pickupAtUtc, "Europe/London")
+          : undefined,
+      },
     ];
-    const present = fields.filter((f) => apt[f.key] !== undefined && apt[f.key] !== null);
+
+    const present = fields.filter((f) => f.value !== undefined && f.value !== null && f.value !== "");
     if (present.length === 0) return null;
     return (
       <section className="mt-4">
@@ -334,9 +382,69 @@ export function BookingsClient({
         </h4>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           {present.map((f) => (
-            <div key={f.key}>
+            <div key={f.label}>
               <dt className="text-slate-500 text-[11px] uppercase tracking-wide">{f.label}</dt>
-              <dd className="text-slate-900 font-medium">{String(apt[f.key])}</dd>
+              <dd className="text-slate-900 font-medium">{f.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    );
+  }
+
+  // Trip facts block renderer (B2)
+  function renderTripFacts(det: BookingDetail) {
+    const raw = det.rawDispatchJson as RawDispatchData | null | undefined;
+    const detAny = det as unknown as Record<string, unknown>;
+
+    type Fact = { label: string; value: string | null | undefined };
+    const facts: Fact[] = [
+      {
+        label: "ETA",
+        value: raw?.journeyTime ?? null,
+      },
+      {
+        label: "Distance",
+        value: raw?.distanceMiles != null ? `${raw.distanceMiles} mi` : null,
+      },
+      {
+        label: "Payment",
+        value: (detAny.paymentMethod as string | null | undefined) ??
+          (detAny.payment_method as string | null | undefined) ?? null,
+      },
+      {
+        label: "Dispatch ref",
+        value: det.dispatchRef ?? null,
+      },
+      {
+        label: "Ref 1",
+        value: (detAny.yourReference1 as string | null | undefined) ??
+          (detAny.your_reference_1 as string | null | undefined) ?? null,
+      },
+      {
+        label: "Ref 2",
+        value: (detAny.yourReference2 as string | null | undefined) ??
+          (detAny.your_reference_2 as string | null | undefined) ?? null,
+      },
+      {
+        label: "Ref 3",
+        value: (detAny.yourReference3 as string | null | undefined) ??
+          (detAny.your_reference_3 as string | null | undefined) ?? null,
+      },
+    ];
+
+    const present = facts.filter((f) => f.value !== null && f.value !== undefined && f.value !== "");
+    if (present.length === 0) return null;
+    return (
+      <section className="mt-4">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+          Trip Facts
+        </h4>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          {present.map((f) => (
+            <div key={f.label}>
+              <dt className="text-slate-500 text-[11px] uppercase tracking-wide">{f.label}</dt>
+              <dd className="text-slate-900 font-medium">{f.value}</dd>
             </div>
           ))}
         </dl>
@@ -499,7 +607,11 @@ export function BookingsClient({
                 </div>
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-slate-500">Vehicle</dt>
-                  <dd className="text-slate-900 font-medium">{detail.vehicleType ?? "—"}</dd>
+                  <dd className="text-slate-900 font-medium">
+                    {detail.vehicleType
+                      ? (VEHICLE_LABELS[detail.vehicleType.toLowerCase()] ?? detail.vehicleType)
+                      : "—"}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-slate-500">Fare</dt>
@@ -516,20 +628,21 @@ export function BookingsClient({
               </dl>
             </section>
 
-            {/* Driver note */}
-            {detail.driverNote && (
-              <div>
-                <dt className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-                  Driver Note
-                </dt>
-                <dd className="mt-0.5 rounded bg-amber-50 border border-amber-200 px-3 py-2 text-slate-700">
-                  {detail.driverNote}
-                </dd>
-              </div>
+            {/* Driver note (B3) */}
+            {detail.driverNote && typeof detail.driverNote === "string" && detail.driverNote.trim() !== "" && (
+              <section className="rounded border border-amber-200 bg-amber-50 px-3 py-2">
+                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">
+                  Driver note
+                </h4>
+                <p className="text-sm text-slate-700">{detail.driverNote}</p>
+              </section>
             )}
 
-            {/* Airport section */}
+            {/* Airport section (B1) */}
             {renderAirportSection(detail.airportJson)}
+
+            {/* Trip facts: ETA / distance / payment / refs (B2) */}
+            {renderTripFacts(detail)}
 
             {/* Conversation link */}
             {detail.conversationId && (
