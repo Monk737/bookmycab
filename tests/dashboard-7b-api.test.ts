@@ -7,6 +7,7 @@ vi.mock("@/lib/dashboard/analytics", () => ({
   getFunnel: vi.fn(async () => ({ inbound: 0 })), getChannelMix: vi.fn(async () => []),
   getModeSplit: vi.fn(async () => []), getVehicleSplit: vi.fn(async () => []),
   getTopZones: vi.fn(async () => []), getHeatmap: vi.fn(async () => []), getAbandonment: vi.fn(async () => []),
+  getVoiceStats: vi.fn(async () => ({ totalVoiceNotes: 3, voiceConversations: 2, totalConversations: 10, voiceSharePct: 20, transcribedPct: 100, voiceBookingPct: 50, avgTranscriptChars: 42, languages: [] })),
 }));
 const getAutomationConfig = vi.fn(async () => ({ automationId: "a1" }));
 const upsertAutomationConfig = vi.fn(async () => true);
@@ -47,10 +48,17 @@ describe("analytics GET", () => {
     expect(requireOrgAccess).toHaveBeenCalledWith("o1", expect.objectContaining({ automationId: "a1" }));
     expect(res.status).toBe(200);
   });
-  it("returns { available: false } for response-time/voice", async () => {
+  it("returns { available: false } for response-time (still stubbed)", async () => {
+    requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
+    const res = await analyticsGet(new Request("http://x"), ctx({ orgId: "o1", automationId: "a1", metric: "response-time" }));
+    expect(await res.json()).toMatchObject({ available: false });
+  });
+
+  it("returns voice stats data for the voice metric", async () => {
     requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
     const res = await analyticsGet(new Request("http://x"), ctx({ orgId: "o1", automationId: "a1", metric: "voice" }));
-    expect(await res.json()).toMatchObject({ available: false });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ metric: "voice", data: { voiceSharePct: 20 } });
   });
   it("404s an unknown metric", async () => {
     requireOrgAccess.mockResolvedValue({ claims: { tenant_id: "o1" } });
