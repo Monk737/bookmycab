@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useId, useMemo, useRef, useState } from "react";
-import { addCredential, CREDENTIAL_TYPES, type ActionState } from "./actions";
+import { addCredential, type ActionState } from "./actions";
+import { CREDENTIAL_TYPES } from "./credential-types";
 
 type ChannelOption = {
   id: string;

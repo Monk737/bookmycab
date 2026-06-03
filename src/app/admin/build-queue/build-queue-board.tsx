@@ -2,7 +2,8 @@
 
 import { useId, useTransition } from "react";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { BUILD_STAGES, EDITABLE_BUILD_STAGES, setBuildStage, goLive } from "./actions";
+import { BUILD_STAGES, EDITABLE_BUILD_STAGES } from "./stages";
+import { setBuildStage, goLive } from "./actions";
 
 export type BuildCard = {
   id: string;

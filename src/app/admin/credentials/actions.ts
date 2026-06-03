@@ -7,16 +7,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
-
-/** The five credential types the vault CHECK constraint allows (migration 0008). */
-export const CREDENTIAL_TYPES = [
-  "whatsapp_token",
-  "telegram_token",
-  "messenger_token",
-  "instagram_token",
-  "widget_secret",
-] as const;
-export type CredentialType = (typeof CREDENTIAL_TYPES)[number];
+import { CREDENTIAL_TYPES } from "./credential-types";
 
 /** Form-state shape shared by the credentials forms (mirrors the tenant forms). */
 export type ActionState = {
