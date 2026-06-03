@@ -15,6 +15,7 @@ const schema = z.object({
   NEXT_PUBLIC_CAL_LINK: z.string().min(1).default("flowmo/discovery"),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("https://cabbybot.com"),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+  NEXT_PUBLIC_DEMO_WA_NUMBER: z.string().optional(),
 });
 
 // Required vars keep an empty string so a blanked-out key fails loudly; blank
@@ -31,6 +32,7 @@ const rawSource: Record<string, string | undefined> = {
   NEXT_PUBLIC_CAL_LINK: process.env.NEXT_PUBLIC_CAL_LINK,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  NEXT_PUBLIC_DEMO_WA_NUMBER: process.env.NEXT_PUBLIC_DEMO_WA_NUMBER,
 };
 
 const rawEnv: Record<string, string> = Object.fromEntries(

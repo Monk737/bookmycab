@@ -17,7 +17,7 @@ export type AccessDecision =
 const PUBLIC_PREFIXES = ["/login", "/auth", "/webhooks", "/_next", "/favicon", "/demo"];
 export const PUBLIC_PAGES = new Set([
   "/", "/pricing", "/how-it-works", "/channels", "/custom-solutions",
-  "/case-studies", "/about", "/contact", "/privacy", "/terms", "/dpa", "/cookies",
+  "/case-studies", "/about", "/contact", "/privacy", "/terms", "/dpa", "/cookies", "/status",
 ]);
 
 // Auth-flow paths that must always be reachable (even when authenticated at aal1)

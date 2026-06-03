@@ -29,6 +29,14 @@ const SECTIONS: LegalSection[] = [
     body: "Service runs for the minimum contract term and then rolls monthly unless ended in line with your contract. On termination we help you export your booking data.",
   },
   {
+    heading: "Liability",
+    body: "We provide the service with reasonable skill and care, but to the extent permitted by law we are not liable for indirect or consequential loss, or for outages of the third-party channel and dispatch providers you connect. The liability caps and warranties that apply are set out in your contract.",
+  },
+  {
+    heading: "Governing law",
+    body: "These terms and your contract are governed by the laws of England and Wales, and the courts of England and Wales have exclusive jurisdiction over any dispute.",
+  },
+  {
     heading: "These terms are a summary",
     body: "The binding terms of service are issued with your contract. Where this page and your contract differ, your contract prevails.",
   },
@@ -38,7 +46,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      lastUpdated="2026-05-31"
+      lastUpdated="2026-06-03"
       intro="A plain-language overview of how CabbyBot is provided. Your binding terms are the contract issued when your build is provisioned."
       sections={SECTIONS}
     />

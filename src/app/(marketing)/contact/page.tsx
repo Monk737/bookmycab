@@ -4,6 +4,7 @@ import { Section } from "@/components/marketing/ui/section";
 import { Badge } from "@/components/marketing/ui/badge";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
+import { DemoWhatsAppCta } from "@/components/marketing/demo-whatsapp-cta";
 import { COMPANY } from "@/lib/marketing/nav";
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function ContactPage() {
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <DiscoveryCta size="lg" />
             <TryDashboardLink size="lg" />
+            <DemoWhatsAppCta />
           </div>
         </Container>
       </Section>

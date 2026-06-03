@@ -32,6 +32,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "About", href: "/about" },
       { label: "Case Studies", href: "/case-studies" },
       { label: "Contact", href: "/contact" },
+      { label: "Status", href: "/status" },
     ],
   },
   {
@@ -66,6 +67,7 @@ export const MARKETING_ROUTES = [
   "/terms",
   "/dpa",
   "/cookies",
+  "/status",
 ] as const;
 
 export const COMPANY = {

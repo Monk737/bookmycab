@@ -89,7 +89,7 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Depends on:** Plans 5, 7.
 **Produces:** OpenTelemetry in route handlers + engine; Grafana Cloud dashboards (latency, error rate, webhook throughput, dispatch latency per adapter); Sentry (frontend + server); Playwright E2E (text + voice booking, manage booking, admin provisioning, demo tenant); webhook load test @100 concurrent.
 
-### ⬜ Plan 12 — Epic 12: Launch Readiness
+### ✅ Plan 12 — Epic 12: Launch Readiness  → `2026-06-03-epic-12-launch-readiness.md`  (DONE & merged to `master` 2026-06-03, HEAD `ef07528`)
 **Depends on:** all prior.
 **Produces:** Legal pages (Privacy, Terms, DPA, Cookie Policy); status page; live demo WhatsApp number; sales collateral; ops runbook (provisioning SOP, credential rotation, incident response).
 **Open qs:** Q12 (demo WA number budget + sandbox vs mock).
