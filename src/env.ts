@@ -55,6 +55,7 @@ const schema = z.object({
   OTEL_SERVICE_NAME: z.string().default("cabbybot"),
   SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
+  NEXT_PUBLIC_DEMO_WA_NUMBER: z.string().optional(),
 });
 
 // Vars with no `.optional()`/`.default()` — a blank value here is a real
@@ -97,6 +98,7 @@ const rawSource: Record<string, string | undefined> = {
   OTEL_SERVICE_NAME: process.env.OTEL_SERVICE_NAME,
   SENTRY_DSN: process.env.SENTRY_DSN,
   NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  NEXT_PUBLIC_DEMO_WA_NUMBER: process.env.NEXT_PUBLIC_DEMO_WA_NUMBER,
 };
 
 // Treat empty-string values for optional/defaulted vars as absent (a common
