@@ -35,3 +35,22 @@ describe("status catalogue", () => {
     }
   });
 });
+
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { MARKETING_ROUTES } from "@/lib/marketing/nav";
+import { PUBLIC_PAGES } from "@/middleware/access";
+
+describe("status route wiring", () => {
+  const p = (rel: string) => join(process.cwd(), rel);
+  it("is a registered, public marketing route with a page file", () => {
+    expect(MARKETING_ROUTES).toContain("/status");
+    expect(PUBLIC_PAGES.has("/status")).toBe(true);
+    expect(existsSync(p("src/app/(marketing)/status/page.tsx"))).toBe(true);
+  });
+  it("renders the perf targets and links to the incident channel", () => {
+    const src = readFileSync(p("src/app/(marketing)/status/page.tsx"), "utf8");
+    expect(src).toMatch(/PERF_TARGETS/);
+    expect(src).toMatch(/STATUS_COMPONENTS/);
+  });
+});
