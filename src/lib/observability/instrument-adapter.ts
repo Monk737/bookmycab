@@ -2,7 +2,6 @@ import "server-only";
 import type { DispatchAdapter } from "@/lib/dispatch/types";
 import { recordHistogram } from "./metrics";
 import { reportError } from "./error-reporting";
-import { errMessage } from "./telemetry";
 
 const TIMED_OPS = new Set<string>([
   "lookupAddress", "getZones", "getCapabilities", "getQuote",
@@ -31,7 +30,9 @@ export function instrumentAdapter(adapter: DispatchAdapter, adapterName: string)
           return result;
         } catch (err) {
           recordHistogram("dispatch_latency_ms", Date.now() - start, { adapter: adapterName, op, status: "error" });
-          reportError(err, { adapter: adapterName, op, detail: errMessage(err) });
+          // The error message is captured by reportError as ErrorRecord.message;
+          // pass only safe operational context as attributes (no free-form detail).
+          reportError(err, { adapter: adapterName, op });
           throw err;
         }
       };
