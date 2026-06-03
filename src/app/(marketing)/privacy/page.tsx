@@ -29,6 +29,14 @@ const SECTIONS: LegalSection[] = [
     body: "We keep data for as long as needed to run your service and meet legal obligations. Data-subject requests are handled under the Data Processing Agreement issued with your contract.",
   },
   {
+    heading: "Security",
+    body: "Tenant data is isolated per customer with row-level security in the database, credentials are held in an encrypted vault, and access to production is restricted and audit-logged. We apply the safeguards set out in your Data Processing Agreement.",
+  },
+  {
+    heading: "Your rights and complaints",
+    body: "Where UK GDPR applies, individuals can request access to, correction of, or deletion of their personal data. Requests about your customers' data are routed to you as the controller. If you are not satisfied with how a concern is handled, you can complain to the UK Information Commissioner's Office (ICO).",
+  },
+  {
     heading: "Contact",
     body: "For any privacy question, email hello@cabbybot.com and we will route it to the right person.",
   },
@@ -38,7 +46,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      lastUpdated="2026-05-31"
+      lastUpdated="2026-06-03"
       intro="This summary explains how we think about your data and your customers' data. It is not your binding agreement — that is the Data Processing Agreement and contract issued when your bespoke build is provisioned."
       sections={SECTIONS}
     />

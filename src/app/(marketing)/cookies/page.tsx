@@ -25,6 +25,16 @@ const SECTIONS: LegalSection[] = [
     body: "You can clear or block cookies in your browser settings. Blocking strictly necessary cookies will stop the dashboard from working correctly.",
   },
   {
+    heading: "Cookies we set",
+    body: (
+      <ul className="list-disc space-y-2 pl-5">
+        <li><strong>Supabase auth session</strong> — strictly necessary; keeps you signed in to your dashboard. Cleared on sign-out.</li>
+        <li><strong>Demo session</strong> — strictly necessary for the read-only demo; short-lived and removed when the demo ends.</li>
+        <li><strong>Cal.com booking widget</strong> — set by Cal.com only if you open the discovery-call scheduler, under their cookie policy.</li>
+      </ul>
+    ),
+  },
+  {
     heading: "This is a summary",
     body: "A full cookie schedule is provided with your contract documentation, which prevails over this page.",
   },
@@ -34,7 +44,7 @@ export default function CookiesPage() {
   return (
     <LegalPage
       title="Cookie Policy"
-      lastUpdated="2026-05-31"
+      lastUpdated="2026-06-03"
       intro="A short summary of how we use cookies on the CabbyBot site and dashboard. Your binding terms are issued with your contract."
       sections={SECTIONS}
     />

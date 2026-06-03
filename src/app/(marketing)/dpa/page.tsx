@@ -29,6 +29,14 @@ const SECTIONS: LegalSection[] = [
     body: "On the end of your contract we return or delete the personal data we process for you, subject to any legal retention obligations.",
   },
   {
+    heading: "International transfers",
+    body: "We process personal data in the UK and EU. Where a sub-processor you have approved processes data outside the UK/EU, transfers are covered by an adequacy decision or standard contractual clauses, as recorded in the signed agreement.",
+  },
+  {
+    heading: "Personal-data breaches",
+    body: "If we become aware of a personal-data breach affecting your data, we notify you without undue delay and support your obligations to notify the ICO and affected individuals where required.",
+  },
+  {
     heading: "This is a summary",
     body: "The binding Data Processing Agreement is issued and signed with your contract. It prevails over this page.",
   },
@@ -38,7 +46,7 @@ export default function DpaPage() {
   return (
     <LegalPage
       title="Data Processing Agreement"
-      lastUpdated="2026-05-31"
+      lastUpdated="2026-06-03"
       intro="An overview of how we act as your processor for your customers' personal data. The signed DPA issued with your contract is the binding document."
       sections={SECTIONS}
     />
