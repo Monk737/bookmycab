@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { percentile } from "@/lib/observability/percentile";
-import type { TrendPoint, ResponseStats, RevenueSummary } from "./insights-types";
+import type { TrendPoint, ResponseStats, RevenueSummary, AirportStats } from "./insights-types";
 
 export type SupabaseLike = Awaited<ReturnType<typeof createClient>>;
 
@@ -110,6 +110,50 @@ export async function getBookingsTrend(automationId: string, r: Range, client?: 
   return reduceDailyTrend((cur ?? []) as { created_at: string }[], (prev ?? []) as { created_at: string }[], from, to);
 }
 
+export function reduceAirportStats(
+  bookings: { airport_json: unknown; pickup_time_mode: string | null }[],
+): AirportStats {
+  const totalBookings = bookings.length;
+  if (totalBookings === 0) {
+    return { airportBookings: 0, totalBookings: 0, airportSharePct: 0, topAirports: [], topTerminals: [] };
+  }
+
+  const airportMap = new Map<string, number>();
+  const terminalMap = new Map<string, number>();
+  let airportBookings = 0;
+
+  for (const b of bookings) {
+    const aj = b.airport_json as Record<string, unknown> | null | undefined;
+    const hasCode = aj && typeof aj.code === "string" && aj.code.length > 0;
+    const hasFlight = aj && typeof aj.flightNumber === "string";
+    const isAirport = hasCode || hasFlight || b.pickup_time_mode === "airport";
+    if (!isAirport) continue;
+
+    airportBookings++;
+
+    if (hasCode && aj) {
+      const code = aj.code as string;
+      airportMap.set(code, (airportMap.get(code) ?? 0) + 1);
+
+      const terminal = typeof aj.arrivalTerminal === "string" ? aj.arrivalTerminal : null;
+      if (terminal) {
+        const key = `${code} T${terminal}`;
+        terminalMap.set(key, (terminalMap.get(key) ?? 0) + 1);
+      }
+    }
+  }
+
+  const airportSharePct = Math.round((airportBookings / totalBookings) * 100);
+  const topAirports = [...airportMap.entries()]
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+  const topTerminals = [...terminalMap.entries()]
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  return { airportBookings, totalBookings, airportSharePct, topAirports, topTerminals };
+}
+
 export async function getRevenueSummary(automationId: string, r: Range, client?: SupabaseLike): Promise<RevenueSummary> {
   const supabase = client ?? (await createClient());
   let q = supabase.from("bookings").select("fare, status").eq("automation_id", automationId);
@@ -135,4 +179,13 @@ export async function getResponseStats(automationId: string, r: Range, client?: 
   if (r.to) mq = mq.lte("ts", `${r.to}T23:59:59.999Z`);
   const { data: msgs } = await mq.order("ts", { ascending: true }).limit(20000);
   return reduceResponseStats((msgs ?? []) as { conversation_id: string; direction: string; ts: string }[]);
+}
+
+export async function getAirportStats(automationId: string, r: Range, client?: SupabaseLike): Promise<AirportStats> {
+  const supabase = client ?? (await createClient());
+  let q = supabase.from("bookings").select("airport_json, pickup_time_mode").eq("automation_id", automationId);
+  if (r.from) q = q.gte("created_at", `${r.from}T00:00:00Z`);
+  if (r.to) q = q.lte("created_at", `${r.to}T23:59:59.999Z`);
+  const { data } = await q;
+  return reduceAirportStats((data ?? []) as { airport_json: unknown; pickup_time_mode: string | null }[]);
 }
