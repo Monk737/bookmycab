@@ -14,6 +14,7 @@ import type {
   HeatmapCell,
   VoiceStats,
 } from "@/lib/dashboard/analytics-types";
+import type { ResponseStats, RevenueSummary } from "@/lib/dashboard/insights-types";
 
 // ——— date helpers ——————————————————————————————————————————
 
@@ -142,6 +143,8 @@ interface AllMetrics {
   heatmap: MetricState<HeatmapCell[]>;
   abandonment: MetricState<NamedValue[]>;
   voice: MetricState<VoiceStats>;
+  responseTime: MetricState<ResponseStats>;
+  revenue: MetricState<RevenueSummary>;
 }
 
 function emptyMetrics(): AllMetrics {
@@ -155,6 +158,8 @@ function emptyMetrics(): AllMetrics {
     heatmap: { status: "idle" },
     abandonment: { status: "idle" },
     voice: { status: "idle" },
+    responseTime: { status: "idle" },
+    revenue: { status: "idle" },
   };
 }
 
@@ -274,10 +279,12 @@ export function AnalyticsClient({
       heatmap: { status: "loading" },
       abandonment: { status: "loading" },
       voice: { status: "loading" },
+      responseTime: { status: "loading" },
+      revenue: { status: "loading" },
     });
 
     const run = async () => {
-      const [funnelRes, channelsRes, modeRes, vehicleRes, zonesRes, destsRes, heatmapRes, abandonRes, voiceRes] =
+      const [funnelRes, channelsRes, modeRes, vehicleRes, zonesRes, destsRes, heatmapRes, abandonRes, voiceRes, responseRes, revenueRes] =
         await Promise.allSettled([
           fetchMetric("funnel"),
           fetchMetric("channels"),
@@ -288,6 +295,8 @@ export function AnalyticsClient({
           fetchMetric("heatmap"),
           fetchMetric("abandonment"),
           fetchMetric("voice"),
+          fetchMetric("response-time"),
+          fetchMetric("revenue"),
         ]);
 
       if (cancelled) return;
@@ -309,6 +318,8 @@ export function AnalyticsClient({
         heatmap: extract<HeatmapCell[]>(heatmapRes, "data"),
         abandonment: extract<NamedValue[]>(abandonRes, "data"),
         voice: extract<VoiceStats>(voiceRes, "data"),
+        responseTime: extract<ResponseStats>(responseRes, "data"),
+        revenue: extract<RevenueSummary>(revenueRes, "data"),
       });
     };
 
@@ -423,9 +434,43 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 8 — Response Time Distribution (not yet available) */}
-      <SectionCard title="Response Time Distribution">
-        <UnavailableCard message="Available once message-timing capture is enabled." />
+      {/* 8 — Response Time */}
+      <SectionCard title="Response Time">
+        {metrics.responseTime.status === "loading" ? (
+          <Skeleton height={120} />
+        ) : metrics.responseTime.status === "ok" ? (
+          metrics.responseTime.data.sampleSize === 0 ? (
+            <UnavailableCard message="No measurable responses in this period." />
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatTile label="Avg" value={`${metrics.responseTime.data.avgSeconds}s`} />
+              <StatTile label="Median" value={`${metrics.responseTime.data.p50Seconds}s`} />
+              <StatTile label="P95" value={`${metrics.responseTime.data.p95Seconds}s`} />
+              <StatTile label="Sample" value={metrics.responseTime.data.sampleSize.toLocaleString()} />
+            </div>
+          )
+        ) : metrics.responseTime.status === "error" ? (
+          <UnavailableCard message="Could not load response-time data." />
+        ) : null}
+      </SectionCard>
+
+      {/* 8b — Revenue */}
+      <SectionCard title="Revenue & Completion">
+        {metrics.revenue.status === "loading" ? (
+          <Skeleton height={120} />
+        ) : metrics.revenue.status === "ok" ? (
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatTile label="Revenue" value={`£${metrics.revenue.data.totalFare.toLocaleString()}`} />
+              <StatTile label="Avg fare" value={`£${metrics.revenue.data.avgFare}`} />
+              <StatTile label="Completion" value={`${metrics.revenue.data.completionPct}%`} />
+              <StatTile label="Bookings" value={metrics.revenue.data.bookingCount.toLocaleString()} />
+            </div>
+            {metrics.revenue.data.byStatus.length > 0 && <HorizontalBarChart data={metrics.revenue.data.byStatus} />}
+          </div>
+        ) : metrics.revenue.status === "error" ? (
+          <UnavailableCard message="Could not load revenue data." />
+        ) : null}
       </SectionCard>
 
       {/* 9 — Abandonment Reasons */}

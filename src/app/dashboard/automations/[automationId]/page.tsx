@@ -6,11 +6,12 @@ import {
   getConversationsPage,
   getRecentRuns,
 } from "@/lib/dashboard/queries";
+import { getBookingsTrend, getRevenueSummary, getResponseStats } from "@/lib/dashboard/insights";
+import { OverviewTrend } from "./overview-trend";
 import { KpiStrip } from "@/components/dashboard/kpi-strip";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { DataTable } from "@/components/dashboard/data-table";
 import type { Column } from "@/components/dashboard/data-table";
-import { TrendChart } from "@/components/dashboard/charts/trend-chart";
 import { DonutChart } from "@/components/dashboard/charts/donut-chart";
 import { BarChart } from "@/components/dashboard/charts/bar-chart";
 import { AutomationControls } from "@/app/dashboard/automations/[automationId]/automation-controls";
@@ -110,12 +111,15 @@ export default async function AutomationOverviewPage({
 
   if (!claims.tenant_id) notFound();
 
-  const [cards, recentBookings, recentConversations, recentRuns] =
+  const [cards, recentBookings, recentConversations, recentRuns, trend, revenue, response] =
     await Promise.all([
       getAutomationCards(claims.tenant_id),
       getBookingsPage({ automationId, filter: { page: 1, limit: 20 } }),
       getConversationsPage({ automationId, filter: { page: 1, limit: 10 } }),
       getRecentRuns(automationId, 10),
+      getBookingsTrend(automationId, {}),
+      getRevenueSummary(automationId, {}),
+      getResponseStats(automationId, {}),
     ]);
 
   const card = cards.find((c) => c.id === automationId);
@@ -125,22 +129,14 @@ export default async function AutomationOverviewPage({
   const lastRun = recentRuns[0] ?? null;
   const isBookingType = card.type === "Booking";
 
-  // Aggregate booking-mode and vehicle-type from recent bookings (honest sample)
+  // Aggregate booking-mode from recent bookings (honest sample)
   const pickupModeMap: Record<string, number> = {};
-  const vehicleTypeMap: Record<string, number> = {};
   for (const b of recentBookings.rows) {
     if (b.pickupTimeMode) {
       pickupModeMap[b.pickupTimeMode] = (pickupModeMap[b.pickupTimeMode] ?? 0) + 1;
     }
-    if (b.vehicleType) {
-      vehicleTypeMap[b.vehicleType] = (vehicleTypeMap[b.vehicleType] ?? 0) + 1;
-    }
   }
   const bookingModeData = Object.entries(pickupModeMap).map(([name, value]) => ({
-    name,
-    value,
-  }));
-  const vehicleTypeData = Object.entries(vehicleTypeMap).map(([name, value]) => ({
     name,
     value,
   }));
@@ -178,29 +174,25 @@ export default async function AutomationOverviewPage({
       <KpiStrip
         items={[
           { label: "Bookings today", value: card.bookingsToday },
-          { label: "Conversations today", value: card.conversationsToday },
+          { label: "Revenue (30d)", value: `£${revenue.totalFare.toLocaleString()}` },
+          { label: "Completion", value: `${revenue.completionPct}%` },
           {
-            label: "Conversion",
-            value: `${card.conversionPct}%`,
+            label: "Avg response",
+            value: response.sampleSize ? `${response.avgSeconds}s` : "—",
+            sub: response.sampleSize ? `p95 ${response.p95Seconds}s` : "No data yet",
           },
-          {
-            label: "Active channels",
-            value: card.channels.length,
-          },
-          {
-            label: "Avg response time",
-            value: "—",
-            sub: "Available in Analytics",
-          },
+          { label: "Active channels", value: card.channels.length },
         ]}
       />
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        {/* Trend chart — no fabricated data */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-1">
-          <h3 className="mb-3 text-sm font-semibold text-slate-700">Bookings trend</h3>
-          <TrendChart data={[]} />
+          <div className="mb-3 flex items-baseline justify-between">
+            <h3 className="text-sm font-semibold text-slate-700">Bookings trend</h3>
+            <span className="text-[11px] text-slate-400">last 30 days</span>
+          </div>
+          <OverviewTrend data={trend} />
         </div>
 
         {isBookingType && (
@@ -215,13 +207,9 @@ export default async function AutomationOverviewPage({
               <DonutChart data={bookingModeData} />
             </div>
             <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-1 text-sm font-semibold text-slate-700">
-                Vehicle types
-              </h3>
-              <p className="mb-3 text-[11px] text-slate-400">
-                Based on recent bookings.
-              </p>
-              <BarChart data={vehicleTypeData} />
+              <h3 className="mb-1 text-sm font-semibold text-slate-700">Booking status</h3>
+              <p className="mb-3 text-[11px] text-slate-400">Last 30 days.</p>
+              <BarChart data={revenue.byStatus} />
             </div>
           </>
         )}

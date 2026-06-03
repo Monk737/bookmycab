@@ -1,5 +1,5 @@
 import { requireUser } from "@/lib/auth/session";
-import { getOrgSummary, getKpiStrip, getAutomationCards } from "@/lib/dashboard/queries";
+import { getOrgSummary, getKpiStrip, getAutomationCards, getOrgKpis } from "@/lib/dashboard/queries";
 import { KpiStrip } from "@/components/dashboard/kpi-strip";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { ChannelIcon } from "@/components/dashboard/channel-icon";
@@ -47,10 +47,11 @@ export default async function DashboardPage() {
     );
   }
 
-  const [org, kpis, cards] = await Promise.all([
+  const [org, kpis, cards, orgKpis] = await Promise.all([
     getOrgSummary(claims.tenant_id),
     getKpiStrip(claims.tenant_id),
     getAutomationCards(claims.tenant_id),
+    getOrgKpis(claims.tenant_id),
   ]);
 
   return (
@@ -92,6 +93,8 @@ export default async function DashboardPage() {
           <KpiStrip
             items={[
               { label: "Bookings today", value: kpis.bookingsToday },
+              { label: "Bookings (30d)", value: orgKpis.bookings30d },
+              { label: "Revenue (30d)", value: `£${orgKpis.revenue30d.toLocaleString()}` },
               { label: "Conversations today", value: kpis.conversationsToday },
               { label: "Live automations", value: kpis.liveAutomations },
             ]}

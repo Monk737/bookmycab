@@ -407,13 +407,17 @@ async function main() {
     const chanId = autoId === AUTO_WA ? CHAN_WA : autoId === AUTO_TG ? CHAN_TG : CHAN_WG;
     const isBookingAuto = autoId !== AUTO_WG;
     for (let day = 0; day < 180; day++) {
-      for (let c = 0; c < randInt(1, 4); c++) {
+      // Bump the most recent day's volume so "today" always looks active on the
+      // dashboard (the demo window rolls so day 179 == today, see `started`).
+      const convsForDay = day >= 178 ? randInt(3, 6) : randInt(1, 4);
+      for (let c = 0; c < convsForDay; c++) {
         const convType = pickConvType();
         // Widget Support Bot only generates manage/cancel/voice — no booking outcomes
         const effectiveConvType: ConvType = !isBookingAuto
           ? pick(["cancel", "manage", "voice"] as const)
           : convType;
-        const started = daysAgo(180 - day);
+        // Roll the window so the newest day (179) lands on today, not yesterday.
+        const started = daysAgo(179 - day);
         const outcome: string =
           !isBookingAuto ? "managed" :
           effectiveConvType === "cancel" ? "cancelled" :

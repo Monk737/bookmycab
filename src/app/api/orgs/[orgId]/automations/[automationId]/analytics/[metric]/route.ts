@@ -11,6 +11,7 @@ import {
   getVoiceStats,
 } from "@/lib/dashboard/analytics";
 import type { AnalyticsRange } from "@/lib/dashboard/analytics-types";
+import { getResponseStats, getRevenueSummary } from "@/lib/dashboard/insights";
 
 type MetricFn = (id: string, range: AnalyticsRange) => Promise<unknown>;
 
@@ -24,9 +25,11 @@ const METRICS: Record<string, MetricFn> = {
   heatmap: (id, r) => getHeatmap(id, r),
   abandonment: (id, r) => getAbandonment(id, r),
   voice: (id, r) => getVoiceStats(id, r),
+  "response-time": (id, r) => getResponseStats(id, r),
+  revenue: (id, r) => getRevenueSummary(id, r),
 };
 
-const STUB_METRICS = new Set(["response-time"]);
+const STUB_METRICS = new Set<string>([]);
 
 export async function GET(req: Request, ctx: { params: Promise<Record<string, string>> }) {
   const { orgId, automationId, metric } = await ctx.params;
