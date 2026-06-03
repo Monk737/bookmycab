@@ -8,6 +8,11 @@ const sql0017 = readFileSync(
   "utf8",
 );
 
+const sql0018 = readFileSync(
+  join(process.cwd(), "supabase/migrations/0018_usage_metering.sql"),
+  "utf8",
+);
+
 describe("0017 entitlements migration", () => {
   it("creates the five catalog/override tables", () => {
     expect(sql0017).toMatch(/create table public\.plans/i);
@@ -29,5 +34,27 @@ describe("0017 entitlements migration", () => {
 
   it("scopes tenant_entitlements reads via current_user_tenants()", () => {
     expect(sql0017).toMatch(/tenant_entitlements_select[\s\S]*current_user_tenants\(\)/i);
+  });
+});
+
+describe("0018 usage metering migration", () => {
+  it("creates usage_events and usage_counters", () => {
+    expect(sql0018).toMatch(/create table public\.usage_events/i);
+    expect(sql0018).toMatch(/create table public\.usage_counters/i);
+  });
+
+  it("makes usage_events append-only via a before update/delete trigger", () => {
+    expect(sql0018).toMatch(/create trigger usage_events_immutable/i);
+    expect(sql0018).toMatch(/before update or delete on public\.usage_events/i);
+  });
+
+  it("indexes usage_events on (tenant_id, feature_key, occurred_at)", () => {
+    expect(sql0018).toMatch(/on public\.usage_events \(tenant_id, feature_key, occurred_at\)/i);
+  });
+
+  it("enables RLS + tenant-scoped select on both tables", () => {
+    expect(sql0018).toMatch(/alter table public\.usage_events enable row level security/i);
+    expect(sql0018).toMatch(/alter table public\.usage_counters enable row level security/i);
+    expect(sql0018).toMatch(/usage_events_select[\s\S]*current_user_tenants\(\)/i);
   });
 });
