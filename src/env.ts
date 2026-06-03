@@ -1,3 +1,8 @@
+// Server-only: this module validates server secrets (SUPABASE_SERVICE_ROLE_KEY,
+// STRIPE_SECRET_KEY, …) that must never reach the browser. Client code needs
+// `clientEnv` from `@/env.client` instead. Importing this from a Client
+// Component triggers a build-time error rather than a runtime crash.
+import "server-only";
 import { z } from "zod";
 
 const schema = z.object({
@@ -54,25 +59,67 @@ const schema = z.object({
 
 // Vars with no `.optional()`/`.default()` — a blank value here is a real
 // misconfiguration and must surface as a validation error, not be hidden.
-const REQUIRED_KEYS = new Set([
+const REQUIRED_KEYS = new Set<string>([
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
   "SUPABASE_SERVICE_ROLE_KEY",
 ]);
 
+// Reference each var as a literal `process.env.X` so Next.js can statically
+// inline the `NEXT_PUBLIC_*` values into the client bundle. `Object.entries(
+// process.env)` does NOT work here: in the browser `process.env` is not a real
+// object, so enumerating it drops every key and validation would throw on the
+// client. This module is imported by client code (e.g. supabase/browser.ts).
+const rawSource: Record<string, string | undefined> = {
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_VAULT_KEY: process.env.SUPABASE_VAULT_KEY,
+  N8N_BASE_URL: process.env.N8N_BASE_URL,
+  N8N_API_KEY: process.env.N8N_API_KEY,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+  WEBHOOK_RATE_LIMIT_PER_MIN: process.env.WEBHOOK_RATE_LIMIT_PER_MIN,
+  CHANNEL_CACHE_TTL_SEC: process.env.CHANNEL_CACHE_TTL_SEC,
+  IDEMPOTENCY_TTL_SEC: process.env.IDEMPOTENCY_TTL_SEC,
+  DEMO_TENANT_ID: process.env.DEMO_TENANT_ID,
+  DEMO_SESSION_SECRET: process.env.DEMO_SESSION_SECRET,
+  FLOWMO_STAFF_EMAIL_DOMAIN: process.env.FLOWMO_STAFF_EMAIL_DOMAIN,
+  NEXT_PUBLIC_CAL_LINK: process.env.NEXT_PUBLIC_CAL_LINK,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  OBSERVABILITY_STDOUT: process.env.OBSERVABILITY_STDOUT,
+  OTEL_EXPORTER_OTLP_ENDPOINT: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+  OTEL_SERVICE_NAME: process.env.OTEL_SERVICE_NAME,
+  SENTRY_DSN: process.env.SENTRY_DSN,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+};
+
 // Treat empty-string values for optional/defaulted vars as absent (a common
 // `.env` artifact, e.g. `N8N_BASE_URL=`) so they don't fail `.url()`/`.uuid()`.
 // Required vars keep their empty string so a blanked-out key still fails loudly.
-const rawEnv = Object.fromEntries(
-  Object.entries(process.env).filter(
-    ([key, value]) => value !== "" || REQUIRED_KEYS.has(key),
+const rawEnv: Record<string, string> = Object.fromEntries(
+  Object.entries(rawSource).filter(
+    (entry): entry is [string, string] => {
+      const [key, value] = entry;
+      return value !== undefined && (value !== "" || REQUIRED_KEYS.has(key));
+    },
   ),
 );
 
 const parsed = schema.safeParse(rawEnv);
 if (!parsed.success) {
-  console.error("❌ Invalid environment variables:", parsed.error.flatten().fieldErrors);
-  throw new Error("Invalid environment variables");
+  const fieldErrors = parsed.error.flatten().fieldErrors;
+  console.error("❌ Invalid environment variables:", fieldErrors);
+  // Embed the offending fields in the thrown message so the failure is
+  // actionable even where console output is dropped (serverless, browser).
+  throw new Error(
+    `Invalid environment variables: ${JSON.stringify(fieldErrors)}`,
+  );
 }
 
 export const env = parsed.data;
