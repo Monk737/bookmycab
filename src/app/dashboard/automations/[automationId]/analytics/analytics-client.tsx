@@ -14,7 +14,7 @@ import type {
   HeatmapCell,
   VoiceStats,
 } from "@/lib/dashboard/analytics-types";
-import type { ResponseStats, RevenueSummary } from "@/lib/dashboard/insights-types";
+import type { ResponseStats, RevenueSummary, AirportStats } from "@/lib/dashboard/insights-types";
 
 // ——— date helpers ——————————————————————————————————————————
 
@@ -145,6 +145,7 @@ interface AllMetrics {
   voice: MetricState<VoiceStats>;
   responseTime: MetricState<ResponseStats>;
   revenue: MetricState<RevenueSummary>;
+  airport: MetricState<AirportStats>;
 }
 
 function emptyMetrics(): AllMetrics {
@@ -160,6 +161,7 @@ function emptyMetrics(): AllMetrics {
     voice: { status: "idle" },
     responseTime: { status: "idle" },
     revenue: { status: "idle" },
+    airport: { status: "idle" },
   };
 }
 
@@ -281,10 +283,11 @@ export function AnalyticsClient({
       voice: { status: "loading" },
       responseTime: { status: "loading" },
       revenue: { status: "loading" },
+      airport: { status: "loading" },
     });
 
     const run = async () => {
-      const [funnelRes, channelsRes, modeRes, vehicleRes, zonesRes, destsRes, heatmapRes, abandonRes, voiceRes, responseRes, revenueRes] =
+      const [funnelRes, channelsRes, modeRes, vehicleRes, zonesRes, destsRes, heatmapRes, abandonRes, voiceRes, responseRes, revenueRes, airportRes] =
         await Promise.allSettled([
           fetchMetric("funnel"),
           fetchMetric("channels"),
@@ -297,6 +300,7 @@ export function AnalyticsClient({
           fetchMetric("voice"),
           fetchMetric("response-time"),
           fetchMetric("revenue"),
+          fetchMetric("airport"),
         ]);
 
       if (cancelled) return;
@@ -320,6 +324,7 @@ export function AnalyticsClient({
         voice: extract<VoiceStats>(voiceRes, "data"),
         responseTime: extract<ResponseStats>(responseRes, "data"),
         revenue: extract<RevenueSummary>(revenueRes, "data"),
+        airport: extract<AirportStats>(airportRes, "data"),
       });
     };
 
@@ -470,6 +475,32 @@ export function AnalyticsClient({
           </div>
         ) : metrics.revenue.status === "error" ? (
           <UnavailableCard message="Could not load revenue data." />
+        ) : null}
+      </SectionCard>
+
+      {/* 8c — Airport & Flights */}
+      <SectionCard title="Airport & Flights">
+        {metrics.airport.status === "loading" ? (
+          <Skeleton height={120} />
+        ) : metrics.airport.status === "ok" ? (
+          metrics.airport.data.totalBookings === 0 ? (
+            <UnavailableCard message="No bookings recorded for this period." />
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <StatTile label="Airport bookings" value={metrics.airport.data.airportBookings.toLocaleString()} />
+                <StatTile label="Share" value={`${metrics.airport.data.airportSharePct}%`} />
+                {metrics.airport.data.topAirports[0] && (
+                  <StatTile label="Top airport" value={metrics.airport.data.topAirports[0].name} />
+                )}
+              </div>
+              {metrics.airport.data.topTerminals.length > 0 && (
+                <HorizontalBarChart data={metrics.airport.data.topTerminals} />
+              )}
+            </div>
+          )
+        ) : metrics.airport.status === "error" ? (
+          <UnavailableCard message="Could not load airport data." />
         ) : null}
       </SectionCard>
 
