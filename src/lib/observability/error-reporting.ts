@@ -1,8 +1,10 @@
 import { getSink, type Attrs } from "./sink";
 
-// Customer PII / secrets must never reach a log drain or Sentry. Keys matching
-// this pattern are masked; everything else is coerced to a primitive.
-const PII_KEY = /phone|email|name|handle|address|token|secret|\bkey\b|authorization|passenger/i;
+// Customer PII / secrets must never reach a log drain or Sentry. A key is masked
+// when one of these sensitive words appears as a delimited segment (start, `_` or
+// `-` boundary), so `customer_name` / `api_key` / `secret_key` are caught while
+// operational keys like `channelName` / `adapterName` / `channel` are not.
+const PII_KEY = /(?:^|[_-])(?:phone|email|name|handle|address|token|secret|key|authorization|passenger)(?:[_-]|$)/i;
 
 export function redactAttrs(attrs: Record<string, unknown>): Attrs {
   const out: Attrs = {};
