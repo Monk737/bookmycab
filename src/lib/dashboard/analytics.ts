@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { Funnel, NamedValue, ZoneRow, HeatmapCell, AbandonmentRow, AnalyticsRange } from "./analytics-types";
+import type { Funnel, NamedValue, ZoneRow, HeatmapCell, AbandonmentRow, AnalyticsRange, VoiceStats } from "./analytics-types";
 
 export type SupabaseLike = Awaited<ReturnType<typeof createClient>>;
 
@@ -58,6 +58,42 @@ export function reduceAbandonment(rows: { abandonment_reason: string | null }[])
   return [...m.entries()].map(([reason, count]) => ({ reason, count })).sort((a, b) => b.count - a.count);
 }
 
+export function reduceVoiceStats(
+  voiceMessages: { conversation_id: string; transcript: string | null }[],
+  conversations: { id: string; outcome: string | null; language: string | null }[],
+): VoiceStats {
+  const totalVoiceNotes = voiceMessages.length;
+  const voiceConvIds = new Set(voiceMessages.map((m) => m.conversation_id));
+  const voiceConversations = voiceConvIds.size;
+  const totalConversations = conversations.length;
+
+  const transcribed = voiceMessages.filter((m) => (m.transcript ?? "").trim().length > 0);
+  const transcribedPct = totalVoiceNotes ? Math.round((transcribed.length / totalVoiceNotes) * 100) : 0;
+  const avgTranscriptChars = transcribed.length
+    ? Math.round(transcribed.reduce((sum, m) => sum + (m.transcript ?? "").trim().length, 0) / transcribed.length)
+    : 0;
+
+  const voiceConvs = conversations.filter((c) => voiceConvIds.has(c.id));
+  const bookedVoice = voiceConvs.filter((c) => c.outcome === "booked").length;
+  const voiceBookingPct = voiceConversations ? Math.round((bookedVoice / voiceConversations) * 100) : 0;
+  const voiceSharePct = totalConversations ? Math.round((voiceConversations / totalConversations) * 100) : 0;
+
+  const langMap = new Map<string, number>();
+  for (const c of voiceConvs) {
+    const k = c.language ?? "unknown";
+    langMap.set(k, (langMap.get(k) ?? 0) + 1);
+  }
+  const languages = [...langMap.entries()]
+    .map(([name, value]) => ({ name, value }))
+    // Secondary sort by name keeps ordering deterministic when counts tie.
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name));
+
+  return {
+    totalVoiceNotes, voiceConversations, totalConversations,
+    voiceSharePct, transcribedPct, voiceBookingPct, avgTranscriptChars, languages,
+  };
+}
+
 export async function getFunnel(automationId: string, r: AnalyticsRange, client?: SupabaseLike): Promise<Funnel> {
   const supabase = client ?? (await createClient());
   let cq = supabase.from("conversations").select("outcome").eq("automation_id", automationId);
@@ -113,4 +149,30 @@ export async function getAbandonment(automationId: string, r: AnalyticsRange, cl
   if (r.to) q = q.lte("started_at", r.to);
   const { data } = await q;
   return reduceAbandonment((data ?? []) as { abandonment_reason: string | null }[]);
+}
+
+export async function getVoiceStats(automationId: string, r: AnalyticsRange, client?: SupabaseLike): Promise<VoiceStats> {
+  const supabase = client ?? (await createClient());
+  // Date-windowed, per-automation fetch — same unbounded read pattern as the
+  // sibling analytics queries above. The follow-on .in() over these ids is the
+  // only place that compounds it, so very wide ranges on high-volume automations
+  // should move to a server-side aggregate (tracked as a cross-cutting follow-up).
+  let cq = supabase.from("conversations").select("id, outcome, language").eq("automation_id", automationId);
+  if (r.from) cq = cq.gte("started_at", r.from);
+  if (r.to) cq = cq.lte("started_at", r.to);
+  const { data: convs } = await cq;
+  const conversations = (convs ?? []) as { id: string; outcome: string | null; language: string | null }[];
+
+  const convIds = conversations.map((c) => c.id);
+  let voiceMessages: { conversation_id: string; transcript: string | null }[] = [];
+  if (convIds.length > 0) {
+    const { data: vm } = await supabase
+      .from("messages")
+      .select("conversation_id, transcript")
+      .eq("message_type", "voice")
+      .in("conversation_id", convIds);
+    voiceMessages = (vm ?? []) as { conversation_id: string; transcript: string | null }[];
+  }
+
+  return reduceVoiceStats(voiceMessages, conversations);
 }

@@ -4,3 +4,14 @@ export interface ZoneRow { zone: string; count: number; pct: number; }
 export interface HeatmapCell { day: number; hour: number; value: number; }
 export interface AbandonmentRow { reason: string; count: number; }
 export interface AnalyticsRange { from?: string; to?: string; }
+
+export interface VoiceStats {
+  totalVoiceNotes: number;
+  voiceConversations: number;
+  totalConversations: number;
+  voiceSharePct: number;
+  transcribedPct: number;
+  voiceBookingPct: number;
+  avgTranscriptChars: number;
+  languages: NamedValue[];
+}

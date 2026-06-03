@@ -8,6 +8,7 @@ import {
   getTopZones,
   getHeatmap,
   getAbandonment,
+  getVoiceStats,
 } from "@/lib/dashboard/analytics";
 import type { AnalyticsRange } from "@/lib/dashboard/analytics-types";
 
@@ -22,9 +23,10 @@ const METRICS: Record<string, MetricFn> = {
   destinations: (id, r) => getTopZones(id, r, "destination_address"),
   heatmap: (id, r) => getHeatmap(id, r),
   abandonment: (id, r) => getAbandonment(id, r),
+  voice: (id, r) => getVoiceStats(id, r),
 };
 
-const STUB_METRICS = new Set(["response-time", "voice"]);
+const STUB_METRICS = new Set(["response-time"]);
 
 export async function GET(req: Request, ctx: { params: Promise<Record<string, string>> }) {
   const { orgId, automationId, metric } = await ctx.params;
@@ -33,7 +35,7 @@ export async function GET(req: Request, ctx: { params: Promise<Record<string, st
   if (gate instanceof NextResponse) return gate;
 
   if (STUB_METRICS.has(metric)) {
-    return NextResponse.json({ available: false, reason: "Available once voice/timing capture is enabled." });
+    return NextResponse.json({ available: false, reason: "Available once message-timing capture is enabled." });
   }
 
   const fn = METRICS[metric];
