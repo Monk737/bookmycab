@@ -9,7 +9,9 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "loadtest:webhook": "tsx scripts/webhook-load-test.ts"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

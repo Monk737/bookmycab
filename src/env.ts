@@ -43,6 +43,13 @@ const schema = z.object({
   // Marketing
   NEXT_PUBLIC_CAL_LINK: z.string().min(1).default("flowmo/discovery"),
   NEXT_PUBLIC_SITE_URL: z.string().url().default("https://cabbybot.com"),
+
+  // Observability (Epic 11). Activation is deploy-time; absent → telemetry no-ops.
+  OBSERVABILITY_STDOUT: z.string().optional(),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
+  OTEL_SERVICE_NAME: z.string().default("cabbybot"),
+  SENTRY_DSN: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 });
 
 // Vars with no `.optional()`/`.default()` — a blank value here is a real

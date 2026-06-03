@@ -85,7 +85,7 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** `WA Voice Booking Processor` sub-workflow wired to WhatsApp automations (Whisper transcribe → GPT slot extraction → merge at intent router); dashboard conversation view renders transcript + extracted slots; voice analytics section; Whisper language auto-detect → `conversations.language`.
 **Perf target:** voice note → reply p95 ≤8s.
 
-### ⬜ Plan 11 — Epic 11: Observability & QA
+### ✅ Plan 11 — Epic 11: Observability & QA  → `2026-06-02-epic-11-observability-qa.md`  (DONE & merged to `master` 2026-06-02, HEAD `b7a8cf3`)
 **Depends on:** Plans 5, 7.
 **Produces:** OpenTelemetry in route handlers + engine; Grafana Cloud dashboards (latency, error rate, webhook throughput, dispatch latency per adapter); Sentry (frontend + server); Playwright E2E (text + voice booking, manage booking, admin provisioning, demo tenant); webhook load test @100 concurrent.
 
