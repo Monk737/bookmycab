@@ -26,3 +26,14 @@ export interface RevenueSummary {
   /** Booking count by status, descending, for a chart. */
   byStatus: { name: string; value: number }[];
 }
+
+export interface AirportStats {
+  airportBookings: number;
+  totalBookings: number;
+  /** airportBookings / totalBookings, 0–100. */
+  airportSharePct: number;
+  /** Booking count by airport code/name, descending. */
+  topAirports: { name: string; value: number }[];
+  /** Booking count by terminal label e.g. "LHR T3", descending. */
+  topTerminals: { name: string; value: number }[];
+}
