@@ -13,6 +13,7 @@ import { loadChannelVerifySecret } from "@/lib/webhooks/resolver-loader";
 import { claimOnce } from "@/lib/redis/idempotency";
 import { fixedWindow } from "@/lib/redis/rate-limit";
 import { fireAndForgetForward } from "@/lib/webhooks/forward";
+import { incCounter, recordHistogram } from "@/lib/observability/metrics";
 
 export const runtime = "nodejs";
 
@@ -59,21 +60,28 @@ export async function POST(
   if (!isChannel(channel)) return new NextResponse("Not found", { status: 404 });
   if (!UUID_RE.test(automationId)) return new NextResponse("Not found", { status: 404 });
 
+  const ackStart = Date.now();
+  const ack = (status: string, res: NextResponse): NextResponse => {
+    recordHistogram("webhook_ack_ms", Date.now() - ackStart, { channel });
+    incCounter("webhook_inbound_total", { channel, status });
+    return res;
+  };
+
   // Read the raw body ONCE — signature verification needs the exact bytes.
   const rawBody = await req.text();
 
   // 1) Verify the provider signature using the per-channel vault secret.
   const ok = await verifyInbound(channel, automationId, req, rawBody);
-  if (!ok) return new NextResponse("Invalid signature", { status: 401 });
+  if (!ok) return ack("invalid", new NextResponse("Invalid signature", { status: 401 }));
 
   // 2) Resolve the automation (cached). Unknown or non-live → swallow with 200
   //    so providers don't retry forever, but do not forward.
   const automation = await resolveAutomation(automationId);
   if (!automation || !automation.engineWebhookUrl) {
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return ack("unknown", NextResponse.json({ ok: true }, { status: 200 }));
   }
   if (automation.status === "stopped" || automation.status === "error") {
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return ack("stopped", NextResponse.json({ ok: true }, { status: 200 }));
   }
 
   // 3) Rate-limit per automation+channel (fixed window).
@@ -82,7 +90,7 @@ export async function POST(
     env.WEBHOOK_RATE_LIMIT_PER_MIN,
     60,
   );
-  if (!rate.allowed) return new NextResponse("Too Many Requests", { status: 429 });
+  if (!rate.allowed) return ack("rate_limited", new NextResponse("Too Many Requests", { status: 429 }));
 
   // 4) Idempotency: skip if we've already seen this provider message id.
   let body: unknown = null;
@@ -94,7 +102,7 @@ export async function POST(
   const msgId = body ? extractProviderMessageId(channel, body) : null;
   if (msgId) {
     const first = await claimOnce(`idem:${automationId}:${msgId}`, env.IDEMPOTENCY_TTL_SEC);
-    if (!first) return NextResponse.json({ ok: true, deduped: true }, { status: 200 });
+    if (!first) return ack("deduped", NextResponse.json({ ok: true, deduped: true }, { status: 200 }));
   }
 
   // 5) Fire-and-forget to the engine; return 200 immediately.
@@ -103,7 +111,7 @@ export async function POST(
     req.headers.get("content-type") ?? "application/json",
     rawBody,
   );
-  return NextResponse.json({ ok: true }, { status: 200 });
+  return ack("forwarded", NextResponse.json({ ok: true }, { status: 200 }));
 }
 
 async function verifyInbound(
