@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { getCalApi } from "@calcom/embed-react";
-import { env } from "@/env";
+import { clientEnv } from "@/env.client";
 import { Button } from "@/components/marketing/ui/button";
 
 type DiscoveryCtaProps = {
@@ -33,7 +33,7 @@ export function DiscoveryCta({
       variant="primary"
       size={size}
       className={className}
-      data-cal-link={env.NEXT_PUBLIC_CAL_LINK}
+      data-cal-link={clientEnv.NEXT_PUBLIC_CAL_LINK}
       data-cal-config='{"layout":"month_view"}'
     >
       {label}
