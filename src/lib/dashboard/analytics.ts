@@ -149,3 +149,25 @@ export async function getAbandonment(automationId: string, r: AnalyticsRange, cl
   const { data } = await q;
   return reduceAbandonment((data ?? []) as { abandonment_reason: string | null }[]);
 }
+
+export async function getVoiceStats(automationId: string, r: AnalyticsRange, client?: SupabaseLike): Promise<VoiceStats> {
+  const supabase = client ?? (await createClient());
+  let cq = supabase.from("conversations").select("id, outcome, language").eq("automation_id", automationId);
+  if (r.from) cq = cq.gte("started_at", r.from);
+  if (r.to) cq = cq.lte("started_at", r.to);
+  const { data: convs } = await cq;
+  const conversations = (convs ?? []) as { id: string; outcome: string | null; language: string | null }[];
+
+  const convIds = conversations.map((c) => c.id);
+  let voiceMessages: { conversation_id: string; transcript: string | null }[] = [];
+  if (convIds.length > 0) {
+    const { data: vm } = await supabase
+      .from("messages")
+      .select("conversation_id, transcript")
+      .eq("message_type", "voice")
+      .in("conversation_id", convIds);
+    voiceMessages = (vm ?? []) as { conversation_id: string; transcript: string | null }[];
+  }
+
+  return reduceVoiceStats(voiceMessages, conversations);
+}
