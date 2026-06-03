@@ -35,7 +35,7 @@ export async function GET(req: Request, ctx: { params: Promise<Record<string, st
   if (gate instanceof NextResponse) return gate;
 
   if (STUB_METRICS.has(metric)) {
-    return NextResponse.json({ available: false, reason: "Available once voice/timing capture is enabled." });
+    return NextResponse.json({ available: false, reason: "Available once message-timing capture is enabled." });
   }
 
   const fn = METRICS[metric];
