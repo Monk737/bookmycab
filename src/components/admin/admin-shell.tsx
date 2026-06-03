@@ -10,6 +10,7 @@ type NavItem = { label: string; href: string };
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/admin" },
   { label: "Tenants", href: "/admin/tenants" },
+  { label: "Plans", href: "/admin/plans" },
   { label: "Automations", href: "/admin/automations" },
   { label: "Build Queue", href: "/admin/build-queue" },
   { label: "Credentials", href: "/admin/credentials" },

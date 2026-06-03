@@ -14,6 +14,7 @@ import {
   LifecycleControls,
 } from "./tenant-detail-forms";
 import { BillingPanel } from "./billing-panel";
+import { EntitlementsSection } from "./entitlements-section";
 
 // Always read fresh — lifecycle changes / invites must appear immediately.
 export const dynamic = "force-dynamic";
@@ -497,6 +498,10 @@ export default async function TenantDetailPage({
           getRowKey={(c) => c.id}
           emptyMessage="No channels bound yet."
         />
+      </Section>
+
+      <Section title="Entitlements">
+        <EntitlementsSection tenantId={tenantId} />
       </Section>
 
       <Section title="Invoices">
