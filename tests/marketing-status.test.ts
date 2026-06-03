@@ -48,7 +48,7 @@ describe("status route wiring", () => {
     expect(PUBLIC_PAGES.has("/status")).toBe(true);
     expect(existsSync(p("src/app/(marketing)/status/page.tsx"))).toBe(true);
   });
-  it("renders the perf targets and links to the incident channel", () => {
+  it("renders the perf targets and the service catalogue", () => {
     const src = readFileSync(p("src/app/(marketing)/status/page.tsx"), "utf8");
     expect(src).toMatch(/PERF_TARGETS/);
     expect(src).toMatch(/STATUS_COMPONENTS/);

@@ -29,6 +29,7 @@ export const PERF_TARGETS: PerfTarget[] = [
   { metric: "Message to bot reply", target: "≤ 3 s (p95)" },
   { metric: "Voice note to reply", target: "≤ 8 s (p95)" },
   { metric: "Dashboard page load", target: "≤ 1.5 s (p95)" },
+  { metric: "API route handler", target: "≤ 200 ms (p95)" },
 ];
 
 export const STATUS_LABEL: Record<ComponentStatus, string> = {

@@ -30,7 +30,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "International transfers",
-    body: "We process personal data in the UK and EU. Where a sub-processor you have approved processes data outside the UK/EU, transfers are covered by an adequacy decision or standard contractual clauses, as recorded in the signed agreement.",
+    body: "We process personal data in the UK and EU. Where a sub-processor you have approved processes data outside the UK/EU, transfers are covered by an adequacy decision, the UK International Data Transfer Agreement (IDTA) or the UK Addendum to the EU standard contractual clauses, as recorded in the signed agreement.",
   },
   {
     heading: "Personal-data breaches",
