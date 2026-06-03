@@ -1,6 +1,9 @@
 import "server-only";
 import { env } from "@/env";
 import type { EngineRun } from "./types";
+import { recordHistogram } from "@/lib/observability/metrics";
+import { getSink } from "@/lib/observability/sink";
+import { errMessage } from "@/lib/observability/telemetry";
 
 type Fetcher = typeof fetch;
 
@@ -20,12 +23,26 @@ export class EngineClient {
   }
 
   private async call(path: string, init?: RequestInit): Promise<Response> {
-    return this.fetcher(`${this.baseUrl}/api/v1${path}`, {
-      ...init,
-      // Caller headers first, then the auth + content-type headers (callee-wins)
-      // so a caller can never accidentally override the API key.
-      headers: { ...(init?.headers ?? {}), "X-N8N-API-KEY": this.apiKey, "content-type": "application/json" },
-    });
+    const op = path.split("?")[0];
+    const start = Date.now();
+    try {
+      const res = await this.fetcher(`${this.baseUrl}/api/v1${path}`, {
+        ...init,
+        // Caller headers first, then the auth + content-type headers (callee-wins)
+        // so a caller can never accidentally override the API key.
+        headers: { ...(init?.headers ?? {}), "X-N8N-API-KEY": this.apiKey, "content-type": "application/json" },
+      });
+      const status = res.ok ? "ok" : "error";
+      const durationMs = Date.now() - start;
+      recordHistogram("engine_request_ms", durationMs, { op, status });
+      getSink().span({ name: "engine.request", attributes: { op, status }, durationMs, status });
+      return res;
+    } catch (err) {
+      const durationMs = Date.now() - start;
+      recordHistogram("engine_request_ms", durationMs, { op, status: "error" });
+      getSink().span({ name: "engine.request", attributes: { op, status: "error" }, durationMs, status: "error", error: errMessage(err) });
+      throw err;
+    }
   }
 
   async isActive(workflowId: string): Promise<boolean> {
