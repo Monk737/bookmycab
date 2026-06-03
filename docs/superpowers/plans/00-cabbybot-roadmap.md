@@ -38,19 +38,19 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Open qs to resolve at start:** Q10 (brand assets finalised?), Q11 (Calendly/Cal.com/HubSpot).
 **Frontend skill:** **use `ui-ux-pro-max`** for the design system + every page.
 
-### ⬜ Plan 3 — Epic 3: Internal Admin Console
+### ✅ Plan 3 — Epic 3: Internal Admin Console  → `2026-06-01-epic-3-admin-console.md`  (DONE & merged to `master` 2026-06-01, HEAD `20978ae`)
 **Depends on:** Plans 1, 4 (auth). Built **before** the tenant dashboard.
 **Produces:** Tenant provisioning form, automation registry, build queue (Kanban), Supabase `invite()` integration, channel credentials vault (Supabase Vault/`pgcrypto`), Stripe panel + renewal alerts, read-only impersonation (audit-logged, 15-min expiry), platform analytics.
 **Open qs:** Q9 (n8n editor deeplink — senior eng only?).
 **Frontend skill:** **use `ui-ux-pro-max`** for admin UI.
 
-### ⬜ Plan 4 — Epic 4: Auth & Invite-Only Login
+### ✅ Plan 4 — Epic 4: Auth & Invite-Only Login  → `2026-06-01-epic-4-auth-invite-login.md`  (DONE & merged to `master` 2026-06-01, HEAD `bbbaea1`)
 **Depends on:** Plan 1.
 **Produces:** Supabase Auth SSR + browser flows, invite → set-password flow, MFA (TOTP) enforced for Owner/Admin, login/logout/reset UI, middleware finalised (Plan 1 ships the skeleton; this completes the flows).
 **Note:** Plan 1 lays the auth-hook + middleware skeleton so Plans 2–3 can be developed; Plan 4 completes user-facing auth. Can be sequenced before Plan 3 if preferred.
 **Frontend skill:** **use `ui-ux-pro-max`** for auth screens.
 
-### ⬜ Plan 5 — Epic 5: Automation Engine Integration
+### ✅ Plan 5 — Epic 5: Automation Engine Integration  → `2026-06-01-epic-5-automation-engine.md`  (DONE & merged to `master` 2026-06-01, HEAD `217022d`)
 **Depends on:** Plans 1, 3.
 **Produces:** Engine (n8n) API client (start/stop/restart/status/runs — **internal label only**), webhook gateway with channel→automation resolver (Supabase lookup cached in Upstash Redis 5-min TTL), per-channel signature verification, async forward + idempotency key, status sync into Supabase, audit logging for control-plane actions.
 **Perf target:** webhook ACK p95 ≤300ms.
