@@ -12,6 +12,7 @@ import type {
   NamedValue,
   ZoneRow,
   HeatmapCell,
+  VoiceStats,
 } from "@/lib/dashboard/analytics-types";
 
 // ——— date helpers ——————————————————————————————————————————
@@ -140,6 +141,7 @@ interface AllMetrics {
   destinations: MetricState<ZoneRow[]>;
   heatmap: MetricState<HeatmapCell[]>;
   abandonment: MetricState<NamedValue[]>;
+  voice: MetricState<VoiceStats>;
 }
 
 function emptyMetrics(): AllMetrics {
@@ -152,6 +154,7 @@ function emptyMetrics(): AllMetrics {
     destinations: { status: "idle" },
     heatmap: { status: "idle" },
     abandonment: { status: "idle" },
+    voice: { status: "idle" },
   };
 }
 
@@ -194,6 +197,43 @@ const zoneColumns = [
   },
 ];
 
+// ——— voice stats panel ———————————————————————————————————
+
+function StatTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="mt-1 text-xl font-semibold tabular-nums text-slate-900">{value}</div>
+    </div>
+  );
+}
+
+function VoiceStatsPanel({ stats }: { stats: VoiceStats }) {
+  if (stats.totalVoiceNotes === 0) {
+    return <UnavailableCard message="No voice notes recorded for this period." />;
+  }
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <StatTile label="Voice notes" value={stats.totalVoiceNotes.toLocaleString()} />
+        <StatTile label="Voice conversations" value={stats.voiceConversations.toLocaleString()} />
+        <StatTile label="Share of chats" value={`${stats.voiceSharePct}%`} />
+        <StatTile label="Transcribed" value={`${stats.transcribedPct}%`} />
+        <StatTile label="Voice → booking" value={`${stats.voiceBookingPct}%`} />
+        <StatTile label="Avg transcript" value={`${stats.avgTranscriptChars} chars`} />
+      </div>
+      {stats.languages.length > 0 && (
+        <div>
+          <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+            Detected languages
+          </div>
+          <DonutChart data={stats.languages} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ——— main client component ———————————————————————————————
 
 export function AnalyticsClient({
@@ -233,10 +273,11 @@ export function AnalyticsClient({
       destinations: { status: "loading" },
       heatmap: { status: "loading" },
       abandonment: { status: "loading" },
+      voice: { status: "loading" },
     });
 
     const run = async () => {
-      const [funnelRes, channelsRes, modeRes, vehicleRes, zonesRes, destsRes, heatmapRes, abandonRes] =
+      const [funnelRes, channelsRes, modeRes, vehicleRes, zonesRes, destsRes, heatmapRes, abandonRes, voiceRes] =
         await Promise.allSettled([
           fetchMetric("funnel"),
           fetchMetric("channels"),
@@ -246,6 +287,7 @@ export function AnalyticsClient({
           fetchMetric("destinations"),
           fetchMetric("heatmap"),
           fetchMetric("abandonment"),
+          fetchMetric("voice"),
         ]);
 
       if (cancelled) return;
@@ -266,6 +308,7 @@ export function AnalyticsClient({
         destinations: extract<ZoneRow[]>(destsRes, "data"),
         heatmap: extract<HeatmapCell[]>(heatmapRes, "data"),
         abandonment: extract<NamedValue[]>(abandonRes, "data"),
+        voice: extract<VoiceStats>(voiceRes, "data"),
       });
     };
 
@@ -396,9 +439,15 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 10 — Voice Note Stats (not yet available) */}
+      {/* 10 — Voice Note Stats */}
       <SectionCard title="Voice Note Stats">
-        <UnavailableCard message="Available once voice capture is enabled." />
+        {metrics.voice.status === "loading" ? (
+          <Skeleton height={180} />
+        ) : metrics.voice.status === "ok" ? (
+          <VoiceStatsPanel stats={metrics.voice.data} />
+        ) : metrics.voice.status === "error" ? (
+          <UnavailableCard message="Could not load voice data." />
+        ) : null}
       </SectionCard>
     </div>
   );
