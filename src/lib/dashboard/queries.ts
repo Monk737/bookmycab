@@ -17,8 +17,14 @@ export function reduceOrgKpis(bookings: { fare: number | null; status: string }[
 
 export async function getOrgKpis(tenantId: string, client?: SupabaseLike): Promise<{ bookings30d: number; revenue30d: number }> {
   const supabase = client ?? (await createClient());
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const { data } = await supabase.from("bookings").select("fare, status").eq("tenant_id", tenantId).gte("created_at", since);
+  // Day-aligned 30-day window (today + previous 29 days) so this matches the
+  // per-automation "Revenue (30d)" tile, which uses the same default range.
+  const from = new Date(Date.now() - 29 * 86_400_000).toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from("bookings")
+    .select("fare, status")
+    .eq("tenant_id", tenantId)
+    .gte("created_at", `${from}T00:00:00Z`);
   return reduceOrgKpis((data ?? []) as { fare: number | null; status: string }[]);
 }
 

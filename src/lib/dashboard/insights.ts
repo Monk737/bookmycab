@@ -127,9 +127,12 @@ export async function getResponseStats(automationId: string, r: Range, client?: 
   const { data: convs } = await cq;
   const ids = (convs ?? []).map((c) => (c as { id: string }).id);
   if (ids.length === 0) return reduceResponseStats([]);
-  const { data: msgs } = await supabase
-    .from("messages")
-    .select("conversation_id, direction, ts")
-    .in("conversation_id", ids);
+  // Bound the message scan to the analytics window and order by ts so the
+  // first-response pairing is correct and the default PostgREST 1000-row cap
+  // can't silently truncate a busy tenant's sample.
+  let mq = supabase.from("messages").select("conversation_id, direction, ts").in("conversation_id", ids);
+  if (r.from) mq = mq.gte("ts", `${r.from}T00:00:00Z`);
+  if (r.to) mq = mq.lte("ts", `${r.to}T23:59:59.999Z`);
+  const { data: msgs } = await mq.order("ts", { ascending: true }).limit(20000);
   return reduceResponseStats((msgs ?? []) as { conversation_id: string; direction: string; ts: string }[]);
 }
