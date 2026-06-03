@@ -91,10 +91,6 @@ const LHR_TERMINALS = [
   { formatted: "Heathrow Terminal 5, London TW6 2GA", terminal: "T5", code: "LHR", lat: 51.4722, lng: -0.4876 },
 ] as const;
 
-const FLIGHT_NUMBERS = [
-  "BA0117", "BA0193", "BA0283", "BA0007", "LH0903",
-  "EK0006", "VS0003", "AA0104", "IB3166", "QR0002",
-] as const;
 
 const PASSENGER_NAMES = [
   "James Wilson", "Sarah Ahmed", "Mohammed Al-Rashid", "Emma Thompson",
@@ -103,8 +99,8 @@ const PASSENGER_NAMES = [
   "Harry Davies", "Layla Noor", "Jack Morrison", "Meera Sharma",
 ] as const;
 
-const VEHICLE_TYPES = ["Saloon", "Executive", "MPV"] as const;
-const VEHICLE_WEIGHTS = [0.5, 0.3, 0.2];
+const VEHICLE_TYPES = ["saloon", "estate", "mpv", "8seater", "wheelchair"] as const;
+const VEHICLE_WEIGHTS = [0.50, 0.15, 0.20, 0.10, 0.05];
 
 function pickVehicle(): string {
   const r = rng();
@@ -113,8 +109,24 @@ function pickVehicle(): string {
     cum += VEHICLE_WEIGHTS[i];
     if (r < cum) return VEHICLE_TYPES[i];
   }
-  return "Saloon";
+  return "saloon";
 }
+
+const AIRLINES = [
+  { airline: "British Airways", code: "BA", dep: "John F. Kennedy International Airport", depCode: "JFK" },
+  { airline: "Emirates", code: "EK", dep: "Dubai International Airport", depCode: "DXB" },
+  { airline: "American Airlines", code: "AA", dep: "Los Angeles International Airport", depCode: "LAX" },
+  { airline: "Lufthansa", code: "LH", dep: "Frankfurt Airport", depCode: "FRA" },
+  { airline: "Qatar Airways", code: "QR", dep: "Hamad International Airport", depCode: "DOH" },
+] as const;
+
+const DRIVER_NOTES = [
+  "Please call on arrival",
+  "Meet at the main entrance",
+  "Child seat needed",
+  "Luggage — large boot please",
+  "",
+] as const;
 
 function daysAgo(n: number): Date {
   const d = new Date();
@@ -161,7 +173,7 @@ function buildBookingMessages(
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: pickupAddr }, ts: t(55) },
     { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "And your destination?" }, ts: t(58) },
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: destAddr }, ts: t(80) },
-    { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "What type of vehicle? Saloon, Executive, or MPV?" }, ts: t(83) },
+    { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "What type of vehicle? Saloon, Estate, MPV, 8-seater or Wheelchair?" }, ts: t(83) },
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: "Saloon" }, ts: t(95) },
     { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "Your name for the booking?" }, ts: t(98) },
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: passengerName }, ts: t(115) },
@@ -336,7 +348,7 @@ async function main() {
       automation_id: autoId,
       tenant_id: DEMO_TENANT_ID,
       welcome_messages: { en: "Hi! I'm your CabbyBot. Book, quote, or manage a taxi? 🚕" },
-      vehicle_types: ["Saloon", "Executive", "MPV"],
+      vehicle_types: ["saloon", "estate", "mpv", "8seater", "wheelchair"],
       service_area: "Greater London",
       opening_hours: { mon_fri: "06:00-23:00", weekend: "07:00-22:00" },
       brand_colours: { primary: "#1E40AF", accent: "#F59E0B" },
@@ -467,6 +479,39 @@ async function main() {
           const terminal = isAirport ? (dest as { formatted: string; terminal: string; code: string; lat: number; lng: number }) : null;
           const mode = effectiveConvType === "booking_asap" ? "asap" : "scheduled";
           const pickupAt = new Date(started.getTime() + (mode === "asap" ? randInt(5, 30) : randInt(60, 2880)) * 60_000);
+          const vehicleType = pickVehicle();
+
+          // A2: Build full airport_json contract shape
+          let airportJson: object | null = null;
+          if (isAirport && terminal) {
+            const al = pick(AIRLINES);
+            const bufferMinutes = pick([30, 45, 60] as const);
+            const arrivalTimeUtc = new Date(pickupAt.getTime() - bufferMinutes * 60_000);
+            const flightNumber = `${al.code}${randInt(100, 999)}`;
+            const terminalNum = terminal.terminal.replace("T", "");
+            airportJson = {
+              code: "LHR",
+              name: "Heathrow Airport",
+              flightNumber,
+              arrivalTerminal: terminalNum,
+              arrivalTimeUtc: arrivalTimeUtc.toISOString(),
+              bufferMinutes,
+              pickupAtUtc: pickupAt.toISOString(),
+              flightObject: {
+                airline: al.airline,
+                airlineCode: al.code,
+                departureAirport: al.dep,
+                departureAirportCode: al.depCode,
+              },
+              flightSummary: `${flightNumber} ${al.depCode} - LHR (T:${terminalNum}) arrival @ ${arrivalTimeUtc.toLocaleDateString("en-GB")} ${arrivalTimeUtc.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`,
+            };
+          }
+
+          // A3: driver_note (~30%), payment_method, references, raw_dispatch_json
+          const driverNote = rng() < 0.30 ? pick(DRIVER_NOTES.filter((n) => n !== "")) : "";
+          const paymentRoll = rng();
+          const paymentMethod = paymentRoll < 0.60 ? "Cash" : paymentRoll < 0.90 ? "Card" : "Account";
+          const handleDigits = customerHandle.replace(/\D/g, "");
 
           const { error: bookErr } = await sb.from("bookings").insert({
             tenant_id: DEMO_TENANT_ID,
@@ -479,15 +524,25 @@ async function main() {
             customer_handle: customerHandle,
             pickup_address: pickup,
             destination_address: isAirport ? terminal : dest,
-            vehicle_type: pickVehicle(),
+            vehicle_type: vehicleType,
             passenger_count: randInt(1, 4),
             fare,
             currency: "GBP",
             pickup_at_utc: isoStr(pickupAt),
-            pickup_time_mode: mode,
-            airport_json: isAirport && terminal ? { flight: pick(FLIGHT_NUMBERS), terminal: terminal.terminal, iata: terminal.code } : null,
+            pickup_time_mode: isAirport ? "airport" : mode,
+            airport_json: airportJson,
             status: pick(bookingStatuses),
-            raw_dispatch_json: { demo: true },
+            driver_note: driverNote || null,
+            payment_method: paymentMethod,
+            your_reference_1: `WA-${handleDigits}`,
+            your_reference_2: vehicleType,
+            your_reference_3: `£${fare.toFixed(2)}`,
+            raw_dispatch_json: {
+              distanceMiles: Number(randFloat(0.8, 18).toFixed(1)),
+              journeyTime: `${randInt(6, 55)} min`,
+              tariff: "Main cash Tariff",
+              bookingType: pick(["Advanced", "Active", "Dispatched", "Completed"] as const),
+            },
             created_at: isoStr(started),
           });
           if (bookErr) console.warn(`  ⚠ bookings insert: ${bookErr.message}`);
