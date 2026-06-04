@@ -121,8 +121,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **v1 follow-ups:** actual n8n push on publish (only `synced_to_engine_at` stamped today); bot wiring to quote from `fare_rules`; extend numeric guardrails to fare bounds.
 **Note:** merged with the full DB-integration suite unverified — local Docker/Supabase was down at merge time, so `admin-rls.test.ts` (live Postgres) could not run; Epic 16's own 17 unit/route tests + typecheck + build are green. Re-run `npm test` once Docker is up to confirm.
 
-### ⏭ Planned Epics 17–24 (one plan each, dependency order; each gates via `requireFeature`):
-17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 17 — Epic 17: Live Ops & Human Takeover  → `2026-06-04-epic-17-live-ops.md`  (DONE & merged to `master`, HEAD `4236cfb`)
+**Depends on:** Plan 13 (entitlements), 9 (`blockIfDemo`), 5 (engine client), conversations/messages (0003).
+**Produces:** migration 0023 (conversations takeover state: `takeover_status`/`assigned_to`/`takeover_at`/`last_human_reply_at`; messages provenance: `source`/`sent_by_user_id`); `src/lib/liveops/*` (pure takeover state machine, engine relay [graceful], claim/release + staff-message service); gated tenant API `/api/orgs/:id/liveops/*` (live list, claim/release, post message → 409 if not in takeover); entitlement-gated `/dashboard/liveops` page (list + takeover panel + reply box). Gates on `live_takeover`. 14 tests; full suite green (admin-rls restored after DB recovery).
+**v1 follow-ups:** n8n `/webhook/staff-relay` endpoint to actually forward human replies to WhatsApp/Telegram (relay is a logged no-op until then); Supabase Realtime auto-refresh of the live board (manual refresh in v1); engine honoring `takeover_status` to pause the bot; idle-timeout sweeper for "active" conversations.
+
+### ⏭ Planned Epics 18–24 (one plan each, dependency order; each gates via `requireFeature`):
+18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
