@@ -8,7 +8,7 @@ import { signOut } from "@/app/(auth)/actions";
 
 type NavItem = { label: string; href: string };
 
-const NAV_ITEMS: NavItem[] = [
+const BASE_NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/dashboard" },
   { label: "Team", href: "/dashboard/team" },
   { label: "Billing", href: "/dashboard/billing" },
@@ -29,12 +29,19 @@ function isActive(pathname: string, href: string): boolean {
 export function DashboardShell({
   orgName,
   children,
+  showAlerts,
 }: {
   orgName: string;
   children: ReactNode;
+  showAlerts?: boolean;
 }): React.JSX.Element {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const NAV_ITEMS = [
+    ...BASE_NAV_ITEMS,
+    ...(showAlerts ? [{ label: "Alerts", href: "/dashboard/alerts" }] : []),
+  ];
 
   const navLinks = (
     <ul className="space-y-0.5">
