@@ -110,8 +110,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0020 (`alert_rules`, `notification_channels`, append-only `alert_events` + `notification_log`); `src/lib/alerting/*` (pure evaluate, metric registry, dispatch→send/log/meter, evaluation engine, queries); tenant API `/api/orgs/:id/alerts/{rules,channels,evaluate}` gated by `requireFeature("alerting")` + `blockIfDemo`; entitlement-gated `/dashboard/alerts` page + nav. Meters the `notifications` unit. 15 tests; final review fixes (dispatch never-throws, empty alert-event-id guard, demo-block evaluate).
 **v1 follow-ups:** event ack/resolve (append-only trigger blocks it); per-rule re-fire cooldown; `requireQuota` pre-check on send; platform cron calling the evaluate route per tenant.
 
-### ⏭ Planned Epics 15–24 (one plan each, dependency order; each gates via `requireFeature`):
-15 Customer CRM + data governance · 16 Bot config control plane (versioning/fare rules/guardrails) · 17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 15 — Epic 15: Customer CRM + Data Governance  → `2026-06-04-epic-15-crm.md`  (DONE & merged to `master`, HEAD `a0385ae`)
+**Depends on:** Plan 13 (entitlements), 9 (`blockIfDemo`), 1/7 (bookings/conversations).
+**Produces:** migration 0021 (`customers` per tenant+handle, `customer_notes`, `customer_id` FKs on bookings/conversations); `src/lib/crm/*` (pure stats aggregation, `syncCustomers` derive-from-bookings, queries incl. DSAR export/delete); gated tenant API (`/api/orgs/:id/customers/*` incl. DSAR Owner-only) + `/dashboard/customers` page (list, VIP/blocklist flags). DSAR delete erases ALL PII (dispatch JSON + message payloads/transcripts) and writes `audit_log`. 12 tests; review fixes applied.
+**v1 follow-ups:** backfill `bookings/conversations.customer_id` (sync matches by handle today); per-customer detail-drill UI (API exists); make DSAR delete a single Postgres transaction (currently ordered scrubs with error aggregation).
+
+### ⏭ Planned Epics 16–24 (one plan each, dependency order; each gates via `requireFeature`):
+16 Bot config control plane (versioning/fare rules/guardrails) · 17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
