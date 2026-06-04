@@ -13,6 +13,11 @@ const sql0018 = readFileSync(
   "utf8",
 );
 
+const sql0019 = readFileSync(
+  join(process.cwd(), "supabase/migrations/0019_entitlements_rls_hardening.sql"),
+  "utf8",
+);
+
 describe("0017 entitlements migration", () => {
   it("creates the five catalog/override tables", () => {
     expect(sql0017).toMatch(/create table public\.plans/i);
@@ -56,5 +61,20 @@ describe("0018 usage metering migration", () => {
     expect(sql0018).toMatch(/alter table public\.usage_events enable row level security/i);
     expect(sql0018).toMatch(/alter table public\.usage_counters enable row level security/i);
     expect(sql0018).toMatch(/usage_events_select[\s\S]*current_user_tenants\(\)/i);
+  });
+});
+
+describe("0019 entitlements RLS hardening", () => {
+  it("drops the permissive public-read policies", () => {
+    expect(sql0019).toMatch(/drop policy if exists plans_select on public\.plans/i);
+    expect(sql0019).toMatch(/drop policy if exists feature_rollouts_select on public\.feature_rollouts/i);
+  });
+  it("revokes anon select on the catalog tables", () => {
+    expect(sql0019).toMatch(/revoke select on public\.plans from anon/i);
+    expect(sql0019).toMatch(/revoke select on public\.feature_rollouts from anon, authenticated/i);
+  });
+  it("re-creates authenticated-only read policies (rollouts left service-role only)", () => {
+    expect(sql0019).toMatch(/create policy plans_select on public\.plans\s+for select using \(auth\.uid\(\) is not null\)/i);
+    expect(sql0019).not.toMatch(/create policy feature_rollouts_select/i);
   });
 });

@@ -32,6 +32,14 @@ export function periodBounds(
   return { start: iso(start), end: iso(end) };
 }
 
+// NOTE (known v1 limitation): the counter bucket period is taken from the
+// feature's CURRENT resolved quota period. If an admin changes a feature's
+// quota_period (day↔month) mid-cycle, subsequent reads bucket into a fresh
+// period and accumulated usage appears reset. usage_events remains the
+// append-only source of truth; a future reconcile/rebuild-counters job (billing
+// epic) can recompute usage_counters from it. Do not rely on usage_counters for
+// financial settlement without that reconciliation.
+
 /**
  * Record a metered action: append to usage_events and bump usage_counters for
  * the current period. Best-effort; never throws into the caller's hot path.

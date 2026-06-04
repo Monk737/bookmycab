@@ -52,3 +52,8 @@ export async function setTenantEntitlement(args: {
   );
   invalidateEntitlements(tenantId);
 }
+
+export async function clearTenantEntitlement(tenantId: string, featureKey: string): Promise<void> {
+  await svc().from("tenant_entitlements").delete().eq("tenant_id", tenantId).eq("feature_key", featureKey);
+  invalidateEntitlements(tenantId);
+}

@@ -1,5 +1,5 @@
 import { listFeatures, listTenantEntitlements } from "@/lib/admin/entitlements";
-import { toggleTenantEntitlement } from "./entitlement-actions";
+import { toggleTenantEntitlement, clearEntitlement } from "./entitlement-actions";
 
 /** Per-tenant entitlement overrides. Server component; renders a toggle per feature. */
 export async function EntitlementsSection({ tenantId }: { tenantId: string }) {
@@ -27,6 +27,15 @@ export async function EntitlementsSection({ tenantId }: { tenantId: string }) {
                     {ov ? "Disable" : "Enable"}
                   </button>
                 </form>
+                {ov !== undefined && (
+                  <form action={clearEntitlement} className="inline">
+                    <input type="hidden" name="tenantId" value={tenantId} />
+                    <input type="hidden" name="featureKey" value={f.key} />
+                    <button type="submit" className="rounded border border-slate-200 px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-50">
+                      Inherit
+                    </button>
+                  </form>
+                )}
               </span>
             </li>
           );
