@@ -131,8 +131,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0024 (append-only `dispatch_attempts`, global `adapter_status`, `automations.dispatch_mode`, `bookings.quoted_fare`); `src/lib/dispatchops/*` (pure adapter-health aggregation [success rate + p95]; record/list/health service; best-effort `retryDispatch` via the real `getDispatchAdapter`/`loadDispatchConfig` factory); gated tenant API (health, failed queue, retry → 502 on adapter failure); entitlement-gated `/dashboard/dispatch` page. Gates on `dispatch_retry`. 12 tests; full suite green (687, only the 2 known no-n8n timeouts).
 **v1 follow-ups:** wire the original booking-create path + n8n engine to call `recordAttempt` on every dispatch (log currently fed by retries); strict "failed with no later success" queue (recent-failed list today); full retry payload fidelity; platform `adapter_status` sweeper + admin health view (governance epic).
 
-### ⏭ Planned Epics 19–24 (one plan each, dependency order; each gates via `requireFeature`):
-19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 19 — Epic 19: Conversation Intelligence  → `2026-06-04-epic-19-conversation-intelligence.md`  (DONE & merged to `master`, HEAD `01abbe0`)
+**Depends on:** Plan 13 (entitlements/metering), 9 (`blockIfDemo`), conversations/messages (0003).
+**Produces:** migration 0025 (conversations `qa_score`/`qa_flags`/`flagged_for_review`/`intent_summary`/`sentiment`, messages `sentiment`, `conversation_reviews` table); `src/lib/convintel/*` (pure deterministic QA scorer; analyze/search/flag/review service with sanitised transcript search); gated tenant API (analyze, search, flag, review); entitlement-gated `/dashboard/intel` page. Gates on `conversation_intelligence`. 11 tests; full suite green (698).
+**v1 follow-ups:** LLM sentiment/intent extraction (sets `sentiment`/`intent_summary`, meters `tokens` via `recordUsage`; honours "customer brings own AI key"); `tsvector` GIN search index; per-conversation review UI (API exists).
+
+### ⏭ Planned Epics 20–24 (one plan each, dependency order; each gates via `requireFeature`):
+20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
