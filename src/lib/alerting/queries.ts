@@ -29,9 +29,13 @@ export async function listChannels(tenantId: string): Promise<ChannelRow[]> {
   const { data } = await svc().from("notification_channels").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return (data ?? []) as ChannelRow[];
 }
-export async function insertAlertEvent(tenantId: string, ruleId: string, value: number): Promise<{ id: string }> {
-  const { data } = await svc().from("alert_events").insert({ tenant_id: tenantId, rule_id: ruleId, value }).select("id").single();
-  return { id: (data?.id as string) ?? "" };
+export async function insertAlertEvent(tenantId: string, ruleId: string, value: number): Promise<{ id: string | null }> {
+  const { data, error } = await svc().from("alert_events").insert({ tenant_id: tenantId, rule_id: ruleId, value }).select("id").single();
+  if (error || !data?.id) {
+    console.error("insertAlertEvent failed", error?.message);
+    return { id: null };
+  }
+  return { id: data.id as string };
 }
 export async function createRule(tenantId: string, input: Partial<AlertRuleRow> & { createdBy?: string }): Promise<void> {
   await svc().from("alert_rules").insert({

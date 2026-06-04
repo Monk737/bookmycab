@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { requireOrgAccess } from "@/lib/api/guard";
 import { requireFeature } from "@/lib/entitlements/guard";
+import { blockIfDemo } from "@/lib/demo/session";
 import { evaluateAlerts } from "@/lib/alerting/engine";
 
 export const runtime = "nodejs";
@@ -12,6 +13,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ orgId:
   const { orgId } = await params;
   const gate = await requireOrgAccess(orgId, { minRole: "Admin" });
   if (gate instanceof NextResponse) return gate;
+  const demo = blockIfDemo(gate.claims);
+  if (demo) return demo;
   const feat = await requireFeature(gate.claims.tenant_id, "alerting");
   if (feat) return feat;
   const summary = await evaluateAlerts(orgId);

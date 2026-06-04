@@ -51,17 +51,20 @@ export async function dispatchNotification(
   }
 
   const status: "sent" | "failed" = ok ? "sent" : "failed";
-  await svc().from("notification_log").insert({
-    tenant_id: tenantId,
-    channel_id: channel.id,
-    alert_event_id: alertEventId,
-    type: channel.type,
-    status,
-    error,
-  });
-
-  if (ok) {
-    await recordUsage({ tenantId, featureKey: "alerting", quantity: 1, unit: "notifications" });
+  try {
+    await svc().from("notification_log").insert({
+      tenant_id: tenantId,
+      channel_id: channel.id,
+      alert_event_id: alertEventId,
+      type: channel.type,
+      status,
+      error,
+    });
+    if (ok) {
+      await recordUsage({ tenantId, featureKey: "alerting", quantity: 1, unit: "notifications" });
+    }
+  } catch (e) {
+    console.error("dispatchNotification: post-send bookkeeping failed", e);
   }
   return { status };
 }
