@@ -105,8 +105,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migrations 0017 (plans/features/plan_features/tenant_entitlements/feature_rollouts + `tenants.plan_id`) + 0018 (append-only `usage_events` + `usage_counters`) + 0019 (RLS hardening); `src/lib/entitlements/*` (catalog, pure merge, cached resolver, metering, `requireFeature`/`requireQuota` guards mirroring `blockIfDemo`); admin `/admin/plans` packaging editor + per-tenant override section; idempotent `scripts/seed-entitlements.ts` (16 features, Starter/Pro/Enterprise plans). 29 unit/migration tests + final review (anon catalog exposure closed, override inherit path, counter-period limitation documented).
 **Supersedes:** locked decision **Q1** ("no usage-metering table") — metering is now required to gate/bill advanced features.
 
-### ⏭ Planned Epics 14–24 (one plan each, dependency order; each gates via `requireFeature`):
-14 Alerting & notifications · 15 Customer CRM + data governance · 16 Bot config control plane (versioning/fare rules/guardrails) · 17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 14 — Epic 14: Alerting & Notifications  → `2026-06-03-epic-14-alerting.md`  (DONE & merged to `master`, HEAD `4fd6ca6`)
+**Depends on:** Plan 13 (entitlements), 7 (insight metrics), 9 (`blockIfDemo`).
+**Produces:** migration 0020 (`alert_rules`, `notification_channels`, append-only `alert_events` + `notification_log`); `src/lib/alerting/*` (pure evaluate, metric registry, dispatch→send/log/meter, evaluation engine, queries); tenant API `/api/orgs/:id/alerts/{rules,channels,evaluate}` gated by `requireFeature("alerting")` + `blockIfDemo`; entitlement-gated `/dashboard/alerts` page + nav. Meters the `notifications` unit. 15 tests; final review fixes (dispatch never-throws, empty alert-event-id guard, demo-block evaluate).
+**v1 follow-ups:** event ack/resolve (append-only trigger blocks it); per-rule re-fire cooldown; `requireQuota` pre-check on send; platform cron calling the evaluate route per tenant.
+
+### ⏭ Planned Epics 15–24 (one plan each, dependency order; each gates via `requireFeature`):
+15 Customer CRM + data governance · 16 Bot config control plane (versioning/fare rules/guardrails) · 17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
