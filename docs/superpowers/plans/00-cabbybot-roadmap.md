@@ -115,8 +115,14 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0021 (`customers` per tenant+handle, `customer_notes`, `customer_id` FKs on bookings/conversations); `src/lib/crm/*` (pure stats aggregation, `syncCustomers` derive-from-bookings, queries incl. DSAR export/delete); gated tenant API (`/api/orgs/:id/customers/*` incl. DSAR Owner-only) + `/dashboard/customers` page (list, VIP/blocklist flags). DSAR delete erases ALL PII (dispatch JSON + message payloads/transcripts) and writes `audit_log`. 12 tests; review fixes applied.
 **v1 follow-ups:** backfill `bookings/conversations.customer_id` (sync matches by handle today); per-customer detail-drill UI (API exists); make DSAR delete a single Postgres transaction (currently ordered scrubs with error aggregation).
 
-### ⏭ Planned Epics 16–24 (one plan each, dependency order; each gates via `requireFeature`):
-16 Bot config control plane (versioning/fare rules/guardrails) · 17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 16 — Epic 16: Bot Config Control Plane  → `2026-06-04-epic-16-config-control-plane.md`  (DONE & merged to `master`, HEAD `8c77e7e`)
+**Depends on:** Plan 13 (entitlements), 9 (`blockIfDemo`), 7b (`automation_config`), 3 (admin shell).
+**Produces:** migration 0022 (`config_versions`, `fare_rules`, `config_guardrails`, `automation_config.current_version_id`); `src/lib/config/*` (pure `computeFare` + `validateConfig`; version publish/rollback writing the snapshot into live `automation_config`; fare + guardrail services); gated tenant API (versions create/publish/rollback → 422 on guardrail violation; fare CRUD); admin `/admin/guardrails` (lock fields + numeric bounds); tenant `/versions` + `/fares` pages. Gates on `config_versioning` + `fare_rules`. 17 tests.
+**v1 follow-ups:** actual n8n push on publish (only `synced_to_engine_at` stamped today); bot wiring to quote from `fare_rules`; extend numeric guardrails to fare bounds.
+**Note:** merged with the full DB-integration suite unverified — local Docker/Supabase was down at merge time, so `admin-rls.test.ts` (live Postgres) could not run; Epic 16's own 17 unit/route tests + typecheck + build are green. Re-run `npm test` once Docker is up to confirm.
+
+### ⏭ Planned Epics 17–24 (one plan each, dependency order; each gates via `requireFeature`):
+17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
