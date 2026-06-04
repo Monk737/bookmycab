@@ -24,10 +24,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const claims = await requireUser();
   const org = claims.tenant_id ? await getOrgSummary(claims.tenant_id) : null;
   const showAlerts = claims.tenant_id ? await hasFeature(claims.tenant_id, "alerting") : false;
+  const showCustomers = claims.tenant_id ? await hasFeature(claims.tenant_id, "crm") : false;
   return (
     <div className={`${firaSans.variable} ${firaCode.variable} font-sans`}>
       {claims.is_demo && <DemoBanner />}
-      <DashboardShell orgName={org?.name ?? "Your organisation"} showAlerts={showAlerts}>{children}</DashboardShell>
+      <DashboardShell orgName={org?.name ?? "Your organisation"} showAlerts={showAlerts} showCustomers={showCustomers}>{children}</DashboardShell>
     </div>
   );
 }
