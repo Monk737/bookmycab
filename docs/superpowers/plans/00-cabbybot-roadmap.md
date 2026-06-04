@@ -96,6 +96,20 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 
 ---
 
+## Advanced feature program (post-launch — Epics 13+)
+
+> Triggered by the "advanced tenant + admin dashboard features" initiative. Each advanced feature gates on the entitlement/metering foundation below.
+
+### ✅ Plan 13 — Epic 13: Entitlements & Metering Foundation  → `2026-06-03-epic-13-entitlements-metering.md`  (DONE on branch `feat/epic-13-entitlements-metering`, HEAD `23263e9`; not yet merged)
+**Depends on:** Plans 1 (schema/RLS), 3 (admin console).
+**Produces:** migrations 0017 (plans/features/plan_features/tenant_entitlements/feature_rollouts + `tenants.plan_id`) + 0018 (append-only `usage_events` + `usage_counters`) + 0019 (RLS hardening); `src/lib/entitlements/*` (catalog, pure merge, cached resolver, metering, `requireFeature`/`requireQuota` guards mirroring `blockIfDemo`); admin `/admin/plans` packaging editor + per-tenant override section; idempotent `scripts/seed-entitlements.ts` (16 features, Starter/Pro/Enterprise plans). 29 unit/migration tests + final review (anon catalog exposure closed, override inherit path, counter-period limitation documented).
+**Supersedes:** locked decision **Q1** ("no usage-metering table") — metering is now required to gate/bill advanced features.
+
+### ⏭ Planned Epics 14–24 (one plan each, dependency order; each gates via `requireFeature`):
+14 Alerting & notifications · 15 Customer CRM + data governance · 16 Bot config control plane (versioning/fare rules/guardrails) · 17 Live ops & human takeover · 18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+
+---
+
 ## Cross-cutting rules every plan must honour
 
 - **Multi-tenancy:** every business table has `tenant_id`; automation-scoped tables also carry `automation_id`. RLS enforces isolation at the DB layer (§8.2).
