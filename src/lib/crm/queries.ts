@@ -54,10 +54,46 @@ export async function dsarExport(tenantId: string, handle: string): Promise<{ cu
   return { customer, bookings, conversations };
 }
 
-/** DSAR delete: remove the customer row + null PII on their bookings/conversations. */
-export async function dsarDelete(tenantId: string, handle: string): Promise<void> {
+/** DSAR delete: erase all PII for a phone handle (bookings, conversations,
+ *  their messages) + remove the customer row. Returns an error status; not a
+ *  single transaction, so it scrubs in PII-first order and reports failures. */
+export async function dsarDelete(tenantId: string, handle: string): Promise<{ ok: boolean; error?: string }> {
   const sb = svc();
-  await sb.from("bookings").update({ passenger_name: null, customer_handle: "[erased]" }).eq("tenant_id", tenantId).eq("customer_handle", handle);
-  await sb.from("conversations").update({ customer_name: null, customer_handle: "[erased]" }).eq("tenant_id", tenantId).eq("customer_handle", handle);
-  await sb.from("customers").delete().eq("tenant_id", tenantId).eq("customer_handle", handle);
+  const errors: string[] = [];
+
+  // Capture conversation ids BEFORE tombstoning the handle (we find them by handle).
+  const { data: convs, error: convErr } = await sb
+    .from("conversations").select("id").eq("tenant_id", tenantId).eq("customer_handle", handle);
+  if (convErr) errors.push(`conversations lookup: ${convErr.message}`);
+  const convIds = (convs ?? []).map((c: { id: string }) => c.id);
+
+  // Scrub message PII for those conversations (payload is NOT NULL → set to {}).
+  if (convIds.length > 0) {
+    const { error } = await sb.from("messages").update({ payload: {}, transcript: null }).in("conversation_id", convIds);
+    if (error) errors.push(`messages: ${error.message}`);
+  }
+
+  // Scrub + tombstone bookings (clear all PII-bearing columns).
+  {
+    const { error } = await sb.from("bookings")
+      .update({ passenger_name: null, raw_dispatch_json: null, airport_json: null, driver_note: null, customer_handle: "[erased]" })
+      .eq("tenant_id", tenantId).eq("customer_handle", handle);
+    if (error) errors.push(`bookings: ${error.message}`);
+  }
+
+  // Scrub + tombstone conversations.
+  {
+    const { error } = await sb.from("conversations")
+      .update({ customer_name: null, customer_handle: "[erased]" })
+      .eq("tenant_id", tenantId).eq("customer_handle", handle);
+    if (error) errors.push(`conversations: ${error.message}`);
+  }
+
+  // Remove the derived customer row.
+  {
+    const { error } = await sb.from("customers").delete().eq("tenant_id", tenantId).eq("customer_handle", handle);
+    if (error) errors.push(`customers: ${error.message}`);
+  }
+
+  return errors.length ? { ok: false, error: errors.join("; ") } : { ok: true };
 }

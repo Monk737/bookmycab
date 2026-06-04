@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireOrgAccess } from "@/lib/api/guard";
 import { blockIfDemo } from "@/lib/demo/session";
 import { requireFeature } from "@/lib/entitlements/guard";
-import { addNote } from "@/lib/crm/queries";
+import { addNote, getCustomer } from "@/lib/crm/queries";
 
 export const runtime = "nodejs";
 
@@ -18,6 +18,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ orgId: 
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const text = String(body.body ?? "").trim();
   if (!text) return NextResponse.json({ error: "Note body is required." }, { status: 400 });
+  const customer = await getCustomer(orgId, customerId);
+  if (!customer) return NextResponse.json({ error: "Not found." }, { status: 404 });
   await addNote(orgId, customerId, gate.claims.sub, text);
   return NextResponse.json({ ok: true });
 }

@@ -4,6 +4,7 @@ import { requireOrgAccess } from "@/lib/api/guard";
 import { blockIfDemo } from "@/lib/demo/session";
 import { requireFeature } from "@/lib/entitlements/guard";
 import { dsarExport, dsarDelete } from "@/lib/crm/queries";
+import { writeAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -20,8 +21,24 @@ export async function POST(req: Request, { params }: { params: Promise<{ orgId: 
   const action = String(body.action ?? "export");
   if (!handle) return NextResponse.json({ error: "handle is required." }, { status: 400 });
   if (action === "delete") {
-    await dsarDelete(orgId, handle);
+    const result = await dsarDelete(orgId, handle);
+    await writeAudit({
+      actorUserId: gate.claims.sub,
+      tenantId: orgId,
+      action: "dsar.delete",
+      targetType: "customer_handle",
+      targetId: handle,
+      metadata: { ok: result.ok, error: result.error ?? null },
+    });
+    if (!result.ok) return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
     return NextResponse.json({ ok: true, action: "delete" });
   }
+  await writeAudit({
+    actorUserId: gate.claims.sub,
+    tenantId: orgId,
+    action: "dsar.export",
+    targetType: "customer_handle",
+    targetId: handle,
+  });
   return NextResponse.json({ ok: true, action: "export", data: await dsarExport(orgId, handle) });
 }
