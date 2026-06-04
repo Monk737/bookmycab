@@ -18,6 +18,8 @@ describe("computeFare", () => {
     expect(computeFare(4, 10, rule, true)).toBe(18.5);
   });
   it("rounds to 2dp", () => {
-    expect(computeFare(1.111, 3.333, rule, false)).toBe(Math.round((3 + 1.111 * 2 + 3.333 * 0.25) * 100) / 100);
+    // inputs chosen above the min-fare floor so rounding (not the floor) is exercised:
+    // 3 + (2.345*2) + (6.7*0.25) = 3 + 4.69 + 1.675 = 9.365 → 9.37
+    expect(computeFare(2.345, 6.7, rule, false)).toBe(9.37);
   });
 });
