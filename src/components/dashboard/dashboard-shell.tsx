@@ -32,12 +32,14 @@ export function DashboardShell({
   showAlerts,
   showCustomers,
   showLiveops,
+  showDispatch,
 }: {
   orgName: string;
   children: ReactNode;
   showAlerts?: boolean;
   showCustomers?: boolean;
   showLiveops?: boolean;
+  showDispatch?: boolean;
 }): React.JSX.Element {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -47,6 +49,7 @@ export function DashboardShell({
     ...(showAlerts ? [{ label: "Alerts", href: "/dashboard/alerts" }] : []),
     ...(showCustomers ? [{ label: "Customers", href: "/dashboard/customers" }] : []),
     ...(showLiveops ? [{ label: "Live ops", href: "/dashboard/liveops" }] : []),
+    ...(showDispatch ? [{ label: "Dispatch", href: "/dashboard/dispatch" }] : []),
   ];
 
   const navLinks = (
