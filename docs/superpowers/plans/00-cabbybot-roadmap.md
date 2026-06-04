@@ -126,8 +126,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0023 (conversations takeover state: `takeover_status`/`assigned_to`/`takeover_at`/`last_human_reply_at`; messages provenance: `source`/`sent_by_user_id`); `src/lib/liveops/*` (pure takeover state machine, engine relay [graceful], claim/release + staff-message service); gated tenant API `/api/orgs/:id/liveops/*` (live list, claim/release, post message → 409 if not in takeover); entitlement-gated `/dashboard/liveops` page (list + takeover panel + reply box). Gates on `live_takeover`. 14 tests; full suite green (admin-rls restored after DB recovery).
 **v1 follow-ups:** n8n `/webhook/staff-relay` endpoint to actually forward human replies to WhatsApp/Telegram (relay is a logged no-op until then); Supabase Realtime auto-refresh of the live board (manual refresh in v1); engine honoring `takeover_status` to pause the bot; idle-timeout sweeper for "active" conversations.
 
-### ⏭ Planned Epics 18–24 (one plan each, dependency order; each gates via `requireFeature`):
-18 Dispatch & fulfilment ops · 19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 18 — Epic 18: Dispatch & Fulfilment Ops  → `2026-06-04-epic-18-dispatch-ops.md`  (DONE & merged to `master`, HEAD `49b330f`)
+**Depends on:** Plan 13 (entitlements), 9 (`blockIfDemo`), 6 (dispatch factory/adapters), bookings (0003).
+**Produces:** migration 0024 (append-only `dispatch_attempts`, global `adapter_status`, `automations.dispatch_mode`, `bookings.quoted_fare`); `src/lib/dispatchops/*` (pure adapter-health aggregation [success rate + p95]; record/list/health service; best-effort `retryDispatch` via the real `getDispatchAdapter`/`loadDispatchConfig` factory); gated tenant API (health, failed queue, retry → 502 on adapter failure); entitlement-gated `/dashboard/dispatch` page. Gates on `dispatch_retry`. 12 tests; full suite green (687, only the 2 known no-n8n timeouts).
+**v1 follow-ups:** wire the original booking-create path + n8n engine to call `recordAttempt` on every dispatch (log currently fed by retries); strict "failed with no later success" queue (recent-failed list today); full retry payload fidelity; platform `adapter_status` sweeper + admin health view (governance epic).
+
+### ⏭ Planned Epics 19–24 (one plan each, dependency order; each gates via `requireFeature`):
+19 Conversation intelligence · 20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
