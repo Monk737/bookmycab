@@ -241,3 +241,12 @@ Build in this order — later epics depend on earlier ones:
 | Voice note → reply | p95 ≤ 8s |
 | Dashboard page load | p95 ≤ 1.5s |
 | API route handler | p95 ≤ 200ms |
+
+---
+
+## Design Context
+
+- **Strategy & voice:** see [PRODUCT.md](PRODUCT.md) — register (dual: `product` default, `brand` for marketing routes), users, personality ("confident · editorial · precise"), anti-references, design principles, WCAG 2.2 AA.
+- **Real visual system (authoritative):** `src/app/globals.css` — light editorial theme, ink `#0a0a0a` / paper `#fff`, gray ramp, taxi-yellow accent `#ffd400` (always dark ink text on yellow, never white), Fraunces (display) + Inter (body).
+- **Ignore** `design-system/bookmycab-dashboard/MASTER.md` — stale auto-generated doc (blue/Fira-Code); does NOT match the build.
+- Frontend work runs through the `impeccable` skill (`/impeccable`). DESIGN.md not yet generated — run `/impeccable document` to capture the visual system formally.
