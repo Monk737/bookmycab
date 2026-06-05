@@ -13,6 +13,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Usage", href: "/admin/usage" },
   { label: "Tenants", href: "/admin/tenants" },
   { label: "Plans", href: "/admin/plans" },
+  { label: "Rollouts", href: "/admin/rollouts" },
   { label: "Guardrails", href: "/admin/guardrails" },
   { label: "Channel review", href: "/admin/channel-review" },
   { label: "Automations", href: "/admin/automations" },
