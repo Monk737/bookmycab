@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listCustomers } from "@/lib/crm/queries";
 import { CustomersClient } from "./customers-client";
 
-export const metadata = { title: "Customers — CabbyBot" };
+export const metadata = { title: "Customers — BookMyCab" };
 
 export default async function CustomersPage() {
   const claims = await requireUser();

@@ -4,7 +4,7 @@ import { join } from "node:path";
 const p = (rel: string) => join(process.cwd(), rel);
 
 describe("Grafana dashboard artifact", () => {
-  const dash = JSON.parse(readFileSync(p("observability/grafana/cabbybot-overview.json"), "utf8")) as {
+  const dash = JSON.parse(readFileSync(p("observability/grafana/bookmycab-overview.json"), "utf8")) as {
     title: string; panels: { title: string; targets: { expr: string }[] }[];
   };
   it("declares panels for the four required signals", () => {

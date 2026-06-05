@@ -1,6 +1,6 @@
 # Epic 7b — Tenant Dashboard (Extended: Analytics, Config, Channels, Team, Billing, Support) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development. Steps use `- [ ]`. **Every UI task MUST use `ui-ux-pro-max`** with the persisted design system at `design-system/cabbybot-dashboard/MASTER.md`. Tests: `pnpm vitest run <file>`.
+> **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development. Steps use `- [ ]`. **Every UI task MUST use `ui-ux-pro-max`** with the persisted design system at `design-system/bookmycab-dashboard/MASTER.md`. Tests: `pnpm vitest run <file>`.
 
 **Goal:** Complete the tenant dashboard with the remaining six sections — Analytics (10 sub-sections, recharts), Bot Configuration, Channels, Team, Billing, and Support — all RLS-isolated, role-gated, and built on the Epic-7a foundation.
 

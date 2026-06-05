@@ -4,7 +4,7 @@
 
 **Goal:** Build a one-click `/demo` read-only session backed by 6 months of deterministic UK seed data, with write-blocking enforcement and a 24h automated reset.
 
-**Architecture:** A shared demo Supabase user (`demo@demo.cabbybot.com`) signs in via a `/demo` route handler using `signInWithPassword`; the custom access token hook injects `is_demo: true` into the JWT; the dashboard shows a read-only banner and all mutating API routes/server actions return 403 for demo sessions. A seed script (`scripts/seed-demo.ts`) populates the demo tenant with 6 months of deterministic UK data; a Supabase Edge Function (`supabase/functions/reset-demo/index.ts`) truncates and re-seeds on a 24h cron schedule.
+**Architecture:** A shared demo Supabase user (`demo@demo.bookmycab.com`) signs in via a `/demo` route handler using `signInWithPassword`; the custom access token hook injects `is_demo: true` into the JWT; the dashboard shows a read-only banner and all mutating API routes/server actions return 403 for demo sessions. A seed script (`scripts/seed-demo.ts`) populates the demo tenant with 6 months of deterministic UK data; a Supabase Edge Function (`supabase/functions/reset-demo/index.ts`) truncates and re-seeds on a 24h cron schedule.
 
 **Tech Stack:** TypeScript / tsx (seed script), Next.js Route Handler (/demo), Supabase SSR auth, Supabase Edge Functions (Deno), pg_cron or Supabase schedule, React (demo banner component)
 
@@ -865,7 +865,7 @@ Expected: FAIL
  * Required env vars (loaded from .env.local):
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
- *   DEMO_SESSION_SECRET   (password for demo@demo.cabbybot.com)
+ *   DEMO_SESSION_SECRET   (password for demo@demo.bookmycab.com)
  *   DEMO_TENANT_ID        (UUID — set once, reused on every reset)
  */
 import { config } from "dotenv";
@@ -882,7 +882,7 @@ export const DEMO_TENANT_ID =
   process.env.DEMO_TENANT_ID ?? "d0000000-0000-0000-0000-000000000001";
 
 const DEMO_USER_ID = "d0000000-0000-0000-0000-000000000002";
-const DEMO_EMAIL = "demo@demo.cabbybot.com";
+const DEMO_EMAIL = "demo@demo.bookmycab.com";
 
 const AUTO_WA = "d0000000-0000-0000-0000-000000000010";
 const AUTO_TG = "d0000000-0000-0000-0000-000000000011";
@@ -1013,7 +1013,7 @@ function buildBookingMessages(
     isoStr(new Date(base.getTime() + offsetSec * 1000));
 
   return [
-    { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "Hi! I'm your CabbyBot. Would you like to book a taxi, manage an existing booking, or get a quote?" }, ts: t(0) },
+    { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "Hi! I'm your BookMyCab. Would you like to book a taxi, manage an existing booking, or get a quote?" }, ts: t(0) },
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: "Book a taxi please" }, ts: t(8) },
     { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: mode === "asap" ? "Great! Is this for as soon as possible or a scheduled time?" : "Sure! When would you like to travel?" }, ts: t(10) },
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: mode === "asap" ? "As soon as possible" : "Tomorrow at 9am" }, ts: t(25) },
@@ -1066,7 +1066,7 @@ function buildVoiceMessages(convId: string): typeof buildBookingMessages extends
 async function main() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const demoPassword = process.env.DEMO_SESSION_SECRET ?? "cabbybot-demo-2026";
+  const demoPassword = process.env.DEMO_SESSION_SECRET ?? "bookmycab-demo-2026";
 
   if (!supabaseUrl || !serviceKey) {
     throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
@@ -1194,7 +1194,7 @@ async function main() {
 
   // ── 5. Automation config ──────────────────────────────────────────────────
   const configs = [
-    { automation_id: AUTO_WA, welcome_messages: { en: "Hi! I'm your CabbyBot. Book, quote, or manage a taxi? 🚕" }, vehicle_types: ["Saloon", "Executive", "MPV"], service_area: "Greater London", opening_hours: { mon_fri: "06:00-23:00", weekend: "07:00-22:00" }, languages: ["en"], ask_driver_note: true },
+    { automation_id: AUTO_WA, welcome_messages: { en: "Hi! I'm your BookMyCab. Book, quote, or manage a taxi? 🚕" }, vehicle_types: ["Saloon", "Executive", "MPV"], service_area: "Greater London", opening_hours: { mon_fri: "06:00-23:00", weekend: "07:00-22:00" }, languages: ["en"], ask_driver_note: true },
     { automation_id: AUTO_TG, welcome_messages: { en: "Welcome to Premier Cabs! How can I help?" }, vehicle_types: ["Saloon", "Executive"], service_area: "Greater London", opening_hours: { mon_fri: "06:00-23:00", weekend: "07:00-22:00" }, languages: ["en"], ask_driver_note: false },
     { automation_id: AUTO_WG, welcome_messages: { en: "Hello! Need a taxi or have a question?" }, vehicle_types: ["Saloon", "Executive", "MPV"], service_area: "Greater London", opening_hours: { all_day: "00:00-23:59" }, languages: ["en", "ar"], ask_driver_note: true },
   ];
@@ -1434,7 +1434,7 @@ Create the route handler that signs in the shared demo user and redirects to `/d
 In `src/env.ts`, inside the `schema` z.object, add after `DEMO_TENANT_ID`:
 
 ```typescript
-DEMO_SESSION_SECRET: z.string().min(8).default("cabbybot-demo-2026"),
+DEMO_SESSION_SECRET: z.string().min(8).default("bookmycab-demo-2026"),
 ```
 
 - [ ] **Step 2: Create `src/app/demo/route.ts`**
@@ -1460,7 +1460,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: "demo@demo.cabbybot.com",
+    email: "demo@demo.bookmycab.com",
     password: env.DEMO_SESSION_SECRET,
   });
 

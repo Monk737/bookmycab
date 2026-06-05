@@ -6,7 +6,7 @@ import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
 
 export const metadata: Metadata = {
-  title: "How It Works — CabbyBot",
+  title: "How It Works — BookMyCab",
   description:
     "From a discovery call to going live: how we scope, quote and build your bespoke cab automation — never a template clone — then connect your channels and run a 30-day hypercare.",
 };

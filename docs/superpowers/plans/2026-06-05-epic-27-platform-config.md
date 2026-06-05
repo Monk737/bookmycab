@@ -112,7 +112,7 @@ import { validateSender, validateApp } from "@/lib/admin/platform-config";
 
 describe("validateSender", () => {
   it("accepts a valid email sender", () => {
-    expect(validateSender({ type: "email", identifier: "hello@cabbybot.com" }).ok).toBe(true);
+    expect(validateSender({ type: "email", identifier: "hello@bookmycab.com" }).ok).toBe(true);
   });
   it("rejects an unknown type", () => {
     expect(validateSender({ type: "pigeon" as never, identifier: "x" }).ok).toBe(false);

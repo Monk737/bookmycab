@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Data Processing Agreement — CabbyBot",
+  title: "Data Processing Agreement — BookMyCab",
   description:
-    "How FlowMo AI LTD acts as your data processor for the personal data flowing through your CabbyBot automation. The binding DPA is issued with your contract.",
+    "How FlowMo AI LTD acts as your data processor for the personal data flowing through your BookMyCab automation. The binding DPA is issued with your contract.",
 };
 
 const SECTIONS: LegalSection[] = [

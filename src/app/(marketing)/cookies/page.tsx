@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — CabbyBot",
+  title: "Cookie Policy — BookMyCab",
   description:
-    "How the CabbyBot website and dashboard use cookies and similar technologies. Final, binding terms are issued with your contract at provisioning.",
+    "How the BookMyCab website and dashboard use cookies and similar technologies. Final, binding terms are issued with your contract at provisioning.",
 };
 
 const SECTIONS: LegalSection[] = [
@@ -45,7 +45,7 @@ export default function CookiesPage() {
     <LegalPage
       title="Cookie Policy"
       lastUpdated="2026-06-03"
-      intro="A short summary of how we use cookies on the CabbyBot site and dashboard. Your binding terms are issued with your contract."
+      intro="A short summary of how we use cookies on the BookMyCab site and dashboard. Your binding terms are issued with your contract."
       sections={SECTIONS}
     />
   );

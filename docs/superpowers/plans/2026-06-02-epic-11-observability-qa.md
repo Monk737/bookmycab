@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give CabbyBot a vendor-neutral, fully-tested observability layer (traces, metrics, error reporting) wired into the webhook gateway / engine / dispatch surfaces, plus version-controlled Grafana dashboards, Playwright E2E specs, and a webhook load test.
+**Goal:** Give BookMyCab a vendor-neutral, fully-tested observability layer (traces, metrics, error reporting) wired into the webhook gateway / engine / dispatch surfaces, plus version-controlled Grafana dashboards, Playwright E2E specs, and a webhook load test.
 
 **Architecture:** A dependency-free telemetry core exposes one swappable `TelemetrySink` seam. Application code emits spans/metrics/errors through tiny helpers (`withSpan`, `incCounter`, `recordHistogram`, `reportError`) that default to a no-op sink — so tests and `next build` stay clean with zero new npm dependencies. A Next.js `instrumentation.ts` hook selects a real sink at boot when an env flag is set (`StructuredLogSink` emits OTLP-shaped JSON lines to stdout, which a Grafana Agent / Vector / Sentry relay scrapes at deploy). Grafana dashboard JSON, Playwright E2E specs, and the load-test runner are committed as artifacts validated by shape tests; their live execution (install the OTel/Sentry SDKs, point at Grafana Cloud, run Playwright against a deployed app, fire the load test at a real gateway) is documented in `docs/observability.md` as the deploy/ops step.
 
@@ -50,7 +50,7 @@ These names are the contract between the instrumentation (Workstream B) and the 
 - Create `src/lib/observability/percentile.ts` — `percentile`, `summarize`.
 - Create `src/lib/observability/load.ts` — `runLoad`.
 - Create `scripts/webhook-load-test.ts` — CLI runner wiring real `fetch` into `runLoad`.
-- Create `observability/grafana/cabbybot-overview.json` — dashboard.
+- Create `observability/grafana/bookmycab-overview.json` — dashboard.
 - Create `playwright.config.ts` + `e2e/{text-booking,voice-booking,manage-booking,admin-provisioning,demo-tenant}.spec.ts`.
 - Create `docs/observability.md` — runbook.
 - Modify `tsconfig.json` (exclude `e2e`), `package.json` (scripts).
@@ -664,7 +664,7 @@ git commit -m "feat(observability): bounded-concurrency load runner"
 
 **Files:**
 - Create: `scripts/webhook-load-test.ts`
-- Create: `observability/grafana/cabbybot-overview.json`
+- Create: `observability/grafana/bookmycab-overview.json`
 - Create: `playwright.config.ts`
 - Create: `e2e/text-booking.spec.ts`, `e2e/voice-booking.spec.ts`, `e2e/manage-booking.spec.ts`, `e2e/admin-provisioning.spec.ts`, `e2e/demo-tenant.spec.ts`
 - Create: `docs/observability.md`
@@ -682,7 +682,7 @@ import { join } from "node:path";
 const p = (rel: string) => join(process.cwd(), rel);
 
 describe("Grafana dashboard artifact", () => {
-  const dash = JSON.parse(readFileSync(p("observability/grafana/cabbybot-overview.json"), "utf8")) as {
+  const dash = JSON.parse(readFileSync(p("observability/grafana/bookmycab-overview.json"), "utf8")) as {
     title: string; panels: { title: string; targets: { expr: string }[] }[];
   };
   it("declares panels for the four required signals", () => {
@@ -736,12 +736,12 @@ Expected: FAIL — artifacts/tsconfig change do not exist yet.
 
 - [ ] **Step 3: Create the Grafana dashboard**
 
-Create `observability/grafana/cabbybot-overview.json`:
+Create `observability/grafana/bookmycab-overview.json`:
 
 ```json
 {
-  "title": "CabbyBot — Platform Overview",
-  "uid": "cabbybot-overview",
+  "title": "BookMyCab — Platform Overview",
+  "uid": "bookmycab-overview",
   "schemaVersion": 39,
   "timezone": "Europe/London",
   "panels": [
@@ -945,7 +945,7 @@ Create `docs/observability.md`:
 ```markdown
 # Observability & QA Runbook (Epic 11)
 
-CabbyBot ships a vendor-neutral telemetry core that no-ops by default. Activation is deploy-time.
+BookMyCab ships a vendor-neutral telemetry core that no-ops by default. Activation is deploy-time.
 
 ## Telemetry
 
@@ -963,7 +963,7 @@ line per record on stdout.
 
 ## Metric contract
 `webhook_ack_ms`, `webhook_inbound_total`, `engine_request_ms`, `dispatch_latency_ms`.
-Dashboard: import `observability/grafana/cabbybot-overview.json` into Grafana Cloud.
+Dashboard: import `observability/grafana/bookmycab-overview.json` into Grafana Cloud.
 
 ## Load test
 `pnpm loadtest:webhook -- --url <gateway-url> --total 1000 --concurrency 100`
@@ -988,7 +988,7 @@ Expected: clean (the new `e2e/` specs are excluded; `scripts/webhook-load-test.t
 - [ ] **Step 9: Commit**
 
 ```bash
-git add observability/grafana/cabbybot-overview.json scripts/webhook-load-test.ts playwright.config.ts e2e docs/observability.md tsconfig.json package.json tests/observability-artifacts.test.ts
+git add observability/grafana/bookmycab-overview.json scripts/webhook-load-test.ts playwright.config.ts e2e docs/observability.md tsconfig.json package.json tests/observability-artifacts.test.ts
 git commit -m "feat(observability): Grafana dashboard, webhook load test, Playwright E2E specs + runbook"
 ```
 
@@ -1044,7 +1044,7 @@ In `src/env.ts`, inside the `z.object({ ... })` schema, add after the `NEXT_PUBL
   // Observability (Epic 11). Activation is deploy-time; absent → telemetry no-ops.
   OBSERVABILITY_STDOUT: z.string().optional(),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
-  OTEL_SERVICE_NAME: z.string().default("cabbybot"),
+  OTEL_SERVICE_NAME: z.string().default("bookmycab"),
   SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 ```
@@ -1454,7 +1454,7 @@ git commit -m "feat(observability): engine request latency histogram + span"
 # Task C: Integration gate + roadmap marker
 
 **Files:**
-- Modify: `docs/superpowers/plans/00-cabbybot-roadmap.md`
+- Modify: `docs/superpowers/plans/00-bookmycab-roadmap.md`
 
 Runs after Workstreams A, D, and B.
 
@@ -1470,7 +1470,7 @@ Expected: PASS except the pre-existing, environment-dependent `tests/engine-clie
 
 - [ ] **Step 3: Flip the roadmap marker**
 
-In `docs/superpowers/plans/00-cabbybot-roadmap.md`, change:
+In `docs/superpowers/plans/00-bookmycab-roadmap.md`, change:
 
 ```markdown
 ### ⬜ Plan 11 — Epic 11: Observability & QA
@@ -1485,7 +1485,7 @@ to (use the short SHA from `git rev-parse --short HEAD` after the last Workstrea
 - [ ] **Step 4: Commit**
 
 ```bash
-git add docs/superpowers/plans/00-cabbybot-roadmap.md
+git add docs/superpowers/plans/00-bookmycab-roadmap.md
 git commit -m "docs: mark Epic 11 done in roadmap index"
 ```
 
@@ -1495,7 +1495,7 @@ git commit -m "docs: mark Epic 11 done in roadmap index"
 
 **Spec coverage (roadmap Plan 11 deliverables):**
 1. *OpenTelemetry in route handlers + engine* — `withSpan` + the `TelemetrySink` seam (A2), webhook route metrics (B2), engine `engine.request` span + `engine_request_ms` (B4). Vendor-neutral; OTLP export is the documented deploy step.
-2. *Grafana Cloud dashboards (latency, error rate, webhook throughput, dispatch latency per adapter)* — `observability/grafana/cabbybot-overview.json` (D3) with panels for all four signals, validated by `tests/observability-artifacts.test.ts` against the metric-name contract.
+2. *Grafana Cloud dashboards (latency, error rate, webhook throughput, dispatch latency per adapter)* — `observability/grafana/bookmycab-overview.json` (D3) with panels for all four signals, validated by `tests/observability-artifacts.test.ts` against the metric-name contract.
 3. *Sentry (frontend + server)* — `reportError` with PII redaction (A4) routes errors to the active sink; `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` env (B1); the StructuredLogSink → relay path and SDK swap are documented in `docs/observability.md`. (No heavy `@sentry/nextjs` dependency added, per the no-new-deps constraint.)
 4. *Playwright E2E (text + voice booking, manage booking, admin provisioning, demo tenant)* — five specs + config (D3), validated by shape test; live run documented (activation installs `@playwright/test`).
 5. *Webhook load test @100 concurrent* — `runLoad` (D2) + `scripts/webhook-load-test.ts` defaulting to concurrency 100 with a p95 ≤ 300ms gate (D3).

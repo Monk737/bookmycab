@@ -10,9 +10,9 @@ import { RoiCalculator } from "@/components/marketing/roi-calculator";
 import { COMPANY } from "@/lib/marketing/nav";
 
 export const metadata: Metadata = {
-  title: "CabbyBot — Your cab company, on every channel, on autopilot",
+  title: "BookMyCab — Your cab company, on every channel, on autopilot",
   description:
-    "Bespoke AI booking and support automations for the global taxi industry. CabbyBot answers every channel, takes bookings around the clock, and books straight into your dispatch system.",
+    "Bespoke AI booking and support automations for the global taxi industry. BookMyCab answers every channel, takes bookings around the clock, and books straight into your dispatch system.",
 };
 
 // Core value propositions — PRD §5.1.

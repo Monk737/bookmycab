@@ -1,4 +1,4 @@
-# Local CabbyBot Automation Engine + Redis stack.
+# Local BookMyCab Automation Engine + Redis stack.
 # Brings up: n8n (REST API), redis, and serverless-redis-http (SRH) so the
 # Upstash REST client works locally against real redis.
 #   docker compose -f docker-compose.engine.yml up -d

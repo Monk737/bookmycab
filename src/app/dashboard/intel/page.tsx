@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listFlagged } from "@/lib/convintel/service";
 import { IntelClient } from "./intel-client";
 
-export const metadata = { title: "Intelligence — CabbyBot" };
+export const metadata = { title: "Intelligence — BookMyCab" };
 
 export default async function IntelPage() {
   const claims = await requireUser();

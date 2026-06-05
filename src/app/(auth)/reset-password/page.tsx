@@ -1,7 +1,7 @@
 import { ResetForm } from "./reset-form";
 
 export const metadata = {
-  title: "Reset password — CabbyBot",
+  title: "Reset password — BookMyCab",
   robots: { index: false },
 };
 

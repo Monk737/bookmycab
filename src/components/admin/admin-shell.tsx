@@ -51,7 +51,7 @@ export function AdminShell({
       <aside className="flex w-60 shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 text-zinc-300">
         <div className="border-b border-zinc-800 px-5 py-5">
           <p className="font-mono text-sm font-semibold tracking-tight text-white">
-            CabbyBot
+            BookMyCab
           </p>
           <span className="mt-2 inline-flex items-center gap-1.5 rounded border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-emerald-400">
             <span

@@ -13,7 +13,7 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
   NEXT_PUBLIC_CAL_LINK: z.string().min(1).default("flowmo/discovery"),
-  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://cabbybot.com"),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://bookmycab.com"),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_DEMO_WA_NUMBER: z.string().optional(),
 });

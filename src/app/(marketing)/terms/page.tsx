@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — CabbyBot",
+  title: "Terms of Service — BookMyCab",
   description:
-    "The terms on which FlowMo AI LTD provides the CabbyBot booking automation platform. Final, binding terms are issued with your contract at provisioning.",
+    "The terms on which FlowMo AI LTD provides the BookMyCab booking automation platform. Final, binding terms are issued with your contract at provisioning.",
 };
 
 const SECTIONS: LegalSection[] = [
   {
     heading: "The service",
-    body: "CabbyBot provides a bespoke booking automation, built per customer, for cab and taxi operators. Each build is provisioned by us after a discovery call — there is no public signup. Pricing follows the options published on our pricing page, with a setup fee and a minimum twelve-month term.",
+    body: "BookMyCab provides a bespoke booking automation, built per customer, for cab and taxi operators. Each build is provisioned by us after a discovery call — there is no public signup. Pricing follows the options published on our pricing page, with a setup fee and a minimum twelve-month term.",
   },
   {
     heading: "What you bring",
@@ -22,7 +22,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Ownership",
-    body: "You own your customer base and your data. We own the CabbyBot platform, tooling and the underlying automation engine. Your bespoke configuration is licensed to you for the term of your contract.",
+    body: "You own your customer base and your data. We own the BookMyCab platform, tooling and the underlying automation engine. Your bespoke configuration is licensed to you for the term of your contract.",
   },
   {
     heading: "Term and termination",
@@ -47,7 +47,7 @@ export default function TermsPage() {
     <LegalPage
       title="Terms of Service"
       lastUpdated="2026-06-03"
-      intro="A plain-language overview of how CabbyBot is provided. Your binding terms are the contract issued when your build is provisioned."
+      intro="A plain-language overview of how BookMyCab is provided. Your binding terms are the contract issued when your build is provisioned."
       sections={SECTIONS}
     />
   );

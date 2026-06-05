@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make CabbyBot launch-ready: a public status page, a config-driven live-demo WhatsApp CTA, finalized public legal pages, and the ops + sales documentation needed to operate and sell the platform.
+**Goal:** Make BookMyCab launch-ready: a public status page, a config-driven live-demo WhatsApp CTA, finalized public legal pages, and the ops + sales documentation needed to operate and sell the platform.
 
 **Architecture:** Four independent workstreams. (A) A static, brand-safe **status page** driven by a `src/lib/marketing/status.ts` service catalogue + the PRD performance targets, wired into the marketing nav/footer and the public-path allowlist. (B) A **demo-WhatsApp CTA** — a `NEXT_PUBLIC_DEMO_WA_NUMBER` env var + a pure `wa.me` link builder + a presentational component that renders only when a number is configured (resolves open Q12: sandbox/mock via env, hidden until provisioned). (C) **Legal finalization** — enrich the existing Privacy/Terms/DPA/Cookies summaries with launch-ready sections and drop the "Epic 12 stub" framing. (D) **Ops + sales docs** — provisioning SOP, credential-rotation and incident-response runbooks, and a sales one-pager, validated by a structure test.
 
@@ -17,7 +17,7 @@ Two Epic 12 deliverables are **external/ops, not code**, and are handled as docu
 - **Live demo WhatsApp number (open Q12):** the number itself is a budget/provider decision. This plan ships the *mechanism* — a config-driven CTA that renders a `wa.me` deep link when `NEXT_PUBLIC_DEMO_WA_NUMBER` is set and renders nothing when it isn't — plus a runbook note. Provisioning the actual sandbox/live number is an ops step.
 - **Live status data:** the status page is a static service catalogue reporting "operational" by default. Real-time status is wired to the Epic 11 observability stack (Grafana) at deploy; this is noted on-page and in the runbook.
 
-**Brand rule (enforced by `tests/marketing-brand.test.ts`):** files under `src/app/(marketing)`, `src/components/marketing`, and `src/lib/marketing` must never contain `n8n`, `workflow`, `execution`, or `CabLab`. The internal engine is **"CabbyBot Automation Engine"**. Internal runbooks under `docs/runbooks/` are NOT brand-guarded and may reference n8n; the sales one-pager is customer-facing and must not.
+**Brand rule (enforced by `tests/marketing-brand.test.ts`):** files under `src/app/(marketing)`, `src/components/marketing`, and `src/lib/marketing` must never contain `n8n`, `workflow`, `execution`, or `CabLab`. The internal engine is **"BookMyCab Automation Engine"**. Internal runbooks under `docs/runbooks/` are NOT brand-guarded and may reference n8n; the sales one-pager is customer-facing and must not.
 
 ---
 
@@ -114,7 +114,7 @@ Create `src/lib/marketing/status.ts`:
 ```ts
 // Public status catalogue. Live status is wired to the Epic 11 observability
 // stack (Grafana) at deploy; until then every component reports operational.
-// Brand rule: the internal engine is the "CabbyBot Automation Engine" — never
+// Brand rule: the internal engine is the "BookMyCab Automation Engine" — never
 // name the underlying tooling on this customer-facing page.
 
 export type ComponentStatus = "operational" | "degraded" | "outage";
@@ -133,7 +133,7 @@ export interface PerfTarget {
 export const STATUS_COMPONENTS: StatusComponent[] = [
   { name: "Booking Dashboard", description: "Your live booking feed, conversations and analytics.", status: "operational" },
   { name: "Webhook Gateway", description: "Inbound messages from WhatsApp, Telegram, Messenger, Instagram and the web widget.", status: "operational" },
-  { name: "CabbyBot Automation Engine", description: "The bot that runs your booking conversations end to end.", status: "operational" },
+  { name: "BookMyCab Automation Engine", description: "The bot that runs your booking conversations end to end.", status: "operational" },
   { name: "Dispatch Integrations", description: "AutoCab, iCabbi and Cordic booking hand-off.", status: "operational" },
   { name: "Realtime & Database", description: "Live updates and stored booking records.", status: "operational" },
 ];
@@ -265,9 +265,9 @@ import {
 } from "@/lib/marketing/status";
 
 export const metadata: Metadata = {
-  title: "Status — CabbyBot",
+  title: "Status — BookMyCab",
   description:
-    "Live operational status of the CabbyBot platform — dashboard, gateway, automation engine, dispatch and data — plus the performance targets we hold ourselves to.",
+    "Live operational status of the BookMyCab platform — dashboard, gateway, automation engine, dispatch and data — plus the performance targets we hold ourselves to.",
 };
 
 const DOT: Record<ComponentStatus, string> = {
@@ -325,8 +325,8 @@ export default function StatusPage() {
         <p className="mt-12 border-t border-gray-200 pt-8 text-sm leading-relaxed text-gray-500">
           Live status is published here and to your dashboard. For an active incident,
           email{" "}
-          <a className="text-ink underline underline-offset-4" href="mailto:hello@cabbybot.com">
-            hello@cabbybot.com
+          <a className="text-ink underline underline-offset-4" href="mailto:hello@bookmycab.com">
+            hello@bookmycab.com
           </a>
           .
         </p>
@@ -472,7 +472,7 @@ describe("DemoWhatsAppCta", () => {
   it("renders a wa.me link when a demo number is configured", async () => {
     await renderWith("+44 7700 900123");
     const link = screen.getByRole("link", { name: /whatsapp/i });
-    expect(link.getAttribute("href")).toBe("https://wa.me/447700900123?text=Hi%20CabbyBot%20%E2%80%94%20I'd%20like%20to%20try%20the%20demo%20booking%20bot.");
+    expect(link.getAttribute("href")).toBe("https://wa.me/447700900123?text=Hi%20BookMyCab%20%E2%80%94%20I'd%20like%20to%20try%20the%20demo%20booking%20bot.");
   });
   it("renders nothing when no demo number is configured", async () => {
     await renderWith(undefined);
@@ -494,7 +494,7 @@ Create `src/components/marketing/demo-whatsapp-cta.tsx`:
 import { clientEnv } from "@/env.client";
 import { whatsAppLink } from "@/lib/marketing/whatsapp";
 
-const DEMO_MESSAGE = "Hi CabbyBot — I'd like to try the demo booking bot.";
+const DEMO_MESSAGE = "Hi BookMyCab — I'd like to try the demo booking bot.";
 
 /**
  * Renders a "message our demo bot on WhatsApp" link when NEXT_PUBLIC_DEMO_WA_NUMBER
@@ -878,10 +878,10 @@ status page (`/status`).
 
 - [ ] **Step 6: Create the sales one-pager**
 
-Create `docs/sales/one-pager.md` (customer-facing — use "CabbyBot Automation Engine", never the internal tooling name):
+Create `docs/sales/one-pager.md` (customer-facing — use "BookMyCab Automation Engine", never the internal tooling name):
 
 ```markdown
-# CabbyBot — Sales One-Pager
+# BookMyCab — Sales One-Pager
 
 **Your cab company. On every channel. On autopilot.**
 
@@ -890,9 +890,9 @@ Cab and taxi firms lose bookings after hours and at peak times, and pay staff to
 messages from WhatsApp, Telegram and socials into their dispatch system.
 
 ## The solution
-CabbyBot builds each operator a bespoke booking bot — never a template — that takes
+BookMyCab builds each operator a bespoke booking bot — never a template — that takes
 bookings across WhatsApp, Telegram, Messenger, Instagram and a web widget, runs the whole
-conversation on the CabbyBot Automation Engine, and writes confirmed jobs straight into
+conversation on the BookMyCab Automation Engine, and writes confirmed jobs straight into
 your dispatch system. You watch it live on your dashboard.
 
 ## Channels
@@ -930,7 +930,7 @@ git commit -m "docs(launch): provisioning SOP, credential-rotation + incident ru
 # Task E: Integration gate + roadmap marker
 
 **Files:**
-- Modify: `docs/superpowers/plans/00-cabbybot-roadmap.md`
+- Modify: `docs/superpowers/plans/00-bookmycab-roadmap.md`
 
 Runs after Workstreams A, B, C, D.
 
@@ -946,7 +946,7 @@ Expected: PASS except the pre-existing, environment-dependent `tests/engine-clie
 
 - [ ] **Step 3: Flip the roadmap marker**
 
-In `docs/superpowers/plans/00-cabbybot-roadmap.md`, change:
+In `docs/superpowers/plans/00-bookmycab-roadmap.md`, change:
 
 ```markdown
 ### ⬜ Plan 12 — Epic 12: Launch Readiness
@@ -961,7 +961,7 @@ to (use the short SHA from `git rev-parse --short HEAD` after the last workstrea
 - [ ] **Step 4: Commit**
 
 ```bash
-git add docs/superpowers/plans/00-cabbybot-roadmap.md
+git add docs/superpowers/plans/00-bookmycab-roadmap.md
 git commit -m "docs: mark Epic 12 done in roadmap index"
 ```
 

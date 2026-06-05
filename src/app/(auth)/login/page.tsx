@@ -3,7 +3,7 @@ import { getCurrentClaims, redirectTargetFor } from "@/lib/auth/session";
 import { LoginForm } from "./login-form";
 
 export const metadata = {
-  title: "Sign in — CabbyBot",
+  title: "Sign in — BookMyCab",
   robots: { index: false },
 };
 

@@ -8,7 +8,7 @@ import { DispatchBadges } from "@/components/marketing/dispatch-badges";
 import { TransparencySection } from "@/components/marketing/transparency-section";
 
 export const metadata: Metadata = {
-  title: "Channels — CabbyBot",
+  title: "Channels — BookMyCab",
   description:
     "One bespoke automation across WhatsApp, Telegram, Messenger, Instagram and an on-site AI chat widget. You connect your own numbers and own your customer base — nothing held hostage.",
 };

@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — CabbyBot",
+  title: "Privacy Policy — BookMyCab",
   description:
-    "How CabbyBot and FlowMo AI LTD handle personal data across the booking automation platform. Final, binding privacy terms are issued with your contract.",
+    "How BookMyCab and FlowMo AI LTD handle personal data across the booking automation platform. Final, binding privacy terms are issued with your contract.",
 };
 
 const SECTIONS: LegalSection[] = [
   {
     heading: "Who we are",
-    body: "CabbyBot is operated by FlowMo AI LTD, a company registered in the United Kingdom. We provide bespoke booking automation to cab and taxi operators. This page describes, in plain terms, how we approach personal data.",
+    body: "BookMyCab is operated by FlowMo AI LTD, a company registered in the United Kingdom. We provide bespoke booking automation to cab and taxi operators. This page describes, in plain terms, how we approach personal data.",
   },
   {
     heading: "Data we process",
@@ -38,7 +38,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Contact",
-    body: "For any privacy question, email hello@cabbybot.com and we will route it to the right person.",
+    body: "For any privacy question, email hello@bookmycab.com and we will route it to the right person.",
   },
 ];
 

@@ -14,7 +14,7 @@ describe("DemoWhatsAppCta", () => {
   it("renders a wa.me link when a demo number is configured", async () => {
     await renderWith("+44 7700 900123");
     const link = screen.getByRole("link", { name: /whatsapp/i });
-    expect(link.getAttribute("href")).toBe("https://wa.me/447700900123?text=Hi%20CabbyBot%20%E2%80%94%20I'd%20like%20to%20try%20the%20demo%20booking%20bot.");
+    expect(link.getAttribute("href")).toBe("https://wa.me/447700900123?text=Hi%20BookMyCab%20%E2%80%94%20I'd%20like%20to%20try%20the%20demo%20booking%20bot.");
   });
   it("renders nothing when no demo number is configured", async () => {
     await renderWith(undefined);

@@ -520,7 +520,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listActiveConversations } from "@/lib/liveops/service";
 import { LiveopsClient } from "./liveops-client";
 
-export const metadata = { title: "Live ops — CabbyBot" };
+export const metadata = { title: "Live ops — BookMyCab" };
 
 export default async function LiveopsPage() {
   const claims = await requireUser();

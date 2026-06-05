@@ -461,7 +461,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listHistory } from "@/lib/copilot/service";
 import { CopilotClient } from "./copilot-client";
 
-export const metadata = { title: "Copilot — CabbyBot" };
+export const metadata = { title: "Copilot — BookMyCab" };
 
 export default async function CopilotPage() {
   const claims = await requireUser();

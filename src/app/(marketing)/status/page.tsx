@@ -8,9 +8,9 @@ import {
 } from "@/lib/marketing/status";
 
 export const metadata: Metadata = {
-  title: "Status — CabbyBot",
+  title: "Status — BookMyCab",
   description:
-    "Live operational status of the CabbyBot platform — dashboard, gateway, automation engine, dispatch and data — plus the performance targets we hold ourselves to.",
+    "Live operational status of the BookMyCab platform — dashboard, gateway, automation engine, dispatch and data — plus the performance targets we hold ourselves to.",
 };
 
 const DOT: Record<ComponentStatus, string> = {
@@ -68,8 +68,8 @@ export default function StatusPage() {
         <p className="mt-12 border-t border-gray-200 pt-8 text-sm leading-relaxed text-gray-500">
           Live status is published here and to your dashboard. For an active incident,
           email{" "}
-          <a className="text-ink underline underline-offset-4" href="mailto:hello@cabbybot.com">
-            hello@cabbybot.com
+          <a className="text-ink underline underline-offset-4" href="mailto:hello@bookmycab.com">
+            hello@bookmycab.com
           </a>
           .
         </p>

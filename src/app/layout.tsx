@@ -15,7 +15,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "CabbyBot",
+  title: "BookMyCab",
   description: "Bespoke AI booking & support automations for the global taxi industry.",
 };
 

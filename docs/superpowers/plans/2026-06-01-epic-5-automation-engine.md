@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 15 Route Handlers · `@upstash/redis` (REST client; works on Vercel serverless) · n8n public REST API (`X-N8N-API-KEY`) · `@supabase/supabase-js` service-role · Node `crypto` (HMAC signature verify) · Vitest (unit + live integration) · zod · Docker Compose (local n8n + `serverless-redis-http` fronting Redis).
 
-**Brand rule:** "n8n"/"workflow"/"execution" must NEVER appear on any customer-facing surface. The Control API returns neutral fields ("CabbyBot Automation Engine", `status`, `runs`); n8n vocabulary stays inside `src/lib/engine/**` (server-only) and is never surfaced in API responses or error messages shown to tenants.
+**Brand rule:** "n8n"/"workflow"/"execution" must NEVER appear on any customer-facing surface. The Control API returns neutral fields ("BookMyCab Automation Engine", `status`, `runs`); n8n vocabulary stays inside `src/lib/engine/**` (server-only) and is never surfaced in API responses or error messages shown to tenants.
 
 **Prerequisites:** Epics 1–4 merged to `master` (they are). Local Supabase via colima on :54322. Build on branch `epic-5-engine` (create off `master`). **Run `pnpm test`/`vitest`, `supabase`, and `docker`/`docker compose` from the main shell with `dangerouslyDisableSandbox: true`** (the sandbox hangs external binaries; subagents run unsandboxed).
 
@@ -88,7 +88,7 @@ Expected: `@upstash/redis` appears in `package.json` dependencies; `pnpm-lock.ya
 - [ ] **Step 2: Write `docker-compose.engine.yml`**
 
 ```yaml
-# Local CabbyBot Automation Engine + Redis stack.
+# Local BookMyCab Automation Engine + Redis stack.
 # Brings up: n8n (REST API), redis, and serverless-redis-http (SRH) so the
 # Upstash REST client works locally against real redis.
 #   docker compose -f docker-compose.engine.yml up -d
@@ -409,7 +409,7 @@ git commit -m "feat(engine): redis cache/idempotency/rate-limit primitives + liv
 Background (verification mechanism per provider):
 - **Meta (WhatsApp / Messenger / Instagram):** POST carries header `x-hub-signature-256: sha256=<hex>` = `HMAC_SHA256(appSecret, rawBody)`. GET subscription handshake carries `hub.mode=subscribe`, `hub.verify_token`, `hub.challenge`; echo the challenge when the token matches.
 - **Telegram:** no body HMAC. At `setWebhook` time a `secret_token` is registered; each POST carries header `x-telegram-bot-api-secret-token`; compare constant-time.
-- **Widget:** CabbyBot-issued. POST carries header `x-cabby-signature: <hex>` = `HMAC_SHA256(widgetSigningKey, rawBody)`.
+- **Widget:** BookMyCab-issued. POST carries header `x-cabby-signature: <hex>` = `HMAC_SHA256(widgetSigningKey, rawBody)`.
 
 - [ ] **Step 1: Write the failing tests**
 

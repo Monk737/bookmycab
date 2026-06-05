@@ -6,7 +6,7 @@
 
 ---
 
-**Project:** CabbyBot Dashboard
+**Project:** BookMyCab Dashboard
 **Generated:** 2026-06-02 07:49:23
 **Category:** Analytics Dashboard
 

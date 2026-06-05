@@ -1,4 +1,4 @@
-# CabbyBot — Sales One-Pager
+# BookMyCab — Sales One-Pager
 
 **Your cab company. On every channel. On autopilot.**
 
@@ -7,9 +7,9 @@ Cab and taxi firms lose bookings after hours and at peak times, and pay staff to
 messages from WhatsApp, Telegram and socials into their dispatch system.
 
 ## The solution
-CabbyBot builds each operator a bespoke booking bot — never a template — that takes
+BookMyCab builds each operator a bespoke booking bot — never a template — that takes
 bookings across WhatsApp, Telegram, Messenger, Instagram and a web widget, runs the whole
-conversation on the CabbyBot Automation Engine, and writes confirmed jobs straight into
+conversation on the BookMyCab Automation Engine, and writes confirmed jobs straight into
 your dispatch system. You watch it live on your dashboard.
 
 ## Channels

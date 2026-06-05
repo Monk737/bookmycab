@@ -5,7 +5,7 @@ import { MfaEnroll } from "./mfa-enroll";
 import { MfaChallenge } from "./mfa-challenge";
 
 export const metadata = {
-  title: "Two-factor authentication — CabbyBot",
+  title: "Two-factor authentication — BookMyCab",
   robots: { index: false },
 };
 

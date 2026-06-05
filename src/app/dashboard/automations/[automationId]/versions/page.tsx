@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listVersions } from "@/lib/config/versions";
 import { VersionsClient } from "./versions-client";
 
-export const metadata = { title: "Config versions — CabbyBot" };
+export const metadata = { title: "Config versions — BookMyCab" };
 
 export default async function VersionsPage({ params }: { params: Promise<{ automationId: string }> }) {
   const { automationId } = await params;

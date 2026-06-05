@@ -58,7 +58,7 @@ export function MfaChallenge({ factorId, redirectTarget = "/dashboard" }: Props)
     <AuthCard heading="Two-factor authentication" error={null}>
       <div className="flex flex-col gap-5">
         <p className="text-sm text-slate-600">
-          Open your authenticator app and enter the 6-digit code for CabbyBot.
+          Open your authenticator app and enter the 6-digit code for BookMyCab.
         </p>
 
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">

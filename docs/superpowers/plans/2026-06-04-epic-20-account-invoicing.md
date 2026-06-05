@@ -617,7 +617,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listAccounts, listInvoices } from "@/lib/invoicing/service";
 import { InvoicingClient } from "./invoicing-client";
 
-export const metadata = { title: "Invoicing — CabbyBot" };
+export const metadata = { title: "Invoicing — BookMyCab" };
 
 export default async function InvoicingPage() {
   const claims = await requireUser();

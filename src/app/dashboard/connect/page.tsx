@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listTenantChannels, listTenantAutomations } from "@/lib/channels/service";
 import { ConnectClient } from "./connect-client";
 
-export const metadata = { title: "Connect a channel — CabbyBot" };
+export const metadata = { title: "Connect a channel — BookMyCab" };
 
 export default async function ConnectPage() {
   const claims = await requireUser();

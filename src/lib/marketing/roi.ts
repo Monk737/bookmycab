@@ -1,8 +1,8 @@
 /**
- * CabbyBot ROI calculator — pure, currency-agnostic math.
+ * BookMyCab ROI calculator — pure, currency-agnostic math.
  *
  * Computes the revenue a taxi company loses per day/month/year from missed
- * bookings that CabbyBot's automation recovers.
+ * bookings that BookMyCab's automation recovers.
  *
  * Model:
  *   perDay   = round(missedBookingsPerDay * avgFare)
@@ -51,7 +51,7 @@ function clampNonNegative(value: number): number {
 }
 
 /**
- * Compute the recoverable revenue for a taxi company using CabbyBot.
+ * Compute the recoverable revenue for a taxi company using BookMyCab.
  *
  * @param input - missedBookingsPerDay, avgFare, optional workingDays override
  * @returns ROI breakdown: perDay, perMonth, perYear (all whole integers)

@@ -68,7 +68,7 @@ export async function dispatchWebhook(tenantId: string, event: string, payload: 
     let status: "delivered" | "failed" = "failed";
     let code: number | null = null;
     try {
-      const res = await fetch(h.url, { method: "POST", headers: { "content-type": "application/json", "x-cabbybot-signature": signWebhook(body, h.secret), "x-cabbybot-event": event }, body });
+      const res = await fetch(h.url, { method: "POST", headers: { "content-type": "application/json", "x-bookmycab-signature": signWebhook(body, h.secret), "x-bookmycab-event": event }, body });
       code = res.status;
       status = res.ok ? "delivered" : "failed";
     } catch { status = "failed"; }

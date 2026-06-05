@@ -1,7 +1,7 @@
 import { ForgotForm } from "./forgot-form";
 
 export const metadata = {
-  title: "Forgot password — CabbyBot",
+  title: "Forgot password — BookMyCab",
   robots: { index: false },
 };
 

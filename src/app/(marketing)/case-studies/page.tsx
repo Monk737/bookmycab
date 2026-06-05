@@ -6,9 +6,9 @@ import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
 
 export const metadata: Metadata = {
-  title: "Case Studies — CabbyBot",
+  title: "Case Studies — BookMyCab",
   description:
-    "Representative, illustrative examples of how a bespoke CabbyBot automation handles the realities of a private-hire fleet and an airport-transfer specialist — challenge, bespoke solution and the outcomes to expect.",
+    "Representative, illustrative examples of how a bespoke BookMyCab automation handles the realities of a private-hire fleet and an airport-transfer specialist — challenge, bespoke solution and the outcomes to expect.",
 };
 
 type Metric = { value: string; label: string };

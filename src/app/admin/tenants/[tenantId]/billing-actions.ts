@@ -57,13 +57,13 @@ export async function getOrCreateStripeCustomer(tenant: TenantBillingRow): Promi
 
 async function getOrCreateProduct(): Promise<string> {
   const products = await getStripe().products.search({
-    query: 'metadata["cabbybot"]:"automation"',
+    query: 'metadata["bookmycab"]:"automation"',
     limit: 1,
   });
   if (products.data[0]) return products.data[0].id;
   const product = await getStripe().products.create({
-    name: "CabbyBot Automation",
-    metadata: { cabbybot: "automation" },
+    name: "BookMyCab Automation",
+    metadata: { bookmycab: "automation" },
   });
   return product.id;
 }

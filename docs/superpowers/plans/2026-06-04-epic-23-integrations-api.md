@@ -359,7 +359,7 @@ export async function dispatchWebhook(tenantId: string, event: string, payload: 
     let status: "delivered" | "failed" = "failed";
     let code: number | null = null;
     try {
-      const res = await fetch(h.url, { method: "POST", headers: { "content-type": "application/json", "x-cabbybot-signature": signWebhook(body, h.secret), "x-cabbybot-event": event }, body });
+      const res = await fetch(h.url, { method: "POST", headers: { "content-type": "application/json", "x-bookmycab-signature": signWebhook(body, h.secret), "x-bookmycab-event": event }, body });
       code = res.status;
       status = res.ok ? "delivered" : "failed";
     } catch { status = "failed"; }
@@ -595,7 +595,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listKeys, listWebhooks } from "@/lib/integrations/service";
 import { IntegrationsClient } from "./integrations-client";
 
-export const metadata = { title: "Integrations — CabbyBot" };
+export const metadata = { title: "Integrations — BookMyCab" };
 
 export default async function IntegrationsPage() {
   const claims = await requireUser();

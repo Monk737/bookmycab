@@ -1,5 +1,5 @@
 // Marketing site navigation + company constants.
-// Brand rule: use "CabbyBot Automation Engine" / "your automation" on customer surfaces.
+// Brand rule: use "BookMyCab Automation Engine" / "your automation" on customer surfaces.
 
 export type NavItem = { label: string; href: string };
 
@@ -71,7 +71,7 @@ export const MARKETING_ROUTES = [
 ] as const;
 
 export const COMPANY = {
-  product: "CabbyBot",
+  product: "BookMyCab",
   entity: "FlowMo AI LTD",
   country: "United Kingdom",
   tagline: "Your cab company. On every channel. On autopilot.",

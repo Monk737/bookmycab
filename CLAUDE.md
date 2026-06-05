@@ -23,11 +23,11 @@ Touch only what you must. Every changed line should trace directly to the user's
 
 ---
 
-## Project: CabbyBot by FlowMo AI LTD
+## Project: BookMyCab by FlowMo AI LTD
 
 AI automation platform for cab/taxi companies. Every customer gets a **bespoke** omnichannel booking bot — never a template clone. Admin-provisioned only (no public signup).
 
-**Critical language rule:** n8n must **never** appear on any customer-facing surface. Always say "CabbyBot Automation Engine" or "your automation." Never say "CabLab" — always "CabbyBot."
+**Critical language rule:** n8n must **never** appear on any customer-facing surface. Always say "BookMyCab Automation Engine" or "your automation." Never say "CabLab" — always "BookMyCab."
 
 ---
 
@@ -203,7 +203,7 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 RESEND_API_KEY=
-RESEND_FROM_EMAIL=hello@cabbybot.com
+RESEND_FROM_EMAIL=hello@bookmycab.com
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 WEBHOOK_RATE_LIMIT_PER_MIN=60

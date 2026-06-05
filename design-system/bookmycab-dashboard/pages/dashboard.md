@@ -1,6 +1,6 @@
 # Dashboard Page Overrides
 
-> **PROJECT:** CabbyBot Dashboard
+> **PROJECT:** BookMyCab Dashboard
 > **Generated:** 2026-06-02 07:49:23
 > **Page Type:** Dashboard / Data View
 

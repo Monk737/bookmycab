@@ -24,7 +24,7 @@
 - **Session:** rely on Supabase defaults configured in `supabase/config.toml` (7-day sliding window, refresh-token rotation). If config drift is found, note it — do not silently change auth config.
 - **Email delivery:** Supabase Auth sends invite/reset emails (local: Inbucket). Resend templating is **not** in scope here.
 
-**Brand rule:** auth screens are customer-facing — no `n8n`/`workflow`/`execution`/`CabLab` strings (the existing `marketing` brand test does not cover `(auth)`; this epic does not extend it, but the same language discipline applies — use "CabbyBot").
+**Brand rule:** auth screens are customer-facing — no `n8n`/`workflow`/`execution`/`CabLab` strings (the existing `marketing` brand test does not cover `(auth)`; this epic does not extend it, but the same language discipline applies — use "BookMyCab").
 
 **Prerequisites:** Epic 1 complete. Branch `epic-4-auth` (already created off `epic-2-marketing`). Local Supabase via colima for DB-backed tests; **run `pnpm test`/`vitest` and `supabase` from the main shell with `dangerouslyDisableSandbox: true`** (sandbox hangs external binaries; subagents run unsandboxed and are fine).
 
@@ -117,7 +117,7 @@ In `middleware.ts`, read `raw.aal` from the verified claims and set `aal: (raw.a
 
 - [ ] **Step 1: Shared auth primitives + shell**
 
-`components/auth/auth-card.tsx` (card container + wordmark "CabbyBot" + heading + optional error banner), `field.tsx` (labelled input + inline error + `aria-describedby`), `submit-button.tsx` (`"use client"`, uses `useFormStatus` for a pending/disabled state). `(auth)/layout.tsx`: full-height centered layout, neutral background, no marketing nav. Keep accessible (labels, focus ring, `aria-live` for errors).
+`components/auth/auth-card.tsx` (card container + wordmark "BookMyCab" + heading + optional error banner), `field.tsx` (labelled input + inline error + `aria-describedby`), `submit-button.tsx` (`"use client"`, uses `useFormStatus` for a pending/disabled state). `(auth)/layout.tsx`: full-height centered layout, neutral background, no marketing nav. Keep accessible (labels, focus ring, `aria-live` for errors).
 
 - [ ] **Step 2: Server actions skeleton + `signIn`**
 
@@ -128,7 +128,7 @@ In `middleware.ts`, read `raw.aal` from the verified claims and set `aal: (raw.a
 
 - [ ] **Step 3: Login page + form**
 
-`login/page.tsx` (server component; if already authenticated, redirect to the role target). `login-form.tsx` (`"use client"`, `useActionState(signIn, …)`): email, password, submit; "Forgot password?" link → `/forgot-password`; **no signup link**; surface action errors via `aria-live`. A subtle note: "Access is invite-only — contact your CabbyBot administrator."
+`login/page.tsx` (server component; if already authenticated, redirect to the role target). `login-form.tsx` (`"use client"`, `useActionState(signIn, …)`): email, password, submit; "Forgot password?" link → `/forgot-password`; **no signup link**; surface action errors via `aria-live`. A subtle note: "Access is invite-only — contact your BookMyCab administrator."
 
 - [ ] **Step 4: Dashboard holding-state placeholder**
 

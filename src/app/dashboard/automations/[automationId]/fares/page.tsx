@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listFareRules } from "@/lib/config/fare-queries";
 import { FaresClient } from "./fares-client";
 
-export const metadata = { title: "Fares — CabbyBot" };
+export const metadata = { title: "Fares — BookMyCab" };
 
 export default async function FaresPage({ params }: { params: Promise<{ automationId: string }> }) {
   const { automationId } = await params;

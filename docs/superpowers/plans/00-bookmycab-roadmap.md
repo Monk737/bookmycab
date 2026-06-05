@@ -1,9 +1,9 @@
-# CabbyBot — Master Build Roadmap (Plan Index)
+# BookMyCab — Master Build Roadmap (Plan Index)
 
-> **Source spec:** [`CabbyBot - PRD.md`](../../../CabbyBot%20-%20PRD.md) v1.0
-> **Brand rule:** "n8n" must **never** appear on any customer-facing surface. Always "CabbyBot Automation Engine" or "your automation." Never "CabLab."
+> **Source spec:** [`BookMyCab - PRD.md`](../../../BookMyCab%20-%20PRD.md) v1.0
+> **Brand rule:** "n8n" must **never** appear on any customer-facing surface. Always "BookMyCab Automation Engine" or "your automation." Never "CabLab."
 
-This is the **index** for the CabbyBot build. The PRD covers 12 epics that are independent subsystems, so each epic gets its **own** implementation plan that produces working, testable software on its own. Build them **in order** — each plan lists the earlier plan(s) it depends on.
+This is the **index** for the BookMyCab build. The PRD covers 12 epics that are independent subsystems, so each epic gets its **own** implementation plan that produces working, testable software on its own. Build them **in order** — each plan lists the earlier plan(s) it depends on.
 
 Each plan, when written, lives in this folder as `YYYY-MM-DD-epic-N-<name>.md` and is executed with the `superpowers:subagent-driven-development` or `superpowers:executing-plans` skill.
 
@@ -61,7 +61,7 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Open qs:** Q2 (stubs that error gracefully vs defer selector).
 
 ### ✅ Plan 7 — Epic 7: Tenant Dashboard  → `2026-06-02-epic-7a-tenant-dashboard-core.md` + `2026-06-02-epic-7b-tenant-dashboard-extended.md`  (DONE & merged to `master` 2026-06-02, HEAD `9608185`)
-**7a (written):** shared foundation (recharts, dashboard shell/subnav, RLS data layer, Realtime hook, shared components/charts), tenant read-API layer, and the four core sections — Org Overview, Per-Automation Overview (live feed + charts), Bookings (table + slide-over + CSV), Conversations (transcript). Design system: ui-ux-pro-max "Data-Dense Dashboard" (blue #1E40AF / amber #F59E0B, Fira Sans), persisted at `design-system/cabbybot-dashboard/`.
+**7a (written):** shared foundation (recharts, dashboard shell/subnav, RLS data layer, Realtime hook, shared components/charts), tenant read-API layer, and the four core sections — Org Overview, Per-Automation Overview (live feed + charts), Bookings (table + slide-over + CSV), Conversations (transcript). Design system: ui-ux-pro-max "Data-Dense Dashboard" (blue #1E40AF / amber #F59E0B, Fira Sans), persisted at `design-system/bookmycab-dashboard/`.
 **7b (written):** `2026-06-02-epic-7b-tenant-dashboard-extended.md` — Analytics (10 sections, honest empty states for voice/response-time pending Epic 10), Config + Support (new tables `automation_config`/`support_tickets`, migration 0015), Channels, Team (Owner-gated service-role invite), Billing (read-only; Stripe portal/invoices stubbed for Epic 8).
 **Depends on:** Plans 1, 4, 5, 6.
 **Produces (in PRD order of complexity):** (1) Org overview grid + Realtime; (2) Per-automation overview + live feed; (3) Bookings table + filters + CSV + slide-over; (4) Conversations + transcript; (5) Analytics (10 sections, recharts); (6) Bot config; (7) Channels; (8) Team; (9) Billing; (10) Support.

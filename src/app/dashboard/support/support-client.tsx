@@ -98,7 +98,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
       setSubject("");
       setCategory("");
       setDescription("");
-      setSuccessMsg("Ticket created. Your CabbyBot contact will be in touch.");
+      setSuccessMsg("Ticket created. Your BookMyCab contact will be in touch.");
     } catch {
       setErrorMsg("Something went wrong. Please try again.");
     } finally {
@@ -113,7 +113,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
       {/* External knowledge base link */}
       <div>
         <a
-          href="https://help.cabbybot.com"
+          href="https://help.bookmycab.com"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 rounded-lg border border-blue-800 px-4 py-2 text-sm font-semibold text-blue-800 transition-colors duration-150 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 cursor-pointer"

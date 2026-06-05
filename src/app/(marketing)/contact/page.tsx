@@ -8,7 +8,7 @@ import { DemoWhatsAppCta } from "@/components/marketing/demo-whatsapp-cta";
 import { COMPANY } from "@/lib/marketing/nav";
 
 export const metadata: Metadata = {
-  title: "Contact — CabbyBot",
+  title: "Contact — BookMyCab",
   description:
     "Book a discovery call and we'll scope your fleet, channels and dispatch. No signup, no sales funnel — just a conversation about the bespoke build for your firm.",
 };
@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 const DETAILS = [
   {
     label: "Email",
-    value: "hello@cabbybot.com",
-    href: "mailto:hello@cabbybot.com",
+    value: "hello@bookmycab.com",
+    href: "mailto:hello@bookmycab.com",
   },
   {
     label: "Company",
@@ -79,7 +79,7 @@ export default function ContactPage() {
           </div>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-gray-600">
             Prefer email? Drop us a line and we&apos;ll get back to you to set up a
-            time. We don&apos;t run a public signup — every CabbyBot is
+            time. We don&apos;t run a public signup — every BookMyCab is
             admin-provisioned after a discovery call.
           </p>
         </Container>

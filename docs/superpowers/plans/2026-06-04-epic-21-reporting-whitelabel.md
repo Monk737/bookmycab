@@ -601,7 +601,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listDefinitions, listRuns, getBranding } from "@/lib/reporting/service";
 import { ReportsClient } from "./reports-client";
 
-export const metadata = { title: "Reports — CabbyBot" };
+export const metadata = { title: "Reports — BookMyCab" };
 
 export default async function ReportsPage() {
   const claims = await requireUser();

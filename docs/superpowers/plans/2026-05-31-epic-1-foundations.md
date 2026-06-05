@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Stand up the CabbyBot codebase skeleton — a Next.js 15 app that builds, the full Supabase schema (§8.1) and RLS policies (§8.2) as versioned migrations on local Supabase, a JWT custom-claims auth hook, Supabase client wrappers, route-protecting middleware, validated env, and green CI.
+**Goal:** Stand up the BookMyCab codebase skeleton — a Next.js 15 app that builds, the full Supabase schema (§8.1) and RLS policies (§8.2) as versioned migrations on local Supabase, a JWT custom-claims auth hook, Supabase client wrappers, route-protecting middleware, validated env, and green CI.
 
 **Architecture:** Single Next.js 15 (App Router) repo. Database schema and security live in `supabase/migrations/*.sql` applied by the Supabase CLI to a local Postgres 15. Tenant isolation is enforced **in the database** via RLS keyed on `auth.uid()` → `tenant_users`; the app reads denormalised `tenant_id`/`role`/`is_flowmo_staff` claims injected by a Postgres **custom access token hook**. Authorization logic is extracted into a pure, unit-tested function that `middleware.ts` wraps. Tests are Vitest: SQL-level RLS isolation tests via `pg`, a hook unit test, and pure middleware-logic tests.
 
@@ -31,7 +31,7 @@ vitest.config.ts
 src/
   app/
     layout.tsx                       # root layout, imports globals.css
-    page.tsx                         # placeholder landing ("CabbyBot")
+    page.tsx                         # placeholder landing ("BookMyCab")
     globals.css                      # @import "tailwindcss"
   env.ts                             # zod-validated env accessor
   lib/
@@ -75,7 +75,7 @@ tests/
 Run (non-interactive, App Router, no src-less, Tailwind, TS, pnpm):
 
 ```bash
-cd /Users/sarahbose/Desktop/CabbyBot
+cd /Users/sarahbose/Desktop/BookMyCab
 pnpm dlx create-next-app@latest . \
   --ts --app --src-dir --tailwind --eslint \
   --import-alias "@/*" --no-turbopack --use-pnpm --yes
@@ -84,11 +84,11 @@ pnpm dlx create-next-app@latest . \
 If the CLI refuses because the directory is non-empty (CLAUDE.md / PRD / docs exist), scaffold in a temp dir and move files in:
 
 ```bash
-pnpm dlx create-next-app@latest /tmp/cabbybot-init \
+pnpm dlx create-next-app@latest /tmp/bookmycab-init \
   --ts --app --src-dir --tailwind --eslint \
   --import-alias "@/*" --no-turbopack --use-pnpm --yes
-rsync -a --ignore-existing /tmp/cabbybot-init/ /Users/sarahbose/Desktop/CabbyBot/
-rm -rf /tmp/cabbybot-init
+rsync -a --ignore-existing /tmp/bookmycab-init/ /Users/sarahbose/Desktop/BookMyCab/
+rm -rf /tmp/bookmycab-init
 ```
 
 - [ ] **Step 2: Pin React 19 + Next 15 and confirm Tailwind v4**
@@ -133,7 +133,7 @@ export default config;
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-4xl font-bold">CabbyBot</h1>
+      <h1 className="text-4xl font-bold">BookMyCab</h1>
       <p className="text-neutral-500">Your cab company. On every channel. On autopilot.</p>
     </main>
   );
@@ -147,7 +147,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CabbyBot",
+  title: "BookMyCab",
   description: "Bespoke AI booking & support automations for the global taxi industry.",
 };
 
@@ -168,7 +168,7 @@ Expected: `✓ Compiled successfully` and a `/` route in the build output, exit 
 - [ ] **Step 5: Initialize git and commit**
 
 ```bash
-cd /Users/sarahbose/Desktop/CabbyBot
+cd /Users/sarahbose/Desktop/BookMyCab
 git init
 git add -A
 git commit -m "chore: scaffold Next.js 15 + Tailwind v4 app skeleton
@@ -260,7 +260,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - [ ] **Step 1: Initialize Supabase**
 
 ```bash
-cd /Users/sarahbose/Desktop/CabbyBot
+cd /Users/sarahbose/Desktop/BookMyCab
 supabase init
 ```
 
@@ -1612,7 +1612,7 @@ const schema = z.object({
 
   // Resend
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM_EMAIL: z.string().email().default("hello@cabbybot.com"),
+  RESEND_FROM_EMAIL: z.string().email().default("hello@bookmycab.com"),
 
   // Upstash Redis
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
@@ -1654,7 +1654,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 
 # Resend
 RESEND_API_KEY=
-RESEND_FROM_EMAIL=hello@cabbybot.com
+RESEND_FROM_EMAIL=hello@bookmycab.com
 
 # Upstash Redis
 UPSTASH_REDIS_REST_URL=

@@ -301,7 +301,7 @@ export function buildSetupInvoiceItemParams(args: {
     customer: args.customerId,
     amount: setupFeeMinor(args.currency),
     currency: args.currency.toLowerCase(),
-    description: "CabbyBot automation — one-time setup fee",
+    description: "BookMyCab automation — one-time setup fee",
   };
 }
 
@@ -654,30 +654,30 @@ export function paymentFailedEmail(args: {
   const subject = `Action needed: payment failed for ${args.tenantName}`;
   const payLine = args.invoiceUrl
     ? `Please update your payment method: ${args.invoiceUrl}`
-    : `Please contact your CabbyBot account manager to resolve this.`;
+    : `Please contact your BookMyCab account manager to resolve this.`;
   const payHtml = args.invoiceUrl
     ? `<p><a href="${args.invoiceUrl}">Update your payment method</a></p>`
-    : `<p>Please contact your CabbyBot account manager to resolve this.</p>`;
+    : `<p>Please contact your BookMyCab account manager to resolve this.</p>`;
 
   const text = [
     `Hi ${args.tenantName},`,
     ``,
-    `We were unable to collect your latest CabbyBot payment of ${amount}.`,
+    `We were unable to collect your latest BookMyCab payment of ${amount}.`,
     `Your automation keeps running — there is no interruption — but please`,
     `resolve the payment to avoid any future disruption.`,
     ``,
     payLine,
     ``,
-    `— The CabbyBot team`,
+    `— The BookMyCab team`,
   ].join("\n");
 
   const html = [
     `<p>Hi ${args.tenantName},</p>`,
-    `<p>We were unable to collect your latest CabbyBot payment of <strong>${amount}</strong>.`,
+    `<p>We were unable to collect your latest BookMyCab payment of <strong>${amount}</strong>.`,
     ` Your automation keeps running — there is no interruption — but please resolve`,
     ` the payment to avoid any future disruption.</p>`,
     payHtml,
-    `<p>— The CabbyBot team</p>`,
+    `<p>— The BookMyCab team</p>`,
   ].join("");
 
   return { subject, html, text };
@@ -1290,13 +1290,13 @@ export async function getOrCreateStripeCustomer(tenant: TenantBillingRow): Promi
  *  Stored in env when known; created on first use otherwise. */
 async function getOrCreateProduct(): Promise<string> {
   const products = await getStripe().products.search({
-    query: 'metadata["cabbybot"]:"automation"',
+    query: 'metadata["bookmycab"]:"automation"',
     limit: 1,
   });
   if (products.data[0]) return products.data[0].id;
   const product = await getStripe().products.create({
-    name: "CabbyBot Automation",
-    metadata: { cabbybot: "automation" },
+    name: "BookMyCab Automation",
+    metadata: { bookmycab: "automation" },
   });
   return product.id;
 }
@@ -1723,7 +1723,7 @@ git commit -m "feat(billing): live Customer Portal session + epic-8 final gate"
 - **`TODO(billing-proration)`** — self-serve mid-contract upgrades (Q5) deferred; staff change subs in Stripe and the `customer.subscription.updated` webhook syncs the mirror.
 - **`TODO(billing-product-env)`** — `getOrCreateProduct` searches/creates a shared product each subscription start; once a product id is stable, pin it in env to skip the lookup.
 - **`TODO(billing-event-table)`** — webhook idempotency uses Redis `claimOnce`; if a durable audit of every Stripe event is required (Epic 11 observability), persist events to a table instead.
-- **Resend domain verification** — `RESEND_FROM_EMAIL` (`hello@cabbybot.com`) must be a verified Resend sending domain before payment-failed emails actually deliver in production.
+- **Resend domain verification** — `RESEND_FROM_EMAIL` (`hello@bookmycab.com`) must be a verified Resend sending domain before payment-failed emails actually deliver in production.
 
 ---
 

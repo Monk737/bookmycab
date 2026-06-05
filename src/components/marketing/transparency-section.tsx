@@ -7,7 +7,7 @@ type CostRow = {
   cadence: string;
 };
 
-// §6.4 — external pass-through costs vs what is paid to CabbyBot.
+// §6.4 — external pass-through costs vs what is paid to BookMyCab.
 const PASS_THROUGH: CostRow[] = [
   {
     item: "WhatsApp conversation fees",
@@ -31,15 +31,15 @@ const PASS_THROUGH: CostRow[] = [
   },
 ];
 
-const TO_CABBYBOT: CostRow[] = [
+const TO_BOOKMYCAB: CostRow[] = [
   {
-    item: "CabbyBot subscription",
-    paidTo: "CabbyBot",
+    item: "BookMyCab subscription",
+    paidTo: "BookMyCab",
     cadence: "Monthly",
   },
   {
-    item: "CabbyBot setup fee",
-    paidTo: "CabbyBot",
+    item: "BookMyCab setup fee",
+    paidTo: "BookMyCab",
     cadence: "One-time",
   },
 ];
@@ -75,7 +75,7 @@ type TransparencySectionProps = {
  *
  * Standalone Server Component so Home and Channels can reuse it. Splits costs
  * into pass-through usage (paid to your own providers) and what is paid to
- * CabbyBot, so there are no hidden margins.
+ * BookMyCab, so there are no hidden margins.
  */
 export function TransparencySection({
   heading = "What you pay externally",
@@ -88,11 +88,11 @@ export function TransparencySection({
       </h2>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
         No hidden margins. Channel and AI usage is billed by your own providers
-        at cost — you only pay CabbyBot for the automation itself.
+        at cost — you only pay BookMyCab for the automation itself.
       </p>
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
         <CostList title="Paid to your own providers" rows={PASS_THROUGH} />
-        <CostList title="Paid to CabbyBot" rows={TO_CABBYBOT} />
+        <CostList title="Paid to BookMyCab" rows={TO_BOOKMYCAB} />
       </div>
       <p className="mt-8 font-display text-xl font-semibold tracking-tight text-ink sm:text-2xl">
         You bring your numbers. You own your customer base.

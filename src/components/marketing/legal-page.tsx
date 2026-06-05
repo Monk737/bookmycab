@@ -66,8 +66,8 @@ export function LegalPage({ title, lastUpdated, intro, sections }: LegalPageProp
         <p className="mt-12 border-t border-gray-200 pt-8 text-sm leading-relaxed text-gray-500">
           {COMPANY.entity}, {COMPANY.country}. Questions about this policy?
           Email{" "}
-          <a className="text-ink underline underline-offset-4" href="mailto:hello@cabbybot.com">
-            hello@cabbybot.com
+          <a className="text-ink underline underline-offset-4" href="mailto:hello@bookmycab.com">
+            hello@bookmycab.com
           </a>
           .
         </p>

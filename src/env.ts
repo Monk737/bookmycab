@@ -29,7 +29,7 @@ const schema = z.object({
 
   // Resend
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM_EMAIL: z.string().email().default("hello@cabbybot.com"),
+  RESEND_FROM_EMAIL: z.string().email().default("hello@bookmycab.com"),
 
   // Upstash Redis
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
@@ -42,17 +42,17 @@ const schema = z.object({
   CHANNEL_CACHE_TTL_SEC: z.coerce.number().int().positive().default(300),
   IDEMPOTENCY_TTL_SEC: z.coerce.number().int().positive().default(86400),
   DEMO_TENANT_ID: z.string().uuid().optional(),
-  DEMO_SESSION_SECRET: z.string().min(8).default("cabbybot-demo-2026"),
+  DEMO_SESSION_SECRET: z.string().min(8).default("bookmycab-demo-2026"),
   FLOWMO_STAFF_EMAIL_DOMAIN: z.string().default("flowmoai.com"),
 
   // Marketing
   NEXT_PUBLIC_CAL_LINK: z.string().min(1).default("flowmo/discovery"),
-  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://cabbybot.com"),
+  NEXT_PUBLIC_SITE_URL: z.string().url().default("https://bookmycab.com"),
 
   // Observability (Epic 11). Activation is deploy-time; absent → telemetry no-ops.
   OBSERVABILITY_STDOUT: z.string().optional(),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
-  OTEL_SERVICE_NAME: z.string().default("cabbybot"),
+  OTEL_SERVICE_NAME: z.string().default("bookmycab"),
   SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_DEMO_WA_NUMBER: z.string().optional(),

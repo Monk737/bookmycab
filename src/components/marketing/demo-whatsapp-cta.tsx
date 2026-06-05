@@ -1,7 +1,7 @@
 import { clientEnv } from "@/env.client";
 import { whatsAppLink } from "@/lib/marketing/whatsapp";
 
-const DEMO_MESSAGE = "Hi CabbyBot — I'd like to try the demo booking bot.";
+const DEMO_MESSAGE = "Hi BookMyCab — I'd like to try the demo booking bot.";
 
 /**
  * Renders a "message our demo bot on WhatsApp" link when NEXT_PUBLIC_DEMO_WA_NUMBER

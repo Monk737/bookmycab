@@ -466,7 +466,7 @@ export async function dispatchNotification(
     if (channel.type === "email") {
       ok = await sendEmail({
         to: channel.destination,
-        subject: "CabbyBot alert",
+        subject: "BookMyCab alert",
         html: `<p>${text}</p>`,
         text,
       });
@@ -933,7 +933,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listRules, listChannels, listRecentEvents } from "@/lib/alerting/queries";
 import { AlertsClient } from "./alerts-client";
 
-export const metadata = { title: "Alerts — CabbyBot" };
+export const metadata = { title: "Alerts — BookMyCab" };
 
 export default async function AlertsPage() {
   const claims = await requireUser();

@@ -1,6 +1,6 @@
 // Public status catalogue. Live status is wired to the Epic 11 observability
 // stack (Grafana) at deploy; until then every component reports operational.
-// Brand rule: the internal engine is the "CabbyBot Automation Engine" — never
+// Brand rule: the internal engine is the "BookMyCab Automation Engine" — never
 // name the underlying tooling on this customer-facing page.
 
 export type ComponentStatus = "operational" | "degraded" | "outage";
@@ -19,7 +19,7 @@ export interface PerfTarget {
 export const STATUS_COMPONENTS: StatusComponent[] = [
   { name: "Booking Dashboard", description: "Your live booking feed, conversations and analytics.", status: "operational" },
   { name: "Webhook Gateway", description: "Inbound messages from WhatsApp, Telegram, Messenger, Instagram and the web widget.", status: "operational" },
-  { name: "CabbyBot Automation Engine", description: "The bot that runs your booking conversations end to end.", status: "operational" },
+  { name: "BookMyCab Automation Engine", description: "The bot that runs your booking conversations end to end.", status: "operational" },
   { name: "Dispatch Integrations", description: "AutoCab, iCabbi and Cordic booking hand-off.", status: "operational" },
   { name: "Realtime & Database", description: "Live updates and stored booking records.", status: "operational" },
 ];

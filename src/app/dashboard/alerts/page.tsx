@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listRules, listChannels, listRecentEvents } from "@/lib/alerting/queries";
 import { AlertsClient } from "./alerts-client";
 
-export const metadata = { title: "Alerts — CabbyBot" };
+export const metadata = { title: "Alerts — BookMyCab" };
 
 export default async function AlertsPage() {
   const claims = await requireUser();

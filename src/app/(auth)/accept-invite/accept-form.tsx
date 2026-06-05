@@ -66,7 +66,7 @@ export function AcceptForm() {
           request a new invite.
         </p>
         <p className="text-xs text-slate-500 text-center">
-          If you believe this is a mistake, reach out to your CabbyBot administrator.
+          If you believe this is a mistake, reach out to your BookMyCab administrator.
         </p>
       </AuthCard>
     );

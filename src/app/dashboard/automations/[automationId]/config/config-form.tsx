@@ -497,7 +497,7 @@ export function ConfigForm({
             Flow Logic
           </h2>
           <p className="text-sm text-slate-600">
-            The conversation flow for your automation is bespoke and managed by the CabbyBot
+            The conversation flow for your automation is bespoke and managed by the BookMyCab
             engineering team.
           </p>
           <Link

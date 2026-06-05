@@ -1,6 +1,6 @@
 # Observability & QA Runbook (Epic 11)
 
-CabbyBot ships a vendor-neutral telemetry core that no-ops by default. Activation is deploy-time.
+BookMyCab ships a vendor-neutral telemetry core that no-ops by default. Activation is deploy-time.
 
 ## Telemetry
 
@@ -18,7 +18,7 @@ line per record on stdout.
 
 ## Metric contract
 `webhook_ack_ms`, `webhook_inbound_total`, `engine_request_ms`, `dispatch_latency_ms`.
-Dashboard: import `observability/grafana/cabbybot-overview.json` into Grafana Cloud.
+Dashboard: import `observability/grafana/bookmycab-overview.json` into Grafana Cloud.
 
 ## Load test
 `pnpm loadtest:webhook -- --url <gateway-url> --total 1000 --concurrency 100`

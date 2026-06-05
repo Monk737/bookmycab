@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listKeys, listWebhooks } from "@/lib/integrations/service";
 import { IntegrationsClient } from "./integrations-client";
 
-export const metadata = { title: "Integrations — CabbyBot" };
+export const metadata = { title: "Integrations — BookMyCab" };
 
 export default async function IntegrationsPage() {
   const claims = await requireUser();

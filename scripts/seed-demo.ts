@@ -11,7 +11,7 @@
  * Required env (loaded from .env.local then .env):
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
- *   DEMO_SESSION_SECRET   (password for demo@demo.cabbybot.com)
+ *   DEMO_SESSION_SECRET   (password for demo@demo.bookmycab.com)
  *   DEMO_TENANT_ID        (UUID; falls back to d0000000-0000-0000-0000-000000000001)
  */
 import { config } from "dotenv";
@@ -27,7 +27,7 @@ import { createClient } from "@supabase/supabase-js";
 export const DEMO_TENANT_ID =
   process.env.DEMO_TENANT_ID ?? "d0000000-0000-0000-0000-000000000001";
 
-const DEMO_EMAIL = "demo@demo.cabbybot.com";
+const DEMO_EMAIL = "demo@demo.bookmycab.com";
 
 // Enterprise plan id from scripts/seed-entitlements.ts — grants all features so
 // the demo dashboard surfaces every entitlement-gated advanced feature.
@@ -169,7 +169,7 @@ function buildBookingMessages(
   base.setHours(randInt(7, 22), randInt(0, 59), 0, 0);
   const t = (s: number) => isoStr(new Date(base.getTime() + s * 1000));
   return [
-    { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "Hi! I'm your CabbyBot. Would you like to book a taxi, manage an existing booking, or get a quote?" }, ts: t(0) },
+    { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: "Hi! I'm your BookMyCab. Would you like to book a taxi, manage an existing booking, or get a quote?" }, ts: t(0) },
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: "Book a taxi please" }, ts: t(8) },
     { conversation_id: convId, direction: "outbound", message_type: "text", payload: { text: mode === "asap" ? "Great! Is this for as soon as possible or a scheduled time?" : "Sure! When would you like to travel?" }, ts: t(10) },
     { conversation_id: convId, direction: "inbound", message_type: "text", payload: { text: mode === "asap" ? "As soon as possible" : "Tomorrow at 9am" }, ts: t(25) },
@@ -237,7 +237,7 @@ function buildManageMessages(convId: string): MsgRow[] {
 async function main() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const demoPassword = process.env.DEMO_SESSION_SECRET ?? "cabbybot-demo-2026";
+  const demoPassword = process.env.DEMO_SESSION_SECRET ?? "bookmycab-demo-2026";
 
   if (!supabaseUrl || !serviceKey) {
     throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
@@ -358,7 +358,7 @@ async function main() {
     const { error } = await sb.from("automation_config").upsert({
       automation_id: autoId,
       tenant_id: DEMO_TENANT_ID,
-      welcome_messages: { en: "Hi! I'm your CabbyBot. Book, quote, or manage a taxi? 🚕" },
+      welcome_messages: { en: "Hi! I'm your BookMyCab. Book, quote, or manage a taxi? 🚕" },
       vehicle_types: ["saloon", "estate", "mpv", "8seater", "wheelchair"],
       service_area: "Greater London",
       opening_hours: { mon_fri: "06:00-23:00", weekend: "07:00-22:00" },

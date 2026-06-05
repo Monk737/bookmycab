@@ -10,7 +10,7 @@
 
 **Locked decisions:** Discovery CTA → **Cal.com** (link via `NEXT_PUBLIC_CAL_LINK`). Brand assets → **#FFD400 editorial + placeholder wordmark** (swap real logo later). Multi-currency pricing GBP/EUR/USD (matches `tenants.currency`).
 
-**Brand rule (DoD-enforced):** No "n8n" / "workflow" / "execution" / "CabLab" string may appear in any file under `src/app/(marketing)/` or `src/components/marketing/` or `src/lib/marketing/`. Use the §18.1 substitution table ("CabbyBot Automation Engine", "your automation", "run", "channel event", "your bespoke build"). The brand-rule test (Task 1) is the gate.
+**Brand rule (DoD-enforced):** No "n8n" / "workflow" / "execution" / "CabLab" string may appear in any file under `src/app/(marketing)/` or `src/components/marketing/` or `src/lib/marketing/`. Use the §18.1 substitution table ("BookMyCab Automation Engine", "your automation", "run", "channel event", "your bespoke build"). The brand-rule test (Task 1) is the gate.
 
 **Prerequisites:** Epic 1 complete (it is — Next.js app builds, env accessor, middleware with public-path whitelist). Build on branch `epic-2-marketing` (already created).
 
@@ -85,7 +85,7 @@ src/env.ts                           # MODIFY: NEXT_PUBLIC_CAL_LINK (optional)
 
 - [ ] **Step 2: Design tokens + fonts**
 
-In `globals.css`, replace the scaffold tokens with the editorial palette: `--color-ink` (near-black `#0A0A0A`), `--color-paper` (`#FFFFFF`), neutral grays, and the cab-livery accent `--color-accent: #FFD400` (+ a readable `--color-accent-ink` for text on yellow). Remove the dark-mode auto scheme (marketing site is light editorial). In `src/app/layout.tsx`, load a **serif display** face for headlines (e.g. `Fraunces` via `next/font/google`) and a **geometric sans** for body (Geist Sans already available, or `Inter`/`Space_Grotesk`), exposing them as CSS vars consumed by Tailwind `@theme`. Keep the existing `metadata` (title "CabbyBot").
+In `globals.css`, replace the scaffold tokens with the editorial palette: `--color-ink` (near-black `#0A0A0A`), `--color-paper` (`#FFFFFF`), neutral grays, and the cab-livery accent `--color-accent: #FFD400` (+ a readable `--color-accent-ink` for text on yellow). Remove the dark-mode auto scheme (marketing site is light editorial). In `src/app/layout.tsx`, load a **serif display** face for headlines (e.g. `Fraunces` via `next/font/google`) and a **geometric sans** for body (Geist Sans already available, or `Inter`/`Space_Grotesk`), exposing them as CSS vars consumed by Tailwind `@theme`. Keep the existing `metadata` (title "BookMyCab").
 
 - [ ] **Step 3: Env — Cal.com link**
 
@@ -97,7 +97,7 @@ Build small design-system primitives in `components/marketing/ui/` (`Container`,
 
 - [ ] **Step 5: Header + Footer + marketing layout**
 
-`nav.ts` exports the nav items (Home, How It Works, Channels, Pricing, Custom Solutions, Case Studies, About, Contact) and footer link columns + company constants (FlowMo AI LTD, UK, tagline §3, transparency promise line). `header.tsx`: placeholder wordmark "CabbyBot" (text/SVG), nav, and a Discovery CTA; mobile menu. `footer.tsx`: link columns, legal links, the transparency one-liner ("You bring your numbers. You own your customer base."). `(marketing)/layout.tsx` wraps children with Header + Footer.
+`nav.ts` exports the nav items (Home, How It Works, Channels, Pricing, Custom Solutions, Case Studies, About, Contact) and footer link columns + company constants (FlowMo AI LTD, UK, tagline §3, transparency promise line). `header.tsx`: placeholder wordmark "BookMyCab" (text/SVG), nav, and a Discovery CTA; mobile menu. `footer.tsx`: link columns, legal links, the transparency one-liner ("You bring your numbers. You own your customer base."). `(marketing)/layout.tsx` wraps children with Header + Footer.
 
 - [ ] **Step 6: Verify**
 
@@ -165,7 +165,7 @@ Typed structures: `type Currency = "GBP"|"EUR"|"USD"`, `CURRENCIES`, per-option/
 
 - [ ] **Step 2: pricing-cards** — Option A, B, C cards driven by `lib/marketing/pricing`; A/B show single + bundle prices in the selected currency; C = "Contact Us" → Discovery CTA. Setup fee (£1,000/€1,000/$1,200) and **12-month minimum contract** prominent. "All prices /month · excl. VAT & taxes" line. Add-ons note (Support/Driver/Custom "quoted on demand", §6.3).
 
-- [ ] **Step 3: transparency-section** — "What you pay externally" table from §6.4 (WhatsApp/Telegram/IG fees, LLM tokens, dispatch API subscription = customer-borne; CabbyBot subscription + setup fee = to CabbyBot). Reusable (also linkable from Home/Channels).
+- [ ] **Step 3: transparency-section** — "What you pay externally" table from §6.4 (WhatsApp/Telegram/IG fees, LLM tokens, dispatch API subscription = customer-borne; BookMyCab subscription + setup fee = to BookMyCab). Reusable (also linkable from Home/Channels).
 
 - [ ] **Step 4: Pricing page** assembles toggle + cards + transparency + dispatch badges + Discovery CTA. `metadata`.
 
@@ -218,7 +218,7 @@ Typed structures: `type Currency = "GBP"|"EUR"|"USD"`, `CURRENCIES`, per-option/
 
 **Use `ui-ux-pro-max`.**
 
-- [ ] **Step 1: Contact** — **no signup form.** Primary action is the Cal.com Discovery CTA (inline embed acceptable) plus contact details (email `hello@cabbybot.com`, company FlowMo AI LTD, UK). Optional simple message field is allowed ONLY as a `mailto:` or a clearly-marked placeholder — do **not** build a backend submit (Resend wiring is a later epic). Keep it dependency-free.
+- [ ] **Step 1: Contact** — **no signup form.** Primary action is the Cal.com Discovery CTA (inline embed acceptable) plus contact details (email `hello@bookmycab.com`, company FlowMo AI LTD, UK). Optional simple message field is allowed ONLY as a `mailto:` or a clearly-marked placeholder — do **not** build a backend submit (Resend wiring is a later epic). Keep it dependency-free.
 
 - [ ] **Step 2: Legal stubs** — Privacy, Terms, DPA, Cookie Policy. Real legal copy is Epic 12; here ship structured placeholder pages with headings, a "Last updated" date, and a notice that final terms are issued at contract. Consistent legal-page layout component is fine.
 

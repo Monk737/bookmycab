@@ -35,10 +35,10 @@ export default async function DashboardPage() {
           <p className="text-sm text-slate-500">
             No organisation found for your account. Please contact{" "}
             <a
-              href="mailto:support@cabbybot.com"
+              href="mailto:support@bookmycab.com"
               className="text-blue-800 underline underline-offset-2 hover:opacity-80 transition-opacity duration-150"
             >
-              CabbyBot support
+              BookMyCab support
             </a>
             .
           </p>
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
               href="/dashboard/support"
               className="text-blue-800 underline underline-offset-2 hover:opacity-80 transition-opacity duration-150"
             >
-              CabbyBot support
+              BookMyCab support
             </Link>
           </p>
         </div>
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
               />
             </svg>
             <p className="text-sm font-medium text-slate-700">
-              No automations yet — your CabbyBot team is building yours.
+              No automations yet — your BookMyCab team is building yours.
             </p>
             <p className="mt-1 text-xs text-slate-500">
               We&apos;ll notify you when your automation is ready.

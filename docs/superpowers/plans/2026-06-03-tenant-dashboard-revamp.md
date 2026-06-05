@@ -744,7 +744,7 @@ git commit -m "feat(dashboard): revenue + 30-day bookings on org overview"
 
 - [ ] **Step 1: Full typecheck** — `pnpm typecheck` → clean.
 - [ ] **Step 2: Full suite** — `pnpm test` → PASS except the pre-existing live-n8n `tests/engine-client.integration.test.ts` (env-dependent). All dashboard/analytics suites green.
-- [ ] **Step 3: Manual smoke (optional, dev server running):** sign in as `demo@demo.cabbybot.com`, open an automation → overview shows a populated trend + revenue/response KPIs; Analytics tab shows Response Time + Revenue sections; `/dashboard` shows revenue + 30-day bookings.
+- [ ] **Step 3: Manual smoke (optional, dev server running):** sign in as `demo@demo.bookmycab.com`, open an automation → overview shows a populated trend + revenue/response KPIs; Analytics tab shows Response Time + Revenue sections; `/dashboard` shows revenue + 30-day bookings.
 
 ---
 

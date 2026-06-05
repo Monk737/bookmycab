@@ -29,7 +29,7 @@ export function LoginForm({ notice }: LoginFormProps) {
   const passwordError = state.fieldErrors["password"]?.[0] ?? null;
 
   return (
-    <AuthCard heading="Sign in to CabbyBot" error={state.formError}>
+    <AuthCard heading="Sign in to BookMyCab" error={state.formError}>
       {notice && (
         <p
           role="status"
@@ -76,7 +76,7 @@ export function LoginForm({ notice }: LoginFormProps) {
       </form>
 
       <p className="mt-6 text-center text-xs text-slate-500">
-        Access is invite-only &mdash; contact your CabbyBot administrator.
+        Access is invite-only &mdash; contact your BookMyCab administrator.
       </p>
     </AuthCard>
   );

@@ -21,19 +21,19 @@ export function PortalButton({ orgId }: PortalButtonProps) {
         const json = (await res.json()) as { error?: string };
         setMessage(
           json.error
-            ? "Billing portal is being set up — your CabbyBot contact can help in the meantime."
-            : "Something went wrong. Please contact your CabbyBot contact.",
+            ? "Billing portal is being set up — your BookMyCab contact can help in the meantime."
+            : "Something went wrong. Please contact your BookMyCab contact.",
         );
       } else {
         const json = (await res.json()) as { url?: string };
         if (json.url) {
           window.location.href = json.url;
         } else {
-          setMessage("Billing portal is being set up — your CabbyBot contact can help in the meantime.");
+          setMessage("Billing portal is being set up — your BookMyCab contact can help in the meantime.");
         }
       }
     } catch {
-      setMessage("Something went wrong. Please contact your CabbyBot contact.");
+      setMessage("Something went wrong. Please contact your BookMyCab contact.");
     } finally {
       setLoading(false);
     }

@@ -8,7 +8,7 @@ import { PricingCards } from "@/components/marketing/pricing-cards";
 import { TransparencySection } from "@/components/marketing/transparency-section";
 
 export const metadata: Metadata = {
-  title: "Pricing — CabbyBot",
+  title: "Pricing — BookMyCab",
   description:
     "Simple, transparent pricing for your bespoke cab automation. Fixed monthly options by fleet size, a one-time setup fee, and a clear breakdown of what you pay your own providers.",
 };

@@ -9,7 +9,7 @@ type AuthCardProps = {
 
 /**
  * Shared card container for all auth pages.
- * Renders the CabbyBot wordmark, a page heading, an optional error banner,
+ * Renders the BookMyCab wordmark, a page heading, an optional error banner,
  * and the card body (slot for form content).
  */
 export function AuthCard({ heading, error, children }: AuthCardProps) {

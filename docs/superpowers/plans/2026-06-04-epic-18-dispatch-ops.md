@@ -556,7 +556,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { getHealth, listFailedDispatches } from "@/lib/dispatchops/service";
 import { DispatchClient } from "./dispatch-client";
 
-export const metadata = { title: "Dispatch — CabbyBot" };
+export const metadata = { title: "Dispatch — BookMyCab" };
 
 export default async function DispatchPage() {
   const claims = await requireUser();

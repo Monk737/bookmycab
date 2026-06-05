@@ -7,9 +7,9 @@ import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
 import { COMPANY } from "@/lib/marketing/nav";
 
 export const metadata: Metadata = {
-  title: "About — CabbyBot",
+  title: "About — BookMyCab",
   description:
-    "CabbyBot is built by FlowMo AI LTD, made in the United Kingdom. We build bespoke omnichannel booking automations for cab firms — confident, technical, transparent, no hype. You bring your numbers. You own your customer base.",
+    "BookMyCab is built by FlowMo AI LTD, made in the United Kingdom. We build bespoke omnichannel booking automations for cab firms — confident, technical, transparent, no hype. You bring your numbers. You own your customer base.",
 };
 
 // §3 — what we believe / how we work. Plain principles, no hype.

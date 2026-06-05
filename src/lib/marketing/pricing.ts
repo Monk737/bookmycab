@@ -1,5 +1,5 @@
 /**
- * CabbyBot multi-currency pricing model.
+ * BookMyCab multi-currency pricing model.
  *
  * All prices are MONTHLY, excluding VAT. Source of truth: PRD §6.1.
  * Three tiers: A (≤25 drivers), B (26–100 drivers), C (101+ / custom → Contact Us).

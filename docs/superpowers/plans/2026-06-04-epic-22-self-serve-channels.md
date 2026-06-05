@@ -498,7 +498,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listTenantChannels } from "@/lib/channels/service";
 import { ConnectClient } from "./connect-client";
 
-export const metadata = { title: "Connect a channel — CabbyBot" };
+export const metadata = { title: "Connect a channel — BookMyCab" };
 
 function svc() { return createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY); }
 

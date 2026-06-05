@@ -6,7 +6,7 @@ import { env } from "@/env";
 /**
  * GET /demo — one-click read-only demo session.
  *
- * Signs in the shared demo user (demo@demo.cabbybot.com) via
+ * Signs in the shared demo user (demo@demo.bookmycab.com) via
  * signInWithPassword. The Supabase SSR client writes the session cookie
  * automatically. Redirects to /dashboard on success, /login on failure.
  */
@@ -18,7 +18,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: "demo@demo.cabbybot.com",
+    email: "demo@demo.bookmycab.com",
     password: env.DEMO_SESSION_SECRET,
   });
 

@@ -42,7 +42,7 @@ Before starting, confirm these are present (Task 6 asserts them in a test). **No
 
 **Workstream C — Verification + roadmap (Task 6):**
 - Modify: `tests/epic-10-voice-workflow.test.ts` — extend with "already-built wiring" assertions.
-- Modify: `docs/superpowers/plans/00-cabbybot-roadmap.md` — flip Plan 10 marker to done.
+- Modify: `docs/superpowers/plans/00-bookmycab-roadmap.md` — flip Plan 10 marker to done.
 
 Workstream A and Workstream B touch disjoint files and may be built in parallel. Task 6 runs after both.
 
@@ -660,7 +660,7 @@ git commit -m "feat(voice): Whisper language auto-detect + emit detected languag
 
 **Files:**
 - Modify: `tests/epic-10-voice-workflow.test.ts`
-- Modify: `docs/superpowers/plans/00-cabbybot-roadmap.md`
+- Modify: `docs/superpowers/plans/00-bookmycab-roadmap.md`
 
 Runs after Tasks 1–5. Locks in the assertion that the previously-built pipeline (sub-workflow wiring + transcript view) is intact, so future edits can't silently break Epic 10's already-delivered surfaces.
 
@@ -712,7 +712,7 @@ Expected: PASS (no regressions in analytics, api, or other suites).
 
 - [ ] **Step 4: Flip the roadmap marker**
 
-In `docs/superpowers/plans/00-cabbybot-roadmap.md`, change the Plan 10 heading from:
+In `docs/superpowers/plans/00-bookmycab-roadmap.md`, change the Plan 10 heading from:
 
 ```markdown
 ### ⬜ Plan 10 — Epic 10: Voice Pipeline Integration
@@ -727,7 +727,7 @@ to (use the merge HEAD from `git rev-parse --short HEAD` after Step 5's commit; 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add tests/epic-10-voice-workflow.test.ts docs/superpowers/plans/00-cabbybot-roadmap.md
+git add tests/epic-10-voice-workflow.test.ts docs/superpowers/plans/00-bookmycab-roadmap.md
 git commit -m "test(voice): lock in voice-pipeline wiring + mark Epic 10 done in roadmap"
 ```
 

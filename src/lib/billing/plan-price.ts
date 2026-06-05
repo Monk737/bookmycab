@@ -36,7 +36,7 @@ export function buildSetupInvoiceItemParams(args: {
     customer: args.customerId,
     amount: setupFeeMinor(args.currency),
     currency: args.currency.toLowerCase(),
-    description: "CabbyBot automation — one-time setup fee",
+    description: "BookMyCab automation — one-time setup fee",
   };
 }
 

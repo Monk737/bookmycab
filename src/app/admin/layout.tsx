@@ -5,7 +5,7 @@ import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { requireStaff } from "@/lib/admin/guard";
 
 export const metadata: Metadata = {
-  title: "Admin — CabbyBot",
+  title: "Admin — BookMyCab",
   robots: { index: false, follow: false },
 };
 

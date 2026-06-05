@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 
-# CabbyBot — AI Automation Platform for the Cab Booking Industry
+# BookMyCab — AI Automation Platform for the Cab Booking Industry
 
-**Brand:** CabbyBot by FlowMo AI LTD
+**Brand:** BookMyCab by FlowMo AI LTD
 **Made in:** United Kingdom 🇬🇧
 **Document version:** 1.0
 **Date:** 31 May 2026
@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-CabbyBot is a **bespoke AI automation service** for cab, taxi, and private-hire companies worldwide. Every customer receives a **fully customised** AI booking bot, support solution, and operational dashboard built to their exact specifications — not cloned from a generic template.
+BookMyCab is a **bespoke AI automation service** for cab, taxi, and private-hire companies worldwide. Every customer receives a **fully customised** AI booking bot, support solution, and operational dashboard built to their exact specifications — not cloned from a generic template.
 
 What each customer gets:
 
@@ -20,11 +20,11 @@ What each customer gets:
 2. **Custom-built automations** — pricing, vehicle rules, service area, languages, brand voice, dispatch logic, edge-case handling — all coded individually per company.
 3. **Multiple parallel automations per organisation** — e.g. one for bookings, one for support, one for driver comms. Each automation has its **own dashboard view and analytics**, isolated and independently controlled.
 4. **Branded operational dashboard** for the cab company — visualises live activity from every running automation with **per-automation start/stop control**.
-5. **Transparent fee structure** — CabbyBot charges only for platform + setup. The customer connects their own channel numbers and credentials and pays channel/API costs directly. They own their customer base.
+5. **Transparent fee structure** — BookMyCab charges only for platform + setup. The customer connects their own channel numbers and credentials and pays channel/API costs directly. They own their customer base.
 
 The platform is **admin-provisioned only** — there is no public self-serve signup. FlowMo's team onboards every customer manually after sales engagement.
 
-> **Internal note:** The automation engine is implemented on top of **n8n** (self-hosted, multi-tenant, one project per customer). n8n must **never** appear on any customer-facing surface — public copy, dashboards, emails, and marketing must refer to it as "the **CabbyBot Automation Engine**" or simply "your automation."
+> **Internal note:** The automation engine is implemented on top of **n8n** (self-hosted, multi-tenant, one project per customer). n8n must **never** appear on any customer-facing surface — public copy, dashboards, emails, and marketing must refer to it as "the **BookMyCab Automation Engine**" or simply "your automation."
 
 ---
 
@@ -53,14 +53,14 @@ The platform is **admin-provisioned only** — there is no public self-serve sig
 
 | Attribute | Value |
 |---|---|
-| Product name | **CabbyBot** |
+| Product name | **BookMyCab** |
 | Legal entity | FlowMo AI LTD |
 | Country of origin | United Kingdom 🇬🇧 |
 | Tagline | "Your cab company. On every channel. On autopilot." |
 | Sub-tagline | "Bespoke AI booking & support automations for the global taxi industry." |
 | Tone | Confident, technical-but-friendly, transparent, no hype |
 | Visual direction | Editorial — black/white base, accent yellow `#FFD400` (cab livery), modern serif headlines, geometric sans body |
-| Public-facing engine label | "CabbyBot Automation Engine" (never "n8n") |
+| Public-facing engine label | "BookMyCab Automation Engine" (never "n8n") |
 | Transparency promise | "You bring your numbers. You own your customer base. We never hold you hostage." |
 
 ---
@@ -82,9 +82,9 @@ The platform is **admin-provisioned only** — there is no public self-serve sig
 
 ### 4.3 Tertiary — FlowMo Internal Team
 
-- **CabbyBot Admin (FlowMo Ops):** provisions tenants, creates organisations, sets up automations, manages billing.
-- **CabbyBot Solution Engineer:** builds bespoke automations per customer brief, deploys them to the engine, wires channel credentials.
-- **CabbyBot Sales:** handles discovery calls, scopes requirements, prices them into Option A/B/C/Custom.
+- **BookMyCab Admin (FlowMo Ops):** provisions tenants, creates organisations, sets up automations, manages billing.
+- **BookMyCab Solution Engineer:** builds bespoke automations per customer brief, deploys them to the engine, wires channel credentials.
+- **BookMyCab Sales:** handles discovery calls, scopes requirements, prices them into Option A/B/C/Custom.
 
 ---
 
@@ -107,13 +107,13 @@ The platform is **admin-provisioned only** — there is no public self-serve sig
 
 ### 5.2 Customer-Owned Channel Credentials (Transparency Principle)
 
-CabbyBot does **not** supply phone numbers, bot tokens, or channel accounts. The customer:
+BookMyCab does **not** supply phone numbers, bot tokens, or channel accounts. The customer:
 
 - Connects their **own** WhatsApp Business number, Telegram bot, Meta page, etc.
 - Pays **channel/API fees directly** to Meta, Telegram or their telco.
-- Owns and controls their customer base. If they ever leave CabbyBot, they take their numbers and contacts — nothing is held hostage.
+- Owns and controls their customer base. If they ever leave BookMyCab, they take their numbers and contacts — nothing is held hostage.
 
-CabbyBot provides documentation, setup guides, and hands-on assistance during onboarding to connect each channel.
+BookMyCab provides documentation, setup guides, and hands-on assistance during onboarding to connect each channel.
 
 ### 5.3 Tenant Dashboard (Per Organisation)
 
@@ -126,10 +126,10 @@ CabbyBot provides documentation, setup guides, and hands-on assistance during on
 | **Conversations** | All chat sessions; transcript; parsed intent state; captured booking fields; outcome |
 | **Analytics** | Conversion funnel, channel mix, top pickup zones, peak-hour heatmap, abandonment reasons, period-over-period comparison |
 | **Channels** | Per-channel status, token health warnings, "Send test message", reconnect flow |
-| **Bot configuration** | Welcome copy, vehicle types, service area, opening hours, brand colours — editable by customer for content; structural changes routed to CabbyBot |
+| **Bot configuration** | Welcome copy, vehicle types, service area, opening hours, brand colours — editable by customer for content; structural changes routed to BookMyCab |
 | **Team** | Invite teammates; role-based access (Owner / Admin / Viewer) at org level; optional per-Viewer restriction to specific automations |
 | **Billing** | Plan, contract dates, channel count, fleet band, invoice history, payment method |
-| **Support** | Ticket form to CabbyBot; open ticket status; "Request a new automation" form |
+| **Support** | Ticket form to BookMyCab; open ticket status; "Request a new automation" form |
 
 ### 5.4 Internal Admin (FlowMo Staff Only)
 
@@ -194,19 +194,19 @@ All prices **monthly**, **excluding VAT and applicable taxes**.
 |---|---|---|
 | WhatsApp conversation fees | **Customer** | Customer's own Meta Business account |
 | Telegram / Messenger / IG volume | **Customer** | Customer's own bot/channel accounts |
-| LLM / AI token costs | **Customer** (or itemised pass-through) | Customer brings own OpenAI/Anthropic key, or CabbyBot passes through at cost with monthly statement |
+| LLM / AI token costs | **Customer** (or itemised pass-through) | Customer brings own OpenAI/Anthropic key, or BookMyCab passes through at cost with monthly statement |
 | AutoCab / iCabbi / Cordic API subscription | **Customer** | Existing dispatch contract, untouched |
-| **CabbyBot subscription** | Customer → CabbyBot | Monthly Stripe invoice |
-| **CabbyBot setup fee** | Customer → CabbyBot | One-time, upfront |
+| **BookMyCab subscription** | Customer → BookMyCab | Monthly Stripe invoice |
+| **BookMyCab setup fee** | Customer → BookMyCab | One-time, upfront |
 
 ### 6.5 Stripe Implementation
 
 - **Stripe Billing** — subscription for the monthly fee; one-time invoice for the setup fee.
 - **Stripe Tax** — UK VAT and global tax handled automatically.
-- **Customer Portal** — customers update payment method and download invoices; plan changes go through CabbyBot Admin.
+- **Customer Portal** — customers update payment method and download invoices; plan changes go through BookMyCab Admin.
 - **Webhooks:**
   - `customer.subscription.created/updated/deleted` → sync tenant status in Supabase
-  - `invoice.payment_failed` → notify CabbyBot Ops + email customer; do **not** auto-suspend during contract term (manual per contract)
+  - `invoice.payment_failed` → notify BookMyCab Ops + email customer; do **not** auto-suspend during contract term (manual per contract)
   - `invoice.paid` → log, no auto action
 - **Currency** — GBP, EUR, USD depending on customer location; Stripe handles conversion.
 - **Billing start** — setup fee billed as one-off invoice when contract is signed; monthly billing begins on go-live date.
@@ -226,7 +226,7 @@ All prices **monthly**, **excluding VAT and applicable taxes**.
 | Realtime | **Supabase Realtime** | Live booking feed, conversation updates, automation status changes pushed to dashboard |
 | Storage | **Supabase Storage** | Logos, conversation transcripts archive, booking exports |
 | Cache & queue | **Redis** + **BullMQ** (Upstash Redis, serverless) | Webhook fan-out, async dispatch calls, session TTL management |
-| Automation engine | **CabbyBot Automation Engine** *(n8n self-hosted, queue mode, one project per tenant)* | **Never named publicly** |
+| Automation engine | **BookMyCab Automation Engine** *(n8n self-hosted, queue mode, one project per tenant)* | **Never named publicly** |
 | Session state (n8n) | **n8n Data Tables** (per-tenant, per-automation) | Stores the booking state machine: step, slots, address JSON, flight data, manage-booking state |
 | Email | **Resend** | Transactional + admin notifications |
 | Payments | **Stripe Billing** + **Stripe Tax** | Subscriptions, setup fee invoices, UK VAT |
@@ -246,14 +246,14 @@ All prices **monthly**, **excluding VAT and applicable taxes**.
                               │ webhooks
                               ▼
 ┌────────────────────────────────────────────────────────────────┐
-│  CabbyBot Edge Gateway (Next.js Route Handler)                 │
+│  BookMyCab Edge Gateway (Next.js Route Handler)                 │
 │  - Resolves channel-id → tenant_id → automation_id            │
 │  - Signature verification, rate limiting, idempotency          │
 │  - Forwards to the correct automation webhook in the engine    │
 └─────────────────────────────┬──────────────────────────────────┘
                               ▼
 ┌────────────────────────────────────────────────────────────────┐
-│  CabbyBot Automation Engine (n8n, queue mode, internal)        │
+│  BookMyCab Automation Engine (n8n, queue mode, internal)        │
 │  - One project per tenant                                      │
 │  - Multiple workflows per tenant (one per automation)          │
 │  - Booking state machine: step/slot/session in Data Tables     │
@@ -271,7 +271,7 @@ All prices **monthly**, **excluding VAT and applicable taxes**.
 └──────────────────────┘                    │ Realtime
                                             ▼
                           ┌────────────────────────────────────────┐
-                          │  CabbyBot Dashboard (Next.js)          │
+                          │  BookMyCab Dashboard (Next.js)          │
                           │  - Org overview — all automations      │
                           │  - Per-automation drill-down           │
                           │  - Live booking feed (Supabase RT)     │
@@ -282,11 +282,11 @@ All prices **monthly**, **excluding VAT and applicable taxes**.
 
 ### 7.3 Multi-Tenancy & Multi-Automation Model
 
-- **Supabase Organisation** concept maps to 1 CabbyBot tenant (one `tenants` row).
+- **Supabase Organisation** concept maps to 1 BookMyCab tenant (one `tenants` row).
 - Each tenant has **one or more automations** in the engine, each as a separate n8n workflow within that tenant's project.
 - **Supabase RLS:** every business table has `tenant_id`; automation-scoped tables also carry `automation_id`. A session-authenticated user can only read/write rows where `tenant_id = auth.jwt()->'tenant_id'`.
 - **Channels:** each external channel (WhatsApp number, Telegram bot, etc.) is bound to exactly one automation at the gateway layer. An automation can have multiple channels; a channel cannot serve multiple automations.
-- **Supabase Auth invite flow:** the CabbyBot admin creates the tenant and sends an invite via Supabase Auth `invite()` — user sets their password via the email link. Public signup is disabled at the Supabase project level (`DISABLE_SIGNUP=true`).
+- **Supabase Auth invite flow:** the BookMyCab admin creates the tenant and sends an invite via Supabase Auth `invite()` — user sets their password via the email link. Public signup is disabled at the Supabase project level (`DISABLE_SIGNUP=true`).
 
 ### 7.4 Supabase Auth Configuration
 
@@ -723,7 +723,7 @@ supabase
 - **No public signup form.** Every CTA leads to **"Book a Discovery Call"** (Calendly or Cal.com embed).
 - **Pricing page:** Options A / B / C layout exactly as in §6.1 — setup fee and 12-month contract prominently stated.
 - **Transparency section:** "What you pay externally" — lists Meta/Telegram/ fees, LLM tokens, dispatch API subscription as customer-borne costs.
-- **Demo WhatsApp number:** a CabbyBot-owned number prospects can message to experience the bot live.
+- **Demo WhatsApp number:** a BookMyCab-owned number prospects can message to experience the bot live.
 - **ROI calculator:** "How many bookings per day does your bot capture?" interactive widget.
 - **"Try the Dashboard" link:** routes to the demo tenant one-click login (§9.6).
 - **Dispatch badges:** AutoCab, iCabbi, and Cordic logos with "Supported" badges.
@@ -731,9 +731,9 @@ supabase
 ### 9.2 Onboarding (Admin-Driven)
 
 1. Discovery call booked via marketing site.
-2. CabbyBot scopes the requirement and quotes (Option A/B/C/Custom).
+2. BookMyCab scopes the requirement and quotes (Option A/B/C/Custom).
 3. Contract signed; setup fee invoiced via Stripe.
-4. **CabbyBot Admin** creates the tenant in the admin console:
+4. **BookMyCab Admin** creates the tenant in the admin console:
    - Organisation name, country, primary contact email
    - Plan band, channels, languages
    - Dispatch system (AutoCab / iCabbi / Cordic) + company ID
@@ -750,7 +750,7 @@ supabase
 
 **URL:** `/dashboard`
 
-- **Header row:** org name, plan band, contract renewal date, assigned CabbyBot support contact.
+- **Header row:** org name, plan band, contract renewal date, assigned BookMyCab support contact.
 - **KPI strip:** total bookings today (across all automations), total conversations today, live automation count.
 - **Automations grid:** one card per automation showing:
   - Name and type tag (Booking / Support / Driver / Custom)
@@ -762,7 +762,7 @@ supabase
   - Today's conversion percentage
   - Start / Stop button (disabled if Building/UAT; shows confirm modal)
   - "Open Dashboard" button
-- **"Request a new automation" CTA** → opens pre-filled ticket form to CabbyBot.
+- **"Request a new automation" CTA** → opens pre-filled ticket form to BookMyCab.
 - **Realtime:** automation status cards update live via Supabase Realtime.
 
 #### 9.3.2 Per-Automation Overview
@@ -908,7 +908,7 @@ One card per channel attached to this automation:
 - "Reconnect" button → opens a guide for re-issuing credentials (Owner / Admin only)
 - Last message received timestamp + count in last 24h
 
-**Adding a new channel:** opens a support ticket to CabbyBot Admin (structural change).
+**Adding a new channel:** opens a support ticket to BookMyCab Admin (structural change).
 
 #### 9.3.8 Team (Org-Level)
 
@@ -936,7 +936,7 @@ One card per channel attached to this automation:
 
 - Open tickets table: ID, subject, created, status (Open / In Progress / Resolved)
 - **New ticket form:** subject, category (Technical / Billing / Build request / Other), description, attachments
-- **"Request a new automation"** button — pre-fills category and routes to the CabbyBot build queue
+- **"Request a new automation"** button — pre-fills category and routes to the BookMyCab build queue
 - Knowledge base link (external, e.g. Intercom or Notion)
 
 ### 9.4 Internal Admin (FlowMo Staff Only)
@@ -1007,7 +1007,7 @@ Each card: tenant name, automation name, type, assigned engineer, target go-live
 | Telegram | Customer's bot token (BotFather) | `api.telegram.org/bot{token}/sendMessage` | `/webhooks/telegram/{automationId}` |
 | Messenger | Customer's page access token | `graph.facebook.com/v21.0/me/messages` | `/webhooks/messenger/{automationId}` |
 | Instagram DM | Same as Messenger (Meta) | Same as Messenger | `/webhooks/instagram/{automationId}` |
-| Website widget | JWT-signed embed snippet (CabbyBot-generated) | Internal API | `/webhooks/widget/{automationId}` |
+| Website widget | JWT-signed embed snippet (BookMyCab-generated) | Internal API | `/webhooks/widget/{automationId}` |
 
 All webhook paths resolve directly to one automation (one tenant). The gateway performs signature verification before forwarding.
 
@@ -1024,9 +1024,9 @@ A **dedicated demo tenant** ships with the platform. It lets prospects experienc
 
 | Item | Value |
 |---|---|
-| Org name | **CabbyBot Demo — Premier Cabs** |
-| Demo login URL | `app.cabbybot.com/demo` (one-click, no password, read-only session) |
-| Direct sign-in | `demo@cabbybot.com` / `DemoCabbyBot2026` (read-only role) |
+| Org name | **BookMyCab Demo — Premier Cabs** |
+| Demo login URL | `app.bookmycab.com/demo` (one-click, no password, read-only session) |
+| Direct sign-in | `demo@bookmycab.com` / `DemoBookMyCab2026` (read-only role) |
 | Plan band shown | Option B — Bundle (3 channels, 26–100 fleet, £1,800/month) |
 | Dispatch shown | AutoCab |
 | Channels | WhatsApp, Telegram, Website Widget |
@@ -1057,7 +1057,7 @@ A **dedicated demo tenant** ships with the platform. It lets prospects experienc
 - **PII:** customer phone numbers visible only to authenticated tenant users; used as the session key in n8n Data Tables; never written to logs.
 - **Conversation retention:** 90-day default; configurable up to 24 months per negotiated contract terms.
 - **GDPR / UK DPA 2018:** tenant-initiated customer data export (Supabase Edge Function) and delete (cascaded via RLS); DPA template included with every contract; DPO contact published.
-- **PCI:** payment card data never touches CabbyBot servers — Stripe Checkout and Stripe Customer Portal only.
+- **PCI:** payment card data never touches BookMyCab servers — Stripe Checkout and Stripe Customer Portal only.
 - **SOC 2 Type II:** roadmap, year 2.
 - **Auth:**
   - Supabase Auth: public signup **disabled** (`DISABLE_SIGNUP=true`)
@@ -1067,7 +1067,7 @@ A **dedicated demo tenant** ships with the platform. It lets prospects experienc
   - JWT claims include `tenant_id`, `role`, `is_flowmo_staff`
 - **RBAC:** Owner / Admin / Viewer at org level; optional per-automation restriction for Viewers; FlowMo Staff role with mandatory audit on impersonation.
 - **Rate limiting:** at gateway, per automation + per channel. Hard caps prevent runaway costs from leaked credentials or loop attacks.
-- **n8n engine:** air-gapped from public internet; accessible only from the CabbyBot gateway and the FlowMo ops VPN. The n8n editor URL is never surfaced in any customer-facing interface.
+- **n8n engine:** air-gapped from public internet; accessible only from the BookMyCab gateway and the FlowMo ops VPN. The n8n editor URL is never surfaced in any customer-facing interface.
 - **Demo tenant isolation:** physically separate mock data rows (`is_demo = true`); no real customer phone numbers; read-only Supabase Auth role with `tenant_id` pinned to the demo tenant only.
 
 ---
@@ -1249,7 +1249,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 
 # Resend (email)
 RESEND_API_KEY=
-RESEND_FROM_EMAIL=hello@cabbybot.com
+RESEND_FROM_EMAIL=hello@bookmycab.com
 
 # Redis (Upstash)
 UPSTASH_REDIS_REST_URL=
@@ -1279,7 +1279,7 @@ FLOWMO_STAFF_EMAIL_DOMAIN=flowmoai.com   # for is_flowmo_staff JWT claim assignm
 
 ### Epic 2 — Marketing Site
 
-- All public pages with CabbyBot branding and `#FFD400` accent
+- All public pages with BookMyCab branding and `#FFD400` accent
 - Pricing page (Options A/B/C), transparency section, dispatch adapter badges (AutoCab, iCabbi, Cordic)
 - Discovery call CTA (Calendly/Cal.com embed)
 - ROI calculator widget
@@ -1350,7 +1350,7 @@ Built in order of complexity:
 
 - Supabase seed script: 6 months of deterministic mock data for all tables
 - Mock data covers: bookings (ASAP/Scheduled/Airport), conversations (text/voice/location), analytics, 3 automations, all channel types, airport pickups with real flight structures
-- Demo login: one-click `app.cabbybot.com/demo` route that creates a read-only Supabase session for the demo tenant
+- Demo login: one-click `app.bookmycab.com/demo` route that creates a read-only Supabase session for the demo tenant
 - Read-only enforcement middleware: all write API calls from demo sessions return a 403 with a banner message
 - 24h reset: Supabase Edge Function cron that truncates demo data and re-seeds
 
@@ -1373,7 +1373,7 @@ Built in order of complexity:
 
 - Legal pages (Privacy, Terms, DPA, Cookie Policy)
 - Status page (Instatus or Atlassian)
-- Marketing-site demo WhatsApp number (live bot, CabbyBot-owned number)
+- Marketing-site demo WhatsApp number (live bot, BookMyCab-owned number)
 - Sales collateral: one-pager, demo script, pricing deck
 - Ops runbook: tenant provisioning SOP, channel credential rotation procedure, incident response
 
@@ -1424,16 +1424,16 @@ Reseller programme for regional integrators; revenue share model; white-label da
 
 ## 17. Open Questions for Confirmation Before Build
 
-1. **AI token costs:** customer brings their own OpenAI/Anthropic key, or CabbyBot passes through at cost with monthly itemised statement?
+1. **AI token costs:** customer brings their own OpenAI/Anthropic key, or BookMyCab passes through at cost with monthly itemised statement?
 2. **iCabbi + Cordic in v1.0:** ship as stubs (admin can select but automation will error gracefully) or defer the admin UI selector to v1.2?
 3. **Currency display:** GBP for UK customers, EUR for EU, USD elsewhere — or single GBP with Stripe conversion at checkout?
 4. **Setup fee refundability:** non-refundable from contract signature, or refundable before engineer is assigned?
 5. **Mid-contract upgrades:** can a customer upgrade plan band (A→B) or add channels mid-term? How is the pro-rata handled in Stripe?
 6. **Demo data geography:** fictional UK postcodes only (Kingston upon Thames, Surbiton, etc. from the existing Data Table sample), or include international examples (Dubai, Singapore) for global prospect appeal?
-7. **Custom dashboard domain:** `theircabco.cabbybot.app` subdomain, or CNAME to `app.theircabco.com`?
+7. **Custom dashboard domain:** `theircabco.bookmycab.app` subdomain, or CNAME to `app.theircabco.com`?
 8. **Renewal model:** auto-renew for 12 months unless cancelled N days before renewal, or convert to rolling monthly at renewal?
 9. **n8n editor access:** only senior FlowMo engineering (not all FlowMo admins) gets the internal deeplink to the n8n editor for any tenant's automation?
-10. **Brand assets:** CabbyBot logo, colour palette, and typography finalised, or needs design pass first?
+10. **Brand assets:** BookMyCab logo, colour palette, and typography finalised, or needs design pass first?
 11. **Discovery call tool:** Calendly, Cal.com, or HubSpot Meetings?
 12. **Marketing-site demo WhatsApp number:** ~£15/month for a dedicated UK number — confirm budget and whether to use a real AutoCab sandbox or full mock responses?
 
@@ -1445,13 +1445,13 @@ Reseller programme for regional integrators; revenue share model; white-label da
 
 | ❌ Never say | ✅ Say instead |
 |---|---|
-| "n8n" | "CabbyBot Automation Engine" |
+| "n8n" | "BookMyCab Automation Engine" |
 | "workflow node" | "automation step" |
 | "n8n workflow" | "your automation" |
 | "execution" | "run" |
 | "trigger node" | "channel event" |
 | "template" | "your bespoke build" |
-| "CabLab" | "CabbyBot" (all surfaces, all assets) |
+| "CabLab" | "BookMyCab" (all surfaces, all assets) |
 
 ### 18.2 Dispatch Adapter Comparison
 
@@ -1517,7 +1517,7 @@ WA Voice Processor   Extract pin (lat/lng)        Parse text intent
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
-║                      CABBYBOT PRICING                          ║
+║                      BOOKMYCAB PRICING                          ║
 ║             All prices /month · excl. VAT & taxes              ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║                                                               ║
@@ -1587,4 +1587,4 @@ Supabase Realtime triggers the dashboard live booking feed update immediately on
 
 ---
 
-**End of PRD v1.0** · CabbyBot by FlowMo AI LTD · Made in the UK 🇬🇧
+**End of PRD v1.0** · BookMyCab by FlowMo AI LTD · Made in the UK 🇬🇧

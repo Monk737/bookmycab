@@ -30,7 +30,7 @@ export async function dispatchNotification(
     if (channel.type === "email") {
       ok = await sendEmail({
         to: channel.destination,
-        subject: "CabbyBot alert",
+        subject: "BookMyCab alert",
         html: `<p>${text}</p>`,
         text,
       });
