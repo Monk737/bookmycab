@@ -180,3 +180,13 @@ All 12 epics built, reviewed, and merged to `master` (migrations 0017–0030; ~1
 - **Data residency:** UK/EU regions only.
 - **Perf budgets:** §11 targets are acceptance criteria, not aspirations.
 - **TDD + frequent commits:** every plan is bite-sized, test-first, commit-per-task.
+
+---
+
+## Admin control-plane program (Epics 25–28) — fills the deferred admin ops surfaces
+
+### ✅ Plan 25 — Epic 25: Admin Platform Observability  → `2026-06-05-epic-25-admin-observability.md`  (DONE & merged to `master`, HEAD `bf8c3e9`)
+**Produces:** admin **Usage & cost** dashboard (`/admin/usage` — per-tenant metering/quota/utilisation, near-limit flags) + **Platform health** dashboard (`/admin/health` — automation success rate, dispatch adapter health, notification deliverability across all tenants). No new tables — pure aggregation reducers over usage_counters/automation_runs/dispatch_attempts/notification_log. requireStaff-gated. 6 tests; full suite green (775).
+
+### ⏭ Planned Epics 26–28 (admin-only; requireStaff):
+26 Admin Platform Config (feature-rollout console + commission-rate editor + platform_apps editor + notification-sender provisioning w/ new platform_senders table) · 27 Network Benchmarking (new benchmark_snapshots table + admin + tenant view) · 28 Write-scoped impersonation for support.
