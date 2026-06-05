@@ -190,3 +190,17 @@ All 12 epics built, reviewed, and merged to `master` (migrations 0017–0030; ~1
 
 ### ⏭ Planned Epics 26–28 (admin-only; requireStaff):
 26 Admin Platform Config (feature-rollout console + commission-rate editor + platform_apps editor + notification-sender provisioning w/ new platform_senders table) · 27 Network Benchmarking (new benchmark_snapshots table + admin + tenant view) · 28 Write-scoped impersonation for support.
+
+### ✅ Plan 26 — Epic 26: Feature-Rollout Console  → `2026-06-05-epic-26-rollout-console.md`  (DONE & merged, HEAD `1b928f3`)
+Admin `/admin/rollouts`: per-feature strategy (all/percentage/allowlist/off) + % + kill-switch over feature_rollouts; validated + cache-invalidating. No migration. 4 tests.
+
+### ✅ Plan 27 — Epic 27: Admin Platform Config  → `2026-06-05-epic-27-platform-config.md`  (DONE & merged, HEAD `4507f8a`)
+Admin `/admin/platform`: commission-rate editor (per tenant) + channel-apps editor (platform_apps) + notification-sender provisioning (new platform_senders, migration 0031). 7 tests.
+
+### ✅ Plan 28 — Epic 28: Network Benchmarking (admin)  → `2026-06-05-epic-28-benchmarking.md`  (DONE & merged, HEAD `1f1931c`)
+Admin `/admin/benchmarks`: anonymised p25/p50/p75 across opted-in tenants per metric (revenue/bookings/abandonment) + recompute. Migration 0032 (benchmark_snapshots + tenants.benchmark_opt_in). 6 tests. **Tenant-facing "you vs median" widget = follow-up.**
+
+### ⏭ Plan 29 — Epic 29: Write-scoped Impersonation (NOT built)
+**Deferred deliberately.** Unlike Epics 25–28 (self-contained admin pages), this changes the auth/session write-enforcement model (`ImpersonationMode` currently `read_only` only) and is security-sensitive — it lets staff mutate tenant data under a time-boxed, audited session. Warrants a careful dedicated pass, not an end-of-session rush.
+
+**Admin control-plane status: 7 of 8 deferred admin surfaces built (Epics 25–28). Only write-scoped impersonation remains.**
