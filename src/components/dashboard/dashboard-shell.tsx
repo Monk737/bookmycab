@@ -34,6 +34,7 @@ export function DashboardShell({
   showLiveops,
   showDispatch,
   showIntel,
+  showInvoicing,
 }: {
   orgName: string;
   children: ReactNode;
@@ -42,6 +43,7 @@ export function DashboardShell({
   showLiveops?: boolean;
   showDispatch?: boolean;
   showIntel?: boolean;
+  showInvoicing?: boolean;
 }): React.JSX.Element {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -53,6 +55,7 @@ export function DashboardShell({
     ...(showLiveops ? [{ label: "Live ops", href: "/dashboard/liveops" }] : []),
     ...(showDispatch ? [{ label: "Dispatch", href: "/dashboard/dispatch" }] : []),
     ...(showIntel ? [{ label: "Intelligence", href: "/dashboard/intel" }] : []),
+    ...(showInvoicing ? [{ label: "Invoicing", href: "/dashboard/invoicing" }] : []),
   ];
 
   const navLinks = (
