@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   mintImpersonation,
   isImpersonationValid,
+  impersonationAllowsWrite,
   IMPERSONATION_TTL_MS,
   type ImpersonationRecord,
 } from "@/lib/admin/impersonation";
@@ -68,5 +69,31 @@ describe("isImpersonationValid", () => {
   it("is invalid after expiry", () => {
     const r = mint();
     expect(isImpersonationValid(r, r.expiresAt + 1)).toBe(false);
+  });
+});
+
+describe("write-scoped impersonation", () => {
+  const base = { staffUserId: "s1", tenantId: "t1", targetUserId: "u1", reason: "support ticket #42", now: 1_000 };
+
+  it("mints read_only by default", () => {
+    expect(mintImpersonation(base).mode).toBe("read_only");
+  });
+  it("mints write mode when requested", () => {
+    expect(mintImpersonation({ ...base, mode: "write" }).mode).toBe("write");
+  });
+  it("still requires a non-empty reason in write mode", () => {
+    expect(() => mintImpersonation({ ...base, mode: "write", reason: "  " })).toThrow();
+  });
+  it("impersonationAllowsWrite: true only for a valid write-mode record", () => {
+    const rec = mintImpersonation({ ...base, mode: "write" });
+    expect(impersonationAllowsWrite(rec, rec.startedAt + 1)).toBe(true);
+  });
+  it("impersonationAllowsWrite: false for read_only", () => {
+    const rec = mintImpersonation(base);
+    expect(impersonationAllowsWrite(rec, rec.startedAt + 1)).toBe(false);
+  });
+  it("impersonationAllowsWrite: false once expired even in write mode", () => {
+    const rec = mintImpersonation({ ...base, mode: "write" });
+    expect(impersonationAllowsWrite(rec, rec.expiresAt)).toBe(false);
   });
 });

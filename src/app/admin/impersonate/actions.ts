@@ -20,6 +20,7 @@ const startSchema = z.object({
   tenantId: z.string().trim().uuid("A tenant must be selected."),
   targetUserId: z.string().trim().uuid("A user must be selected."),
   reason: z.string().trim().min(1, "A reason is required to impersonate."),
+  mode: z.enum(["read_only", "write"]).default("read_only"),
 });
 
 export type StartImpersonationState = {
@@ -28,13 +29,14 @@ export type StartImpersonationState = {
 };
 
 /**
- * Starts a 15-minute, read-only impersonation marker.
+ * Starts a 15-minute impersonation marker. Read-only by default; write mode is
+ * opt-in and audited distinctly as `impersonate.start.write`.
  *
  * Staff-only (defense-in-depth requireStaff), zod-validated (tenant, target
- * user, non-empty reason). Mints the pure record, AUDITS `impersonate.start`
- * (with tenantId, targetUserId, reason), and persists the record as an httpOnly
- * cookie scoped to the marker's TTL. No tenant session is minted here — the
- * view-as rendering binds in Epic 7. // TODO(epic-7)
+ * user, non-empty reason, mode). Mints the pure record, AUDITS the action
+ * (with tenantId, targetUserId, reason, mode), and persists the record as an
+ * httpOnly cookie scoped to the marker's TTL. No tenant session is minted here
+ * — the view-as rendering binds in Epic 7. // TODO(epic-7)
  *
  * Throws on a hard failure so a failed start never looks successful.
  */
@@ -44,10 +46,14 @@ export async function startImpersonation(
 ): Promise<StartImpersonationState> {
   const claims = await requireStaff();
 
+  const modeRaw = formData.getAll("mode");
+  const modeChoice = modeRaw.includes("write") ? "write" : "read_only";
+
   const parsed = startSchema.safeParse({
     tenantId: formData.get("tenantId"),
     targetUserId: formData.get("targetUserId"),
     reason: formData.get("reason"),
+    mode: modeChoice,
   });
   if (!parsed.success) {
     const first =
@@ -58,7 +64,7 @@ export async function startImpersonation(
     return { formError: first };
   }
 
-  const { tenantId, targetUserId, reason } = parsed.data;
+  const { tenantId, targetUserId, reason, mode } = parsed.data;
 
   // Pure mint — also re-enforces the mandatory-reason rule at the model layer.
   const record = mintImpersonation({
@@ -66,16 +72,17 @@ export async function startImpersonation(
     tenantId,
     targetUserId,
     reason,
+    mode,
     now: Date.now(),
   });
 
   const audited = await writeAudit({
     actorUserId: claims.sub,
     tenantId,
-    action: "impersonate.start",
+    action: mode === "write" ? "impersonate.start.write" : "impersonate.start",
     targetType: "user",
     targetId: targetUserId,
-    metadata: { tenantId, targetUserId, reason },
+    metadata: { tenantId, targetUserId, reason, mode },
   });
   if (!audited) {
     // Auditing impersonation is not optional — do NOT start an unaudited

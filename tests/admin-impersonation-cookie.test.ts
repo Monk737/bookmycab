@@ -14,7 +14,10 @@ import {
   serializeImpersonation,
   verifyImpersonation,
 } from "@/lib/admin/impersonation-cookie";
-import type { ImpersonationRecord } from "@/lib/admin/impersonation";
+import {
+  mintImpersonation,
+  type ImpersonationRecord,
+} from "@/lib/admin/impersonation";
 
 const record: ImpersonationRecord = {
   staffUserId: "staff-1",
@@ -54,5 +57,11 @@ describe("impersonation cookie HMAC verify", () => {
     const partial = { tenantId: "t", targetUserId: "u", expiresAt: 1 };
     const signed = serializeImpersonation(partial as unknown as ImpersonationRecord);
     expect(verifyImpersonation(signed)).toBeNull();
+  });
+
+  it("preserves write mode through serialize → verify", () => {
+    const rec = mintImpersonation({ staffUserId: "s1", tenantId: "t1", targetUserId: "u1", reason: "fixing booking", mode: "write", now: 5_000 });
+    const round = verifyImpersonation(serializeImpersonation(rec));
+    expect(round?.mode).toBe("write");
   });
 });

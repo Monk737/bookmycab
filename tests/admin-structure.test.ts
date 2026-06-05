@@ -94,6 +94,10 @@ describe("impersonation guard", () => {
       "utf8",
     );
     expect(src).toMatch(/reason:\s*z\.string\(\)[^\n]*\.min\(1/);
-    expect(src).toContain('action: "impersonate.start"');
+    // Epic 29 added write-mode: the audit action is now read-only `impersonate.start`
+    // by default, escalating to `impersonate.start.write` when write mode is chosen.
+    // Assert both audit actions are present (read-only default + write variant).
+    expect(src).toContain('"impersonate.start"');
+    expect(src).toContain('"impersonate.start.write"');
   });
 });

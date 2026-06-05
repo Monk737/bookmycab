@@ -105,9 +105,11 @@ export default async function ImpersonatePage({
         Impersonate
       </h1>
       <p className="mt-1 text-sm text-zinc-600">
-        Start a read-only, 15-minute, audited impersonation session. A reason is
-        mandatory. The tenant view-as dashboard arrives in a later epic &mdash;
-        this records the audited marker and shows a persistent banner.
+        Start an audited, 15-minute impersonation session. Read-only by default;
+        tick <em>Allow writes</em> only when a fix requires it &mdash; write
+        actions are audited distinctly. A reason is mandatory. The tenant view-as
+        dashboard arrives in a later epic &mdash; this records the audited marker
+        and shows a persistent banner.
       </p>
 
       <form method="get" className="mt-6 flex flex-wrap items-center gap-2">
