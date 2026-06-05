@@ -37,6 +37,7 @@ export function DashboardShell({
   showInvoicing,
   showReports,
   showConnect,
+  showIntegrations,
 }: {
   orgName: string;
   children: ReactNode;
@@ -48,6 +49,7 @@ export function DashboardShell({
   showInvoicing?: boolean;
   showReports?: boolean;
   showConnect?: boolean;
+  showIntegrations?: boolean;
 }): React.JSX.Element {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,6 +64,7 @@ export function DashboardShell({
     ...(showInvoicing ? [{ label: "Invoicing", href: "/dashboard/invoicing" }] : []),
     ...(showReports ? [{ label: "Reports", href: "/dashboard/reports" }] : []),
     ...(showConnect ? [{ label: "Connect", href: "/dashboard/connect" }] : []),
+    ...(showIntegrations ? [{ label: "Integrations", href: "/dashboard/integrations" }] : []),
   ];
 
   const navLinks = (
