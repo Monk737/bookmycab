@@ -30,10 +30,11 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const showIntel = claims.tenant_id ? await hasFeature(claims.tenant_id, "conversation_intelligence") : false;
   const showInvoicing = claims.tenant_id ? await hasFeature(claims.tenant_id, "account_invoicing") : false;
   const showReports = claims.tenant_id ? await hasFeature(claims.tenant_id, "scheduled_reports") : false;
+  const showConnect = claims.tenant_id ? await hasFeature(claims.tenant_id, "self_serve_channels") : false;
   return (
     <div className={`${firaSans.variable} ${firaCode.variable} font-sans`}>
       {claims.is_demo && <DemoBanner />}
-      <DashboardShell orgName={org?.name ?? "Your organisation"} showAlerts={showAlerts} showCustomers={showCustomers} showLiveops={showLiveops} showDispatch={showDispatch} showIntel={showIntel} showInvoicing={showInvoicing} showReports={showReports}>{children}</DashboardShell>
+      <DashboardShell orgName={org?.name ?? "Your organisation"} showAlerts={showAlerts} showCustomers={showCustomers} showLiveops={showLiveops} showDispatch={showDispatch} showIntel={showIntel} showInvoicing={showInvoicing} showReports={showReports} showConnect={showConnect}>{children}</DashboardShell>
     </div>
   );
 }
