@@ -141,8 +141,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0026 (`account_customers`, `tenant_invoices`, `commission_rates`, `bookings.account_customer_id`/`payment_status`); `src/lib/invoicing/*` (pure `computeInvoice` line items + markup; account CRUD + invoice generation/status service); gated tenant API (accounts CRUD, generate → 422 when no bookings, status); entitlement-gated `/dashboard/invoicing` page. Gates on `account_invoicing`. 14 tests; full suite green (712).
 **v1 follow-ups:** auto-link `payment_method='Account'` bookings to an account (manual `account_customer_id` today); PDF rendering (`pdf_ref`) via Document Generator; FlowMo-side commission editor + reporting; double-invoice guard on re-generate.
 
-### ⏭ Planned Epics 21–24 (one plan each, dependency order; each gates via `requireFeature`):
-21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 21 — Epic 21: Reporting & White-label  → `2026-06-04-epic-21-reporting-whitelabel.md`  (DONE & merged to `master`, HEAD `5660cea`)
+**Depends on:** Plan 13 (entitlements/metering), 9 (`blockIfDemo`), 7 (insight metrics).
+**Produces:** migration 0027 (`report_definitions`, append-only `report_runs`, `tenants.branding`); `src/lib/reporting/*` (pure `buildReport` sections + `resolveBranding`; definition CRUD + `runReport` [fetch metrics → persist run → meter] + branding service); gated tenant API (definitions, run → 404 if missing, branding); entitlement-gated `/dashboard/reports` page. Gates on `scheduled_reports` (metered) + `white_label`. 14 tests; full suite green (726).
+**v1 follow-ups:** richer metric wiring (response_time stubbed); PDF/CSV rendering + `file_ref`; platform scheduler invoking `runReport` per `schedule` cron; email delivery to `recipients`.
+
+### ⏭ Planned Epics 22–24 (one plan each, dependency order; each gates via `requireFeature`):
+22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
