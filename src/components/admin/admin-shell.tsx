@@ -14,6 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Tenants", href: "/admin/tenants" },
   { label: "Plans", href: "/admin/plans" },
   { label: "Rollouts", href: "/admin/rollouts" },
+  { label: "Platform", href: "/admin/platform" },
   { label: "Guardrails", href: "/admin/guardrails" },
   { label: "Channel review", href: "/admin/channel-review" },
   { label: "Automations", href: "/admin/automations" },
