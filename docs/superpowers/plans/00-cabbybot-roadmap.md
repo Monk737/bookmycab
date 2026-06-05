@@ -200,7 +200,7 @@ Admin `/admin/platform`: commission-rate editor (per tenant) + channel-apps edit
 ### ✅ Plan 28 — Epic 28: Network Benchmarking (admin)  → `2026-06-05-epic-28-benchmarking.md`  (DONE & merged, HEAD `1f1931c`)
 Admin `/admin/benchmarks`: anonymised p25/p50/p75 across opted-in tenants per metric (revenue/bookings/abandonment) + recompute. Migration 0032 (benchmark_snapshots + tenants.benchmark_opt_in). 6 tests. **Tenant-facing "you vs median" widget = follow-up.**
 
-### ⏭ Plan 29 — Epic 29: Write-scoped Impersonation (NOT built)
-**Deferred deliberately.** Unlike Epics 25–28 (self-contained admin pages), this changes the auth/session write-enforcement model (`ImpersonationMode` currently `read_only` only) and is security-sensitive — it lets staff mutate tenant data under a time-boxed, audited session. Warrants a careful dedicated pass, not an end-of-session rush.
+### ✅ Plan 29 — Epic 29: Write-scoped Impersonation  → `2026-06-05-epic-29-write-impersonation.md`  (DONE & merged to `master`, HEAD `8040a9c`)
+Extends the audited, time-boxed impersonation marker with an opt-in **write mode** (read-only stays the default). Write requires a deliberate selection + reason and is audited distinctly as `impersonate.start.write`; the pure `impersonationAllowsWrite` enforcement primitive is shipped for future write paths to gate on. Admin-only (`requireStaff`). 27 impersonation/structure tests; full suite green (799). **Actual write-enforcement at tenant mutation points (gating real writes on `impersonationAllowsWrite`) = follow-up** — this epic ships the model, audit, UI selector, and primitive.
 
-**Admin control-plane status: 7 of 8 deferred admin surfaces built (Epics 25–28). Only write-scoped impersonation remains.**
+**Admin control-plane status: COMPLETE — all 8 deferred admin surfaces built (Epics 25–29).**
