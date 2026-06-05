@@ -7,6 +7,8 @@ type CostRow = {
   cadence: string;
 };
 
+type Tone = "light" | "dark";
+
 // §6.4 — external pass-through costs vs what is paid to BookMyCab.
 const PASS_THROUGH: CostRow[] = [
   {
@@ -44,18 +46,48 @@ const TO_BOOKMYCAB: CostRow[] = [
   },
 ];
 
-function CostList({ title, rows }: { title: string; rows: CostRow[] }) {
+function CostList({
+  title,
+  rows,
+  tone,
+}: {
+  title: string;
+  rows: CostRow[];
+  tone: Tone;
+}) {
+  const dark = tone === "dark";
   return (
-    <div className="rounded-3xl border border-gray-200 bg-paper p-7 sm:p-8">
-      <h3 className="font-display text-xl font-semibold text-ink">{title}</h3>
+    <div
+      className={
+        "rounded-3xl border p-7 sm:p-8 " +
+        (dark ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-paper")
+      }
+    >
+      <h3
+        className={
+          "font-display text-xl font-semibold " +
+          (dark ? "text-paper" : "text-ink")
+        }
+      >
+        {title}
+      </h3>
       <ul className="mt-5">
         {rows.map((row) => (
           <li
             key={row.item}
-            className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-gray-200 py-4 first:border-t-0 first:pt-0"
+            className={
+              "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t py-4 first:border-t-0 first:pt-0 " +
+              (dark ? "border-gray-800" : "border-gray-200")
+            }
           >
-            <span className="font-medium text-ink">{row.item}</span>
-            <span className="text-sm text-gray-500">
+            <span
+              className={"font-medium " + (dark ? "text-paper" : "text-ink")}
+            >
+              {row.item}
+            </span>
+            <span
+              className={"text-sm " + (dark ? "text-gray-400" : "text-gray-500")}
+            >
               {row.paidTo} · {row.cadence}
             </span>
           </li>
@@ -68,33 +100,53 @@ function CostList({ title, rows }: { title: string; rows: CostRow[] }) {
 type TransparencySectionProps = {
   heading?: string;
   className?: string;
+  /** "dark" renders the block for placement on an ink background. */
+  tone?: Tone;
 };
 
 /**
  * "What you pay externally" — §6.4 cost transparency.
  *
- * Standalone Server Component so Home and Channels can reuse it. Splits costs
- * into pass-through usage (paid to your own providers) and what is paid to
- * BookMyCab, so there are no hidden margins.
+ * Standalone Server Component so Home, Pricing and Channels can reuse it.
+ * Splits costs into pass-through usage (paid to your own providers) and what
+ * is paid to BookMyCab, so there are no hidden margins. `tone="dark"` adapts
+ * the colours for an ink-background section.
  */
 export function TransparencySection({
   heading = "What you pay externally",
   className = "",
+  tone = "light",
 }: TransparencySectionProps) {
+  const dark = tone === "dark";
   return (
     <div className={className}>
-      <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+      <h2
+        className={
+          "font-display text-3xl font-semibold tracking-tight sm:text-4xl " +
+          (dark ? "text-paper" : "text-ink")
+        }
+      >
         {heading}
       </h2>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
+      <p
+        className={
+          "mt-4 max-w-2xl text-lg leading-relaxed " +
+          (dark ? "text-gray-300" : "text-gray-600")
+        }
+      >
         No hidden margins. Channel and AI usage is billed by your own providers
-        at cost — you only pay BookMyCab for the automation itself.
+        at cost. You only pay BookMyCab for the automation itself.
       </p>
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
-        <CostList title="Paid to your own providers" rows={PASS_THROUGH} />
-        <CostList title="Paid to BookMyCab" rows={TO_BOOKMYCAB} />
+        <CostList title="Paid to your own providers" rows={PASS_THROUGH} tone={tone} />
+        <CostList title="Paid to BookMyCab" rows={TO_BOOKMYCAB} tone={tone} />
       </div>
-      <p className="mt-8 font-display text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+      <p
+        className={
+          "mt-8 font-display text-xl font-semibold tracking-tight sm:text-2xl " +
+          (dark ? "text-paper" : "text-ink")
+        }
+      >
         You bring your numbers. You own your customer base.
       </p>
     </div>

@@ -103,7 +103,7 @@ export default function CaseStudiesPage() {
                 <div className="p-7 sm:p-10">
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge>{study.segment}</Badge>
-                    <span className="text-xs font-medium uppercase tracking-[0.12em] text-gray-400">
+                    <span className="text-xs font-medium uppercase tracking-[0.12em] text-gray-500">
                       Representative example
                     </span>
                   </div>

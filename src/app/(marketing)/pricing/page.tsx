@@ -17,100 +17,111 @@ export const metadata: Metadata = {
 const ADD_ONS = [
   {
     name: "Support Bot",
-    body: "An automation that answers customer questions and triages issues alongside your booking flow.",
+    body: "Answers customer questions and triages issues alongside your booking flow, so the same thread handles a fare quote and a lost-property query.",
   },
   {
     name: "Driver Solution",
-    body: "A driver-facing automation for job updates, availability and shift logistics.",
+    body: "A driver-facing automation for job updates, availability and shift logistics, kept separate from the customer-facing booking line.",
   },
   {
     name: "Custom automations",
-    body: "Anything bespoke to your firm — built around your fleet and dispatch, quoted on demand.",
+    body: "Anything bespoke to your firm, built around your fleet and dispatch and quoted on demand.",
   },
 ];
 
 export default function PricingPage() {
   return (
     <>
-      {/* Header */}
-      <Section className="pb-10 sm:pb-14">
+      {/* Hero */}
+      <Section className="pb-10 pt-12 sm:pb-14 sm:pt-16">
         <Container className="max-w-3xl">
           <Badge>Pricing</Badge>
-          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
-            Simple, transparent pricing.
+          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl xl:text-7xl">
+            One fixed price.{" "}
+            <span className="box-decoration-clone bg-accent px-2 text-accent-ink">
+              No hidden margins.
+            </span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            Pick the option that fits your fleet. One fixed monthly price, one
-            setup fee, and no hidden margins on the channels you already use.
+            Pick the option that fits your fleet. You pay one monthly price and
+            one setup fee to BookMyCab, and your channel and dispatch providers
+            directly, at their cost. Nothing in between.
           </p>
         </Container>
       </Section>
 
-      {/* Cards + currency toggle + setup fee + contract */}
+      {/* Cards + currency toggle + setup fee + contract + first-year anchor */}
       <Section className="py-10 sm:py-14">
         <Container>
           <PricingCards />
         </Container>
       </Section>
 
-      {/* Add-ons */}
-      <Section className="py-10 sm:py-14">
+      {/* Add-ons — differentiated list, not an identical card grid. */}
+      <Section className="py-16 sm:py-24">
         <Container>
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            Add-on automations
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
-            Extend your booking automation with extra solutions, quoted on
-            demand around your needs.
-          </p>
-          <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-gray-200 bg-gray-200 sm:grid-cols-3">
+          <div className="max-w-2xl">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              Add another automation when you need it
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-600">
+              Your booking automation is the core. Extend it with extra
+              automations, each scoped and quoted around your firm.
+            </p>
+          </div>
+          <dl className="mt-10 divide-y divide-gray-200 border-t border-gray-200">
             {ADD_ONS.map((addOn) => (
-              <div key={addOn.name} className="bg-paper p-7 sm:p-8">
-                <h3 className="font-display text-xl font-semibold text-ink">
+              <div
+                key={addOn.name}
+                className="grid gap-2 py-7 sm:grid-cols-[14rem_1fr] sm:gap-10"
+              >
+                <dt className="font-display text-xl font-semibold text-ink">
                   {addOn.name}
-                </h3>
-                <p className="mt-3 text-base leading-relaxed text-gray-600">
+                </dt>
+                <dd className="max-w-2xl text-base leading-relaxed text-gray-600">
                   {addOn.body}
-                </p>
+                </dd>
               </div>
             ))}
-          </div>
+          </dl>
         </Container>
       </Section>
 
-      {/* Cost transparency */}
-      <Section className="py-10 sm:py-14">
+      {/* Cost transparency — art-directed ink-dark band. */}
+      <Section className="bg-ink py-20 sm:py-28">
         <Container>
-          <TransparencySection />
+          <TransparencySection tone="dark" />
         </Container>
       </Section>
 
       {/* Dispatch integrations */}
-      <Section className="py-10 sm:py-14">
+      <Section className="py-16 sm:py-24">
         <Container>
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            Integrated with AutoCab · iCabbi · Cordic
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
-            Confirmed bookings land straight in the dispatch system you already
-            run.
-          </p>
+          <div className="max-w-2xl">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              Integrated with AutoCab, iCabbi and Cordic
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-600">
+              Confirmed bookings land straight in the dispatch system you already
+              run, at no extra charge from us.
+            </p>
+          </div>
           <div className="mt-8">
             <DispatchBadges />
           </div>
         </Container>
       </Section>
 
-      {/* Closing CTA */}
-      <Section className="py-14 sm:py-20">
+      {/* Closing CTA band — homepage parity. */}
+      <Section className="pb-20 pt-4 sm:pb-28">
         <Container>
-          <div className="rounded-3xl border border-gray-200 bg-gray-50 px-7 py-14 text-center sm:px-12 sm:py-20">
-            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
-              See exactly what your automation would cost.
+          <div className="rounded-3xl bg-ink px-7 py-16 text-center sm:px-12 sm:py-20">
+            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-paper sm:text-5xl">
+              See exactly what your automation would cost
             </h2>
-            <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-gray-600">
-              Book a discovery call and we&apos;ll scope your fleet, channels and
-              dispatch into a clear quote.
+            <p className="mx-auto mt-5 max-w-xl leading-relaxed text-gray-300">
+              Book a discovery call and we will scope your fleet, channels and
+              dispatch into one clear quote.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <DiscoveryCta size="lg" />

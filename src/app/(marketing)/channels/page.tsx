@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container } from "@/components/marketing/ui/container";
 import { Section } from "@/components/marketing/ui/section";
 import { Badge } from "@/components/marketing/ui/badge";
@@ -6,6 +7,7 @@ import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
 import { DispatchBadges } from "@/components/marketing/dispatch-badges";
 import { TransparencySection } from "@/components/marketing/transparency-section";
+import { ChannelConvergence } from "@/components/marketing/channel-convergence";
 
 export const metadata: Metadata = {
   title: "Channels — BookMyCab",
@@ -17,38 +19,42 @@ export const metadata: Metadata = {
 const CHANNELS = [
   {
     name: "WhatsApp Business",
-    body: "Take bookings on the channel most of your customers already message you on — text and voice notes included.",
+    body: "The channel most of your customers already message you on. Text and voice notes both become bookings, and a voice note from a noisy street is handled like any other.",
   },
   {
     name: "Telegram",
-    body: "A fast, reliable bot conversation for customers who prefer Telegram for their rides.",
+    body: "A fast, reliable bot conversation for the customers who prefer Telegram for their rides.",
   },
   {
     name: "Messenger",
-    body: "Turn Facebook Messenger enquiries into confirmed bookings without a human picking up.",
+    body: "Facebook Messenger enquiries turn into confirmed bookings without anyone at your desk picking up.",
   },
   {
     name: "Instagram DM",
-    body: "Catch the customers who slide into your DMs and book them straight into dispatch.",
+    body: "Catch the customers who slide into your DMs and book them straight into dispatch, in the same place they messaged.",
   },
   {
-    name: "On-site AI Chat widget",
-    body: "An AI chat widget on your own website that quotes and books around the clock.",
+    name: "On-site AI chat widget",
+    body: "A chat widget on your own website that quotes and books around the clock, embedded where your customers already look for you.",
   },
 ];
 
 export default function ChannelsPage() {
   return (
     <>
-      {/* Header */}
-      <Section className="pb-10 sm:pb-14">
+      {/* Hero */}
+      <Section className="pb-10 pt-12 sm:pb-14 sm:pt-16">
         <Container className="max-w-3xl">
           <Badge>Channels</Badge>
-          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
-            One automation, every channel your customers use.
+          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl xl:text-7xl">
+            One automation,{" "}
+            <span className="box-decoration-clone bg-accent px-2 text-accent-ink">
+              every channel
+            </span>{" "}
+            your customers use.
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            Your bespoke build answers everywhere at once — and every confirmed
+            Your bespoke build answers everywhere at once, and every confirmed
             booking lands in the dispatch system you already run.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -58,26 +64,45 @@ export default function ChannelsPage() {
         </Container>
       </Section>
 
-      {/* Channel grid */}
-      <Section className="py-14 sm:py-20">
+      {/* Signature — convergence visual. */}
+      <Section className="pb-16 pt-4 sm:pb-24">
         <Container>
-          <div className="grid gap-px overflow-hidden rounded-3xl border border-gray-200 bg-gray-200 sm:grid-cols-2 lg:grid-cols-3">
-            {CHANNELS.map((channel) => (
-              <div key={channel.name} className="bg-paper p-7 sm:p-8">
-                <h3 className="font-display text-xl font-semibold text-ink">
-                  {channel.name}
-                </h3>
-                <p className="mt-3 text-base leading-relaxed text-gray-600">
-                  {channel.body}
-                </p>
-              </div>
-            ))}
-          </div>
+          <ChannelConvergence />
         </Container>
       </Section>
 
-      {/* Customer-owned credentials transparency */}
-      <Section className="py-14 sm:py-20">
+      {/* Per-channel detail — differentiated list, not an identical grid. */}
+      <Section className="border-t border-gray-100 py-16 sm:py-24">
+        <Container>
+          <div className="max-w-2xl">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              What each channel does for you
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-600">
+              Same automation, same dispatch, met wherever the customer already
+              is.
+            </p>
+          </div>
+          <dl className="mt-10 divide-y divide-gray-200 border-t border-gray-200">
+            {CHANNELS.map((channel) => (
+              <div
+                key={channel.name}
+                className="grid gap-2 py-7 sm:grid-cols-[16rem_1fr] sm:gap-10"
+              >
+                <dt className="font-display text-xl font-semibold text-ink">
+                  {channel.name}
+                </dt>
+                <dd className="max-w-2xl text-base leading-relaxed text-gray-600">
+                  {channel.body}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Container>
+      </Section>
+
+      {/* Customer-owned credentials — committed amber band. */}
+      <Section className="py-16 sm:py-24">
         <Container>
           <div className="rounded-3xl border border-ink bg-accent px-7 py-12 sm:px-12 sm:py-16">
             <h2 className="text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-accent-ink sm:text-4xl">
@@ -85,46 +110,57 @@ export default function ChannelsPage() {
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
               You connect your own numbers. You pay channel fees directly to
-              Meta, Telegram or your telco. You own your customer base — nothing
-              is ever held hostage.
+              Meta, Telegram or your telco. You own your customer base, and
+              nothing is ever held hostage.
             </p>
           </div>
         </Container>
       </Section>
 
-      {/* External cost transparency — reuse §6.4 section */}
-      <Section className="py-14 sm:py-20">
+      {/* External cost transparency — reuse §6.4 section. */}
+      <Section className="py-16 sm:py-24">
         <Container>
           <TransparencySection />
         </Container>
       </Section>
 
       {/* Dispatch integrations */}
-      <Section className="py-14 sm:py-20">
+      <Section className="py-16 sm:py-24">
         <Container>
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            Books straight into your dispatch
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
-            Whichever channel a booking comes in on, it lands directly in the
-            dispatch system you already run.
-          </p>
+          <div className="max-w-2xl">
+            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              Books straight into your dispatch
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-600">
+              Whichever channel a booking comes in on, it lands directly in the
+              dispatch system you already run.
+            </p>
+          </div>
           <div className="mt-8">
             <DispatchBadges />
           </div>
         </Container>
       </Section>
 
-      {/* Closing CTA band */}
-      <Section className="py-14 sm:py-20">
+      {/* Closing CTA band — homepage parity. */}
+      <Section className="pb-20 pt-4 sm:pb-28">
         <Container>
-          <div className="rounded-3xl border border-gray-200 bg-gray-50 px-7 py-14 text-center sm:px-12 sm:py-20">
-            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
-              Let&apos;s connect your channels.
+          <div className="rounded-3xl bg-ink px-7 py-16 text-center sm:px-12 sm:py-20">
+            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-paper sm:text-5xl">
+              Let&apos;s connect your channels
             </h2>
+            <p className="mx-auto mt-5 max-w-lg leading-relaxed text-gray-300">
+              Book a discovery call and we will wire up every channel your
+              customers use into one automation.
+            </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <DiscoveryCta size="lg" />
-              <TryDashboardLink size="lg" />
+              <Link
+                href="/how-it-works"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-gray-600 px-7 text-base font-medium tracking-tight text-paper transition-colors duration-200 hover:bg-paper hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+              >
+                See how it works
+              </Link>
             </div>
           </div>
         </Container>

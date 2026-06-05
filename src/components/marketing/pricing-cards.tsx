@@ -103,6 +103,20 @@ function AbCard({
         />
       </div>
 
+      {/* Honest all-in anchor: setup + 12 months on a single channel. */}
+      {tier.single[currency] !== null && (
+        <p className="mt-5 text-sm leading-relaxed text-gray-500">
+          First year, single channel:{" "}
+          <span className="font-medium tabular-nums text-ink">
+            {formatPrice(
+              currency,
+              SETUP_FEE[currency] + CONTRACT_MONTHS * tier.single[currency]!,
+            )}
+          </span>{" "}
+          all in.
+        </p>
+      )}
+
       <div className="mt-auto pt-7">
         <DiscoveryCta size="md" className="w-full" />
       </div>
