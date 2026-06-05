@@ -151,8 +151,14 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0028 (channels `created_by`/`provisioning_status`/`is_self_serve`, global `platform_apps`); `src/lib/channels/*` (pure request validation + provisioning state machine; request/list/approve-reject service); gated tenant API (request → 422 on invalid, list); entitlement-gated `/dashboard/connect` page; admin `/admin/channel-review` queue. Gates on `self_serve_channels`. 13 tests; full suite green (739). Review fix: moved automations query into the service so no service-role key appears on the tenant page (architecture-guard tests enforce this).
 **v1 follow-ups:** actual channel wiring on approval (WhatsApp/Telegram webhook provisioning via `platform_apps` BSP/Meta app + vault `credentials_ref`); per-plan channel-count limits; `platform_apps` admin editor.
 
-### ⏭ Planned Epics 23–24 (one plan each, dependency order; each gates via `requireFeature`):
-23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 23 — Epic 23: Integrations & API  → `2026-06-04-epic-23-integrations-api.md`  (DONE & merged to `master`, HEAD `af23599`)
+**Depends on:** Plan 13 (entitlements/metering), 9 (`blockIfDemo`).
+**Produces:** migration 0029 (`api_keys` [SHA-256 hash + prefix only], `outbound_webhooks`, append-only `webhook_deliveries`); `src/lib/integrations/*` (pure key-gen/hash/HMAC-sign/event-match via `node:crypto`; key issue/verify[meters `api_access`]/revoke + webhook CRUD + signed `dispatchWebhook`); gated tenant API (keys issue→raw-once/revoke; webhooks); entitlement-gated `/dashboard/integrations` page. Gates on `api_access` (metered) + `outbound_webhooks`. 13 tests; full suite green (752). Raw key never persisted; `dashboard-structure` guard verified (no service-role key on the page).
+**v1 follow-ups:** public `/api/v1/*` surface consuming `verifyApiKey`; rate-limit enforcement by `rate_limit_tier`; webhook retries/backoff; wiring booking/conversation event emit points to `dispatchWebhook`.
+**Deferred (separate Epic-23 governance bucket):** network benchmarking · custom roles/permissions · tenant-visible activity log.
+
+### ⏭ Planned Epic 24 (final; gates via `requireFeature`):
+24 AI copilot.
 
 ---
 
