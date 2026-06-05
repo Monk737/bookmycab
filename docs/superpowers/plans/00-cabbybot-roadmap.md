@@ -146,8 +146,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0027 (`report_definitions`, append-only `report_runs`, `tenants.branding`); `src/lib/reporting/*` (pure `buildReport` sections + `resolveBranding`; definition CRUD + `runReport` [fetch metrics → persist run → meter] + branding service); gated tenant API (definitions, run → 404 if missing, branding); entitlement-gated `/dashboard/reports` page. Gates on `scheduled_reports` (metered) + `white_label`. 14 tests; full suite green (726).
 **v1 follow-ups:** richer metric wiring (response_time stubbed); PDF/CSV rendering + `file_ref`; platform scheduler invoking `runReport` per `schedule` cron; email delivery to `recipients`.
 
-### ⏭ Planned Epics 22–24 (one plan each, dependency order; each gates via `requireFeature`):
-22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 22 — Epic 22: Self-serve Channels  → `2026-06-04-epic-22-self-serve-channels.md`  (DONE & merged to `master`, HEAD `6a89c50`)
+**Depends on:** Plan 13 (entitlements), 9 (`blockIfDemo`), 3 (admin shell), channels (0002).
+**Produces:** migration 0028 (channels `created_by`/`provisioning_status`/`is_self_serve`, global `platform_apps`); `src/lib/channels/*` (pure request validation + provisioning state machine; request/list/approve-reject service); gated tenant API (request → 422 on invalid, list); entitlement-gated `/dashboard/connect` page; admin `/admin/channel-review` queue. Gates on `self_serve_channels`. 13 tests; full suite green (739). Review fix: moved automations query into the service so no service-role key appears on the tenant page (architecture-guard tests enforce this).
+**v1 follow-ups:** actual channel wiring on approval (WhatsApp/Telegram webhook provisioning via `platform_apps` BSP/Meta app + vault `credentials_ref`); per-plan channel-count limits; `platform_apps` admin editor.
+
+### ⏭ Planned Epics 23–24 (one plan each, dependency order; each gates via `requireFeature`):
+23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
