@@ -38,6 +38,7 @@ export function DashboardShell({
   showReports,
   showConnect,
   showIntegrations,
+  showCopilot,
 }: {
   orgName: string;
   children: ReactNode;
@@ -50,6 +51,7 @@ export function DashboardShell({
   showReports?: boolean;
   showConnect?: boolean;
   showIntegrations?: boolean;
+  showCopilot?: boolean;
 }): React.JSX.Element {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -65,6 +67,7 @@ export function DashboardShell({
     ...(showReports ? [{ label: "Reports", href: "/dashboard/reports" }] : []),
     ...(showConnect ? [{ label: "Connect", href: "/dashboard/connect" }] : []),
     ...(showIntegrations ? [{ label: "Integrations", href: "/dashboard/integrations" }] : []),
+    ...(showCopilot ? [{ label: "Copilot", href: "/dashboard/copilot" }] : []),
   ];
 
   const navLinks = (
