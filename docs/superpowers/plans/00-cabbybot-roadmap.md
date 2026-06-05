@@ -136,8 +136,13 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **Produces:** migration 0025 (conversations `qa_score`/`qa_flags`/`flagged_for_review`/`intent_summary`/`sentiment`, messages `sentiment`, `conversation_reviews` table); `src/lib/convintel/*` (pure deterministic QA scorer; analyze/search/flag/review service with sanitised transcript search); gated tenant API (analyze, search, flag, review); entitlement-gated `/dashboard/intel` page. Gates on `conversation_intelligence`. 11 tests; full suite green (698).
 **v1 follow-ups:** LLM sentiment/intent extraction (sets `sentiment`/`intent_summary`, meters `tokens` via `recordUsage`; honours "customer brings own AI key"); `tsvector` GIN search index; per-conversation review UI (API exists).
 
-### ⏭ Planned Epics 20–24 (one plan each, dependency order; each gates via `requireFeature`):
-20 Account invoicing & finance · 21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
+### ✅ Plan 20 — Epic 20: Account Invoicing & Finance  → `2026-06-04-epic-20-account-invoicing.md`  (DONE & merged to `master`, HEAD `7a3a67d`)
+**Depends on:** Plan 13 (entitlements), 9 (`blockIfDemo`), bookings (0003).
+**Produces:** migration 0026 (`account_customers`, `tenant_invoices`, `commission_rates`, `bookings.account_customer_id`/`payment_status`); `src/lib/invoicing/*` (pure `computeInvoice` line items + markup; account CRUD + invoice generation/status service); gated tenant API (accounts CRUD, generate → 422 when no bookings, status); entitlement-gated `/dashboard/invoicing` page. Gates on `account_invoicing`. 14 tests; full suite green (712).
+**v1 follow-ups:** auto-link `payment_method='Account'` bookings to an account (manual `account_customer_id` today); PDF rendering (`pdf_ref`) via Document Generator; FlowMo-side commission editor + reporting; double-invoice guard on re-generate.
+
+### ⏭ Planned Epics 21–24 (one plan each, dependency order; each gates via `requireFeature`):
+21 Reporting & white-label · 22 Self-serve channels · 23 Benchmarking/governance/integrations/API · 24 AI copilot.
 
 ---
 
