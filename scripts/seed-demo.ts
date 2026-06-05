@@ -29,6 +29,10 @@ export const DEMO_TENANT_ID =
 
 const DEMO_EMAIL = "demo@demo.cabbybot.com";
 
+// Enterprise plan id from scripts/seed-entitlements.ts — grants all features so
+// the demo dashboard surfaces every entitlement-gated advanced feature.
+const DEMO_PLAN_ID = "b0000000-0000-0000-0000-000000000003";
+
 const AUTO_WA = "d0000000-0000-0000-0000-000000000010";
 const AUTO_TG = "d0000000-0000-0000-0000-000000000011";
 const AUTO_WG = "d0000000-0000-0000-0000-000000000012";
@@ -252,6 +256,13 @@ async function main() {
     slug: "premier-cabs-demo",
     country: "GB",
     plan_band: "A-Bundle",
+    // Demo showcases every advanced feature: assign the Enterprise plan, which
+    // grants all entitlements (see scripts/seed-entitlements.ts). The dashboard
+    // gates each feature nav entry on hasFeature(), so without a plan the demo
+    // would show only the base nav. Requires seed-entitlements.ts to have run
+    // first (the plans FK target); if plans are absent this column stays null
+    // and the demo falls back to base nav — re-run seed-entitlements then re-seed.
+    plan_id: DEMO_PLAN_ID,
     currency: "GBP",
     status: "active",
     dispatch_adapter: "autocab",
