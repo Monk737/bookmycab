@@ -8,7 +8,7 @@ export default async function SupportPage() {
   if (!claims.tenant_id) {
     return (
       <main className="p-8">
-        <p className="text-sm text-slate-500">No organisation found for your account.</p>
+        <p className="text-sm text-gray-500">No organisation found for your account.</p>
       </main>
     );
   }

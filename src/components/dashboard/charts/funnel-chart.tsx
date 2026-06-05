@@ -2,10 +2,10 @@
 
 import React from "react";
 
-// palette: blue-800 primary, slate-400 muted, slate-600 text
-const COLOR_BAR = "#1e40af"; // blue-800
-const COLOR_MUTED = "#94a3b8"; // slate-400
-const COLOR_TEXT = "#475569"; // slate-600
+// palette: blue-800 primary, gray-400 muted, gray-600 text
+const COLOR_BAR = "#0a0a0a"; // blue-800
+const COLOR_MUTED = "#6f6f6b"; // gray-400
+const COLOR_TEXT = "#4f4f4c"; // gray-600
 
 export function FunnelChart({
   data,
@@ -16,7 +16,7 @@ export function FunnelChart({
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-slate-400"
+        className="flex items-center justify-center text-sm text-gray-400"
       >
         No data for this period.
       </div>
@@ -48,7 +48,7 @@ export function FunnelChart({
               <span style={{ color: COLOR_MUTED }}>
                 {row.count.toLocaleString()}
                 {dropOff !== null && (
-                  <span className="ml-2" style={{ color: "#94a3b8" }}>
+                  <span className="ml-2" style={{ color: "#6f6f6b" }}>
                     {dropOff}%
                   </span>
                 )}
@@ -59,7 +59,7 @@ export function FunnelChart({
               style={{
                 height: 16,
                 width: "100%",
-                backgroundColor: "#e2e8f0",
+                backgroundColor: "#dcdcda",
                 position: "relative",
                 overflow: "hidden",
               }}

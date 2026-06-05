@@ -13,8 +13,8 @@ export default async function IntelPage() {
   const flagged = await listFlagged(claims.tenant_id);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Conversation intelligence</h1>
-      <p className="mb-4 text-sm text-slate-500">Search transcripts, review QA scores, and flag conversations for coaching.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Conversation intelligence</h1>
+      <p className="mb-4 text-sm text-gray-500">Search transcripts, review QA scores, and flag conversations for coaching.</p>
       <IntelClient orgId={claims.tenant_id} initialFlagged={flagged} isDemo={claims.is_demo} />
     </div>
   );

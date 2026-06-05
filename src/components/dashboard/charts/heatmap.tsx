@@ -6,13 +6,13 @@ import type { HeatmapCell } from "@/lib/dashboard/analytics-types";
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-// blue-800 tint for heat cells
-const CELL_R = 30;
-const CELL_G = 64;
-const CELL_B = 175;
+// Dispatch Amber (#ffd400) density ramp: busier hours read hotter, on-brand.
+const CELL_R = 255;
+const CELL_G = 212;
+const CELL_B = 0;
 
-const COLOR_MUTED = "#94a3b8"; // slate-400 — axis text
-const COLOR_BORDER = "#e2e8f0"; // slate-200 — cell border
+const COLOR_MUTED = "#6f6f6b"; // gray-400 — axis text
+const COLOR_BORDER = "#dcdcda"; // gray-200 — cell border
 
 function cellBackground(value: number, maxValue: number): string {
   if (maxValue === 0) return `rgba(${CELL_R},${CELL_G},${CELL_B},0.05)`;
@@ -27,7 +27,7 @@ export function Heatmap({ cells }: { cells: HeatmapCell[] }): React.JSX.Element 
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-slate-400"
+        className="flex items-center justify-center text-sm text-gray-400"
       >
         No data for this period.
       </div>

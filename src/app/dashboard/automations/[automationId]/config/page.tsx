@@ -13,7 +13,7 @@ export default async function ConfigPage({
 
   if (!claims.tenant_id) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-500 text-sm">
+      <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
         Unable to load configuration — no organisation found on your account.
       </div>
     );

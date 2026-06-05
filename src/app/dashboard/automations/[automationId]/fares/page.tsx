@@ -14,8 +14,8 @@ export default async function FaresPage({ params }: { params: Promise<{ automati
   const rules = await listFareRules(claims.tenant_id, automationId);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Fare rules</h1>
-      <p className="mb-4 text-sm text-slate-500">Per-vehicle pricing the bot quotes.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Fare rules</h1>
+      <p className="mb-4 text-sm text-gray-500">Per-vehicle pricing the bot quotes.</p>
       <FaresClient orgId={claims.tenant_id} automationId={automationId} rules={rules} isDemo={claims.is_demo} />
     </div>
   );

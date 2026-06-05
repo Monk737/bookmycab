@@ -95,20 +95,20 @@ export function DashboardShell({
   );
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900">
+    <div className="flex min-h-screen bg-gray-50 text-gray-900">
       {/* Mobile top bar */}
-      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 md:hidden">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 md:hidden">
         <span className="text-sm font-semibold tracking-tight">
           Cabby<span className="text-blue-800">Bot</span>
         </span>
         <div className="flex items-center gap-3">
-          <span className="truncate text-xs text-slate-600 max-w-[140px]">{orgName}</span>
+          <span className="truncate text-xs text-gray-600 max-w-[140px]">{orgName}</span>
           <button
             type="button"
             aria-label={drawerOpen ? "Close menu" : "Open menu"}
             aria-expanded={drawerOpen}
             onClick={() => setDrawerOpen((v) => !v)}
-            className="cursor-pointer rounded-md p-1.5 text-slate-600 transition-colors duration-150 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:outline-none"
+            className="cursor-pointer rounded-md p-1.5 text-gray-600 transition-colors duration-150 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:outline-none"
           >
             {drawerOpen ? (
               /* X icon */

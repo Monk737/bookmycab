@@ -39,15 +39,15 @@ export function DataTable<Row>({
   emptyMessage?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <table className="w-full border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50">
+          <tr className="border-b border-gray-200 bg-gray-50">
             {columns.map((col) => (
               <th
                 key={col.key}
                 scope="col"
-                className={`px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500 ${col.headerClassName ?? ""}`}
+                className={`px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500 ${col.headerClassName ?? ""}`}
               >
                 {col.header}
               </th>
@@ -59,7 +59,7 @@ export function DataTable<Row>({
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-4 py-10 text-center text-sm text-slate-500"
+                className="px-4 py-10 text-center text-sm text-gray-500"
               >
                 {emptyMessage}
               </td>
@@ -70,19 +70,19 @@ export function DataTable<Row>({
               return (
                 <tr
                   key={getRowKey(row)}
-                  className="border-b border-slate-100 last:border-0 odd:bg-white even:bg-slate-50/40 transition-colors duration-150 hover:bg-blue-50/50"
+                  className="border-b border-gray-100 last:border-0 odd:bg-white even:bg-gray-50/40 transition-colors duration-150 hover:bg-blue-50/50"
                 >
                   {columns.map((col, i) => {
                     const content = col.render(row);
                     return (
                       <td
                         key={col.key}
-                        className={`px-4 py-3 align-middle text-slate-700 ${col.cellClassName ?? ""}`}
+                        className={`px-4 py-3 align-middle text-gray-700 ${col.cellClassName ?? ""}`}
                       >
                         {href && i === 0 ? (
                           <a
                             href={href}
-                            className="font-medium text-slate-900 underline-offset-2 outline-none hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-blue-800"
+                            className="font-medium text-gray-900 underline-offset-2 outline-none hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-blue-800"
                           >
                             {content}
                           </a>

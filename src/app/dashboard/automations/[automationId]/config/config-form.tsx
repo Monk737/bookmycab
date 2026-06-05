@@ -60,10 +60,10 @@ interface Props {
 }
 
 const inputBase =
-  "w-full px-4 py-3 border border-slate-200 rounded-lg text-sm text-slate-800 bg-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed";
+  "w-full px-4 py-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed";
 
 const textareaBase =
-  "w-full px-4 py-3 border border-slate-200 rounded-lg text-sm text-slate-800 bg-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800 resize-y disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed";
+  "w-full px-4 py-3 border border-gray-200 rounded-lg text-sm text-gray-800 bg-white transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800 resize-y disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed";
 
 export function ConfigForm({
   orgId,
@@ -182,7 +182,7 @@ export function ConfigForm({
       {/* Page header */}
       <div>
         <h1 className="text-xl font-semibold text-blue-900">Bot Configuration</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-gray-500">
           Manage the behaviour and branding of your automation.
         </p>
       </div>
@@ -196,18 +196,18 @@ export function ConfigForm({
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* ── Welcome Messages ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6 space-y-4">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide">
             Welcome Messages
           </h2>
           {channels.length === 0 ? (
-            <p className="text-sm text-slate-400">No channels are currently attached to this automation.</p>
+            <p className="text-sm text-gray-400">No channels are currently attached to this automation.</p>
           ) : (
             channels.map((ch) => (
               <div key={ch.type} className="space-y-1">
                 <label
                   htmlFor={`welcome-${ch.type}`}
-                  className="block text-sm font-medium text-slate-700 capitalize"
+                  className="block text-sm font-medium text-gray-700 capitalize"
                 >
                   {ch.type}
                 </label>
@@ -228,7 +228,7 @@ export function ConfigForm({
               </div>
             ))
           )}
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gray-400">
             Available variables: <code className="font-mono">{"{{company_name}}"}</code>,{" "}
             <code className="font-mono">{"{{opening_hours}}"}</code>,{" "}
             <code className="font-mono">{"{{contact_number}}"}</code>
@@ -236,7 +236,7 @@ export function ConfigForm({
         </section>
 
         {/* ── Vehicle Types ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6 space-y-4">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide">
             Vehicle Types
           </h2>
@@ -250,7 +250,7 @@ export function ConfigForm({
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors duration-150 cursor-pointer select-none ${
                     checked
                       ? "bg-blue-800 border-blue-800 text-white"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-blue-300"
+                      : "bg-white border-gray-200 text-gray-700 hover:border-blue-300"
                   } ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <input
@@ -269,12 +269,12 @@ export function ConfigForm({
         </section>
 
         {/* ── Service Area ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6 space-y-4">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide">
             Service Area
           </h2>
           <div className="space-y-1">
-            <label htmlFor="service-area" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="service-area" className="block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -290,7 +290,7 @@ export function ConfigForm({
         </section>
 
         {/* ── Opening Hours ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6 space-y-4">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide">
             Opening Hours
           </h2>
@@ -301,7 +301,7 @@ export function ConfigForm({
                 <div key={key} className="grid grid-cols-[120px_1fr] items-center gap-4 sm:gap-6">
                   <label
                     htmlFor={`day-closed-${key}`}
-                    className="flex items-center gap-2 text-sm font-medium text-slate-700 cursor-pointer"
+                    className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer"
                   >
                     <input
                       type="checkbox"
@@ -309,12 +309,12 @@ export function ConfigForm({
                       checked={!day.closed}
                       disabled={!canEdit}
                       onChange={(e) => updateDayHours(key, "closed", !e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 text-blue-800 focus:ring-blue-800 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-4 h-4 rounded border-gray-300 text-blue-800 focus:ring-blue-800 disabled:cursor-not-allowed cursor-pointer"
                     />
                     {label}
                   </label>
                   {day.closed ? (
-                    <span className="text-sm text-slate-400">Closed</span>
+                    <span className="text-sm text-gray-400">Closed</span>
                   ) : (
                     <div className="flex items-center gap-2 flex-wrap">
                       <div className="space-y-0.5">
@@ -330,7 +330,7 @@ export function ConfigForm({
                           className={`${inputBase} w-32`}
                         />
                       </div>
-                      <span className="text-slate-400 text-sm">to</span>
+                      <span className="text-gray-400 text-sm">to</span>
                       <div className="space-y-0.5">
                         <label htmlFor={`day-close-${key}`} className="sr-only">
                           {label} close time
@@ -353,13 +353,13 @@ export function ConfigForm({
         </section>
 
         {/* ── Brand Colours ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6 space-y-4">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide">
             Brand Colours
           </h2>
           <div className="flex flex-wrap gap-6">
             <div className="space-y-1">
-              <label htmlFor="brand-primary" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="brand-primary" className="block text-sm font-medium text-gray-700">
                 Primary
               </label>
               <div className="flex items-center gap-3">
@@ -369,7 +369,7 @@ export function ConfigForm({
                   disabled={!canEdit}
                   value={primaryColour}
                   onChange={(e) => setPrimaryColour(e.target.value)}
-                  className="w-10 h-10 rounded border border-slate-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 p-0.5"
+                  className="w-10 h-10 rounded border border-gray-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 p-0.5"
                 />
                 <input
                   type="text"
@@ -384,7 +384,7 @@ export function ConfigForm({
               </div>
             </div>
             <div className="space-y-1">
-              <label htmlFor="brand-secondary" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="brand-secondary" className="block text-sm font-medium text-gray-700">
                 Secondary
               </label>
               <div className="flex items-center gap-3">
@@ -394,7 +394,7 @@ export function ConfigForm({
                   disabled={!canEdit}
                   value={secondaryColour}
                   onChange={(e) => setSecondaryColour(e.target.value)}
-                  className="w-10 h-10 rounded border border-slate-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 p-0.5"
+                  className="w-10 h-10 rounded border border-gray-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 p-0.5"
                 />
                 <input
                   type="text"
@@ -412,7 +412,7 @@ export function ConfigForm({
         </section>
 
         {/* ── Languages ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6 space-y-4">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6 space-y-4">
           <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide">
             Languages
           </h2>
@@ -426,7 +426,7 @@ export function ConfigForm({
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors duration-150 cursor-pointer select-none ${
                     checked
                       ? "bg-blue-800 border-blue-800 text-white"
-                      : "bg-white border-slate-200 text-slate-700 hover:border-blue-300"
+                      : "bg-white border-gray-200 text-gray-700 hover:border-blue-300"
                   } ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <input
@@ -445,14 +445,14 @@ export function ConfigForm({
         </section>
 
         {/* ── Driver Note Prompt ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6">
           <label
             htmlFor="ask-driver-note"
             className="flex items-center justify-between cursor-pointer"
           >
             <div>
               <span className="text-sm font-semibold text-blue-900">Driver Note Prompt</span>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 Ask customers if they have any notes for the driver before confirming.
               </p>
             </div>
@@ -478,7 +478,7 @@ export function ConfigForm({
                   }
                 }}
                 className={`w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-blue-800 ${
-                  askDriverNote ? "bg-blue-800" : "bg-slate-200"
+                  askDriverNote ? "bg-blue-800" : "bg-gray-200"
                 } ${!canEdit ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <div
@@ -492,11 +492,11 @@ export function ConfigForm({
         </section>
 
         {/* ── Structural Change ── */}
-        <section className="rounded-xl shadow-sm bg-white border border-slate-100 p-6 space-y-2">
+        <section className="rounded-xl shadow-sm bg-white border border-gray-100 p-6 space-y-2">
           <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide">
             Flow Logic
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-gray-600">
             The conversation flow for your automation is bespoke and managed by the BookMyCab
             engineering team.
           </p>
@@ -510,7 +510,7 @@ export function ConfigForm({
 
         {/* ── Save Footer ── */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-2">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gray-400">
             Changes apply on the automation&apos;s next run.
           </p>
           <div className="flex items-center gap-4">

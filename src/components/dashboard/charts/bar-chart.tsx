@@ -10,10 +10,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {
+  PRIMARY,
+  GRID as COLOR_GRID,
+  AXIS,
+  TOOLTIP_STYLE,
+} from "@/lib/dashboard/chart-colors";
 
-// Data palette: bar fill = blue-600
-const COLOR_BAR = "#2563eb"; // blue-600
-const COLOR_GRID = "#94a3b8"; // slate-400
+const COLOR_BAR = PRIMARY;
 
 export function BarChart({
   data,
@@ -24,7 +28,7 @@ export function BarChart({
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-slate-400"
+        className="flex items-center justify-center text-sm text-gray-400"
       >
         No data for this period.
       </div>
@@ -42,25 +46,19 @@ export function BarChart({
         />
         <XAxis
           dataKey="name"
-          tick={{ fill: COLOR_GRID, fontSize: 12 }}
+          tick={{ fill: AXIS, fontSize: 12 }}
           axisLine={{ stroke: COLOR_GRID, opacity: 0.4 }}
           tickLine={false}
         />
         <YAxis
-          tick={{ fill: COLOR_GRID, fontSize: 12 }}
+          tick={{ fill: AXIS, fontSize: 12 }}
           axisLine={false}
           tickLine={false}
           width={40}
         />
         <Tooltip
-          contentStyle={{
-            backgroundColor: "#1e293b",
-            border: "1px solid #334155",
-            borderRadius: 8,
-            color: "#f1f5f9",
-            fontSize: 12,
-          }}
-          cursor={{ fill: COLOR_GRID, opacity: 0.1 }}
+          contentStyle={TOOLTIP_STYLE}
+          cursor={{ fill: COLOR_GRID, opacity: 0.2 }}
         />
         <Bar dataKey="value" fill={COLOR_BAR} radius={[4, 4, 0, 0]} name="Value" />
       </RBarChart>

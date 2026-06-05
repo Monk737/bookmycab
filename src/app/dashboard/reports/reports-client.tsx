@@ -26,17 +26,17 @@ export function ReportsClient(props: { orgId: string; definitions: Def[]; runs: 
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-lg border border-slate-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-slate-900">Report definitions</h2>
-        <ul className="mb-3 divide-y divide-slate-100 text-sm">
-          {props.definitions.length === 0 && <li className="py-2 text-slate-400">No reports yet.</li>}
+      <section className="rounded-lg border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">Report definitions</h2>
+        <ul className="mb-3 divide-y divide-gray-100 text-sm">
+          {props.definitions.length === 0 && <li className="py-2 text-gray-400">No reports yet.</li>}
           {props.definitions.map((d) => (
             <li key={d.id} className="flex items-center justify-between py-2">
-              <span className="text-slate-800">{d.name} <span className="text-xs text-slate-400">· {Array.isArray(d.metrics) ? (d.metrics as string[]).join(", ") : ""}</span></span>
+              <span className="text-gray-800">{d.name} <span className="text-xs text-gray-400">· {Array.isArray(d.metrics) ? (d.metrics as string[]).join(", ") : ""}</span></span>
               {!props.isDemo && (
                 <span className="flex gap-1">
                   <button disabled={busy} onClick={() => call(`${base}/${d.id}`, "POST")} className="rounded bg-blue-800 px-2 py-1 text-xs font-medium text-white">Run</button>
-                  <button disabled={busy} onClick={() => call(`${base}/${d.id}`, "DELETE")} className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-700">Delete</button>
+                  <button disabled={busy} onClick={() => call(`${base}/${d.id}`, "DELETE")} className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700">Delete</button>
                 </span>
               )}
             </li>
@@ -44,7 +44,7 @@ export function ReportsClient(props: { orgId: string; definitions: Def[]; runs: 
         </ul>
         {!props.isDemo && (
           <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); if (sel.length) { void call(base, "POST", { name: f.get("name"), metrics: sel }); e.currentTarget.reset(); setSel([]); } }} className="space-y-2">
-            <input name="name" required placeholder="Report name" className="w-full rounded border border-slate-300 px-2 py-1 text-sm" />
+            <input name="name" required placeholder="Report name" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
             <div className="flex flex-wrap gap-2 text-xs">
               {METRICS.map((m) => (
                 <label key={m.k} className="flex items-center gap-1">
@@ -57,25 +57,25 @@ export function ReportsClient(props: { orgId: string; definitions: Def[]; runs: 
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-slate-900">Recent runs</h2>
+      <section className="rounded-lg border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">Recent runs</h2>
         {err && <p className="mb-2 text-sm text-red-600" role="alert">{err}</p>}
-        <ul className="mb-4 divide-y divide-slate-100 text-sm">
-          {props.runs.length === 0 && <li className="py-2 text-slate-400">No runs yet.</li>}
+        <ul className="mb-4 divide-y divide-gray-100 text-sm">
+          {props.runs.length === 0 && <li className="py-2 text-gray-400">No runs yet.</li>}
           {props.runs.map((r) => (
             <li key={r.id} className="flex items-center justify-between py-2">
               <span className={r.status === "success" ? "text-emerald-600" : "text-red-600"}>{r.status}</span>
-              <span className="text-xs text-slate-400">{new Date(r.generated_at).toLocaleString("en-GB")}</span>
+              <span className="text-xs text-gray-400">{new Date(r.generated_at).toLocaleString("en-GB")}</span>
             </li>
           ))}
         </ul>
         {props.canBrand && !props.isDemo && (
-          <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); void call(`${base}/branding`, "PATCH", { logoUrl: f.get("logoUrl"), primary: f.get("primary"), accent: f.get("accent") }); }} className="space-y-2 border-t border-slate-100 pt-3">
-            <h3 className="text-xs font-semibold text-slate-700">White-label branding</h3>
-            <input name="logoUrl" defaultValue={props.branding.logoUrl ?? ""} placeholder="Logo URL" className="w-full rounded border border-slate-300 px-2 py-1 text-sm" />
+          <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); void call(`${base}/branding`, "PATCH", { logoUrl: f.get("logoUrl"), primary: f.get("primary"), accent: f.get("accent") }); }} className="space-y-2 border-t border-gray-100 pt-3">
+            <h3 className="text-xs font-semibold text-gray-700">White-label branding</h3>
+            <input name="logoUrl" defaultValue={props.branding.logoUrl ?? ""} placeholder="Logo URL" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
             <div className="flex gap-2">
-              <input name="primary" defaultValue={props.branding.primary} className="w-28 rounded border border-slate-300 px-2 py-1 text-sm" />
-              <input name="accent" defaultValue={props.branding.accent} className="w-28 rounded border border-slate-300 px-2 py-1 text-sm" />
+              <input name="primary" defaultValue={props.branding.primary} className="w-28 rounded border border-gray-300 px-2 py-1 text-sm" />
+              <input name="accent" defaultValue={props.branding.accent} className="w-28 rounded border border-gray-300 px-2 py-1 text-sm" />
               <button disabled={busy} type="submit" className="rounded bg-blue-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">Save branding</button>
             </div>
           </form>

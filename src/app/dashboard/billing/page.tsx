@@ -13,7 +13,7 @@ export default async function BillingPage() {
   if (!claims.tenant_id) {
     return (
       <main className="p-8">
-        <p className="text-sm text-slate-500">No organisation found for your account.</p>
+        <p className="text-sm text-gray-500">No organisation found for your account.</p>
       </main>
     );
   }
@@ -50,23 +50,23 @@ export default async function BillingPage() {
       {/* Plan card */}
       <section
         aria-labelledby="plan-heading"
-        className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
       >
         <h2
           id="plan-heading"
-          className="mb-4 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500"
+          className="mb-4 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
         >
           Current plan
         </h2>
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <dt className="text-xs font-medium text-slate-500">Plan</dt>
+            <dt className="text-xs font-medium text-gray-500">Plan</dt>
             <dd className="mt-0.5 text-sm font-semibold text-blue-900">
               {b.planBand ?? "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-slate-500">Monthly price</dt>
+            <dt className="text-xs font-medium text-gray-500">Monthly price</dt>
             <dd className="mt-0.5 text-sm font-semibold text-blue-900">
               {b.monthlyPrice != null
                 ? formatCurrency(b.monthlyPrice, currency)
@@ -74,27 +74,27 @@ export default async function BillingPage() {
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-slate-500">Currency</dt>
+            <dt className="text-xs font-medium text-gray-500">Currency</dt>
             <dd className="mt-0.5 text-sm font-semibold text-blue-900">
               {b.currency ?? "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-slate-500">Contract start</dt>
-            <dd className="mt-0.5 text-sm text-slate-700">
+            <dt className="text-xs font-medium text-gray-500">Contract start</dt>
+            <dd className="mt-0.5 text-sm text-gray-700">
               {b.contractStart ? formatDateTime(b.contractStart, TZ) : "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-slate-500">Contract renewal</dt>
-            <dd className="mt-0.5 text-sm text-slate-700">
+            <dt className="text-xs font-medium text-gray-500">Contract renewal</dt>
+            <dd className="mt-0.5 text-sm text-gray-700">
               {b.contractRenewal ? formatDateTime(b.contractRenewal, TZ) : "—"}
             </dd>
           </div>
           {b.subscription?.status && (
             <div>
-              <dt className="text-xs font-medium text-slate-500">Subscription status</dt>
-              <dd className="mt-0.5 text-sm text-slate-700 capitalize">
+              <dt className="text-xs font-medium text-gray-500">Subscription status</dt>
+              <dd className="mt-0.5 text-sm text-gray-700 capitalize">
                 {b.subscription.status}
               </dd>
             </div>
@@ -105,16 +105,16 @@ export default async function BillingPage() {
       {/* Setup fee */}
       <section
         aria-labelledby="setup-heading"
-        className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
       >
         <h2
           id="setup-heading"
-          className="mb-4 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500"
+          className="mb-4 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
         >
           Setup fee
         </h2>
         {b.setupFee?.paidAt ? (
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-gray-700">
             Paid —{" "}
             <span className="font-semibold text-blue-900">
               {b.setupFee.amount != null && b.setupFee.currency
@@ -135,7 +135,7 @@ export default async function BillingPage() {
       >
         <h2
           id="invoices-heading"
-          className="font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500"
+          className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
         >
           Invoices
         </h2>
@@ -150,7 +150,7 @@ export default async function BillingPage() {
           getRowKey={(r) => r.id}
           emptyMessage="No invoices yet."
         />
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-gray-400">
           Monthly invoices appear once billing goes live.
         </p>
       </section>
@@ -158,16 +158,16 @@ export default async function BillingPage() {
       {/* Actions */}
       <section
         aria-labelledby="actions-heading"
-        className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4"
+        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4"
       >
         <h2
           id="actions-heading"
-          className="font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500"
+          className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
         >
           Actions
         </h2>
         <PortalButton orgId={claims.tenant_id} />
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-gray-600">
           Need to change your plan or add an automation?{" "}
           <Link
             href="/dashboard/support"

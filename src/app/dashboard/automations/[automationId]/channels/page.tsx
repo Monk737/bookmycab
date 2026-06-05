@@ -23,7 +23,7 @@ function TokenExpiryBadge({ days }: { days: number | null }): React.JSX.Element 
 
   if (!isRed && !isAmber) {
     return (
-      <span className="text-xs text-slate-500">
+      <span className="text-xs text-gray-500">
         Token expires in {days} day{days !== 1 ? "s" : ""}
       </span>
     );
@@ -64,7 +64,7 @@ export default async function ChannelsPage({
 
   if (!claims.tenant_id) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-500 text-sm">
+      <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
         Unable to load channels — no organisation found on your account.
       </div>
     );
@@ -80,7 +80,7 @@ export default async function ChannelsPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold text-blue-900">Channels</h1>
-          <p className="mt-0.5 text-sm text-slate-500">
+          <p className="mt-0.5 text-sm text-gray-500">
             Messaging channels connected to this automation.
           </p>
         </div>
@@ -102,14 +102,14 @@ export default async function ChannelsPage({
 
       {/* Empty state */}
       {channels.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+        <div className="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center shadow-sm">
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
-            className="mx-auto h-10 w-10 text-slate-300"
+            className="mx-auto h-10 w-10 text-gray-300"
           >
             <path
               strokeLinecap="round"
@@ -117,8 +117,8 @@ export default async function ChannelsPage({
               d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
             />
           </svg>
-          <p className="mt-4 text-sm font-medium text-slate-700">No channels connected</p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-4 text-sm font-medium text-gray-700">No channels connected</p>
+          <p className="mt-1 text-xs text-gray-500">
             Contact support to connect a messaging channel to this automation.
           </p>
           <Link
@@ -136,7 +136,7 @@ export default async function ChannelsPage({
           {channels.map((channel) => (
             <li
               key={channel.id}
-              className="rounded-xl bg-white shadow-sm border border-slate-100 p-5 flex flex-col gap-4 transition-shadow duration-200 hover:shadow-md"
+              className="rounded-xl bg-white shadow-sm border border-gray-100 p-5 flex flex-col gap-4 transition-shadow duration-200 hover:shadow-md"
             >
               {/* Top row: icon + label + status */}
               <div className="flex items-start justify-between gap-3">
@@ -150,7 +150,7 @@ export default async function ChannelsPage({
                       {CHANNEL_LABEL[channel.type] ?? channel.type}
                     </p>
                     {channel.externalId && (
-                      <p className="text-xs text-slate-500 font-mono truncate max-w-[160px]" title={channel.externalId}>
+                      <p className="text-xs text-gray-500 font-mono truncate max-w-[160px]" title={channel.externalId}>
                         {channel.externalId}
                       </p>
                     )}
@@ -164,10 +164,10 @@ export default async function ChannelsPage({
 
               {/* Last message */}
               <div className="flex flex-col gap-0.5">
-                <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">
+                <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
                   Last message
                 </span>
-                <span className="text-xs text-slate-600">
+                <span className="text-xs text-gray-600">
                   {channel.lastMessageAt
                     ? formatDateTime(channel.lastMessageAt, "Europe/London")
                     : "—"}
@@ -175,7 +175,7 @@ export default async function ChannelsPage({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-100">
+              <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-gray-100">
                 <ChannelTestButton
                   orgId={orgId}
                   automationId={automationId}
@@ -184,7 +184,7 @@ export default async function ChannelsPage({
                 />
                 <Link
                   href="/dashboard/support"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 underline-offset-2 hover:text-blue-800 hover:underline transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 rounded cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 underline-offset-2 hover:text-blue-800 hover:underline transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 rounded cursor-pointer"
                 >
                   Reconnect
                 </Link>

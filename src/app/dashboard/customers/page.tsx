@@ -13,8 +13,8 @@ export default async function CustomersPage() {
   const customers = await listCustomers(claims.tenant_id);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Customers</h1>
-      <p className="mb-4 text-sm text-slate-500">Derived from your bot&apos;s bookings and conversations.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Customers</h1>
+      <p className="mb-4 text-sm text-gray-500">Derived from your bot&apos;s bookings and conversations.</p>
       <CustomersClient orgId={claims.tenant_id} customers={customers} isDemo={claims.is_demo} />
     </div>
   );

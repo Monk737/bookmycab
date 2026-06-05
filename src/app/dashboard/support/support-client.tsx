@@ -142,7 +142,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
         <div className="flex items-center justify-between">
           <h2
             id="tickets-heading"
-            className="font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500"
+            className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
           >
             Your tickets
           </h2>
@@ -160,7 +160,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               key: "id",
               header: "ID",
               render: (r) => (
-                <span className="font-mono text-xs text-slate-500">{truncateId(r.id)}</span>
+                <span className="font-mono text-xs text-gray-500">{truncateId(r.id)}</span>
               ),
             },
             { key: "subject", header: "Subject", render: (r) => r.subject },
@@ -181,7 +181,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               key: "created",
               header: "Created",
               render: (r) => (
-                <span className="whitespace-nowrap text-xs text-slate-500">
+                <span className="whitespace-nowrap text-xs text-gray-500">
                   {formatDateTime(r.createdAt, TZ)}
                 </span>
               ),
@@ -196,11 +196,11 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
       {/* New ticket form */}
       <section
         aria-labelledby="new-ticket-heading"
-        className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
       >
         <h2
           id="new-ticket-heading"
-          className="mb-5 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500"
+          className="mb-5 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
         >
           New ticket
         </h2>
@@ -226,7 +226,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
           <div className="space-y-1">
             <label
               htmlFor="ticket-subject"
-              className="block text-xs font-medium text-slate-700"
+              className="block text-xs font-medium text-gray-700"
             >
               Subject
             </label>
@@ -238,14 +238,14 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               onChange={(e) => setSubject(e.target.value)}
               disabled={submitting}
               placeholder="Brief description of your issue"
-              className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 
           <div className="space-y-1">
             <label
               htmlFor="ticket-category"
-              className="block text-xs font-medium text-slate-700"
+              className="block text-xs font-medium text-gray-700"
             >
               Category
             </label>
@@ -254,7 +254,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               value={category}
               onChange={(e) => setCategory(e.target.value as Category | "")}
               disabled={submitting}
-              className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
             >
               <option value="">Select a category</option>
               {CATEGORIES.map((c) => (
@@ -268,7 +268,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
           <div className="space-y-1">
             <label
               htmlFor="ticket-description"
-              className="block text-xs font-medium text-slate-700"
+              className="block text-xs font-medium text-gray-700"
             >
               Description
             </label>
@@ -279,7 +279,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               disabled={submitting}
               rows={5}
               placeholder="Please provide as much detail as possible"
-              className="w-full resize-y rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full resize-y rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 

@@ -13,8 +13,8 @@ export default async function CopilotPage() {
   const history = await listHistory(claims.tenant_id, 10);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Copilot</h1>
-      <p className="mb-4 text-sm text-slate-500">Ask questions about your bookings and conversations.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Copilot</h1>
+      <p className="mb-4 text-sm text-gray-500">Ask questions about your bookings and conversations.</p>
       <CopilotClient orgId={claims.tenant_id} history={history} isDemo={claims.is_demo} />
     </div>
   );

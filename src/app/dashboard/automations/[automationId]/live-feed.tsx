@@ -53,10 +53,10 @@ export function LiveFeed({
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       {/* Header row with Live indicator */}
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-        <span className="text-sm font-semibold text-slate-700">Bookings</span>
+      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+        <span className="text-sm font-semibold text-gray-700">Bookings</span>
         <span className="flex items-center gap-1.5">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -70,20 +70,20 @@ export function LiveFeed({
 
       <table className="w-full border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-slate-100 bg-slate-50">
-            <th className="px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          <tr className="border-b border-gray-100 bg-gray-50">
+            <th className="px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
               Ref
             </th>
-            <th className="px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500">
+            <th className="px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
               Passenger
             </th>
-            <th className="hidden px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500 sm:table-cell">
+            <th className="hidden px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500 sm:table-cell">
               Pickup
             </th>
-            <th className="hidden px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500 md:table-cell">
+            <th className="hidden px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500 md:table-cell">
               Fare
             </th>
-            <th className="px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-slate-500">
+            <th className="px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
               Status
             </th>
           </tr>
@@ -93,7 +93,7 @@ export function LiveFeed({
             <tr>
               <td
                 colSpan={5}
-                className="px-4 py-10 text-center text-sm text-slate-400"
+                className="px-4 py-10 text-center text-sm text-gray-400"
               >
                 No bookings yet — new bookings will appear here in real time.
               </td>
@@ -102,18 +102,18 @@ export function LiveFeed({
             rows.map((row) => (
               <tr
                 key={row.id}
-                className="border-b border-slate-100 last:border-0 odd:bg-white even:bg-slate-50/40 transition-colors duration-150 hover:bg-blue-50/50"
+                className="border-b border-gray-100 last:border-0 odd:bg-white even:bg-gray-50/40 transition-colors duration-150 hover:bg-blue-50/50"
               >
-                <td className="px-4 py-3 font-mono text-xs text-slate-600">
+                <td className="px-4 py-3 font-mono text-xs text-gray-600">
                   {row.dispatchRef ?? row.id.slice(0, 8)}
                 </td>
-                <td className="px-4 py-3 text-slate-700">
+                <td className="px-4 py-3 text-gray-700">
                   {row.passengerName ?? row.customerHandle ?? "—"}
                 </td>
-                <td className="hidden whitespace-nowrap px-4 py-3 text-slate-600 sm:table-cell">
+                <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 sm:table-cell">
                   {formatDateTime(row.pickupAtUtc, "Europe/London")}
                 </td>
-                <td className="hidden px-4 py-3 tabular-nums text-slate-700 md:table-cell">
+                <td className="hidden px-4 py-3 tabular-nums text-gray-700 md:table-cell">
                   {formatCurrency(row.fare, row.currency)}
                 </td>
                 <td className="px-4 py-3">

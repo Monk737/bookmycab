@@ -12,10 +12,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Data palette: current = blue-800 (#1e40af), previous = slate-400 (#94a3b8)
-const COLOR_CURRENT = "#1e40af";
-const COLOR_PREVIOUS = "#94a3b8";
-const COLOR_GRID = "#94a3b8";
+// Data palette: current = blue-800 (#0a0a0a), previous = gray-400 (#6f6f6b)
+const COLOR_CURRENT = "#0a0a0a";
+const COLOR_PREVIOUS = "#6f6f6b";
+const COLOR_GRID = "#6f6f6b";
 
 export function TrendChart({
   data,
@@ -26,7 +26,7 @@ export function TrendChart({
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-slate-400"
+        className="flex items-center justify-center text-sm text-gray-400"
       >
         No data for this period.
       </div>
@@ -51,10 +51,10 @@ export function TrendChart({
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "#1e293b",
-            border: "1px solid #334155",
+            backgroundColor: "#0a0a0a",
+            border: "1px solid #383836",
             borderRadius: 8,
-            color: "#f1f5f9",
+            color: "#ffffff",
             fontSize: 12,
           }}
           cursor={{ stroke: COLOR_GRID, strokeWidth: 1 }}

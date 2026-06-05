@@ -14,7 +14,7 @@ const TONE_CLASSES: Record<Tone, string> = {
   indigo: "border-blue-600/40 bg-blue-600/10 text-blue-600",
   amber: "border-amber-500/40 bg-amber-500/10 text-amber-700",
   red: "border-red-500/40 bg-red-500/10 text-red-700",
-  slate: "border-slate-300 bg-slate-100 text-slate-600",
+  slate: "border-gray-300 bg-gray-100 text-gray-600",
 };
 
 const STATUS_TONE: Record<string, Tone> = {
@@ -42,7 +42,7 @@ export function StatusBadge({ status }: { status: string }): React.JSX.Element {
   const tone = STATUS_TONE[status.toLowerCase()] ?? "slate";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider ${TONE_CLASSES[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${TONE_CLASSES[tone]}`}
     >
       <span
         aria-hidden="true"

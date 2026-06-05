@@ -50,7 +50,7 @@ export function PortalButton({ orgId }: PortalButtonProps) {
         {loading ? "Loading..." : "Update Payment Method"}
       </button>
       {message && (
-        <p className="text-sm text-slate-600 max-w-sm">{message}</p>
+        <p className="text-sm text-gray-600 max-w-sm">{message}</p>
       )}
     </div>
   );

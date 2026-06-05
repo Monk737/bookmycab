@@ -65,12 +65,12 @@ export function SlideOver({
         className="relative z-10 flex w-full max-w-md flex-col bg-white shadow-xl outline-none motion-reduce:transition-none transition-transform duration-300 ease-in-out translate-x-0"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1.5 text-slate-500 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:outline-none cursor-pointer"
+            className="rounded p-1.5 text-gray-500 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:outline-none cursor-pointer"
             aria-label="Close panel"
           >
             <svg

@@ -17,8 +17,8 @@ export default async function IntegrationsPage() {
   ]);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Integrations</h1>
-      <p className="mb-4 text-sm text-slate-500">API keys and outbound webhooks for your own systems.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Integrations</h1>
+      <p className="mb-4 text-sm text-gray-500">API keys and outbound webhooks for your own systems.</p>
       <IntegrationsClient orgId={claims.tenant_id} keys={keys} webhooks={webhooks} canWebhooks={canWebhooks} isDemo={claims.is_demo} />
     </div>
   );

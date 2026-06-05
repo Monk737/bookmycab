@@ -16,8 +16,8 @@ export default async function ConnectPage() {
   ]);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Connect a channel</h1>
-      <p className="mb-4 text-sm text-slate-500">Request a new channel; our team reviews and activates it.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Connect a channel</h1>
+      <p className="mb-4 text-sm text-gray-500">Request a new channel; our team reviews and activates it.</p>
       <ConnectClient orgId={claims.tenant_id} channels={channels} automations={automations} isDemo={claims.is_demo} />
     </div>
   );

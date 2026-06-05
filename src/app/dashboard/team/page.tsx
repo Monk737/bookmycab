@@ -12,7 +12,7 @@ export default async function TeamPage() {
   if (!claims.tenant_id) {
     return (
       <main className="p-8">
-        <p className="text-slate-500 text-sm">No organisation found for your account.</p>
+        <p className="text-gray-500 text-sm">No organisation found for your account.</p>
       </main>
     );
   }

@@ -38,7 +38,7 @@ export function AutomationSubnav({
   return (
     <nav
       aria-label="Automation sections"
-      className="border-b border-slate-200 bg-white"
+      className="border-b border-gray-200 bg-white"
     >
       <div className="flex overflow-x-auto px-4 md:px-6" role="tablist">
         {items.map((item) => {
@@ -53,7 +53,7 @@ export function AutomationSubnav({
               className={`relative shrink-0 cursor-pointer px-4 py-3 text-sm font-medium outline-none whitespace-nowrap transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-inset ${
                 active
                   ? "border-b-2 border-blue-800 text-blue-800"
-                  : "border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+                  : "border-b-2 border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
               }`}
             >
               {item.label}

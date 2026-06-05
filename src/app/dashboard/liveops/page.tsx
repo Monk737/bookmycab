@@ -13,8 +13,8 @@ export default async function LiveopsPage() {
   const conversations = await listActiveConversations(claims.tenant_id);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Live ops</h1>
-      <p className="mb-4 text-sm text-slate-500">Watch live conversations and take over from the bot.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Live ops</h1>
+      <p className="mb-4 text-sm text-gray-500">Watch live conversations and take over from the bot.</p>
       <LiveopsClient orgId={claims.tenant_id} conversations={conversations} isDemo={claims.is_demo} />
     </div>
   );

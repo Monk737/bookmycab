@@ -18,8 +18,8 @@ export default async function ReportsPage() {
   ]);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Reports</h1>
-      <p className="mb-4 text-sm text-slate-500">Define reports, run them on demand, and brand the output.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Reports</h1>
+      <p className="mb-4 text-sm text-gray-500">Define reports, run them on demand, and brand the output.</p>
       <ReportsClient orgId={claims.tenant_id} definitions={definitions} runs={runs} branding={branding} canBrand={canBrand} isDemo={claims.is_demo} />
     </div>
   );

@@ -34,7 +34,7 @@ function defaultRange(): { from: string; to: string } {
 function Skeleton({ height = 256 }: { height?: number }) {
   return (
     <div
-      className="animate-pulse rounded-lg bg-slate-100"
+      className="animate-pulse rounded-lg bg-gray-100"
       style={{ height }}
       aria-label="Loading…"
     />
@@ -46,11 +46,11 @@ function Skeleton({ height = 256 }: { height?: number }) {
 function UnavailableCard({ message }: { message: string }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-6 py-10 text-center"
+      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-6 py-10 text-center"
       style={{ minHeight: 120 }}
     >
       <svg
-        className="h-6 w-6 text-slate-300"
+        className="h-6 w-6 text-gray-300"
         fill="none"
         stroke="currentColor"
         strokeWidth={1.5}
@@ -63,7 +63,7 @@ function UnavailableCard({ message }: { message: string }) {
           d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
         />
       </svg>
-      <p className="text-sm text-slate-500">{message}</p>
+      <p className="text-sm text-gray-500">{message}</p>
     </div>
   );
 }
@@ -78,8 +78,8 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl bg-white shadow-sm border border-slate-200 p-6 flex flex-col gap-4">
-      <h2 className="text-sm font-semibold text-slate-700 tracking-wide uppercase font-mono">
+    <div className="rounded-xl bg-white shadow-sm border border-gray-200 p-6 flex flex-col gap-4">
+      <h2 className="text-sm font-semibold text-gray-700 tracking-wide uppercase font-mono">
         {title}
       </h2>
       {children}
@@ -100,17 +100,17 @@ function DateRangeBar({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <label className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+      <label className="flex items-center gap-2 text-xs text-gray-500 font-mono">
         From
         <input
           type="date"
           value={from}
           max={to}
           onChange={(e) => onChange(e.target.value, to)}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 cursor-pointer transition-colors duration-150"
+          className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 cursor-pointer transition-colors duration-150"
         />
       </label>
-      <label className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+      <label className="flex items-center gap-2 text-xs text-gray-500 font-mono">
         To
         <input
           type="date"
@@ -118,7 +118,7 @@ function DateRangeBar({
           min={from}
           max={toDateStr(new Date())}
           onChange={(e) => onChange(from, e.target.value)}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 cursor-pointer transition-colors duration-150"
+          className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 cursor-pointer transition-colors duration-150"
         />
       </label>
     </div>
@@ -200,7 +200,7 @@ const zoneColumns = [
     header: "%",
     render: (row: ZoneRow) => `${row.pct}%`,
     headerClassName: "text-right",
-    cellClassName: "text-right tabular-nums text-slate-500",
+    cellClassName: "text-right tabular-nums text-gray-500",
   },
 ];
 
@@ -208,9 +208,9 @@ const zoneColumns = [
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
-      <div className="text-[11px] font-medium uppercase tracking-wider text-slate-500">{label}</div>
-      <div className="mt-1 text-xl font-semibold tabular-nums text-slate-900">{value}</div>
+    <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+      <div className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{label}</div>
+      <div className="mt-1 text-xl font-semibold tabular-nums text-gray-900">{value}</div>
     </div>
   );
 }
@@ -231,7 +231,7 @@ function VoiceStatsPanel({ stats }: { stats: VoiceStats }) {
       </div>
       {stats.languages.length > 0 && (
         <div>
-          <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-gray-500">
             Detected languages
           </div>
           <DonutChart data={stats.languages} />
@@ -340,7 +340,7 @@ export function AnalyticsClient({
     <div className="flex flex-col gap-6 px-4 pb-12 min-w-0">
       {/* Date range toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg font-semibold text-slate-800 font-mono">Analytics</h1>
+        <h1 className="text-lg font-semibold text-gray-800 font-mono">Analytics</h1>
         <DateRangeBar
           from={range.from}
           to={range.to}

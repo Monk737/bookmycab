@@ -30,27 +30,27 @@ export function ConnectClient(props: { orgId: string; channels: Channel[]; autom
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-lg border border-slate-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-slate-900">Your channels</h2>
-        <ul className="divide-y divide-slate-100 text-sm">
-          {props.channels.length === 0 && <li className="py-2 text-slate-400">No channels yet.</li>}
+      <section className="rounded-lg border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">Your channels</h2>
+        <ul className="divide-y divide-gray-100 text-sm">
+          {props.channels.length === 0 && <li className="py-2 text-gray-400">No channels yet.</li>}
           {props.channels.map((c) => (
             <li key={c.id} className="flex items-center justify-between py-2">
-              <span className="text-slate-800 capitalize">{c.type} <span className="text-xs text-slate-400">{c.external_id ?? ""} · {autoName.get(c.automation_id) ?? ""}</span></span>
+              <span className="text-gray-800 capitalize">{c.type} <span className="text-xs text-gray-400">{c.external_id ?? ""} · {autoName.get(c.automation_id) ?? ""}</span></span>
               {badge(c.provisioning_status)}
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="rounded-lg border border-slate-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-slate-900">Request a channel</h2>
+      <section className="rounded-lg border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-semibold text-gray-900">Request a channel</h2>
         {err && <p className="mb-2 text-sm text-red-600" role="alert">{err}</p>}
-        {props.isDemo ? <p className="text-sm text-slate-400">Disabled in demo.</p> : (
+        {props.isDemo ? <p className="text-sm text-gray-400">Disabled in demo.</p> : (
           <form onSubmit={(e) => { e.preventDefault(); void request(e.currentTarget); }} className="space-y-2">
-            <select name="type" className="w-full rounded border border-slate-300 px-2 py-1 text-sm">{TYPES.map((t) => <option key={t} value={t}>{t}</option>)}</select>
-            <input name="externalId" required placeholder="Number / handle / widget id" className="w-full rounded border border-slate-300 px-2 py-1 text-sm" />
-            <select name="automationId" required className="w-full rounded border border-slate-300 px-2 py-1 text-sm">
+            <select name="type" className="w-full rounded border border-gray-300 px-2 py-1 text-sm">{TYPES.map((t) => <option key={t} value={t}>{t}</option>)}</select>
+            <input name="externalId" required placeholder="Number / handle / widget id" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
+            <select name="automationId" required className="w-full rounded border border-gray-300 px-2 py-1 text-sm">
               <option value="">Choose automation…</option>
               {props.automations.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>

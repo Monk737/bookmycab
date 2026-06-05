@@ -13,8 +13,8 @@ export default async function DispatchPage() {
   const [health, failures] = await Promise.all([getHealth(claims.tenant_id), listFailedDispatches(claims.tenant_id)]);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Dispatch</h1>
-      <p className="mb-4 text-sm text-slate-500">Adapter health and failed-dispatch recovery (last 24h).</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Dispatch</h1>
+      <p className="mb-4 text-sm text-gray-500">Adapter health and failed-dispatch recovery (last 24h).</p>
       <DispatchClient orgId={claims.tenant_id} health={health} failures={failures} isDemo={claims.is_demo} />
     </div>
   );

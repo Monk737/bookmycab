@@ -19,8 +19,8 @@ export default async function AlertsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Alerts</h1>
-      <p className="mb-4 text-sm text-slate-500">Get notified when your bot&apos;s metrics cross a threshold.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Alerts</h1>
+      <p className="mb-4 text-sm text-gray-500">Get notified when your bot&apos;s metrics cross a threshold.</p>
       <AlertsClient orgId={claims.tenant_id} rules={rules} channels={channels} events={events} isDemo={claims.is_demo} />
     </div>
   );

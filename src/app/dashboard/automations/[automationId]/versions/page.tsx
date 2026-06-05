@@ -14,8 +14,8 @@ export default async function VersionsPage({ params }: { params: Promise<{ autom
   const versions = await listVersions(automationId);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Config versions</h1>
-      <p className="mb-4 text-sm text-slate-500">Snapshot the live config, publish changes, or roll back.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Config versions</h1>
+      <p className="mb-4 text-sm text-gray-500">Snapshot the live config, publish changes, or roll back.</p>
       <VersionsClient orgId={claims.tenant_id} automationId={automationId} versions={versions} isDemo={claims.is_demo} />
     </div>
   );

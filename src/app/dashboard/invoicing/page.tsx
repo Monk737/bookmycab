@@ -13,8 +13,8 @@ export default async function InvoicingPage() {
   const [accounts, invoices] = await Promise.all([listAccounts(claims.tenant_id), listInvoices(claims.tenant_id)]);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Account invoicing</h1>
-      <p className="mb-4 text-sm text-slate-500">Bill your corporate accounts for their account-paid journeys.</p>
+      <h1 className="mb-1 text-xl font-semibold text-gray-900">Account invoicing</h1>
+      <p className="mb-4 text-sm text-gray-500">Bill your corporate accounts for their account-paid journeys.</p>
       <InvoicingClient orgId={claims.tenant_id} accounts={accounts} invoices={invoices} isDemo={claims.is_demo} />
     </div>
   );

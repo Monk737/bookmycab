@@ -26,7 +26,7 @@ export function ChannelTestButton({
           type="button"
           disabled
           aria-disabled="true"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-400 cursor-not-allowed select-none"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-400 cursor-not-allowed select-none"
         >
           Send test message
         </button>
