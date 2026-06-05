@@ -157,8 +157,18 @@ Still open (resolve at the epic that needs them, noted per-plan below): Q2 (iCab
 **v1 follow-ups:** public `/api/v1/*` surface consuming `verifyApiKey`; rate-limit enforcement by `rate_limit_tier`; webhook retries/backoff; wiring booking/conversation event emit points to `dispatchWebhook`.
 **Deferred (separate Epic-23 governance bucket):** network benchmarking · custom roles/permissions · tenant-visible activity log.
 
-### ⏭ Planned Epic 24 (final; gates via `requireFeature`):
-24 AI copilot.
+### ✅ Plan 24 — Epic 24: AI Copilot  → `2026-06-05-epic-24-ai-copilot.md`  (DONE & merged to `master`, HEAD `c8efbd7`)
+**Depends on:** Plan 13 (entitlements/metering + `requireQuota`), 9 (`blockIfDemo`).
+**Produces:** migration 0030 (append-only `copilot_messages`); `src/lib/copilot/*` (pure `classifyQuestion`/`formatAnswer`/`estimateTokens`; `askCopilot` classify→query→format→log→meter + history); quota-gated tenant API (`requireQuota("ai_copilot")` → 403 off / 429 over budget); entitlement-gated `/dashboard/copilot` chat page. Gates on `ai_copilot` (metered tokens). 17 tests; full suite green (769); dashboard-structure guard verified.
+**v1 follow-ups:** LLM path in `askCopilot` using the tenant's own AI key (per locked Q1) for open-ended questions + real token/cost; conversational memory across turns.
+
+---
+
+## 🎉 Advanced-feature program (Epics 13–24) — COMPLETE
+
+All 12 epics built, reviewed, and merged to `master` (migrations 0017–0030; ~181 new tests; full suite green except the 2 pre-existing no-n8n integration timeouts). A feature-entitlement + metering foundation gates **11 tenant features** (alerting, CRM, config control plane, live ops, dispatch ops, conversation intelligence, account invoicing, reporting/white-label, self-serve channels, integrations/API, AI copilot) and **3 admin control surfaces** (Plans, Guardrails, Channel review). Every feature: `requireFeature`/`requireQuota` gated, `blockIfDemo`-protected, RLS-scoped, append-only history where applicable, entitlement-gated dashboard nav.
+
+**Cross-cutting follow-ups carried by the epics** (none blocking): real n8n engine wiring for config-publish / live-ops relay / dispatch-attempt recording; LLM paths for conversation intelligence + copilot (tenant's own key); PDF rendering for reports/invoices; platform schedulers (alerts, reports); deferred governance bucket (benchmarking, custom roles, tenant activity log).
 
 ---
 
