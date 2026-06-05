@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Plans", href: "/admin/plans" },
   { label: "Rollouts", href: "/admin/rollouts" },
   { label: "Platform", href: "/admin/platform" },
+  { label: "Benchmarks", href: "/admin/benchmarks" },
   { label: "Guardrails", href: "/admin/guardrails" },
   { label: "Channel review", href: "/admin/channel-review" },
   { label: "Automations", href: "/admin/automations" },
