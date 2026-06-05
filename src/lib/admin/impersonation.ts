@@ -9,8 +9,8 @@
  * millisecond value so expiry math is deterministic and unit-testable.
  */
 
-/** Impersonation is always read-only this epoch. */
-export type ImpersonationMode = "read_only";
+/** Read-only by default; write mode is opt-in and audited (Epic 29). */
+export type ImpersonationMode = "read_only" | "write";
 
 /** The 15-minute auto-expiry window for an impersonation session, in ms. */
 export const IMPERSONATION_TTL_MS = 15 * 60 * 1000;
@@ -37,6 +37,8 @@ export type MintImpersonationInput = {
   tenantId: string;
   targetUserId: string;
   reason: string;
+  /** Defaults to "read_only"; "write" must be chosen deliberately. */
+  mode?: ImpersonationMode;
   /** Epoch ms "now"; injected for determinism. */
   now: number;
 };
@@ -59,7 +61,7 @@ export function mintImpersonation(
     tenantId: input.tenantId,
     targetUserId: input.targetUserId,
     reason,
-    mode: "read_only",
+    mode: input.mode ?? "read_only",
     startedAt: input.now,
     expiresAt: input.now + IMPERSONATION_TTL_MS,
   };
@@ -74,4 +76,13 @@ export function isImpersonationValid(
   now: number,
 ): boolean {
   return now < record.expiresAt;
+}
+
+/**
+ * The single gate future "view-as" write paths must call: returns true ONLY when
+ * the impersonation is write-mode AND still within its window. Read-only and
+ * expired markers always return false. Pure — `now` injected for determinism.
+ */
+export function impersonationAllowsWrite(record: ImpersonationRecord, now: number): boolean {
+  return record.mode === "write" && isImpersonationValid(record, now);
 }
