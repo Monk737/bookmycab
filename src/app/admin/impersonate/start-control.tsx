@@ -36,7 +36,7 @@ export function StartControl({
         role="status"
         className="text-xs font-medium text-emerald-700"
       >
-        Impersonation started — see the banner. Read-only, expires in 15 min.
+        Impersonation started — see the banner. Expires in 15 min.
       </p>
     );
   }
@@ -68,6 +68,11 @@ export function StartControl({
           {pending ? "Starting…" : "Impersonate"}
         </button>
       </div>
+      <label className="flex items-center gap-2 text-sm text-slate-700">
+        <input type="hidden" name="mode" value="read_only" />
+        <input type="checkbox" name="mode" value="write" />
+        Allow writes (write-scoped — use only when a fix requires it; fully audited)
+      </label>
       {state.formError && (
         <p role="alert" className="text-xs text-red-600">
           {state.formError}
