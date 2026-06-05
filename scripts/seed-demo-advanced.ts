@@ -159,87 +159,91 @@ async function main() {
   // =========================================================================
   console.log("── Alerting ─────────────────────────────────────────────");
 
-  // alert_rules (delete-then-insert)
-  await sb.from("alert_rules").delete().eq("tenant_id", DEMO_TENANT_ID);
-
-  const alertRulesInsert = [
-    {
-      tenant_id: DEMO_TENANT_ID,
-      automation_id: AUTO_WA,
-      name: "High abandonment rate",
-      metric: "abandonment_rate",
-      operator: "gt",
-      threshold: 15,
-      window_hours: 24,
-      severity: "critical",
-      enabled: true,
-      created_by: DEMO_USER_ID,
-    },
-    {
-      tenant_id: DEMO_TENANT_ID,
-      automation_id: AUTO_WA,
-      name: "Low booking count",
-      metric: "bookings_count",
-      operator: "lt",
-      threshold: 1,
-      window_hours: 6,
-      severity: "warning",
-      enabled: true,
-      created_by: DEMO_USER_ID,
-    },
-    {
-      tenant_id: DEMO_TENANT_ID,
-      automation_id: AUTO_TG,
-      name: "Slow response time",
-      metric: "avg_response_time_ms",
-      operator: "gt",
-      threshold: 5000,
-      window_hours: 1,
-      severity: "info",
-      enabled: false,
-      created_by: DEMO_USER_ID,
-    },
-  ];
-
-  const { data: insertedRules, error: arErr } = await sb
-    .from("alert_rules")
-    .insert(alertRulesInsert)
-    .select("id");
-  if (arErr) throw new Error(`alert_rules: ${arErr.message}`);
-  const ruleIds = (insertedRules as { id: string }[]).map((r) => r.id);
-  console.log(`  ✓ alert_rules (${ruleIds.length})`);
-
-  // notification_channels (delete-then-insert)
-  await sb.from("notification_channels").delete().eq("tenant_id", DEMO_TENANT_ID);
-
-  const { data: insertedChans, error: ncErr } = await sb
-    .from("notification_channels")
-    .insert([
-      {
-        tenant_id: DEMO_TENANT_ID,
-        type: "email",
-        destination: "ops@premiercabs.example",
-        enabled: true,
-        verified: true,
-      },
-      {
-        tenant_id: DEMO_TENANT_ID,
-        type: "slack",
-        destination: "https://hooks.slack.com/services/T000/B000/XXXX",
-        enabled: true,
-        verified: false,
-      },
-    ])
-    .select("id");
-  if (ncErr) throw new Error(`notification_channels: ${ncErr.message}`);
-  const chanIds = (insertedChans as { id: string }[]).map((c) => c.id);
-  console.log(`  ✓ notification_channels (${chanIds.length})`);
-
-  // alert_events (APPEND-ONLY guard)
+  // Alerting seeds as a UNIT, gated on alert_events (append-only). Once events
+  // exist, the on-delete-cascade from alert_events back to alert_rules is blocked
+  // by the immutability trigger, so re-deleting alert_rules fails and inserts
+  // would accumulate. Seeding rules/channels/events only when alert_events is
+  // empty keeps re-runs (and 24h demo resets) idempotent.
   const aeCount = await appendOnlyCount(sb, "alert_events", DEMO_TENANT_ID);
+  let ruleIds: string[] = [];
+  let chanIds: string[] = [];
   if (aeCount > 0) {
-    console.log(`  ✓ alert_events (${aeCount} — already seeded, skipping)`);
+    console.log(`  ✓ alerting (already seeded — ${aeCount} events; skipping rules/channels/events)`);
   } else {
+    // alert_rules
+    await sb.from("alert_rules").delete().eq("tenant_id", DEMO_TENANT_ID);
+    const alertRulesInsert = [
+      {
+        tenant_id: DEMO_TENANT_ID,
+        automation_id: AUTO_WA,
+        name: "High abandonment rate",
+        metric: "abandonment_rate",
+        operator: "gt",
+        threshold: 15,
+        window_hours: 24,
+        severity: "critical",
+        enabled: true,
+        created_by: DEMO_USER_ID,
+      },
+      {
+        tenant_id: DEMO_TENANT_ID,
+        automation_id: AUTO_WA,
+        name: "Low booking count",
+        metric: "bookings_count",
+        operator: "lt",
+        threshold: 1,
+        window_hours: 6,
+        severity: "warning",
+        enabled: true,
+        created_by: DEMO_USER_ID,
+      },
+      {
+        tenant_id: DEMO_TENANT_ID,
+        automation_id: AUTO_TG,
+        name: "Slow response time",
+        metric: "avg_response_time_ms",
+        operator: "gt",
+        threshold: 5000,
+        window_hours: 1,
+        severity: "info",
+        enabled: false,
+        created_by: DEMO_USER_ID,
+      },
+    ];
+    const { data: insertedRules, error: arErr } = await sb
+      .from("alert_rules")
+      .insert(alertRulesInsert)
+      .select("id");
+    if (arErr) throw new Error(`alert_rules: ${arErr.message}`);
+    ruleIds = (insertedRules as { id: string }[]).map((r) => r.id);
+    console.log(`  ✓ alert_rules (${ruleIds.length})`);
+
+    // notification_channels
+    await sb.from("notification_channels").delete().eq("tenant_id", DEMO_TENANT_ID);
+    const { data: insertedChans, error: ncErr } = await sb
+      .from("notification_channels")
+      .insert([
+        {
+          tenant_id: DEMO_TENANT_ID,
+          type: "email",
+          destination: "ops@premiercabs.example",
+          enabled: true,
+          verified: true,
+        },
+        {
+          tenant_id: DEMO_TENANT_ID,
+          type: "slack",
+          destination: "https://hooks.slack.com/services/T000/B000/XXXX",
+          enabled: true,
+          verified: false,
+        },
+      ])
+      .select("id");
+    if (ncErr) throw new Error(`notification_channels: ${ncErr.message}`);
+    chanIds = (insertedChans as { id: string }[]).map((c) => c.id);
+    console.log(`  ✓ notification_channels (${chanIds.length})`);
+
+    // alert_events (append-only — inserted here while empty)
     const alertEventsInsert = [
       { tenant_id: DEMO_TENANT_ID, rule_id: ruleIds[0], value: 18.5, status: "firing", fired_at: daysAgo(13) },
       { tenant_id: DEMO_TENANT_ID, rule_id: ruleIds[0], value: 22.1, status: "resolved", fired_at: daysAgo(10) },
@@ -254,8 +258,8 @@ async function main() {
 
   // notification_log (APPEND-ONLY guard)
   const nlCount = await appendOnlyCount(sb, "notification_log", DEMO_TENANT_ID);
-  if (nlCount > 0) {
-    console.log(`  ✓ notification_log (${nlCount} — already seeded, skipping)`);
+  if (nlCount > 0 || chanIds.length === 0) {
+    console.log(`  ✓ notification_log (${nlCount} — already seeded or alerting skipped)`);
   } else {
     const notifLogInsert = [
       { tenant_id: DEMO_TENANT_ID, channel_id: chanIds[0], alert_event_id: null, type: "email", status: "sent", sent_at: daysAgo(13) },
@@ -715,46 +719,49 @@ async function main() {
   // =========================================================================
   console.log("── Reporting ────────────────────────────────────────────");
 
-  await sb.from("report_definitions").delete().eq("tenant_id", DEMO_TENANT_ID);
-
-  const { data: insertedReports, error: rdErr } = await sb
-    .from("report_definitions")
-    .insert([
-      {
-        tenant_id: DEMO_TENANT_ID,
-        name: "Monthly Performance",
-        metrics: ["revenue", "bookings"],
-        filters: { period: "last_month" },
-        schedule: "0 8 1 * *",
-        format: "json",
-        recipients: ["ops@premiercabs.example"],
-        white_label: true,
-        enabled: true,
-        created_by: DEMO_USER_ID,
-      },
-      {
-        tenant_id: DEMO_TENANT_ID,
-        name: "Response Health",
-        metrics: ["response_time"],
-        filters: { automations: [AUTO_WA, AUTO_TG] },
-        schedule: null,
-        format: "json",
-        recipients: [],
-        white_label: false,
-        enabled: true,
-        created_by: DEMO_USER_ID,
-      },
-    ])
-    .select("id");
-  if (rdErr) throw new Error(`report_definitions: ${rdErr.message}`);
-  const reportIds = (insertedReports as { id: string }[]).map((r) => r.id);
-  console.log(`  ✓ report_definitions (${reportIds.length})`);
-
-  // report_runs (APPEND-ONLY guard)
+  // Reporting seeds as a UNIT, gated on report_runs (append-only). report_runs
+  // → report_definitions is ON DELETE SET NULL, which is an UPDATE the
+  // immutability trigger blocks once runs exist — so re-deleting definitions
+  // fails and would accumulate. Seed both only when report_runs is empty.
   const rrCount = await appendOnlyCount(sb, "report_runs", DEMO_TENANT_ID);
+  let reportIds: string[] = [];
   if (rrCount > 0) {
-    console.log(`  ✓ report_runs (${rrCount} — already seeded, skipping)`);
+    console.log(`  ✓ reporting (already seeded — ${rrCount} runs; skipping definitions + runs)`);
   } else {
+    await sb.from("report_definitions").delete().eq("tenant_id", DEMO_TENANT_ID);
+    const { data: insertedReports, error: rdErr } = await sb
+      .from("report_definitions")
+      .insert([
+        {
+          tenant_id: DEMO_TENANT_ID,
+          name: "Monthly Performance",
+          metrics: ["revenue", "bookings"],
+          filters: { period: "last_month" },
+          schedule: "0 8 1 * *",
+          format: "json",
+          recipients: ["ops@premiercabs.example"],
+          white_label: true,
+          enabled: true,
+          created_by: DEMO_USER_ID,
+        },
+        {
+          tenant_id: DEMO_TENANT_ID,
+          name: "Response Health",
+          metrics: ["response_time"],
+          filters: { automations: [AUTO_WA, AUTO_TG] },
+          schedule: null,
+          format: "json",
+          recipients: [],
+          white_label: false,
+          enabled: true,
+          created_by: DEMO_USER_ID,
+        },
+      ])
+      .select("id");
+    if (rdErr) throw new Error(`report_definitions: ${rdErr.message}`);
+    reportIds = (insertedReports as { id: string }[]).map((r) => r.id);
+    console.log(`  ✓ report_definitions (${reportIds.length})`);
+
     const reportRunsInsert = [
       {
         report_id: reportIds[0],
@@ -830,7 +837,6 @@ async function main() {
   // =========================================================================
   console.log("── Integrations ─────────────────────────────────────────");
 
-  await sb.from("outbound_webhooks").delete().eq("tenant_id", DEMO_TENANT_ID);
   await sb.from("api_keys").delete().eq("tenant_id", DEMO_TENANT_ID);
 
   // Generate api keys
@@ -873,39 +879,43 @@ async function main() {
   if (akErr) throw new Error(`api_keys: ${akErr.message}`);
   console.log(`  ✓ api_keys (2)`);
 
-  // outbound_webhooks
-  const { data: insertedWebhooks, error: owErr } = await sb
-    .from("outbound_webhooks")
-    .insert([
-      {
-        tenant_id: DEMO_TENANT_ID,
-        url: "https://premiercabs.example/hook",
-        events: ["booking.created", "booking.cancelled"],
-        secret: "whsec_" + randomBytes(16).toString("hex"),
-        enabled: true,
-        failure_count: 0,
-        created_at: daysAgo(45),
-      },
-      {
-        tenant_id: DEMO_TENANT_ID,
-        url: "https://premiercabs.example/analytics-hook",
-        events: ["conversation.ended"],
-        secret: "whsec_" + randomBytes(16).toString("hex"),
-        enabled: true,
-        failure_count: 2,
-        created_at: daysAgo(20),
-      },
-    ])
-    .select("id");
-  if (owErr) throw new Error(`outbound_webhooks: ${owErr.message}`);
-  const webhookIds = (insertedWebhooks as { id: string }[]).map((w) => w.id);
-  console.log(`  ✓ outbound_webhooks (${webhookIds.length})`);
-
-  // webhook_deliveries (APPEND-ONLY guard)
+  // outbound_webhooks seeds as a UNIT, gated on webhook_deliveries (append-only):
+  // webhook_deliveries → outbound_webhooks is ON DELETE SET NULL (an UPDATE the
+  // immutability trigger blocks once deliveries exist), so re-deleting webhooks
+  // fails and would accumulate. Seed both only when webhook_deliveries is empty.
   const wdCount = await appendOnlyCount(sb, "webhook_deliveries", DEMO_TENANT_ID);
+  let webhookIds: string[] = [];
   if (wdCount > 0) {
-    console.log(`  ✓ webhook_deliveries (${wdCount} — already seeded, skipping)`);
+    console.log(`  ✓ webhooks (already seeded — ${wdCount} deliveries; skipping outbound_webhooks + deliveries)`);
   } else {
+    await sb.from("outbound_webhooks").delete().eq("tenant_id", DEMO_TENANT_ID);
+    const { data: insertedWebhooks, error: owErr } = await sb
+      .from("outbound_webhooks")
+      .insert([
+        {
+          tenant_id: DEMO_TENANT_ID,
+          url: "https://premiercabs.example/hook",
+          events: ["booking.created", "booking.cancelled"],
+          secret: "whsec_" + randomBytes(16).toString("hex"),
+          enabled: true,
+          failure_count: 0,
+          created_at: daysAgo(45),
+        },
+        {
+          tenant_id: DEMO_TENANT_ID,
+          url: "https://premiercabs.example/analytics-hook",
+          events: ["conversation.ended"],
+          secret: "whsec_" + randomBytes(16).toString("hex"),
+          enabled: true,
+          failure_count: 2,
+          created_at: daysAgo(20),
+        },
+      ])
+      .select("id");
+    if (owErr) throw new Error(`outbound_webhooks: ${owErr.message}`);
+    webhookIds = (insertedWebhooks as { id: string }[]).map((w) => w.id);
+    console.log(`  ✓ outbound_webhooks (${webhookIds.length})`);
+
     const wdInsert = [
       { webhook_id: webhookIds[0], tenant_id: DEMO_TENANT_ID, event: "booking.created", status: "delivered", response_code: 200, attempts: 1, delivered_at: daysAgo(1) },
       { webhook_id: webhookIds[0], tenant_id: DEMO_TENANT_ID, event: "booking.created", status: "delivered", response_code: 200, attempts: 1, delivered_at: daysAgo(2) },
