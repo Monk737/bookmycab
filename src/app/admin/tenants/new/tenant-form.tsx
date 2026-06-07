@@ -11,6 +11,7 @@ import {
   type PlanBand,
 } from "@/lib/admin/plan-bands";
 import { CURRENCIES, type Currency } from "@/lib/marketing/pricing";
+import { COUNTRIES } from "@/lib/billing/country";
 
 const DISPATCH_ADAPTERS = [
   { value: "autocab", label: "AutoCab" },
@@ -138,6 +139,7 @@ export function TenantForm() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
+  const [country, setCountry] = useState<string>("GB");
   const [planBand, setPlanBand] = useState<PlanBand>("A-Single");
   const [currency, setCurrency] = useState<Currency>("GBP");
   const [dispatchAdapter, setDispatchAdapter] = useState<string>("autocab");
@@ -200,14 +202,20 @@ export function TenantForm() {
           error={fe.slug?.[0]}
           required
         />
-        <Field
+        <SelectField
           id={countryId}
           name="country"
           label="Country"
-          placeholder="United Kingdom"
+          value={country}
+          onChange={setCountry}
           error={fe.country?.[0]}
-          required
-        />
+        >
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+        </SelectField>
         <Field
           id={emailId}
           name="contact_email"

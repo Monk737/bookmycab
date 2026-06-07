@@ -13,6 +13,7 @@ import {
   buildSubscriptionCreateParams,
 } from "@/lib/billing/plan-price";
 import { subscriptionToMirror } from "@/lib/billing/event-map";
+import { toStripeCountry } from "@/lib/billing/country";
 import { addMonthsUTC } from "@/lib/billing/dates";
 import { CONTRACT_MONTHS, SETUP_FEE, type Currency } from "@/lib/marketing/pricing";
 import type { PlanBand } from "@/lib/admin/plan-bands";
@@ -51,7 +52,7 @@ export async function getOrCreateStripeCustomer(tenant: TenantBillingRow): Promi
   const customer = await getStripe().customers.create({
     name: tenant.name,
     email: tenant.contact_email ?? undefined,
-    address: { country: tenant.country },
+    address: { country: toStripeCountry(tenant.country) },
     metadata: { tenant_id: tenant.id },
   });
   await db().from("tenants").update({ stripe_customer_id: customer.id }).eq("id", tenant.id);

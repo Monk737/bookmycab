@@ -8,6 +8,7 @@ import { DataTable, type Column } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { planBandLabel, type PlanBand } from "@/lib/admin/plan-bands";
 import { formatPrice, type Currency } from "@/lib/marketing/pricing";
+import { countryLabel } from "@/lib/billing/country";
 import {
   EditContractForm,
   InviteForm,
@@ -398,7 +399,7 @@ export default async function TenantDetailPage({
 
       <div className="mt-6 border-[3px] border-ink bg-paper p-5">
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
-          <Detail label="Country" value={tenant.country} />
+          <Detail label="Country" value={countryLabel(tenant.country)} />
           <Detail label="Plan band" value={planBandLabel(tenant.plan_band)} />
           <Detail label="Currency" value={tenant.currency} />
           <Detail

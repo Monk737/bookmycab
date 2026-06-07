@@ -10,6 +10,7 @@ import { writeAudit } from "@/lib/admin/audit";
 import { CURRENCIES, CONTRACT_MONTHS } from "@/lib/marketing/pricing";
 import { PLAN_BANDS } from "@/lib/admin/plan-bands";
 import { validateCoupon, applyDiscount, redeemCoupon } from "@/lib/admin/coupons";
+import { COUNTRY_CODES } from "@/lib/billing/country";
 import { addMonthsUTC } from "@/lib/billing/dates";
 
 /** Form-state shape for the provisioning form (mirrors the auth AuthState). */
@@ -38,7 +39,7 @@ const createTenantSchema = z.object({
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       "Slug must be lowercase letters, numbers and single hyphens.",
     ),
-  country: z.string().trim().min(1, "Country is required."),
+  country: z.enum(COUNTRY_CODES, { message: "Select a valid country." }),
   plan_band: z.enum(PLAN_BANDS),
   currency: z.enum(CURRENCIES),
   dispatch_adapter: z.enum(DISPATCH_ADAPTERS),
