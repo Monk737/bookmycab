@@ -251,7 +251,7 @@ export function BookingsClient({
       key: "dispatchRef",
       header: "Dispatch Ref",
       render: (row) => (
-        <span className="font-mono text-[11px] text-gray-600">{row.dispatchRef ?? "—"}</span>
+        <span className="font-mono text-[11px] text-gray-600">{row.dispatchRef ?? "·"}</span>
       ),
     },
     {
@@ -267,7 +267,7 @@ export function BookingsClient({
       key: "customer",
       header: "Customer",
       render: (row) => (
-        <span className="font-medium text-gray-900">{row.passengerName ?? "—"}</span>
+        <span className="font-medium text-ink">{row.passengerName ?? "·"}</span>
       ),
     },
     {
@@ -277,7 +277,7 @@ export function BookingsClient({
         isChannelType(row.channelType) ? (
           <ChannelIcon type={row.channelType} />
         ) : (
-          <span className="text-gray-400 text-sm">{row.channelType ?? "—"}</span>
+          <span className="text-gray-400 text-sm">{row.channelType ?? "·"}</span>
         ),
     },
     {
@@ -301,14 +301,14 @@ export function BookingsClient({
     {
       key: "vehicle",
       header: "Vehicle",
-      render: (row) => <span className="text-sm">{row.vehicleType ?? "—"}</span>,
+      render: (row) => <span className="text-sm">{row.vehicleType ?? "·"}</span>,
     },
     {
       key: "pax",
       header: "Pax",
       headerClassName: "text-right",
       cellClassName: "text-right tabular-nums",
-      render: (row) => <span>{row.passengerCount ?? "—"}</span>,
+      render: (row) => <span>{row.passengerCount ?? "·"}</span>,
     },
     {
       key: "fare",
@@ -329,7 +329,7 @@ export function BookingsClient({
         <button
           type="button"
           onClick={() => openDetail(row.id)}
-          className="text-blue-800 hover:underline text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 rounded"
+          className="font-bold text-ink hover:underline text-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink "
         >
           View Details
         </button>
@@ -377,14 +377,14 @@ export function BookingsClient({
     if (present.length === 0) return null;
     return (
       <section className="mt-4">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
           Airport Details
         </h4>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           {present.map((f) => (
             <div key={f.label}>
               <dt className="text-gray-500 text-[11px] uppercase tracking-wide">{f.label}</dt>
-              <dd className="text-gray-900 font-medium">{f.value}</dd>
+              <dd className="text-ink font-medium">{f.value}</dd>
             </div>
           ))}
         </dl>
@@ -437,14 +437,14 @@ export function BookingsClient({
     if (present.length === 0) return null;
     return (
       <section className="mt-4">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
           Trip Facts
         </h4>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           {present.map((f) => (
             <div key={f.label}>
               <dt className="text-gray-500 text-[11px] uppercase tracking-wide">{f.label}</dt>
-              <dd className="text-gray-900 font-medium">{f.value}</dd>
+              <dd className="text-ink font-medium">{f.value}</dd>
             </div>
           ))}
         </dl>
@@ -462,15 +462,15 @@ export function BookingsClient({
       .map(([k, v]) => (
         <div key={k}>
           <dt className="text-gray-500 text-[11px] uppercase tracking-wide">{k}</dt>
-          <dd className="text-gray-900 text-sm">{String(v)}</dd>
+          <dd className="text-ink text-sm">{String(v)}</dd>
         </div>
       ));
     return (
       <div className="mb-3">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
           {label}
         </h4>
-        <p className="text-sm text-gray-900 mb-1">{oneLiner}</p>
+        <p className="text-sm text-ink mb-1">{oneLiner}</p>
         {rawFields.length > 0 && (
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1">{rawFields}</dl>
         )}
@@ -484,11 +484,11 @@ export function BookingsClient({
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-5">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold text-gray-900">Bookings</h1>
+        <h1 className="text-xl font-bold text-ink">Bookings</h1>
         <a
           href={csvHref}
           download
-          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors duration-150 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 cursor-pointer"
+          className="inline-flex items-center gap-1.5 border-[3px] border-ink bg-paper px-3 py-2 text-sm font-medium text-gray-700 shadow-brut-sm transition-colors duration-150 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
         >
           <svg
             aria-hidden="true"
@@ -531,7 +531,7 @@ export function BookingsClient({
             type="button"
             disabled={page <= 1}
             onClick={() => goToPage(page - 1)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 cursor-pointer"
+            className="border-[3px] border-ink bg-paper px-3 py-2 text-sm text-gray-700 shadow-brut-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
           >
             Previous
           </button>
@@ -542,7 +542,7 @@ export function BookingsClient({
             type="button"
             disabled={page >= totalPages}
             onClick={() => goToPage(page + 1)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 cursor-pointer"
+            className="border-[3px] border-ink bg-paper px-3 py-2 text-sm text-gray-700 shadow-brut-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
           >
             Next
           </button>
@@ -559,7 +559,7 @@ export function BookingsClient({
           <p className="text-sm text-gray-500 py-6 text-center">Loading…</p>
         )}
         {detailError && (
-          <p className="text-sm text-red-600 py-4">{detailError}</p>
+          <p className="text-sm text-brut-red-deep py-4">{detailError}</p>
         )}
         {detail && !detailLoading && (
           <div className="space-y-4 text-sm">
@@ -567,7 +567,7 @@ export function BookingsClient({
             <div className="flex items-center gap-2">
               <StatusBadge status={detail.status} />
               {detail.pickupTimeMode && (
-                <span className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-gray-600">
+                <span className=" border border-gray-200 bg-gray-50 px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-gray-600">
                   {detail.pickupTimeMode}
                 </span>
               )}
@@ -578,7 +578,7 @@ export function BookingsClient({
               <dt className="text-[11px] font-medium uppercase tracking-wider text-gray-500">
                 Pickup Time
               </dt>
-              <dd className="mt-0.5 text-gray-900">
+              <dd className="mt-0.5 text-ink">
                 {formatDateTime(detail.pickupAtUtc, "Europe/London")}
               </dd>
             </div>
@@ -589,40 +589,40 @@ export function BookingsClient({
 
             {/* Passenger details */}
             <section>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
                 Passenger
               </h4>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-gray-500">Name</dt>
-                  <dd className="text-gray-900 font-medium">{detail.passengerName ?? "—"}</dd>
+                  <dd className="text-ink font-medium">{detail.passengerName ?? "·"}</dd>
                 </div>
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-gray-500">Contact</dt>
-                  <dd className="text-gray-900 font-medium">{detail.customerHandle ?? "—"}</dd>
+                  <dd className="text-ink font-medium">{detail.customerHandle ?? "·"}</dd>
                 </div>
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-gray-500">Passengers</dt>
-                  <dd className="text-gray-900 font-medium">{detail.passengerCount ?? "—"}</dd>
+                  <dd className="text-ink font-medium">{detail.passengerCount ?? "·"}</dd>
                 </div>
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-gray-500">Vehicle</dt>
-                  <dd className="text-gray-900 font-medium">
+                  <dd className="text-ink font-medium">
                     {detail.vehicleType
                       ? (VEHICLE_LABELS[detail.vehicleType.toLowerCase()] ?? detail.vehicleType)
-                      : "—"}
+                      : "·"}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-gray-500">Fare</dt>
-                  <dd className="text-gray-900 font-medium">
+                  <dd className="text-ink font-medium">
                     {formatCurrency(detail.fare, detail.currency)}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-[11px] uppercase tracking-wide text-gray-500">Dispatch Ref</dt>
                   <dd className="font-mono text-[11px] text-gray-600">
-                    {detail.dispatchRef ?? "—"}
+                    {detail.dispatchRef ?? "·"}
                   </dd>
                 </div>
               </dl>
@@ -630,8 +630,8 @@ export function BookingsClient({
 
             {/* Driver note (B3) */}
             {detail.driverNote && typeof detail.driverNote === "string" && detail.driverNote.trim() !== "" && (
-              <section className="rounded border border-amber-200 bg-amber-50 px-3 py-2">
-                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-amber-700 mb-1">
+              <section className=" border border-ink bg-brut-yellow/30 px-3 py-2">
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-ink mb-1">
                   Driver note
                 </h4>
                 <p className="text-sm text-gray-700">{detail.driverNote}</p>
@@ -647,12 +647,12 @@ export function BookingsClient({
             {/* Conversation link */}
             {detail.conversationId && (
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
                   Conversation
                 </h4>
                 <a
                   href={`/dashboard/automations/${automationId}/conversations?id=${detail.conversationId}`}
-                  className="text-blue-800 hover:underline text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 rounded"
+                  className="font-bold text-ink hover:underline text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink "
                 >
                   View transcript &rarr;
                 </a>
@@ -667,7 +667,7 @@ export function BookingsClient({
               <summary className="cursor-pointer text-[11px] font-medium uppercase tracking-wider text-gray-400 hover:text-gray-600 transition-colors duration-150">
                 Raw dispatch data (debug)
               </summary>
-              <pre className="mt-2 overflow-x-auto rounded bg-gray-50 border border-gray-200 p-3 text-[11px] text-gray-600 max-h-48">
+              <pre className="mt-2 overflow-x-auto  bg-gray-50 border border-gray-200 p-3 text-[11px] text-gray-600 max-h-48">
                 {JSON.stringify(detail.rawDispatchJson, null, 2)}
               </pre>
             </details>
@@ -675,14 +675,14 @@ export function BookingsClient({
             {/* Status update (canEdit only) */}
             {canEdit && (
               <section className="border-t border-gray-200 pt-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
                   Update Status
                 </h4>
                 <div className="flex items-center gap-3">
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value as BookingRow["status"])}
-                    className="cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm outline-none transition-shadow duration-150 hover:border-gray-300 focus-visible:ring-2 focus-visible:ring-blue-800"
+                    className="cursor-pointer border-[3px] border-ink bg-paper px-3 py-2 text-sm text-ink shadow-brut-sm outline-none transition-shadow duration-150 hover:border-gray-300 focus-visible:ring-2 focus-visible:ring-ink"
                   >
                     {BOOKING_STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -694,13 +694,13 @@ export function BookingsClient({
                     type="button"
                     disabled={statusUpdating || newStatus === detail.status}
                     onClick={handleStatusUpdate}
-                    className="rounded-lg bg-blue-800 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 cursor-pointer"
+                    className="border-2 border-ink bg-brut-yellow shadow-brut-sm px-4 py-2 text-sm font-medium text-ink shadow-brut-sm transition-colors duration-150 hover:bg-ink hover:text-paper disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
                   >
                     {statusUpdating ? "Saving…" : "Update status"}
                   </button>
                 </div>
                 {statusError && (
-                  <p className="mt-2 text-sm text-red-600">{statusError}</p>
+                  <p className="mt-2 text-sm text-brut-red-deep">{statusError}</p>
                 )}
               </section>
             )}

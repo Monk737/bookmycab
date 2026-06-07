@@ -101,10 +101,10 @@ export default async function ImpersonatePage({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+      <h1 className="text-xl font-bold tracking-tight text-ink">
         Impersonate
       </h1>
-      <p className="mt-1 text-sm text-zinc-600">
+      <p className="mt-1 text-sm text-gray-600">
         Start an audited, 15-minute impersonation session. Read-only by default;
         tick <em>Allow writes</em> only when a fix requires it &mdash; write
         actions are audited distinctly. A reason is mandatory. The tenant view-as
@@ -121,11 +121,11 @@ export default async function ImpersonatePage({
           name="q"
           defaultValue={q}
           placeholder="Search by tenant name or user email…"
-          className="min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+          className="min-w-0 flex-1 border-[3px] border-ink bg-paper px-3 py-2 text-sm text-ink placeholder:text-gray-400 outline-none transition-colors hover:border-gray-400 focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ink"
         />
         <button
           type="submit"
-          className="shrink-0 cursor-pointer rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          className="shrink-0 cursor-pointer bg-gray-900 px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
         >
           Search
         </button>
@@ -134,7 +134,7 @@ export default async function ImpersonatePage({
       {error && (
         <p
           role="alert"
-          className="mt-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           Search failed. Please try again.
         </p>
@@ -142,23 +142,23 @@ export default async function ImpersonatePage({
 
       <div className="mt-6 space-y-3">
         {q.trim().length === 0 ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-gray-500">
             Enter a tenant name or user email to find someone to impersonate.
           </p>
         ) : rows.length === 0 ? (
-          <p className="text-sm text-zinc-500">No matching tenant users.</p>
+          <p className="text-sm text-gray-500">No matching tenant users.</p>
         ) : (
           rows.map((c) => (
             <div
               key={`${c.tenantId}:${c.userId}`}
-              className="rounded-lg border border-zinc-200 bg-white px-4 py-3"
+              className="border-[3px] border-ink bg-paper px-4 py-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-zinc-900">
+                  <p className="truncate text-sm font-medium text-ink">
                     {c.email}
                   </p>
-                  <p className="mt-0.5 text-xs text-zinc-500">
+                  <p className="mt-0.5 text-xs text-gray-500">
                     {c.tenantName} &middot; {c.role}
                   </p>
                 </div>

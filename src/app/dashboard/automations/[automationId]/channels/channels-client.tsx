@@ -26,7 +26,7 @@ export function ChannelTestButton({
           type="button"
           disabled
           aria-disabled="true"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-400 cursor-not-allowed select-none"
+          className="inline-flex items-center gap-1.5 border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-400 cursor-not-allowed select-none"
         >
           Send test message
         </button>
@@ -62,7 +62,7 @@ export function ChannelTestButton({
         type="button"
         onClick={handleTest}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-blue-800 bg-blue-800 px-3 py-1.5 text-xs font-medium text-white transition-all duration-200 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
+        className="inline-flex items-center gap-1.5 border border-ink border-2 border-ink bg-brut-yellow shadow-brut-sm px-3 py-1.5 text-xs font-medium text-ink transition-all duration-200 hover:bg-ink hover:text-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
       >
         {loading ? (
           <>
@@ -96,7 +96,7 @@ export function ChannelTestButton({
       {result === "success" && (
         <p
           role="status"
-          className="text-xs font-medium text-emerald-700"
+          className="text-xs font-medium text-ink"
         >
           Test message queued
         </p>
@@ -105,9 +105,9 @@ export function ChannelTestButton({
       {result === "error" && (
         <p
           role="alert"
-          className="text-xs font-medium text-red-600"
+          className="text-xs font-medium text-brut-red-deep"
         >
-          {errorMsg ?? "Test failed — please try again."}
+          {errorMsg ?? "Test failed, please try again."}
         </p>
       )}
     </div>

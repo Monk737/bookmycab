@@ -21,8 +21,8 @@ export function FaresClient(props: { orgId: string; automationId: string; rules:
 
   return (
     <div>
-      <table className="mb-4 min-w-full rounded-lg border border-gray-200 text-sm">
-        <thead className="bg-gray-50"><tr>{["Vehicle", "Base", "/mile", "/min", "Min", "Airport", ""].map((h) => <th key={h} className="px-3 py-2 text-left font-semibold text-gray-700">{h}</th>)}</tr></thead>
+      <table className="mb-4 min-w-full border border-gray-200 text-sm">
+        <thead className="bg-gray-50"><tr>{["Vehicle", "Base", "/mile", "/min", "Min", "Airport", ""].map((h) => <th key={h} className="px-3 py-2 text-left font-bold text-gray-700">{h}</th>)}</tr></thead>
         <tbody className="divide-y divide-gray-100">
           {props.rules.length === 0 && <tr><td colSpan={7} className="px-3 py-6 text-center text-gray-400">No fare rules yet.</td></tr>}
           {props.rules.map((r) => (
@@ -33,12 +33,12 @@ export function FaresClient(props: { orgId: string; automationId: string; rules:
               <td className="px-3 py-2 text-gray-600">£{Number(r.per_min).toFixed(2)}</td>
               <td className="px-3 py-2 text-gray-600">£{Number(r.min_fare).toFixed(2)}</td>
               <td className="px-3 py-2 text-gray-600">£{Number(r.airport_surcharge).toFixed(2)}</td>
-              <td className="px-3 py-2 text-right">{!props.isDemo && <button disabled={busy} onClick={() => call(`${base}/${r.id}`, "DELETE")} className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50">Delete</button>}</td>
+              <td className="px-3 py-2 text-right">{!props.isDemo && <button disabled={busy} onClick={() => call(`${base}/${r.id}`, "DELETE")} className=" border-[3px] border-ink px-2 py-1 text-xs text-gray-700 hover:bg-gray-50">Delete</button>}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      {err && <p className="mb-2 text-sm text-red-600" role="alert">{err}</p>}
+      {err && <p className="mb-2 text-sm text-brut-red-deep" role="alert">{err}</p>}
       {!props.isDemo && (
         <form
           onSubmit={(e) => {
@@ -52,11 +52,11 @@ export function FaresClient(props: { orgId: string; automationId: string; rules:
           }}
           className="flex flex-wrap items-end gap-2"
         >
-          <input name="vehicle_type" required placeholder="saloon" className="w-28 rounded border border-gray-300 px-2 py-1 text-sm" />
+          <input name="vehicle_type" required placeholder="saloon" className="w-28  border-[3px] border-ink px-2 py-1 text-sm" />
           {["base_fare", "per_mile", "per_min", "min_fare", "airport_surcharge"].map((n) => (
-            <input key={n} name={n} type="number" step="0.01" defaultValue="0" placeholder={n} className="w-20 rounded border border-gray-300 px-2 py-1 text-sm" />
+            <input key={n} name={n} type="number" step="0.01" defaultValue="0" placeholder={n} className="w-20  border-[3px] border-ink px-2 py-1 text-sm" />
           ))}
-          <button disabled={busy} type="submit" className="rounded bg-blue-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">Save rule</button>
+          <button disabled={busy} type="submit" className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-3 py-1.5 text-sm font-medium text-ink disabled:opacity-50">Save rule</button>
         </form>
       )}
     </div>

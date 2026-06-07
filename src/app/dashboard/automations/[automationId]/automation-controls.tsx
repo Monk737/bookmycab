@@ -20,7 +20,7 @@ function DisabledReason({ status }: { status: AutomationStatus }): React.JSX.Ele
       type="button"
       disabled
       aria-disabled="true"
-      className="cursor-not-allowed rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400 transition-colors duration-150"
+      className="cursor-not-allowed border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-400 transition-colors duration-150"
     >
       {label}
     </button>
@@ -49,9 +49,9 @@ export function AutomationControls({
         disabled
         aria-disabled="true"
         title="Controls are disabled in demo mode"
-        className="cursor-not-allowed rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-600"
+        className="cursor-not-allowed border border-ink bg-brut-yellow/30 px-3 py-2 text-sm font-medium text-ink"
       >
-        Demo — read only
+        Demo, read only
       </button>
     );
   }
@@ -104,7 +104,7 @@ export function AutomationControls({
             type="button"
             onClick={() => doAction("start")}
             disabled={loading}
-            className="cursor-pointer rounded-lg border border-ink bg-accent px-3.5 py-2 text-sm font-medium text-accent-ink transition-colors duration-150 hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer border border-ink bg-accent px-3.5 py-2 text-sm font-medium text-accent-ink transition-colors duration-150 hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Starting…" : "Start automation"}
           </button>
@@ -115,7 +115,7 @@ export function AutomationControls({
               type="button"
               onClick={() => doAction("stop")}
               disabled={loading}
-              className="cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer border-[3px] border-ink bg-paper px-3 py-2 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Stopping…" : "Stop"}
             </button>
@@ -123,7 +123,7 @@ export function AutomationControls({
               type="button"
               onClick={() => doAction("restart")}
               disabled={loading}
-              className="cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+              className="cursor-pointer border-[3px] border-ink bg-paper px-3 py-2 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Restarting…" : "Restart"}
             </button>
@@ -131,7 +131,7 @@ export function AutomationControls({
         )}
       </div>
       {error && (
-        <p className="text-[11px] text-red-600" role="alert">
+        <p className="text-[11px] text-brut-red-deep" role="alert">
           {error}
         </p>
       )}

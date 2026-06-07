@@ -29,7 +29,7 @@ type Fetcher = typeof fetch;
 /**
  * AutoCab dispatch adapter (PRD §7.6.1). Endpoints are called against the
  * customer's AutoCab instance with the Azure APIM subscription-key header. The
- * fetcher is injectable so every method is unit-testable without network — the
+ * fetcher is injectable so every method is unit-testable without network, the
  * same pattern as src/lib/engine/client.ts EngineClient.
  */
 export class AutoCabAdapter implements DispatchAdapter {

@@ -11,8 +11,8 @@ const CELL_R = 255;
 const CELL_G = 212;
 const CELL_B = 0;
 
-const COLOR_MUTED = "#6f6f6b"; // gray-400 — axis text
-const COLOR_BORDER = "#dcdcda"; // gray-200 — cell border
+const COLOR_MUTED = "#4f4f4c"; // gray-600, axis text
+const COLOR_BORDER = "#0a0a0a"; // ink, hard cell grid
 
 function cellBackground(value: number, maxValue: number): string {
   if (maxValue === 0) return `rgba(${CELL_R},${CELL_G},${CELL_B},0.05)`;
@@ -27,7 +27,7 @@ export function Heatmap({ cells }: { cells: HeatmapCell[] }): React.JSX.Element 
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-gray-400"
+        className="flex items-center justify-center text-sm font-medium text-gray-500"
       >
         No data for this period.
       </div>
@@ -99,7 +99,7 @@ export function Heatmap({ cells }: { cells: HeatmapCell[] }): React.JSX.Element 
                 return (
                   <td
                     key={h}
-                    title={`${day} ${h}:00 — ${val}`}
+                    title={`${day} ${h}:00, ${val}`}
                     aria-label={`${day} ${h}:00: ${val}`}
                     style={{
                       backgroundColor: cellBackground(val, maxValue),
@@ -133,7 +133,6 @@ export function Heatmap({ cells }: { cells: HeatmapCell[] }): React.JSX.Element 
               style={{
                 width: 14,
                 height: 14,
-                borderRadius: 2,
                 backgroundColor: `rgba(${CELL_R},${CELL_G},${CELL_B},${alpha})`,
                 border: `1px solid ${COLOR_BORDER}`,
               }}

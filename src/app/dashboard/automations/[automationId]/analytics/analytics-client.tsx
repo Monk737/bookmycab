@@ -16,7 +16,7 @@ import type {
 } from "@/lib/dashboard/analytics-types";
 import type { ResponseStats, RevenueSummary, AirportStats } from "@/lib/dashboard/insights-types";
 
-// ——— date helpers ——————————————————————————————————————————
+// ,,, date helpers ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 function toDateStr(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -29,24 +29,24 @@ function defaultRange(): { from: string; to: string } {
   return { from: toDateStr(from), to: toDateStr(to) };
 }
 
-// ——— loading skeleton ——————————————————————————————————————
+// ,,, loading skeleton ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 function Skeleton({ height = 256 }: { height?: number }) {
   return (
     <div
-      className="animate-pulse rounded-lg bg-gray-100"
+      className="animate-pulse bg-gray-100"
       style={{ height }}
       aria-label="Loading…"
     />
   );
 }
 
-// ——— unavailable empty state ——————————————————————————————
+// ,,, unavailable empty state ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 function UnavailableCard({ message }: { message: string }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-6 py-10 text-center"
+      className="flex flex-col items-center justify-center gap-2 border border-gray-200 bg-gray-50 px-6 py-10 text-center"
       style={{ minHeight: 120 }}
     >
       <svg
@@ -68,7 +68,7 @@ function UnavailableCard({ message }: { message: string }) {
   );
 }
 
-// ——— section card wrapper ————————————————————————————————
+// ,,, section card wrapper ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 function SectionCard({
   title,
@@ -78,8 +78,8 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl bg-white shadow-sm border border-gray-200 p-6 flex flex-col gap-4">
-      <h2 className="text-sm font-semibold text-gray-700 tracking-wide uppercase font-mono">
+    <div className="bg-paper shadow-brut-sm border border-gray-200 p-6 flex flex-col gap-4">
+      <h2 className="text-sm font-bold text-gray-700 tracking-wide uppercase font-mono">
         {title}
       </h2>
       {children}
@@ -87,7 +87,7 @@ function SectionCard({
   );
 }
 
-// ——— date range controls ——————————————————————————————————
+// ,,, date range controls ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 function DateRangeBar({
   from,
@@ -107,7 +107,7 @@ function DateRangeBar({
           value={from}
           max={to}
           onChange={(e) => onChange(e.target.value, to)}
-          className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 cursor-pointer transition-colors duration-150"
+          className="border-[3px] border-ink bg-paper px-2 py-1 text-xs text-gray-700 focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/20 cursor-pointer transition-colors duration-150"
         />
       </label>
       <label className="flex items-center gap-2 text-xs text-gray-500 font-mono">
@@ -118,14 +118,14 @@ function DateRangeBar({
           min={from}
           max={toDateStr(new Date())}
           onChange={(e) => onChange(from, e.target.value)}
-          className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 cursor-pointer transition-colors duration-150"
+          className="border-[3px] border-ink bg-paper px-2 py-1 text-xs text-gray-700 focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/20 cursor-pointer transition-colors duration-150"
         />
       </label>
     </div>
   );
 }
 
-// ——— types ———————————————————————————————————————————————
+// ,,, types ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 type MetricState<T> =
   | { status: "idle" }
@@ -165,7 +165,7 @@ function emptyMetrics(): AllMetrics {
   };
 }
 
-// ——— funnel mapping ——————————————————————————————————————
+// ,,, funnel mapping ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 function mapFunnel(f: Funnel): { stage: string; count: number; pct: number }[] {
   const inbound = f.inbound || 0;
@@ -180,7 +180,7 @@ function mapFunnel(f: Funnel): { stage: string; count: number; pct: number }[] {
   ];
 }
 
-// ——— zone table columns ——————————————————————————————————
+// ,,, zone table columns ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 const zoneColumns = [
   {
@@ -204,13 +204,13 @@ const zoneColumns = [
   },
 ];
 
-// ——— voice stats panel ———————————————————————————————————
+// ,,, voice stats panel ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
+    <div className="border-[3px] border-ink bg-paper px-4 py-3">
       <div className="text-[11px] font-medium uppercase tracking-wider text-gray-500">{label}</div>
-      <div className="mt-1 text-xl font-semibold tabular-nums text-gray-900">{value}</div>
+      <div className="mt-1 text-xl font-bold tabular-nums text-ink">{value}</div>
     </div>
   );
 }
@@ -241,7 +241,7 @@ function VoiceStatsPanel({ stats }: { stats: VoiceStats }) {
   );
 }
 
-// ——— main client component ———————————————————————————————
+// ,,, main client component ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 
 export function AnalyticsClient({
   orgId,
@@ -340,7 +340,7 @@ export function AnalyticsClient({
     <div className="flex flex-col gap-6 px-4 pb-12 min-w-0">
       {/* Date range toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg font-semibold text-gray-800 font-mono">Analytics</h1>
+        <h1 className="text-lg font-bold text-gray-800 font-mono">Analytics</h1>
         <DateRangeBar
           from={range.from}
           to={range.to}
@@ -348,7 +348,7 @@ export function AnalyticsClient({
         />
       </div>
 
-      {/* 1 — Conversion Funnel */}
+      {/* 1, Conversion Funnel */}
       <SectionCard title="Conversion Funnel">
         {metrics.funnel.status === "loading" ? (
           <Skeleton />
@@ -359,7 +359,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 2 — Channel Mix */}
+      {/* 2, Channel Mix */}
       <SectionCard title="Channel Mix">
         {metrics.channels.status === "loading" ? (
           <Skeleton />
@@ -370,7 +370,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 3 — Booking Mode Split (booking automations only) */}
+      {/* 3, Booking Mode Split (booking automations only) */}
       {isBooking && (
         <SectionCard title="Booking Mode Split">
           {metrics.mode.status === "loading" ? (
@@ -383,7 +383,7 @@ export function AnalyticsClient({
         </SectionCard>
       )}
 
-      {/* 4 — Vehicle Breakdown (booking automations only) */}
+      {/* 4, Vehicle Breakdown (booking automations only) */}
       {isBooking && (
         <SectionCard title="Vehicle Breakdown">
           {metrics.vehicle.status === "loading" ? (
@@ -396,7 +396,7 @@ export function AnalyticsClient({
         </SectionCard>
       )}
 
-      {/* 5 — Top Pickup Zones */}
+      {/* 5, Top Pickup Zones */}
       <SectionCard title="Top Pickup Zones">
         {metrics.zones.status === "loading" ? (
           <Skeleton height={160} />
@@ -412,7 +412,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 6 — Top Destinations */}
+      {/* 6, Top Destinations */}
       <SectionCard title="Top Destinations">
         {metrics.destinations.status === "loading" ? (
           <Skeleton height={160} />
@@ -428,7 +428,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 7 — Peak Hours Heatmap */}
+      {/* 7, Peak Hours Heatmap */}
       <SectionCard title="Peak Hours Heatmap">
         {metrics.heatmap.status === "loading" ? (
           <Skeleton height={200} />
@@ -439,7 +439,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 8 — Response Time */}
+      {/* 8, Response Time */}
       <SectionCard title="Response Time">
         {metrics.responseTime.status === "loading" ? (
           <Skeleton height={120} />
@@ -459,7 +459,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 8b — Revenue */}
+      {/* 8b, Revenue */}
       <SectionCard title="Revenue & Completion">
         {metrics.revenue.status === "loading" ? (
           <Skeleton height={120} />
@@ -478,7 +478,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 8c — Airport & Flights */}
+      {/* 8c, Airport & Flights */}
       <SectionCard title="Airport & Flights">
         {metrics.airport.status === "loading" ? (
           <Skeleton height={120} />
@@ -504,7 +504,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 9 — Abandonment Reasons */}
+      {/* 9, Abandonment Reasons */}
       <SectionCard title="Abandonment Reasons">
         {metrics.abandonment.status === "loading" ? (
           <Skeleton />
@@ -515,7 +515,7 @@ export function AnalyticsClient({
         ) : null}
       </SectionCard>
 
-      {/* 10 — Voice Note Stats */}
+      {/* 10, Voice Note Stats */}
       <SectionCard title="Voice Note Stats">
         {metrics.voice.status === "loading" ? (
           <Skeleton height={180} />

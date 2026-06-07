@@ -6,15 +6,15 @@
  * Currencies supported: GBP, EUR, USD.
  */
 
-// §6.1 — supported currencies
+// §6.1, supported currencies
 export type Currency = "GBP" | "EUR" | "USD";
 
 export const CURRENCIES = ["GBP", "EUR", "USD"] as const satisfies readonly Currency[];
 
-// §6.1 — minimum contract duration
+// §6.1, minimum contract duration
 export const CONTRACT_MONTHS = 12;
 
-// §6.1 — one-time setup fee per currency
+// §6.1, one-time setup fee per currency
 export const SETUP_FEE: Record<Currency, number> = {
   GBP: 1000,
   EUR: 1000,
@@ -31,14 +31,14 @@ export interface PricingTierAB {
   bundle: PriceMap;
   /** Minimum number of channels required for the bundle rate. */
   bundleMinChannels: number;
-  /** Contact sales for a quote — always false for A/B. */
+  /** Contact sales for a quote, always false for A/B. */
   contactOnly: false;
 }
 
 export interface PricingTierC {
-  /** No fixed price — always null. */
+  /** No fixed price, always null. */
   single: PriceMap;
-  /** No fixed price — always null. */
+  /** No fixed price, always null. */
   bundle: PriceMap;
   /** Applies to 101+ drivers, 4+ channels, or any custom requirement. */
   contactOnly: true;
@@ -49,9 +49,9 @@ export type PricingOption = PricingTierAB | PricingTierC;
 /**
  * §6.1 pricing options.
  *
- * A — up to 25 drivers/fleet
- * B — 26–100 drivers/fleet
- * C — 101+ drivers OR 4+ channels OR anything outside A/B (Contact Us)
+ * A, up to 25 drivers/fleet
+ * B, 26–100 drivers/fleet
+ * C, 101+ drivers OR 4+ channels OR anything outside A/B (Contact Us)
  */
 export const PRICING: { A: PricingTierAB; B: PricingTierAB; C: PricingTierC } =
   {
@@ -71,7 +71,7 @@ export const PRICING: { A: PricingTierAB; B: PricingTierAB; C: PricingTierC } =
       contactOnly: false,
     },
 
-    // §6.1 Option C — quoted individually, no fixed price
+    // §6.1 Option C, quoted individually, no fixed price
     C: {
       single: { GBP: null, EUR: null, USD: null },
       bundle: { GBP: null, EUR: null, USD: null },

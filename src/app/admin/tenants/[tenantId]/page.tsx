@@ -16,13 +16,13 @@ import {
 import { BillingPanel } from "./billing-panel";
 import { EntitlementsSection } from "./entitlements-section";
 
-// Always read fresh — lifecycle changes / invites must appear immediately.
+// Always read fresh, lifecycle changes / invites must appear immediately.
 export const dynamic = "force-dynamic";
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "·";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "·";
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -31,9 +31,9 @@ function formatDate(value: string | null): string {
 }
 
 function formatDateTime(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "·";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "·";
   return d.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -112,10 +112,10 @@ type AuditRow = {
 function Detail({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+      <p className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
         {label}
       </p>
-      <p className="mt-0.5 text-sm text-zinc-900">{value}</p>
+      <p className="mt-0.5 text-sm text-ink">{value}</p>
     </div>
   );
 }
@@ -130,7 +130,7 @@ function Section({
 }) {
   return (
     <section className="mt-8">
-      <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+      <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
         {title}
       </h2>
       <div className="mt-3">{children}</div>
@@ -168,7 +168,7 @@ export default async function TenantDetailPage({
     .maybeSingle();
 
   if (tenantError) {
-    // A real read failure (not a missing row) — surface rather than 404.
+    // A real read failure (not a missing row), surface rather than 404.
     throw new Error("Failed to load tenant.");
   }
   if (!tenantData) {
@@ -235,7 +235,7 @@ export default async function TenantDetailPage({
       user_id: m.user_id,
       role: m.role,
       accepted_at: m.accepted_at,
-      email: u?.email ?? "—",
+      email: u?.email ?? "·",
       last_login_at: u?.last_login_at ?? null,
     };
   });
@@ -257,9 +257,9 @@ export default async function TenantDetailPage({
       plan: s.plan_band,
       amount:
         s.monthly_price == null
-          ? "—"
+          ? "·"
           : formatPrice((s.currency ?? "GBP") as Currency, Number(s.monthly_price)),
-      status: s.status ?? "—",
+      status: s.status ?? "·",
       period: `${formatDate(s.current_period_start)} → ${formatDate(s.current_period_end)}`,
     })),
     ...((feesData ?? []) as Array<{
@@ -273,10 +273,10 @@ export default async function TenantDetailPage({
       plan: "Setup fee",
       amount:
         f.amount == null
-          ? "—"
+          ? "·"
           : formatPrice((f.currency ?? "GBP") as Currency, Number(f.amount)),
       status: f.paid_at ? "paid" : "unpaid",
-      period: f.paid_at ? formatDate(f.paid_at) : "—",
+      period: f.paid_at ? formatDate(f.paid_at) : "·",
     })),
   ];
 
@@ -296,7 +296,7 @@ export default async function TenantDetailPage({
       ts: a.ts,
       action: a.action,
       target_type: a.target_type,
-      actor: u?.email ?? a.actor_user_id ?? "—",
+      actor: u?.email ?? a.actor_user_id ?? "·",
     };
   });
 
@@ -312,7 +312,7 @@ export default async function TenantDetailPage({
     {
       key: "dispatch_adapter",
       header: "Dispatch",
-      render: (a) => <span className="capitalize">{a.dispatch_adapter ?? "—"}</span>,
+      render: (a) => <span className="capitalize">{a.dispatch_adapter ?? "·"}</span>,
     },
   ];
 
@@ -370,7 +370,7 @@ export default async function TenantDetailPage({
       header: "Action",
       render: (a) => <span className="font-mono text-[13px]">{a.action}</span>,
     },
-    { key: "target_type", header: "Target", render: (a) => a.target_type ?? "—" },
+    { key: "target_type", header: "Target", render: (a) => a.target_type ?? "·" },
     { key: "actor", header: "Actor", render: (a) => a.actor },
   ];
 
@@ -378,7 +378,7 @@ export default async function TenantDetailPage({
     <div className="mx-auto max-w-6xl">
       <Link
         href="/admin/tenants"
-        className="text-xs text-zinc-500 outline-none transition-colors hover:text-zinc-900 focus-visible:underline"
+        className="text-xs text-gray-500 outline-none transition-colors hover:text-ink focus-visible:underline"
       >
         &larr; All tenants
       </Link>
@@ -386,17 +386,17 @@ export default async function TenantDetailPage({
       <div className="mt-2 flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+            <h1 className="text-xl font-bold tracking-tight text-ink">
               {tenant.name}
             </h1>
             <StatusBadge status={tenant.status} />
           </div>
-          <p className="mt-1 font-mono text-sm text-zinc-500">{tenant.slug}</p>
+          <p className="mt-1 font-mono text-sm text-gray-500">{tenant.slug}</p>
         </div>
         <LifecycleControls tenantId={tenant.id} status={tenant.status} />
       </div>
 
-      <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
+      <div className="mt-6 border-[3px] border-ink bg-paper p-5">
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
           <Detail label="Country" value={tenant.country} />
           <Detail label="Plan band" value={planBandLabel(tenant.plan_band)} />
@@ -405,7 +405,7 @@ export default async function TenantDetailPage({
             label="Monthly price"
             value={
               tenant.monthly_price == null
-                ? "—"
+                ? "·"
                 : formatPrice(tenant.currency, Number(tenant.monthly_price))
             }
           />
@@ -432,12 +432,12 @@ export default async function TenantDetailPage({
               </span>
             }
           />
-          <Detail label="Contact email" value={tenant.contact_email ?? "—"} />
+          <Detail label="Contact email" value={tenant.contact_email ?? "·"} />
           <Detail
             label="Stripe customer"
             value={
               <span className="font-mono text-[13px]">
-                {tenant.stripe_customer_id ?? "—"}
+                {tenant.stripe_customer_id ?? "·"}
               </span>
             }
           />
@@ -454,7 +454,7 @@ export default async function TenantDetailPage({
       </Section>
 
       <Section title="Edit contract">
-        <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <div className="border-[3px] border-ink bg-paper p-5">
           <EditContractForm
             tenantId={tenant.id}
             contractStart={tenant.contract_start}
@@ -468,7 +468,7 @@ export default async function TenantDetailPage({
       </Section>
 
       <Section title="Invite a user">
-        <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <div className="border-[3px] border-ink bg-paper p-5">
           <InviteForm tenantId={tenant.id} defaultEmail={tenant.contact_email} />
         </div>
       </Section>

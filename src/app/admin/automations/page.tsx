@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { buildEngineDeeplink } from "@/lib/admin/engine-links";
 import { resolveEngineerEmails } from "@/lib/admin/resolve-engineers";
 
-// Always read fresh — build-stage moves and new automations should appear
+// Always read fresh, build-stage moves and new automations should appear
 // immediately, and runtime status (Epic 5) will be live.
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,7 @@ type AutomationRow = {
 
 function tenantName(row: AutomationRow): string {
   const rel = Array.isArray(row.tenants) ? row.tenants[0] : row.tenants;
-  return rel?.name ?? "—";
+  return rel?.name ?? "·";
 }
 
 export default async function AutomationsRegistryPage({
@@ -77,7 +77,7 @@ export default async function AutomationsRegistryPage({
     {
       key: "name",
       header: "Automation",
-      render: (a) => <span className="font-medium text-zinc-900">{a.name}</span>,
+      render: (a) => <span className="font-medium text-ink">{a.name}</span>,
     },
     { key: "type", header: "Type", render: (a) => a.type },
     {
@@ -92,7 +92,7 @@ export default async function AutomationsRegistryPage({
         a.dispatch_adapter ? (
           <span className="capitalize">{a.dispatch_adapter}</span>
         ) : (
-          "—"
+          "·"
         ),
     },
     {
@@ -104,33 +104,33 @@ export default async function AutomationsRegistryPage({
       key: "assigned_engineer",
       header: "Engineer",
       render: (a) =>
-        a.assigned_engineer ? emailByUser.get(a.assigned_engineer) ?? "—" : "—",
+        a.assigned_engineer ? emailByUser.get(a.assigned_engineer) ?? "·" : "·",
     },
     {
       // TODO(epic-5): live last-run timestamp + run status come from the engine
       // integration (n8n executions). No runtime data exists yet.
       key: "last_run",
       header: "Last run",
-      render: () => "—",
+      render: () => "·",
     },
     {
       key: "engine",
       header: "Engine",
       render: (a) => {
-        // STAFF-ONLY deeplink — never rendered on any tenant surface. Null when
+        // STAFF-ONLY deeplink, never rendered on any tenant surface. Null when
         // there is no base URL or workflow id, in which case we show nothing.
         const href = buildEngineDeeplink(
           env.N8N_BASE_URL,
           a.engine_project_id,
           a.engine_workflow_id,
         );
-        if (!href) return <span className="text-zinc-400">—</span>;
+        if (!href) return <span className="text-gray-400">·</span>;
         return (
           <a
             href={href}
             target="_blank"
             rel="noreferrer"
-            className="cursor-pointer font-mono text-[11px] font-medium uppercase tracking-wider text-emerald-700 underline-offset-2 outline-none transition-colors hover:text-emerald-600 hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="cursor-pointer font-mono text-[11px] font-medium uppercase tracking-wider text-ink underline-offset-2 outline-none transition-colors hover:text-ink hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ink"
           >
             Open in Engine
           </a>
@@ -145,10 +145,10 @@ export default async function AutomationsRegistryPage({
   return (
     <div className="mx-auto max-w-6xl">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-xl font-bold tracking-tight text-ink">
           Automations
         </h1>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="mt-1 text-sm text-gray-600">
           Every automation across all tenants. Cross-tenant registry, staff only.
         </p>
       </div>
@@ -164,7 +164,7 @@ export default async function AutomationsRegistryPage({
         className="mt-6 flex flex-wrap items-center gap-1.5"
         aria-label="Filter automations by status"
       >
-        <span className="mr-1 font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+        <span className="mr-1 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
           Status
         </span>
         <FilterPill label="All" href="/admin/automations" active={!activeStatus} />
@@ -181,7 +181,7 @@ export default async function AutomationsRegistryPage({
       {error && (
         <p
           role="alert"
-          className="mt-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           Failed to load automations. Please refresh.
         </p>
@@ -199,7 +199,7 @@ export default async function AutomationsRegistryPage({
   );
 }
 
-/** Status filter chip — a plain link so the page stays a server component. */
+/** Status filter chip, a plain link so the page stays a server component. */
 function FilterPill({
   label,
   href,
@@ -213,10 +213,10 @@ function FilterPill({
     <a
       href={href}
       aria-current={active ? "true" : undefined}
-      className={`cursor-pointer rounded border px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-wider outline-none transition-colors focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+      className={`cursor-pointer rounded border px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-wider outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ink ${
         active
-          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700"
-          : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400 hover:text-zinc-900"
+          ? "border-ink bg-brut-lime/25 text-ink"
+          : "border-gray-300 bg-paper text-gray-600 hover:border-gray-400 hover:text-ink"
       }`}
     >
       {label}

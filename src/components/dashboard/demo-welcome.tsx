@@ -59,18 +59,18 @@ export function DemoWelcome() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="demo-welcome-title"
-        className="animate-msg-in w-full max-w-md rounded-3xl border border-gray-200 bg-paper p-7 shadow-[0_30px_60px_-25px_rgba(10,10,10,0.45)] sm:p-8"
+        className="animate-msg-in w-full max-w-md border-[3px] border-ink bg-paper p-7 shadow-brut-xl sm:p-8"
       >
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-ink bg-accent px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-accent-ink">
+        <span className="inline-flex items-center gap-1.5 border-2 border-ink bg-brut-pink px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-ink">
           Read-only demo
         </span>
         <h2
           id="demo-welcome-title"
-          className="mt-4 font-display text-2xl font-semibold tracking-tight text-ink"
+          className="mt-4 font-display text-2xl font-extrabold uppercase tracking-tight text-ink"
         >
           Have a look around
         </h2>
-        <p className="mt-3 text-base leading-relaxed text-gray-600">
+        <p className="mt-3 text-base leading-relaxed text-gray-700">
           This is a real BookMyCab dashboard running on sample data for a
           fictional cab firm. Open bookings, read conversations, check the
           analytics. Click anything you like: nothing you do is saved, and the
@@ -81,14 +81,14 @@ export function DemoWelcome() {
             ref={dismissRef}
             type="button"
             onClick={close}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-accent px-6 text-sm font-medium text-accent-ink transition-colors duration-150 hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="brut-press brut-focus inline-flex h-11 items-center justify-center border-[3px] border-ink bg-brut-yellow px-6 text-sm font-bold uppercase tracking-[0.04em] text-ink shadow-brut"
           >
             Start exploring
           </button>
           <Link
             href="/contact"
             onClick={close}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-ink px-6 text-sm font-medium text-ink transition-colors duration-150 hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="brut-press brut-focus inline-flex h-11 items-center justify-center border-[3px] border-ink bg-paper px-6 text-sm font-bold uppercase tracking-[0.04em] text-ink shadow-brut"
           >
             Book a call
           </Link>

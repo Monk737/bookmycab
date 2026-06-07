@@ -21,10 +21,14 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+// Shared focus style for the ink sidebar, a hard paper outline.
+const DARK_FOCUS =
+  "outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-paper";
+
 /**
  * Org-level dashboard shell. Persistent left sidebar (≥768px),
- * collapses to a drawer on mobile. Blue-800 palette — distinct from
- * the admin (zinc/dark) and marketing (#FFD400) surfaces.
+ * collapses to a drawer on mobile. Brutalist ink-black sidebar with a
+ * yellow active block, the tenant surface accent (admin = cyan, demo = pink).
  */
 export function DashboardShell({
   orgName,
@@ -71,7 +75,7 @@ export function DashboardShell({
   ];
 
   const navLinks = (
-    <ul className="space-y-0.5">
+    <ul className="space-y-1">
       {NAV_ITEMS.map((item) => {
         const active = isActive(pathname, item.href);
         return (
@@ -80,10 +84,10 @@ export function DashboardShell({
               href={item.href}
               aria-current={active ? "page" : undefined}
               onClick={() => setDrawerOpen(false)}
-              className={`block rounded-lg px-3 py-2.5 text-sm font-medium outline-none transition-colors duration-150 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-950 ${
+              className={`block px-3 py-2.5 text-sm font-bold uppercase tracking-[0.04em] transition-colors duration-150 ${DARK_FOCUS} ${
                 active
-                  ? "bg-blue-800 text-white"
-                  : "text-blue-200 hover:bg-blue-800/60 hover:text-white"
+                  ? "bg-brut-yellow text-ink"
+                  : "text-gray-300 hover:bg-gray-800 hover:text-paper"
               }`}
             >
               {item.label}
@@ -94,47 +98,68 @@ export function DashboardShell({
     </ul>
   );
 
+  const wordmark = (onDark: boolean) => (
+    <span
+      className={`inline-flex items-center gap-1.5 font-logo text-sm leading-none tracking-tight ${
+        onDark ? "text-paper" : "text-ink"
+      }`}
+    >
+      BookMyCab
+      <span
+        aria-hidden="true"
+        className={`inline-block h-2.5 w-2.5 border-2 bg-brut-yellow ${
+          onDark ? "border-paper" : "border-ink"
+        }`}
+      />
+    </span>
+  );
+
+  const signOutButton = (
+    <form action={signOut}>
+      <button
+        type="submit"
+        className={`w-full cursor-pointer border-2 border-gray-700 px-3 py-2.5 text-left text-sm font-bold uppercase tracking-[0.04em] text-gray-300 transition-colors duration-150 hover:border-paper hover:bg-gray-800 hover:text-paper ${DARK_FOCUS}`}
+      >
+        Sign out
+      </button>
+    </form>
+  );
+
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900">
+    <div className="flex min-h-screen bg-canvas text-ink">
       {/* Mobile top bar */}
-      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 md:hidden">
-        <span className="text-sm font-semibold tracking-tight">
-          Cabby<span className="text-blue-800">Bot</span>
-        </span>
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b-[3px] border-ink bg-paper px-4 md:hidden">
+        {wordmark(false)}
         <div className="flex items-center gap-3">
-          <span className="truncate text-xs text-gray-600 max-w-[140px]">{orgName}</span>
+          <span className="max-w-[140px] truncate text-xs font-semibold text-gray-600">{orgName}</span>
           <button
             type="button"
             aria-label={drawerOpen ? "Close menu" : "Open menu"}
             aria-expanded={drawerOpen}
             onClick={() => setDrawerOpen((v) => !v)}
-            className="cursor-pointer rounded-md p-1.5 text-gray-600 transition-colors duration-150 hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:outline-none"
+            className="brut-focus cursor-pointer border-[3px] border-ink bg-paper p-1.5 text-ink shadow-brut-sm transition-colors duration-150"
           >
             {drawerOpen ? (
-              /* X icon */
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeWidth={2.5}
+                strokeLinecap="square"
                 className="h-5 w-5"
                 aria-hidden="true"
               >
                 <path d="M18 6 6 18M6 6l12 12" />
               </svg>
             ) : (
-              /* Hamburger icon */
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                strokeWidth={2.5}
+                strokeLinecap="square"
                 className="h-5 w-5"
                 aria-hidden="true"
               >
@@ -148,7 +173,7 @@ export function DashboardShell({
       {/* Mobile drawer overlay */}
       {drawerOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/40 md:hidden motion-safe:transition-opacity duration-200"
+          className="fixed inset-0 z-20 bg-ink/50 md:hidden motion-safe:transition-opacity duration-200"
           aria-hidden="true"
           onClick={() => setDrawerOpen(false)}
         />
@@ -156,55 +181,33 @@ export function DashboardShell({
 
       {/* Mobile drawer panel */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-blue-950 text-blue-100 transition-transform duration-200 md:hidden motion-reduce:transition-none ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r-[3px] border-ink bg-ink text-gray-100 transition-transform duration-200 md:hidden motion-reduce:transition-none ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-label="Navigation drawer"
       >
-        <div className="border-b border-blue-900 px-5 py-5">
-          <p className="text-sm font-semibold tracking-tight text-white">
-            Cabby<span className="text-amber-400">Bot</span>
-          </p>
-          <p className="mt-1 truncate text-xs text-blue-300">{orgName}</p>
+        <div className="border-b-[3px] border-gray-800 px-5 py-5">
+          {wordmark(true)}
+          <p className="mt-2 truncate text-xs font-semibold text-gray-400">{orgName}</p>
         </div>
         <nav aria-label="Dashboard" className="flex-1 overflow-y-auto px-3 py-4">
           {navLinks}
         </nav>
-        <div className="border-t border-blue-900 px-3 py-4">
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-blue-300 outline-none transition-colors duration-150 hover:bg-blue-800/60 hover:text-white focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-950"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
+        <div className="border-t-[3px] border-gray-800 px-3 py-4">{signOutButton}</div>
       </div>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-blue-900 bg-blue-950 text-blue-100">
-        <div className="border-b border-blue-900 px-5 py-5">
-          <p className="text-sm font-semibold tracking-tight text-white">
-            Cabby<span className="text-amber-400">Bot</span>
-          </p>
-          <p className="mt-1 truncate text-xs text-blue-300">{orgName}</p>
+      <aside className="hidden w-60 shrink-0 flex-col border-r-[3px] border-ink bg-ink text-gray-100 md:flex">
+        <div className="border-b-[3px] border-gray-800 px-5 py-5">
+          {wordmark(true)}
+          <p className="mt-2 truncate text-xs font-semibold text-gray-400">{orgName}</p>
         </div>
 
         <nav aria-label="Dashboard" className="flex-1 overflow-y-auto px-3 py-4">
           {navLinks}
         </nav>
 
-        <div className="border-t border-blue-900 px-3 py-4">
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-blue-300 outline-none transition-colors duration-150 hover:bg-blue-800/60 hover:text-white focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 focus-visible:ring-offset-blue-950"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
+        <div className="border-t-[3px] border-gray-800 px-3 py-4">{signOutButton}</div>
       </aside>
 
       {/* Main content */}

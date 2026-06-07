@@ -3,14 +3,14 @@
  *
  * SCOPE (Epic 3): these functions compute MRR/ARR, renewal alert buckets, and
  * the setup-fee pipeline entirely from local Supabase tables. There are NO live
- * Stripe calls anywhere here — Epic 8 will reconcile these figures against the
+ * Stripe calls anywhere here, Epic 8 will reconcile these figures against the
  * `subscriptions` mirror once Stripe is wired up. // TODO(epic-8)
  *
  * SOURCE OF TRUTH (today): `tenants.monthly_price`. It is always populated at
  * provisioning time, whereas the `subscriptions` table stays empty until Epic 8.
  * So MRR/renewals are derived from tenants; Epic 8 reconciles. // TODO(epic-8)
  *
- * CURRENCY: amounts are NEVER summed across currencies — mixing £/€/$ into one
+ * CURRENCY: amounts are NEVER summed across currencies, mixing £/€/$ into one
  * number is meaningless. Every total is grouped by currency (`MrrByCurrency`).
  *
  * All functions are pure (no I/O, no clock reads): `today` is injected so the
@@ -51,7 +51,7 @@ export type RenewalWindow = (typeof RENEWAL_WINDOWS)[number];
 /** Renewal buckets are CUMULATIVE ("within N days"): a renewal 5 days out
  *  appears in 7, 14, 30, 60 AND 90. Cumulative is the most useful framing for
  *  alerts ("how many renew within 30 days?"). Past-due (negative days) tenants
- *  are NOT counted in any forward window — they are surfaced separately. */
+ *  are NOT counted in any forward window, they are surfaced separately. */
 export type RenewalBuckets = Record<RenewalWindow, number>;
 
 /** Zeroed per-currency accumulator. */

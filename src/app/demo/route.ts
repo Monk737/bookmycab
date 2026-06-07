@@ -4,16 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 import { env } from "@/env";
 
 /**
- * GET /demo — one-click read-only demo session.
+ * GET /demo, one-click read-only demo session.
  *
  * Signs in the shared demo user (demo@demo.bookmycab.com) via
  * signInWithPassword. The Supabase SSR client writes the session cookie
- * automatically. Redirects to /dashboard on success, /login on failure.
+ * automatically. Redirects to /dashboard on success.
+ *
+ * When the demo can't be opened (not provisioned, or sign-in fails) we send
+ * the visitor to the contact page with a friendly explanation, NOT to a login
+ * wall they have no account for.
  */
 export async function GET(request: Request): Promise<NextResponse> {
+  const unavailable = new URL("/contact?demo=unavailable", request.url);
+
   if (!env.DEMO_TENANT_ID) {
-    console.warn("/demo: DEMO_TENANT_ID not configured — redirecting to login");
-    return NextResponse.redirect(new URL("/login", request.url));
+    console.warn("/demo: DEMO_TENANT_ID not configured");
+    return NextResponse.redirect(unavailable);
   }
 
   const supabase = await createClient();
@@ -24,7 +30,7 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   if (error) {
     console.error("/demo: signInWithPassword failed:", error.message);
-    return NextResponse.redirect(new URL("/login?demo_error=1", request.url));
+    return NextResponse.redirect(unavailable);
   }
 
   return NextResponse.redirect(new URL("/dashboard", request.url));

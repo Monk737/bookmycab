@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Data Processing Agreement — BookMyCab",
+  title: "Data Processing Agreement · BookMyCab",
   description:
     "How FlowMo AI LTD acts as your data processor for the personal data flowing through your BookMyCab automation. The binding DPA is issued with your contract.",
 };
@@ -14,7 +14,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Scope of processing",
-    body: "We process booking details — names, contact numbers, pickup and destination addresses, and conversation transcripts — for the purpose of taking, confirming and managing bookings on your behalf, and surfacing them in your dashboard.",
+    body: "We process booking details, names, contact numbers, pickup and destination addresses, and conversation transcripts, for the purpose of taking, confirming and managing bookings on your behalf, and surfacing them in your dashboard.",
   },
   {
     heading: "Our commitments",

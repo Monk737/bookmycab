@@ -1,6 +1,6 @@
 // Public status catalogue. Live status is wired to the Epic 11 observability
 // stack (Grafana) at deploy; until then every component reports operational.
-// Brand rule: the internal engine is the "BookMyCab Automation Engine" — never
+// Brand rule: the internal engine is the "BookMyCab Automation Engine", never
 // name the underlying tooling on this customer-facing page.
 
 export type ComponentStatus = "operational" | "degraded" | "outage";

@@ -13,12 +13,12 @@ import {
 const initialState: ActionState = { fieldErrors: {}, formError: null };
 
 const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40";
+  "border-[3px] border-ink bg-paper px-3 py-2 text-sm text-ink placeholder:text-gray-400 outline-none transition-colors hover:border-gray-400 focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ink";
 
 function FieldError({ id, error }: { id: string; error?: string }) {
   if (!error) return null;
   return (
-    <p id={id} role="alert" className="text-xs text-red-600">
+    <p id={id} role="alert" className="text-xs text-brut-red-deep">
       {error}
     </p>
   );
@@ -56,7 +56,7 @@ export function EditContractForm({
         <p
           role="alert"
           aria-live="polite"
-          className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+          className="border border-ink bg-brut-red/15 px-3 py-2 text-sm text-brut-red-deep"
         >
           {state.formError}
         </p>
@@ -65,7 +65,7 @@ export function EditContractForm({
         <p
           role="status"
           aria-live="polite"
-          className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+          className="border border-ink bg-brut-lime/30 px-3 py-2 text-sm text-ink"
         >
           Contract updated.
         </p>
@@ -73,7 +73,7 @@ export function EditContractForm({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={startId} className="text-sm font-medium text-zinc-700">
+          <label htmlFor={startId} className="text-sm font-medium text-gray-700">
             Contract start
           </label>
           <input
@@ -87,7 +87,7 @@ export function EditContractForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={renewalId} className="text-sm font-medium text-zinc-700">
+          <label htmlFor={renewalId} className="text-sm font-medium text-gray-700">
             Contract renewal
           </label>
           <input
@@ -101,7 +101,7 @@ export function EditContractForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={priceId} className="text-sm font-medium text-zinc-700">
+          <label htmlFor={priceId} className="text-sm font-medium text-gray-700">
             Monthly price
           </label>
           <input
@@ -118,7 +118,7 @@ export function EditContractForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={modeId} className="text-sm font-medium text-zinc-700">
+          <label htmlFor={modeId} className="text-sm font-medium text-gray-700">
             Renewal mode
           </label>
           <select
@@ -138,7 +138,7 @@ export function EditContractForm({
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer bg-brut-lime px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Saving…" : "Save contract"}
         </button>
@@ -171,7 +171,7 @@ export function InviteForm({
         <p
           role="alert"
           aria-live="polite"
-          className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+          className="border border-ink bg-brut-red/15 px-3 py-2 text-sm text-brut-red-deep"
         >
           {state.formError}
         </p>
@@ -180,7 +180,7 @@ export function InviteForm({
         <p
           role="status"
           aria-live="polite"
-          className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+          className="border border-ink bg-brut-lime/30 px-3 py-2 text-sm text-ink"
         >
           Invite sent.
         </p>
@@ -188,7 +188,7 @@ export function InviteForm({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={emailId} className="text-sm font-medium text-zinc-700">
+          <label htmlFor={emailId} className="text-sm font-medium text-gray-700">
             Email
           </label>
           <input
@@ -199,13 +199,13 @@ export function InviteForm({
             defaultValue={defaultEmail ?? ""}
             placeholder="owner@speedycabs.co.uk"
             aria-invalid={fe.email ? true : undefined}
-            className={`${inputClass} ${fe.email ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/40" : ""}`}
+            className={`${inputClass} ${fe.email ? "border-ink focus-visible:border-brut-red-deep focus-visible:ring-ink" : ""}`}
           />
           <FieldError id={`${emailId}-error`} error={fe.email?.[0]} />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={roleId} className="text-sm font-medium text-zinc-700">
+          <label htmlFor={roleId} className="text-sm font-medium text-gray-700">
             Role
           </label>
           <select
@@ -226,7 +226,7 @@ export function InviteForm({
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer bg-brut-lime px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Sending…" : "Send invite"}
         </button>
@@ -236,7 +236,7 @@ export function InviteForm({
 }
 
 const lifecycleBtn =
-  "cursor-pointer rounded-md border px-3 py-1.5 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2";
+  "cursor-pointer border px-3 py-1.5 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-offset-2";
 
 /**
  * Lifecycle controls: suspend / reinstate / mark churned. Each is a single-button
@@ -256,7 +256,7 @@ export function LifecycleControls({
         <form action={suspendTenant.bind(null, tenantId)}>
           <button
             type="submit"
-            className={`${lifecycleBtn} border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 focus-visible:ring-amber-500`}
+            className={`${lifecycleBtn} border-ink bg-brut-yellow/30 text-ink hover:bg-brut-yellow/50 focus-visible:ring-ink`}
           >
             Suspend
           </button>
@@ -266,7 +266,7 @@ export function LifecycleControls({
         <form action={reinstateTenant.bind(null, tenantId)}>
           <button
             type="submit"
-            className={`${lifecycleBtn} border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 focus-visible:ring-emerald-500`}
+            className={`${lifecycleBtn} border-ink bg-brut-lime/30 text-ink hover:bg-brut-lime/40 focus-visible:ring-ink`}
           >
             Reinstate
           </button>
@@ -276,7 +276,7 @@ export function LifecycleControls({
         <form action={markChurned.bind(null, tenantId)}>
           <button
             type="submit"
-            className={`${lifecycleBtn} border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-100 focus-visible:ring-zinc-500`}
+            className={`${lifecycleBtn} border-gray-300 bg-paper text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-500`}
           >
             Mark churned
           </button>

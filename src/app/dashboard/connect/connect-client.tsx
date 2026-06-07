@@ -24,14 +24,14 @@ export function ConnectClient(props: { orgId: string; channels: Channel[]; autom
   }
 
   function badge(s: string) {
-    const cls = s === "approved" ? "bg-emerald-100 text-emerald-700" : s === "pending_review" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700";
-    return <span className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${cls}`}>{s.replace("_", " ")}</span>;
+    const cls = s === "approved" ? "bg-brut-lime/40 text-ink" : s === "pending_review" ? "bg-brut-yellow/40 text-ink" : "bg-brut-red/20 text-brut-red-deep";
+    return <span className={` px-1.5 py-0.5 text-[11px] font-medium ${cls}`}>{s.replace("_", " ")}</span>;
   }
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-lg border border-gray-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Your channels</h2>
+      <section className="border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-bold text-ink">Your channels</h2>
         <ul className="divide-y divide-gray-100 text-sm">
           {props.channels.length === 0 && <li className="py-2 text-gray-400">No channels yet.</li>}
           {props.channels.map((c) => (
@@ -43,18 +43,18 @@ export function ConnectClient(props: { orgId: string; channels: Channel[]; autom
         </ul>
       </section>
 
-      <section className="rounded-lg border border-gray-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Request a channel</h2>
-        {err && <p className="mb-2 text-sm text-red-600" role="alert">{err}</p>}
+      <section className="border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-bold text-ink">Request a channel</h2>
+        {err && <p className="mb-2 text-sm text-brut-red-deep" role="alert">{err}</p>}
         {props.isDemo ? <p className="text-sm text-gray-400">Disabled in demo.</p> : (
           <form onSubmit={(e) => { e.preventDefault(); void request(e.currentTarget); }} className="space-y-2">
-            <select name="type" className="w-full rounded border border-gray-300 px-2 py-1 text-sm">{TYPES.map((t) => <option key={t} value={t}>{t}</option>)}</select>
-            <input name="externalId" required placeholder="Number / handle / widget id" className="w-full rounded border border-gray-300 px-2 py-1 text-sm" />
-            <select name="automationId" required className="w-full rounded border border-gray-300 px-2 py-1 text-sm">
+            <select name="type" className="w-full  border-[3px] border-ink px-2 py-1 text-sm">{TYPES.map((t) => <option key={t} value={t}>{t}</option>)}</select>
+            <input name="externalId" required placeholder="Number / handle / widget id" className="w-full  border-[3px] border-ink px-2 py-1 text-sm" />
+            <select name="automationId" required className="w-full  border-[3px] border-ink px-2 py-1 text-sm">
               <option value="">Choose automation…</option>
               {props.automations.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
-            <button disabled={busy} type="submit" className="rounded bg-blue-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">Request channel</button>
+            <button disabled={busy} type="submit" className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-3 py-1.5 text-sm font-medium text-ink disabled:opacity-50">Request channel</button>
           </form>
         )}
       </section>

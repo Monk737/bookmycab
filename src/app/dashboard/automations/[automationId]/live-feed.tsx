@@ -53,16 +53,16 @@ export function LiveFeed({
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden border-[3px] border-ink bg-paper shadow-brut">
       {/* Header row with Live indicator */}
       <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-        <span className="text-sm font-semibold text-gray-700">Bookings</span>
+        <span className="text-sm font-bold text-gray-700">Bookings</span>
         <span className="flex items-center gap-1.5">
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brut-lime opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-brut-lime" />
           </span>
-          <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-emerald-600">
+          <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-ink">
             Live
           </span>
         </span>
@@ -95,20 +95,20 @@ export function LiveFeed({
                 colSpan={5}
                 className="px-4 py-10 text-center text-sm text-gray-400"
               >
-                No bookings yet — new bookings will appear here in real time.
+                No bookings yet, new bookings will appear here in real time.
               </td>
             </tr>
           ) : (
             rows.map((row) => (
               <tr
                 key={row.id}
-                className="border-b border-gray-100 last:border-0 odd:bg-white even:bg-gray-50/40 transition-colors duration-150 hover:bg-blue-50/50"
+                className="border-b border-gray-100 last:border-0 odd:bg-paper even:bg-gray-50/40 transition-colors duration-150 hover:bg-brut-cyan/50"
               >
                 <td className="px-4 py-3 font-mono text-xs text-gray-600">
                   {row.dispatchRef ?? row.id.slice(0, 8)}
                 </td>
                 <td className="px-4 py-3 text-gray-700">
-                  {row.passengerName ?? row.customerHandle ?? "—"}
+                  {row.passengerName ?? row.customerHandle ?? "·"}
                 </td>
                 <td className="hidden whitespace-nowrap px-4 py-3 text-gray-600 sm:table-cell">
                   {formatDateTime(row.pickupAtUtc, "Europe/London")}

@@ -40,7 +40,7 @@ export interface AuditRow {
 }
 
 // audit_log has no tenant SELECT under RLS (migrations 0005/0011); callers MUST pass a service-role
-// client (Owner-gated) — the default RLS client returns nothing.
+// client (Owner-gated), the default RLS client returns nothing.
 export async function listAudit(tenantId: string, limit = 50, client?: SupabaseLike): Promise<AuditRow[]> {
   const supabase = client ?? (await createClient());
   const { data } = await supabase

@@ -1,5 +1,5 @@
 /**
- * Pure date helpers for billing. No clock reads — callers pass the date in — so
+ * Pure date helpers for billing. No clock reads, callers pass the date in, so
  * renewal math is deterministic and testable. All UTC.
  */
 

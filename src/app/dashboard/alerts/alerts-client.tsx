@@ -22,14 +22,14 @@ export function AlertsClient(props: { orgId: string; rules: Rule[]; channels: Ch
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <section className="rounded-lg border border-gray-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Rules</h2>
+      <section className="border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-bold text-ink">Rules</h2>
         <ul className="mb-3 divide-y divide-gray-100 text-sm">
           {props.rules.length === 0 && <li className="py-2 text-gray-400">No rules yet.</li>}
           {props.rules.map((r) => (
             <li key={r.id} className="flex items-center justify-between py-2">
               <span className="text-gray-800">{r.name} <span className="text-xs text-gray-400">({r.metric} {r.operator} {r.threshold})</span></span>
-              <span className={r.enabled ? "text-xs text-emerald-600" : "text-xs text-gray-400"}>{r.enabled ? "On" : "Off"}</span>
+              <span className={r.enabled ? "text-xs text-ink" : "text-xs text-gray-400"}>{r.enabled ? "On" : "Off"}</span>
             </li>
           ))}
         </ul>
@@ -45,24 +45,24 @@ export function AlertsClient(props: { orgId: string; rules: Rule[]; channels: Ch
             }}
             className="flex flex-col gap-2"
           >
-            <input name="name" required placeholder="Rule name" className="rounded border border-gray-300 px-2 py-1 text-sm" />
+            <input name="name" required placeholder="Rule name" className=" border-[3px] border-ink px-2 py-1 text-sm" />
             <div className="flex gap-2">
-              <select name="metric" className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm">
+              <select name="metric" className="flex-1  border-[3px] border-ink px-2 py-1 text-sm">
                 <option value="abandonment_rate">Abandonment rate</option>
                 <option value="bookings_count">Bookings</option>
               </select>
-              <select name="operator" className="rounded border border-gray-300 px-2 py-1 text-sm">
+              <select name="operator" className=" border-[3px] border-ink px-2 py-1 text-sm">
                 <option value="gt">&gt;</option><option value="gte">≥</option><option value="lt">&lt;</option><option value="lte">≤</option>
               </select>
-              <input name="threshold" type="number" step="any" required placeholder="15" className="w-20 rounded border border-gray-300 px-2 py-1 text-sm" />
+              <input name="threshold" type="number" step="any" required placeholder="15" className="w-20  border-[3px] border-ink px-2 py-1 text-sm" />
             </div>
-            <button disabled={busy} type="submit" className="self-start rounded bg-blue-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">Add rule</button>
+            <button disabled={busy} type="submit" className="self-start  border-2 border-ink bg-brut-yellow shadow-brut-sm px-3 py-1.5 text-sm font-medium text-ink disabled:opacity-50">Add rule</button>
           </form>
         )}
       </section>
 
-      <section className="rounded-lg border border-gray-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Channels</h2>
+      <section className="border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-bold text-ink">Channels</h2>
         <ul className="mb-3 divide-y divide-gray-100 text-sm">
           {props.channels.length === 0 && <li className="py-2 text-gray-400">No channels yet.</li>}
           {props.channels.map((c) => (
@@ -81,17 +81,17 @@ export function AlertsClient(props: { orgId: string; rules: Rule[]; channels: Ch
             }}
             className="flex gap-2"
           >
-            <select name="type" className="rounded border border-gray-300 px-2 py-1 text-sm">
+            <select name="type" className=" border-[3px] border-ink px-2 py-1 text-sm">
               <option value="email">Email</option><option value="slack">Slack</option><option value="webhook">Webhook</option>
             </select>
-            <input name="destination" required placeholder="ops@yourcab.co.uk" className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm" />
-            <button disabled={busy} type="submit" className="rounded bg-blue-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">Add</button>
+            <input name="destination" required placeholder="ops@yourcab.co.uk" className="flex-1  border-[3px] border-ink px-2 py-1 text-sm" />
+            <button disabled={busy} type="submit" className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-3 py-1.5 text-sm font-medium text-ink disabled:opacity-50">Add</button>
           </form>
         )}
       </section>
 
-      <section className="rounded-lg border border-gray-200 p-4 md:col-span-2">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Recent alerts</h2>
+      <section className="border border-gray-200 p-4 md:col-span-2">
+        <h2 className="mb-3 text-sm font-bold text-ink">Recent alerts</h2>
         <ul className="divide-y divide-gray-100 text-sm">
           {props.events.length === 0 && <li className="py-2 text-gray-400">No alerts fired yet.</li>}
           {props.events.map((ev) => (
@@ -103,7 +103,7 @@ export function AlertsClient(props: { orgId: string; rules: Rule[]; channels: Ch
         </ul>
       </section>
 
-      {err && <p className="md:col-span-2 text-sm text-red-600" role="alert">{err}</p>}
+      {err && <p className="md:col-span-2 text-sm text-brut-red-deep" role="alert">{err}</p>}
     </div>
   );
 }

@@ -21,7 +21,7 @@ export function PortalButton({ orgId }: PortalButtonProps) {
         const json = (await res.json()) as { error?: string };
         setMessage(
           json.error
-            ? "Billing portal is being set up — your BookMyCab contact can help in the meantime."
+            ? "Billing portal is being set up, your BookMyCab contact can help in the meantime."
             : "Something went wrong. Please contact your BookMyCab contact.",
         );
       } else {
@@ -29,7 +29,7 @@ export function PortalButton({ orgId }: PortalButtonProps) {
         if (json.url) {
           window.location.href = json.url;
         } else {
-          setMessage("Billing portal is being set up — your BookMyCab contact can help in the meantime.");
+          setMessage("Billing portal is being set up, your BookMyCab contact can help in the meantime.");
         }
       }
     } catch {
@@ -45,7 +45,7 @@ export function PortalButton({ orgId }: PortalButtonProps) {
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="inline-flex items-center justify-center rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+        className="inline-flex items-center justify-center bg-brut-yellow px-5 py-2.5 text-sm font-bold text-white transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
       >
         {loading ? "Loading..." : "Update Payment Method"}
       </button>

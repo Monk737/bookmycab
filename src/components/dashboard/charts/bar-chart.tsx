@@ -28,7 +28,7 @@ export function BarChart({
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-gray-400"
+        className="flex items-center justify-center text-sm font-medium text-gray-500"
       >
         No data for this period.
       </div>
@@ -60,7 +60,7 @@ export function BarChart({
           contentStyle={TOOLTIP_STYLE}
           cursor={{ fill: COLOR_GRID, opacity: 0.2 }}
         />
-        <Bar dataKey="value" fill={COLOR_BAR} radius={[4, 4, 0, 0]} name="Value" />
+        <Bar dataKey="value" fill={COLOR_BAR} radius={[0, 0, 0, 0]} stroke="#0a0a0a" strokeWidth={1.5} name="Value" />
       </RBarChart>
     </ResponsiveContainer>
   );

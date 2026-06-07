@@ -3,12 +3,12 @@ import { getCurrentClaims, redirectTargetFor } from "@/lib/auth/session";
 import { LoginForm } from "./login-form";
 
 export const metadata = {
-  title: "Sign in — BookMyCab",
+  title: "Sign in, BookMyCab",
   robots: { index: false },
 };
 
 /**
- * Login page — server component.
+ * Login page, server component.
  * If the user is already authenticated, redirect them to their role target
  * immediately (the middleware will handle MFA gating on the next request).
  *

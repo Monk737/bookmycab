@@ -5,12 +5,12 @@ import { MfaEnroll } from "./mfa-enroll";
 import { MfaChallenge } from "./mfa-challenge";
 
 export const metadata = {
-  title: "Two-factor authentication — BookMyCab",
+  title: "Two-factor authentication, BookMyCab",
   robots: { index: false },
 };
 
 /**
- * MFA page — server component.
+ * MFA page, server component.
  *
  * Routing logic:
  *  1. No authenticated user → redirect to /login.
@@ -24,7 +24,7 @@ export default async function MfaPage() {
   // 1. Unauthenticated.
   if (!claims) redirect("/login");
 
-  // 2. Already at aal2 — nothing to do.
+  // 2. Already at aal2, nothing to do.
   if (claims.aal === "aal2") redirect(redirectTargetFor(claims));
 
   const supabase = await createClient();

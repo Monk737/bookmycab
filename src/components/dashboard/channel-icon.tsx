@@ -2,9 +2,9 @@ import type React from "react";
 import type { ChannelType, ChannelHealth } from "@/lib/dashboard/types";
 
 const HEALTH_DOT: Record<ChannelHealth, string> = {
-  healthy: "bg-emerald-500",
-  warning: "bg-amber-500",
-  disconnected: "bg-red-500",
+  healthy: "bg-brut-lime",
+  warning: "bg-brut-orange",
+  disconnected: "bg-brut-red",
 };
 
 const HEALTH_LABEL: Record<ChannelHealth, string> = {
@@ -83,7 +83,7 @@ function WidgetSvg() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="w-5 h-5 text-blue-600"
+      className="w-5 h-5 text-ink"
     >
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
@@ -108,7 +108,7 @@ export function ChannelIcon({
   const Icon = ICON_MAP[type];
   const channelLabel = CHANNEL_LABEL[type];
   const ariaLabel = health
-    ? `${channelLabel} — ${HEALTH_LABEL[health]}`
+    ? `${channelLabel}, ${HEALTH_LABEL[health]}`
     : channelLabel;
 
   return (
@@ -121,7 +121,7 @@ export function ChannelIcon({
       {health && (
         <span
           aria-hidden="true"
-          className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white ${HEALTH_DOT[health]}`}
+          className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 border border-ink ${HEALTH_DOT[health]}`}
         />
       )}
     </span>

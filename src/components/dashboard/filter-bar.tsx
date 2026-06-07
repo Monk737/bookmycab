@@ -70,7 +70,7 @@ export function FilterBar({
           <div key={field.key} className="flex flex-col gap-1">
             <label
               htmlFor={id}
-              className="text-[11px] font-medium uppercase tracking-wider text-gray-600"
+              className="text-[11px] font-bold uppercase tracking-wider text-gray-600"
             >
               {field.label}
             </label>
@@ -81,7 +81,7 @@ export function FilterBar({
                 name={field.key}
                 value={currentValue}
                 onChange={(e) => handleChange(field, e.target.value)}
-                className="cursor-pointer rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm outline-none transition-shadow duration-150 hover:border-gray-300 focus-visible:ring-2 focus-visible:ring-blue-800"
+                className="cursor-pointer border-[3px] border-ink bg-paper px-3 py-2 text-sm font-medium text-ink outline-none transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 <option value="">All</option>
                 {field.options?.map((opt) => (
@@ -97,7 +97,7 @@ export function FilterBar({
                 name={field.key}
                 value={currentValue}
                 onChange={(e) => handleChange(field, e.target.value)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm outline-none transition-shadow duration-150 hover:border-gray-300 focus-visible:ring-2 focus-visible:ring-blue-800"
+                className="border-[3px] border-ink bg-paper px-3 py-2 text-sm font-medium tabular-nums text-ink outline-none transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink"
               />
             ) : (
               /* search */
@@ -108,7 +108,7 @@ export function FilterBar({
                 defaultValue={currentValue}
                 placeholder={`Search ${field.label.toLowerCase()}…`}
                 onChange={(e) => handleChange(field, e.target.value)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm outline-none transition-shadow duration-150 hover:border-gray-300 focus-visible:ring-2 focus-visible:ring-blue-800 min-w-[180px]"
+                className="min-w-[180px] border-[3px] border-ink bg-paper px-3 py-2 text-sm font-medium text-ink placeholder:text-gray-500 outline-none transition-colors duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink"
               />
             )}
           </div>

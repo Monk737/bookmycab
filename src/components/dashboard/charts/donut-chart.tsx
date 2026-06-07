@@ -26,7 +26,7 @@ export function DonutChart({
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-gray-400"
+        className="flex items-center justify-center text-sm font-medium text-gray-500"
       >
         No data for this period.
       </div>
@@ -49,6 +49,8 @@ export function DonutChart({
             <Cell
               key={`cell-${index}`}
               fill={PALETTE[index % PALETTE.length]}
+              stroke="#0a0a0a"
+              strokeWidth={2}
             />
           ))}
         </Pie>

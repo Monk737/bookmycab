@@ -12,7 +12,7 @@ import { DispatchNotImplementedError } from "../errors";
 const VENDOR = "Cordic";
 
 /**
- * Cordic adapter — v1.2 roadmap (PRD §7.6.3). Stubbed so the factory can route
+ * Cordic adapter, v1.2 roadmap (PRD §7.6.3). Stubbed so the factory can route
  * `dispatch_adapter='cordic'` today; every method throws a neutral
  * DispatchNotImplementedError until the real SOAP/REST adapter lands.
  */

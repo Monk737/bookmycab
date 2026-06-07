@@ -32,11 +32,11 @@ export function formatAnswer(intent: CopilotIntent, data: Record<string, unknown
     }
     case "abandonment": {
       const rate = Number(data.rate ?? 0);
-      return `Your abandonment rate over the last 30 days is ${rate}%. ${rate > 15 ? "That's on the high side — consider reviewing the booking prompts." : "That's within a healthy range."}`;
+      return `Your abandonment rate over the last 30 days is ${rate}%. ${rate > 15 ? "That's on the high side, consider reviewing the booking prompts." : "That's within a healthy range."}`;
     }
     case "help":
     default:
-      return "I can answer questions about your data — try: \"How much revenue this month?\", \"How many bookings last week?\", \"What are my top destinations?\", or \"Why are customers abandoning?\".";
+      return "I can answer questions about your data, try: \"How much revenue this month?\", \"How many bookings last week?\", \"What are my top destinations?\", or \"Why are customers abandoning?\".";
   }
 }
 

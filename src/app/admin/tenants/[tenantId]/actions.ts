@@ -129,7 +129,7 @@ async function setStatus(
 
   if (error) {
     // Throw so Next surfaces an error to the staff member rather than silently
-    // returning — a failed suspend/reinstate/churn must NOT look successful.
+    // returning, a failed suspend/reinstate/churn must NOT look successful.
     console.error(`${action} failed`, error);
     throw new Error(`Failed to update tenant status (${action}).`);
   }
@@ -179,7 +179,7 @@ const inviteSchema = z.object({
  *
  * Existing-user handling: `inviteUserByEmail` errors when the email already has
  * an auth account. Rather than fail, we look the user up by email and link them
- * to this tenant via a tenant_users upsert — re-inviting an existing person just
+ * to this tenant via a tenant_users upsert, re-inviting an existing person just
  * (re)attaches them to the tenant, which is the intent. Their existing invite is
  * not re-sent in that path.
  *
@@ -220,7 +220,7 @@ export async function sendInvite(
     // the email is already registered. The Supabase AuthError exposes `status`
     // (HTTP) and `code` (machine code); an already-registered email is 422 /
     // `email_exists`. Any other error (429 rate-limit, 503, network) is a hard
-    // failure — attaching some other user who shares this email would be wrong,
+    // failure, attaching some other user who shares this email would be wrong,
     // and reporting success when no email was sent is worse. So short-circuit.
     const msg = inviteError.message?.toLowerCase() ?? "";
     const alreadyRegistered =
@@ -247,14 +247,14 @@ export async function sendInvite(
       return {
         fieldErrors: {},
         formError:
-          "Could not invite this user. They may already have an account — check the email and try again.",
+          "Could not invite this user. They may already have an account, check the email and try again.",
       };
     }
     userId = existing.id as string;
   }
 
   if (!userId) {
-    // No error but also no user id — treat as a hard failure rather than
+    // No error but also no user id, treat as a hard failure rather than
     // proceeding with a null id.
     return {
       fieldErrors: {},

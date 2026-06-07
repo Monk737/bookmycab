@@ -10,7 +10,7 @@ export async function POST(_req: Request, ctx: { params: Promise<Record<string, 
   const gate = await requireOrgAccess(orgId, { minRole: "Admin" });
   if (gate instanceof NextResponse) return gate;
 
-  // Reuse the RLS-scoped overview to get the customer id — no service-role key
+  // Reuse the RLS-scoped overview to get the customer id, no service-role key
   // on this customer-facing route.
   const billing = await getBillingOverview(orgId);
   if (!billing.stripeCustomerId) {

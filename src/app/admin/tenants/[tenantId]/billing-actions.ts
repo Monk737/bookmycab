@@ -31,12 +31,15 @@ type TenantBillingRow = {
   country: string;
   contact_email: string | null;
   stripe_customer_id: string | null;
+  billing_bypass: boolean;
 };
 
 async function loadTenant(tenantId: string): Promise<TenantBillingRow> {
   const { data, error } = await db()
     .from("tenants")
-    .select("id, name, currency, plan_band, country, contact_email, stripe_customer_id")
+    .select(
+      "id, name, currency, plan_band, country, contact_email, stripe_customer_id, billing_bypass",
+    )
     .eq("id", tenantId)
     .single();
   if (error || !data) throw new Error("Tenant not found.");
@@ -72,6 +75,9 @@ export async function createSetupFeeInvoice(tenantId: string): Promise<void> {
   const claims = await requireStaff();
   const id = idSchema.parse(tenantId);
   const tenant = await loadTenant(id);
+  if (tenant.billing_bypass) {
+    throw new Error("Billing is bypassed for this tenant (100%-off coupon); no setup fee is charged.");
+  }
 
   const customerId = await getOrCreateStripeCustomer(tenant);
   const stripe = getStripe();
@@ -130,6 +136,9 @@ export async function startSubscription(tenantId: string): Promise<void> {
   const claims = await requireStaff();
   const id = idSchema.parse(tenantId);
   const tenant = await loadTenant(id);
+  if (tenant.billing_bypass) {
+    throw new Error("Billing is bypassed for this tenant (100%-off coupon); the subscription is comped.");
+  }
 
   const customerId = await getOrCreateStripeCustomer(tenant);
   const productId = await getOrCreateProduct();

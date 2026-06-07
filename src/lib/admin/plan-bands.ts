@@ -4,7 +4,7 @@
  * The five bands match the `tenants.plan_band` CHECK constraint (migration 0001):
  * `A-Single | A-Bundle | B-Single | B-Bundle | Custom`.
  *
- * Prices are NOT duplicated here — they are derived from the canonical marketing
+ * Prices are NOT duplicated here, they are derived from the canonical marketing
  * pricing model (`src/lib/marketing/pricing.ts`, PRD §6.1). A-* maps to tier A
  * (single/bundle), B-* to tier B, and Custom has no fixed price.
  */
@@ -24,10 +24,10 @@ export const PLAN_BANDS = [
 
 /** Human-readable labels for each band. */
 const PLAN_BAND_LABELS: Record<PlanBand, string> = {
-  "A-Single": "Plan A — Single channel",
-  "A-Bundle": "Plan A — Channel bundle",
-  "B-Single": "Plan B — Single channel",
-  "B-Bundle": "Plan B — Channel bundle",
+  "A-Single": "Plan A, Single channel",
+  "A-Bundle": "Plan A, Channel bundle",
+  "B-Single": "Plan B, Single channel",
+  "B-Bundle": "Plan B, Channel bundle",
   Custom: "Custom (quoted)",
 };
 

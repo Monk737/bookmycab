@@ -52,9 +52,9 @@ type FeeRow = {
 };
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "·";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "·";
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -70,12 +70,12 @@ function MoneyByCurrency({
   amounts: Record<Currency, number>;
 }) {
   const parts = CURRENCIES.filter((c) => amounts[c] > 0);
-  if (parts.length === 0) return <>—</>;
+  if (parts.length === 0) return <>·</>;
   return (
     <>
       {parts.map((c, i) => (
         <span key={c}>
-          {i > 0 && <span className="px-1 text-zinc-300">·</span>}
+          {i > 0 && <span className="px-1 text-gray-300">·</span>}
           {formatPrice(c, amounts[c])}
         </span>
       ))}
@@ -86,7 +86,7 @@ function MoneyByCurrency({
 /**
  * Stripe billing panel (FlowMo staff). READ-ONLY: every figure is computed from
  * local tables (`tenants`, `subscriptions`, `setup_fees`) via the service-role
- * client. No mutation happens here, so no audit entry is written — reading
+ * client. No mutation happens here, so no audit entry is written, reading
  * billing data for staff display is not an audited action.
  *
  * MRR source of truth is `tenants.monthly_price` (always present from
@@ -173,7 +173,7 @@ export default async function BillingPage() {
       cellClassName: "text-right tabular-nums",
       render: (r) =>
         r.monthly_price == null
-          ? "—"
+          ? "·"
           : formatPrice(r.currency, Number(r.monthly_price)),
     },
     {
@@ -184,10 +184,10 @@ export default async function BillingPage() {
       render: (r) => {
         const tone =
           r.days <= 7
-            ? "text-red-700 font-semibold"
+            ? "text-brut-red-deep font-bold"
             : r.days <= 14
-              ? "text-amber-700 font-medium"
-              : "text-zinc-700";
+              ? "text-ink font-medium"
+              : "text-gray-700";
         return <span className={tone}>{r.days}d</span>;
       },
     },
@@ -196,14 +196,14 @@ export default async function BillingPage() {
       header: "Stripe",
       render: (r) => {
         if (!r.stripe_customer_id) {
-          return <span className="text-zinc-400">—</span>;
+          return <span className="text-gray-400">·</span>;
         }
         return (
           <a
             href={`https://dashboard.stripe.com/customers/${r.stripe_customer_id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-mono text-[11px] font-medium uppercase tracking-wider text-emerald-700 underline-offset-2 outline-none hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="font-mono text-[11px] font-medium uppercase tracking-wider text-ink underline-offset-2 outline-none hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-ink"
           >
             Open in Stripe
           </a>
@@ -232,10 +232,10 @@ export default async function BillingPage() {
     <div className="mx-auto max-w-6xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+          <h1 className="text-xl font-bold tracking-tight text-ink">
             Billing
           </h1>
-          <p className="mt-1 text-sm text-zinc-600">
+          <p className="mt-1 text-sm text-gray-600">
             Recurring revenue, contract renewals and the setup-fee pipeline.
             Computed from local data &mdash; staff only.
           </p>
@@ -244,11 +244,11 @@ export default async function BillingPage() {
           {/* Live Stripe sync is per-tenant (tenant detail → Sync from Stripe). */}
           <Link
             href="/admin/tenants"
-            className="shrink-0 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+            className="shrink-0 border-[3px] border-ink bg-paper px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Sync a tenant
           </Link>
-          <p className="text-xs text-zinc-500">Open a tenant to sync from Stripe</p>
+          <p className="text-xs text-gray-500">Open a tenant to sync from Stripe</p>
         </div>
       </div>
 
@@ -274,7 +274,7 @@ export default async function BillingPage() {
       {loadError && (
         <p
           role="alert"
-          className="mt-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           Failed to load billing data. Please refresh.
         </p>
@@ -283,10 +283,10 @@ export default async function BillingPage() {
       {/* Renewal alerts */}
       <section className="mt-8">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+          <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
             Renewal alerts
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-gray-500">
             Soonest first. Days until colour-coded: red &le; 7 days, amber &le; 14 days.
           </p>
         </div>
@@ -303,7 +303,7 @@ export default async function BillingPage() {
 
       {/* MRR by plan band */}
       <section className="mt-8">
-        <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+        <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
           MRR by plan band
         </h2>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -322,10 +322,10 @@ export default async function BillingPage() {
       {/* Setup-fee pipeline */}
       <section className="mt-8">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+          <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
             Outstanding setup fees
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-gray-500">
             Unpaid total: <MoneyByCurrency amounts={pipeline.totalByCurrency} />
           </p>
         </div>
@@ -339,7 +339,7 @@ export default async function BillingPage() {
         </div>
       </section>
 
-      <p className="mt-8 text-xs text-zinc-400">
+      <p className="mt-8 text-xs text-gray-400">
         Figures derive from <code>tenants.monthly_price</code>. The{" "}
         <code>subscriptions</code> mirror{" "}
         {subscriptionCount > 0

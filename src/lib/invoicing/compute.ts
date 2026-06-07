@@ -30,7 +30,7 @@ function round2(n: number): number {
 export function computeInvoice(bookings: InvoiceBooking[], markupPct: number): ComputedInvoice {
   const lineItems: InvoiceLineItem[] = bookings.map((b) => ({
     bookingId: b.id,
-    description: `Journey — ${b.passenger_name ?? "passenger"}`,
+    description: `Journey, ${b.passenger_name ?? "passenger"}`,
     date: b.created_at.slice(0, 10),
     amount: round2(b.fare ?? 0),
   }));

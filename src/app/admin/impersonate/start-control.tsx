@@ -34,9 +34,9 @@ export function StartControl({
     return (
       <p
         role="status"
-        className="text-xs font-medium text-emerald-700"
+        className="text-xs font-medium text-ink"
       >
-        Impersonation started — see the banner. Expires in 15 min.
+        Impersonation started, see the banner. Expires in 15 min.
       </p>
     );
   }
@@ -57,24 +57,24 @@ export function StartControl({
           required
           placeholder="Reason (required)"
           aria-invalid={state.formError ? true : undefined}
-          className="min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+          className="min-w-0 flex-1 border-[3px] border-ink bg-paper px-3 py-1.5 text-sm text-ink placeholder:text-gray-400 outline-none transition-colors hover:border-gray-400 focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ink"
         />
         <button
           type="submit"
           disabled={!ready || pending}
           title={ready ? undefined : "Enter a reason to enable"}
-          className="shrink-0 cursor-pointer rounded-md bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white outline-none transition-colors hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="shrink-0 cursor-pointer bg-brut-lime px-3 py-1.5 text-sm font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Starting…" : "Impersonate"}
         </button>
       </div>
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="flex items-center gap-2 text-sm text-gray-700">
         <input type="hidden" name="mode" value="read_only" />
         <input type="checkbox" name="mode" value="write" />
-        Allow writes (write-scoped — use only when a fix requires it; fully audited)
+        Allow writes (write-scoped, use only when a fix requires it; fully audited)
       </label>
       {state.formError && (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs text-brut-red-deep">
           {state.formError}
         </p>
       )}

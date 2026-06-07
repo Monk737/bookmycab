@@ -31,18 +31,18 @@ const DEFAULT_TYPE_FOR_CHANNEL: Record<string, string> = {
 const initialState: ActionState = { fieldErrors: {}, formError: null };
 
 const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40";
+  "border-[3px] border-ink bg-paper px-3 py-2 text-sm text-ink placeholder:text-gray-400 outline-none transition-colors hover:border-gray-400 focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ink";
 
 function fieldWrap(label: string, id: string, children: React.ReactNode, error?: string | null) {
   const errorId = `${id}-error`;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-zinc-700">
+      <label htmlFor={id} className="text-sm font-medium text-gray-700">
         {label}
       </label>
       {children}
       {error && (
-        <p id={errorId} role="alert" className="text-xs text-red-600">
+        <p id={errorId} role="alert" className="text-xs text-brut-red-deep">
           {error}
         </p>
       )}
@@ -85,7 +85,7 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
 
   if (channels.length === 0) {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-gray-500">
         No channels exist yet. Provision a channel before storing a credential.
       </p>
     );
@@ -97,7 +97,7 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
         <p
           role="alert"
           aria-live="polite"
-          className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           {state.formError}
         </p>
@@ -106,7 +106,7 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
         <p
           role="status"
           aria-live="polite"
-          className="rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700"
+          className="border border-ink bg-brut-lime/30 px-4 py-3 text-sm text-ink"
         >
           Credential stored.
         </p>
@@ -131,7 +131,7 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
               if (def) setCredentialType(def);
             }}
             aria-invalid={fe.channel_id?.[0] ? true : undefined}
-            className={`${inputClass} ${fe.channel_id?.[0] ? "border-red-400" : ""}`}
+            className={`${inputClass} ${fe.channel_id?.[0] ? "border-ink" : ""}`}
           >
             {channels.map((c) => (
               <option key={c.id} value={c.id}>
@@ -151,7 +151,7 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
             value={credentialType}
             onChange={(e) => setCredentialType(e.target.value)}
             aria-invalid={fe.credential_type?.[0] ? true : undefined}
-            className={`${inputClass} ${fe.credential_type?.[0] ? "border-red-400" : ""}`}
+            className={`${inputClass} ${fe.credential_type?.[0] ? "border-ink" : ""}`}
           >
             {CREDENTIAL_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -173,14 +173,14 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
             spellCheck={false}
             placeholder="Paste the token / secret"
             aria-invalid={fe.secret?.[0] ? true : undefined}
-            className={`${inputClass} font-mono ${fe.secret?.[0] ? "border-red-400" : ""}`}
+            className={`${inputClass} font-mono ${fe.secret?.[0] ? "border-ink" : ""}`}
           />,
           fe.secret?.[0],
         )}
       </div>
 
       {channelType && DEFAULT_TYPE_FOR_CHANNEL[channelType] !== credentialType && (
-        <p className="text-xs text-amber-600" role="note">
+        <p className="text-xs text-ink" role="note">
           Heads up: this credential type doesn&apos;t match the selected channel&apos;s
           type. Double-check before storing.
         </p>
@@ -190,7 +190,7 @@ export function AddCredentialForm({ channels }: { channels: ChannelOption[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer bg-brut-lime px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Storing…" : "Store credential"}
         </button>

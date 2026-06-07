@@ -6,7 +6,7 @@ import { del } from "@/lib/redis/cache";
 import { automationCacheKey } from "@/lib/webhooks/resolver";
 import type { EngineRun } from "./types";
 
-/** Invalidate the resolver cache for an automation — best-effort; swallow Redis blips. */
+/** Invalidate the resolver cache for an automation, best-effort; swallow Redis blips. */
 async function invalidateResolverCache(automationId: string): Promise<void> {
   try {
     await del(automationCacheKey(automationId));

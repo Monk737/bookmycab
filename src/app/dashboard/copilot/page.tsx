@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listHistory } from "@/lib/copilot/service";
 import { CopilotClient } from "./copilot-client";
 
-export const metadata = { title: "Copilot — BookMyCab" };
+export const metadata = { title: "Copilot, BookMyCab" };
 
 export default async function CopilotPage() {
   const claims = await requireUser();
@@ -13,7 +13,7 @@ export default async function CopilotPage() {
   const history = await listHistory(claims.tenant_id, 10);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-gray-900">Copilot</h1>
+      <h1 className="mb-1 text-xl font-bold text-ink">Copilot</h1>
       <p className="mb-4 text-sm text-gray-500">Ask questions about your bookings and conversations.</p>
       <CopilotClient orgId={claims.tenant_id} history={history} isDemo={claims.is_demo} />
     </div>

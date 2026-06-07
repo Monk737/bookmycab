@@ -32,7 +32,7 @@ export function buildBillingDeps(): BillingDeps {
         .eq("stripe_invoice_id", stripeInvoiceId)
         .select("tenant_id, currency")
         .maybeSingle();
-      // Throw on a DB error (retryable); a missing row is NOT an error — it just
+      // Throw on a DB error (retryable); a missing row is NOT an error, it just
       // means this invoice isn't a tracked setup fee, so return null and ack.
       if (error) throw new Error(`markSetupFeePaid failed: ${error.message}`);
       if (!fee) return null;

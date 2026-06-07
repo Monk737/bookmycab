@@ -102,13 +102,13 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
       key: "name",
       header: "Name",
       render: (row: MemberRow) => (
-        <span className="font-medium text-gray-900">{row.fullName ?? row.email ?? "Unknown"}</span>
+        <span className="font-medium text-ink">{row.fullName ?? row.email ?? "Unknown"}</span>
       ),
     },
     {
       key: "email",
       header: "Email",
-      render: (row: MemberRow) => <span>{row.email ?? "—"}</span>,
+      render: (row: MemberRow) => <span>{row.email ?? "·"}</span>,
     },
     {
       key: "role",
@@ -120,7 +120,7 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
               value={row.role}
               disabled={isPending}
               aria-label={`Role for ${row.fullName ?? row.email}`}
-              className="rounded border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-800 cursor-pointer disabled:opacity-50"
+              className=" border-[3px] border-ink bg-paper px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-ink cursor-pointer disabled:opacity-50"
               onChange={(e) => handleRoleChange(row.userId, e.target.value)}
             >
               <option value="Owner">Owner</option>
@@ -166,11 +166,11 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
                     type="button"
                     disabled={isPending}
                     onClick={() => handleRevoke(row.userId, displayName)}
-                    className="rounded border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-blue-800 cursor-pointer disabled:opacity-50"
+                    className=" border border-ink bg-brut-red/15 px-3 py-1 text-xs font-medium text-brut-red-deep transition-colors hover:bg-brut-red/20 focus:outline-none focus:ring-2 focus:ring-ink cursor-pointer disabled:opacity-50"
                   >
                     Revoke
                   </button>
-                  {err && <p className="text-xs text-red-600">{err}</p>}
+                  {err && <p className="text-xs text-brut-red-deep">{err}</p>}
                 </div>
               );
             },
@@ -194,7 +194,7 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
         <span className="text-gray-600">
           {row.targetType && row.targetId
             ? `${row.targetType}/${row.targetId}`
-            : row.targetType ?? "—"}
+            : row.targetType ?? "·"}
         </span>
       ),
     },
@@ -210,27 +210,27 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 space-y-10">
       <header>
-        <h1 className="text-2xl font-semibold text-blue-900">Team</h1>
+        <h1 className="text-2xl font-bold text-ink">Team</h1>
         <p className="mt-1 text-sm text-gray-500">
           Manage team members and their access to your automations.
         </p>
       </header>
 
       {!isOwner && (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <p className="border border-ink bg-brut-yellow/30 px-4 py-3 text-sm text-ink">
           Only Owners can manage the team.
         </p>
       )}
 
       {globalError && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep">
           {globalError}
         </p>
       )}
 
       {/* Members table */}
       <section aria-labelledby="members-heading">
-        <h2 id="members-heading" className="mb-4 text-base font-semibold text-gray-800">
+        <h2 id="members-heading" className="mb-4 text-base font-bold text-gray-800">
           Members
         </h2>
         <DataTable
@@ -241,15 +241,15 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
         />
       </section>
 
-      {/* Invite form — Owner only */}
+      {/* Invite form, Owner only */}
       {isOwner && (
         <section aria-labelledby="invite-heading">
-          <h2 id="invite-heading" className="mb-4 text-base font-semibold text-gray-800">
+          <h2 id="invite-heading" className="mb-4 text-base font-bold text-gray-800">
             Invite a new member
           </h2>
           <form
             onSubmit={handleInviteSubmit}
-            className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-5"
+            className="border-[3px] border-ink bg-paper p-6 shadow-brut-sm space-y-5"
           >
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
@@ -263,7 +263,7 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="colleague@example.com"
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-800"
+                  className="border-[3px] border-ink px-3 py-2 text-sm text-ink placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ink"
                 />
               </div>
 
@@ -275,7 +275,7 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
                   id="invite-role"
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as typeof inviteRole)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-800 cursor-pointer"
+                  className="border-[3px] border-ink bg-paper px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-ink cursor-pointer"
                 >
                   <option value="Owner">Owner</option>
                   <option value="Admin">Admin</option>
@@ -301,7 +301,7 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
                         type="checkbox"
                         checked={inviteRestrictions.includes(a.id)}
                         onChange={() => toggleRestriction(a.id)}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-800 focus:ring-blue-800 cursor-pointer"
+                        className="h-4 w-4  border-gray-300 font-bold text-ink focus:ring-ink cursor-pointer"
                       />
                       {a.name}
                     </label>
@@ -313,25 +313,25 @@ export function TeamClient({ orgId, isOwner, members, automations, audit }: Prop
             <div className="flex items-center gap-4">
               <button
                 type="submit"
-                className="rounded-lg bg-amber-400 px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-800 cursor-pointer"
+                className="bg-brut-yellow px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ink cursor-pointer"
               >
                 Send invite
               </button>
               {inviteStatus === "sent" && (
-                <p className="text-sm text-green-700">Invite sent.</p>
+                <p className="text-sm text-ink">Invite sent.</p>
               )}
               {inviteStatus === "error" && inviteError && (
-                <p className="text-sm text-red-600">{inviteError}</p>
+                <p className="text-sm text-brut-red-deep">{inviteError}</p>
               )}
             </div>
           </form>
         </section>
       )}
 
-      {/* Audit trail — Owner only */}
+      {/* Audit trail, Owner only */}
       {isOwner && (
         <section aria-labelledby="audit-heading">
-          <h2 id="audit-heading" className="mb-4 text-base font-semibold text-gray-800">
+          <h2 id="audit-heading" className="mb-4 text-base font-bold text-gray-800">
             Audit trail
           </h2>
           <DataTable

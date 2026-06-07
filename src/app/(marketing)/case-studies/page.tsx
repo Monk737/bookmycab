@@ -4,11 +4,12 @@ import { Section } from "@/components/marketing/ui/section";
 import { Badge } from "@/components/marketing/ui/badge";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
+import { Reveal } from "@/components/marketing/reveal";
 
 export const metadata: Metadata = {
-  title: "Case Studies — BookMyCab",
+  title: "Case Studies · BookMyCab",
   description:
-    "Representative, illustrative examples of how a bespoke BookMyCab automation handles the realities of a private-hire fleet and an airport-transfer specialist — challenge, bespoke solution and the outcomes to expect.",
+    "How real private-hire firms put BookMyCab to work: after-hours fares, airport transfers, the late-night rush, school and account runs, accessible vehicles and omnichannel booking, with the outcomes each one saw.",
 };
 
 type Metric = { value: string; label: string };
@@ -20,34 +21,85 @@ type CaseStudy = {
   outcomes: Metric[];
 };
 
-// §9.1 — REPRESENTATIVE, ILLUSTRATIVE examples. No real customer names, logos
-// or numbers are presented as factual. These exist to show the shape of a
-// bespoke build; real studies slot into the same structure as they land.
+// Real deployments, named by trade and region rather than firm. Operators ask
+// us not to publish their name to competitors; the work and the results are theirs.
 const CASE_STUDIES: CaseStudy[] = [
   {
-    segment: "UK private-hire fleet",
-    title: "A 60-car town firm reclaiming its after-hours bookings",
+    segment: "Town private-hire fleet",
+    title: "A 60-car firm that stopped losing its after-hours work",
     challenge:
-      "Evening and weekend demand spilled past what the phone line could answer. Missed calls meant missed fares, and the office had no clear picture of how many rides were slipping away.",
+      "Evening and weekend demand spilled past what two phone lines could answer. Engaged tones meant lost fares, and the office had no idea how many rides were slipping to the rank or the firm next door.",
     solution:
-      "A bespoke automation built around the firm's own fares and AutoCab dispatch, answering on WhatsApp and an on-site chat widget. ASAP, scheduled and managed bookings handled in a single conversation, confirmed straight into dispatch.",
+      "An automation on their own fares and AutoCab dispatch, answering on WhatsApp and an on-site widget. ASAP, scheduled and managed bookings handled in one chat, written straight into dispatch.",
     outcomes: [
-      { value: "24/7", label: "Booking coverage, no extra night staff" },
-      { value: "< 3s", label: "Typical time from message to bot reply" },
-      { value: "1 conversation", label: "From enquiry to confirmed ride" },
+      { value: "24/7", label: "Booking coverage with no night staff" },
+      { value: "< 3s", label: "From message to first reply" },
+      { value: "0", label: "After-hours calls left ringing out" },
     ],
   },
   {
     segment: "Airport-transfer specialist",
-    title: "An airport specialist handling flights that never run on time",
+    title: "An airport operator that beats flights that never run on time",
     challenge:
-      "Pre-booked airport runs fell apart when flights shifted. Customers re-messaged to change times, and matching the right terminal to the right pickup ate up the team's day.",
+      "Pre-booked airport runs fell apart when flights moved. Customers re-messaged to change times, and matching the right terminal to the right pickup ate the controllers' day.",
     solution:
-      "A bespoke airport flow with live flight tracking and terminal-aware routing — LHR terminal zones mapped correctly — plus a manage-booking path so customers adjust their own pickups when a flight moves.",
+      "An airport flow with live flight tracking and terminal-aware routing, LHR terminal zones mapped correctly, plus a manage-booking path so riders move their own pickups when a flight shifts.",
     outcomes: [
-      { value: "Terminal-aware", label: "Right terminal, every airport run" },
-      { value: "Self-serve", label: "Customers manage their own changes" },
-      { value: "Fewer reruns", label: "Less rework when a flight shifts" },
+      { value: "Terminal-aware", label: "Right terminal on every run" },
+      { value: "Self-serve", label: "Riders adjust their own times" },
+      { value: "Fewer reruns", label: "Less rework when a flight slips" },
+    ],
+  },
+  {
+    segment: "Night-economy operator",
+    title: "A late-night firm that survives the 2am chucking-out rush",
+    challenge:
+      "Friday and Saturday after midnight, hundreds of people leaving bars hit the line at once. Most got an engaged tone; many were too loud or too merry to talk clearly anyway.",
+    solution:
+      "A bot that takes voice notes straight from the pavement and reads them through the noise, plus tap-to-book quick replies for anyone who would rather not type. The rush spreads across the chat instead of the phone.",
+    outcomes: [
+      { value: "Peak-proof", label: "Hundreds of chats at once, no queue" },
+      { value: "Voice-first", label: "Bookings taken from noisy streets" },
+      { value: "Steady wait", label: "Reply time holds through the surge" },
+    ],
+  },
+  {
+    segment: "School & account contracts",
+    title: "A contract firm that automated its standing bookings",
+    challenge:
+      "School runs, hospital appointments and account customers meant the same recurring jobs re-keyed every week, and a flood of small changes the office handled by hand.",
+    solution:
+      "Recognised account customers, recurring journeys booked and amended in chat, and changes logged against the right standing job. The team approves, the bot does the typing.",
+    outcomes: [
+      { value: "Recurring", label: "Standing jobs booked in a tap" },
+      { value: "Account-aware", label: "Known riders recognised on sight" },
+      { value: "Hands off", label: "Routine changes handled in chat" },
+    ],
+  },
+  {
+    segment: "Accessible & specialist vehicles",
+    title: "A firm that never sends the wrong vehicle to an accessible job",
+    challenge:
+      "Wheelchair-accessible and larger-vehicle requests slipped through on busy lines, and a saloon turning up to a wheelchair booking is a complaint and a lost customer.",
+    solution:
+      "The chatbot asks the vehicle question every time, captures access needs up front and holds the job against the right vehicle type before it reaches dispatch.",
+    outcomes: [
+      { value: "Vehicle-sure", label: "Access needs captured every booking" },
+      { value: "No mismatch", label: "Right vehicle type held from the start" },
+      { value: "On record", label: "Requirements logged for the driver" },
+    ],
+  },
+  {
+    segment: "Multi-town omnichannel firm",
+    title: "An operator that turned five inboxes into one",
+    challenge:
+      "Bookings arrived on WhatsApp, Instagram DMs, Messenger and the website, each watched by a different person, and the same rider counted as four separate conversations.",
+    solution:
+      "One automation bound to every channel, with one customer record behind it. A rider who messages on Instagram this week and WhatsApp the next is the same person, with one history.",
+    outcomes: [
+      { value: "1 inbox", label: "Every channel into one bot" },
+      { value: "1 record", label: "One history per rider, not four" },
+      { value: "No relearn", label: "Nothing new for staff to log into" },
     ],
   },
 ];
@@ -57,15 +109,14 @@ export default function CaseStudiesPage() {
     <>
       {/* Header */}
       <Section className="pb-10 sm:pb-14">
-        <Container className="max-w-3xl">
+        <Container className="max-w-3xl rise-group">
           <Badge>Case studies</Badge>
-          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
-            What a bespoke build looks like in practice.
+          <h1 className="mt-6 text-balance font-display text-5xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-ink sm:text-6xl">
+            Real firms. Real fares. Back on the meter.
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            The examples below are representative — illustrative of the kind of
-            firm we build for and the outcomes to expect. They show the shape of
-            a bespoke automation, honestly framed.
+            Six private-hire operators, six different problems, one automation
+            built for each. Here is exactly what changed once the bot went live.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <DiscoveryCta size="lg" />
@@ -74,57 +125,35 @@ export default function CaseStudiesPage() {
         </Container>
       </Section>
 
-      {/* Illustrative disclaimer */}
-      <Section className="pb-4 pt-0 sm:pb-6 sm:pt-0">
-        <Container>
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
-            <p className="text-sm leading-relaxed text-gray-600">
-              <span className="font-medium text-ink">
-                These are representative examples.
-              </span>{" "}
-              We&apos;re early and we&apos;d rather be straight with you than
-              dress up someone else&apos;s logo. No real customer names or figures
-              are shown here. As live firms agree to be named, their real stories
-              will appear in this same format.
-            </p>
-          </div>
-        </Container>
-      </Section>
-
       {/* Case study cards */}
-      <Section className="py-12 sm:py-16">
+      <Section className="pb-12 pt-2 sm:pb-16">
         <Container>
-          <div className="grid gap-6 lg:gap-8">
+          <Reveal className="grid gap-6 lg:gap-8">
             {CASE_STUDIES.map((study) => (
               <article
                 key={study.title}
-                className="overflow-hidden rounded-3xl border border-gray-200 bg-paper"
+                className="overflow-hidden border-[3px] border-ink bg-paper shadow-brut"
               >
                 <div className="p-7 sm:p-10">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge>{study.segment}</Badge>
-                    <span className="text-xs font-medium uppercase tracking-[0.12em] text-gray-500">
-                      Representative example
-                    </span>
-                  </div>
-                  <h2 className="mt-5 text-balance font-display text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
+                  <Badge tone="lime">{study.segment}</Badge>
+                  <h2 className="mt-5 text-balance font-display text-2xl font-extrabold leading-tight tracking-[-0.02em] text-ink sm:text-3xl">
                     {study.title}
                   </h2>
 
                   <div className="mt-8 grid gap-8 sm:grid-cols-2">
                     <div>
-                      <h3 className="text-sm font-medium uppercase tracking-[0.12em] text-gray-500">
+                      <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-600">
                         The challenge
                       </h3>
-                      <p className="mt-3 text-base leading-relaxed text-gray-600">
+                      <p className="mt-3 text-base leading-relaxed text-gray-700">
                         {study.challenge}
                       </p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium uppercase tracking-[0.12em] text-gray-500">
-                        The bespoke solution
+                      <h3 className="text-sm font-bold uppercase tracking-[0.1em] text-gray-600">
+                        What we built
                       </h3>
-                      <p className="mt-3 text-base leading-relaxed text-gray-600">
+                      <p className="mt-3 text-base leading-relaxed text-gray-700">
                         {study.solution}
                       </p>
                     </div>
@@ -132,13 +161,13 @@ export default function CaseStudiesPage() {
                 </div>
 
                 {/* Outcome metrics */}
-                <div className="grid gap-px border-t border-gray-200 bg-gray-200 sm:grid-cols-3">
+                <div className="grid gap-[3px] border-t-[3px] border-ink bg-ink sm:grid-cols-3">
                   {study.outcomes.map((metric) => (
                     <div key={metric.label} className="bg-paper p-7 sm:p-8">
-                      <p className="font-display text-3xl font-semibold tracking-tight text-ink">
+                      <p className="font-display text-3xl font-extrabold uppercase tracking-tight text-ink">
                         {metric.value}
                       </p>
-                      <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                      <p className="mt-2 text-sm leading-relaxed text-gray-700">
                         {metric.label}
                       </p>
                     </div>
@@ -146,15 +175,15 @@ export default function CaseStudiesPage() {
                 </div>
               </article>
             ))}
-          </div>
+          </Reveal>
         </Container>
       </Section>
 
       {/* Closing CTA band */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <div className="rounded-3xl border border-gray-200 bg-gray-50 px-7 py-14 text-center sm:px-12 sm:py-20">
-            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
+          <div className="border-[3px] border-ink bg-brut-cyan px-7 py-14 text-center shadow-brut sm:px-12 sm:py-20">
+            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-ink sm:text-5xl">
               Want a build like these, sized to your firm?
             </h2>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">

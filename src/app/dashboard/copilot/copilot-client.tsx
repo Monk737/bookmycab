@@ -31,21 +31,21 @@ export function CopilotClient(props: { orgId: string; history: Turn[]; isDemo: b
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-3 min-h-[200px] space-y-3 rounded-lg border border-gray-200 p-4">
+      <div className="mb-3 min-h-[200px] space-y-3 border border-gray-200 p-4">
         {turns.length === 0 && <p className="text-sm text-gray-400">Ask your first question below.</p>}
         {turns.map((t, i) => (
           <div key={i} className="space-y-1">
             <p className="text-sm font-medium text-gray-800">🧑 {t.q}</p>
-            <p className="text-sm text-blue-800">🤖 {t.a}</p>
+            <p className="text-sm font-bold text-ink">🤖 {t.a}</p>
           </div>
         ))}
       </div>
-      {err && <p className="mb-2 text-sm text-red-600" role="alert">{err}</p>}
+      {err && <p className="mb-2 text-sm text-brut-red-deep" role="alert">{err}</p>}
       {props.isDemo ? <p className="text-sm text-gray-400">Disabled in demo.</p> : (
         <>
           <form onSubmit={(e) => { e.preventDefault(); void ask(q); }} className="flex gap-2">
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask about your data…" className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm" />
-            <button disabled={busy} type="submit" className="rounded bg-blue-800 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">{busy ? "…" : "Ask"}</button>
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask about your data…" className="flex-1  border-[3px] border-ink px-3 py-2 text-sm" />
+            <button disabled={busy} type="submit" className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-4 py-2 text-sm font-medium text-ink disabled:opacity-50">{busy ? "…" : "Ask"}</button>
           </form>
           <div className="mt-2 flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => <button key={s} disabled={busy} onClick={() => void ask(s)} className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50">{s}</button>)}

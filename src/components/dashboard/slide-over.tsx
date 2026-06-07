@@ -51,7 +51,7 @@ export function SlideOver({
       {/* Backdrop */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-black/50 motion-reduce:transition-none transition-opacity duration-200"
+        className="absolute inset-0 bg-ink/60 motion-reduce:transition-none transition-opacity duration-200"
         onClick={onClose}
       />
 
@@ -62,15 +62,15 @@ export function SlideOver({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="relative z-10 flex w-full max-w-md flex-col bg-white shadow-xl outline-none motion-reduce:transition-none transition-transform duration-300 ease-in-out translate-x-0"
+        className="relative z-10 flex w-full max-w-md flex-col border-l-[3px] border-ink bg-paper shadow-brut-xl outline-none motion-reduce:transition-none transition-transform duration-300 ease-in-out translate-x-0"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between border-b-[3px] border-ink bg-brut-yellow px-6 py-4">
+          <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1.5 text-gray-500 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:outline-none cursor-pointer"
+            className="border-2 border-ink bg-paper p-1.5 text-ink transition-colors duration-150 hover:bg-ink hover:text-paper focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink cursor-pointer"
             aria-label="Close panel"
           >
             <svg

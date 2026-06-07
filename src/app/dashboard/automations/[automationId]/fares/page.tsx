@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listFareRules } from "@/lib/config/fare-queries";
 import { FaresClient } from "./fares-client";
 
-export const metadata = { title: "Fares — BookMyCab" };
+export const metadata = { title: "Fares, BookMyCab" };
 
 export default async function FaresPage({ params }: { params: Promise<{ automationId: string }> }) {
   const { automationId } = await params;
@@ -14,7 +14,7 @@ export default async function FaresPage({ params }: { params: Promise<{ automati
   const rules = await listFareRules(claims.tenant_id, automationId);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-gray-900">Fare rules</h1>
+      <h1 className="mb-1 text-xl font-bold text-ink">Fare rules</h1>
       <p className="mb-4 text-sm text-gray-500">Per-vehicle pricing the bot quotes.</p>
       <FaresClient orgId={claims.tenant_id} automationId={automationId} rules={rules} isDemo={claims.is_demo} />
     </div>

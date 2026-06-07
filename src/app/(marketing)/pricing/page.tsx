@@ -5,15 +5,17 @@ import { Badge } from "@/components/marketing/ui/badge";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { DispatchBadges } from "@/components/marketing/dispatch-badges";
 import { PricingCards } from "@/components/marketing/pricing-cards";
+import { PricingRoi } from "@/components/marketing/pricing-roi";
 import { TransparencySection } from "@/components/marketing/transparency-section";
+import { Reveal } from "@/components/marketing/reveal";
 
 export const metadata: Metadata = {
-  title: "Pricing — BookMyCab",
+  title: "Pricing · BookMyCab",
   description:
-    "Simple, transparent pricing for your bespoke cab automation. Fixed monthly options by fleet size, a one-time setup fee, and a clear breakdown of what you pay your own providers.",
+    "Simple, transparent pricing for your custom cab automation. Fixed monthly options by fleet size, a one-time setup fee, and a clear breakdown of what you pay your own providers.",
 };
 
-// §6.3 — add-on automations quoted on demand.
+// §6.3, add-on automations quoted on demand.
 const ADD_ONS = [
   {
     name: "Support Bot",
@@ -25,7 +27,7 @@ const ADD_ONS = [
   },
   {
     name: "Custom automations",
-    body: "Anything bespoke to your firm, built around your fleet and dispatch and quoted on demand.",
+    body: "Anything specific to your firm, built around your fleet and dispatch and quoted on demand.",
   },
 ];
 
@@ -34,11 +36,11 @@ export default function PricingPage() {
     <>
       {/* Hero */}
       <Section className="pb-10 pt-12 sm:pb-14 sm:pt-16">
-        <Container className="max-w-3xl">
+        <Container className="max-w-3xl rise-group">
           <Badge>Pricing</Badge>
-          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl xl:text-7xl">
+          <h1 className="mt-6 text-balance font-display text-5xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-ink sm:text-6xl xl:text-7xl">
             One fixed price.{" "}
-            <span className="box-decoration-clone bg-accent px-2 text-accent-ink">
+            <span className="box-decoration-clone bg-brut-yellow px-2 text-ink ring-2 ring-ink">
               No hidden margins.
             </span>
           </h1>
@@ -50,18 +52,34 @@ export default function PricingPage() {
         </Container>
       </Section>
 
-      {/* Cards + currency toggle + setup fee + contract + first-year anchor */}
+      {/* Advanced ROI calculator, the proof before the price. */}
+      <Section className="pb-12 pt-2 sm:pb-16">
+        <Container>
+          <div className="mb-6 max-w-2xl">
+            <h2 className="font-display text-2xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-3xl">
+              See the price pay for itself
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-gray-700">
+              Slide in your own numbers. This is the revenue an always-on bot
+              puts back, set against what the plan costs.
+            </p>
+          </div>
+          <PricingRoi />
+        </Container>
+      </Section>
+
+      {/* Cards + currency toggle + setup fee + contract */}
       <Section className="py-10 sm:py-14">
         <Container>
           <PricingCards />
         </Container>
       </Section>
 
-      {/* Add-ons — differentiated list, not an identical card grid. */}
+      {/* Add-ons, differentiated list, not an identical card grid. */}
       <Section className="py-16 sm:py-24">
         <Container>
           <div className="max-w-2xl">
-            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h2 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
               Add another automation when you need it
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-600">
@@ -69,13 +87,13 @@ export default function PricingPage() {
               automations, each scoped and quoted around your firm.
             </p>
           </div>
-          <dl className="mt-10 divide-y divide-gray-200 border-t border-gray-200">
+          <Reveal as="dl" className="mt-10 divide-y-2 divide-ink border-t-[3px] border-ink">
             {ADD_ONS.map((addOn) => (
               <div
                 key={addOn.name}
                 className="grid gap-2 py-7 sm:grid-cols-[14rem_1fr] sm:gap-10"
               >
-                <dt className="font-display text-xl font-semibold text-ink">
+                <dt className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">
                   {addOn.name}
                 </dt>
                 <dd className="max-w-2xl text-base leading-relaxed text-gray-600">
@@ -83,11 +101,11 @@ export default function PricingPage() {
                 </dd>
               </div>
             ))}
-          </dl>
+          </Reveal>
         </Container>
       </Section>
 
-      {/* Cost transparency — art-directed ink-dark band. */}
+      {/* Cost transparency, art-directed ink-dark band. */}
       <Section className="bg-ink py-20 sm:py-28">
         <Container>
           <TransparencySection tone="dark" />
@@ -98,7 +116,7 @@ export default function PricingPage() {
       <Section className="py-16 sm:py-24">
         <Container>
           <div className="max-w-2xl">
-            <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h2 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
               Integrated with AutoCab, iCabbi and Cordic
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-600">
@@ -112,11 +130,11 @@ export default function PricingPage() {
         </Container>
       </Section>
 
-      {/* Closing CTA band — homepage parity. */}
+      {/* Closing CTA band, homepage parity. */}
       <Section className="pb-20 pt-4 sm:pb-28">
         <Container>
-          <div className="rounded-3xl bg-ink px-7 py-16 text-center sm:px-12 sm:py-20">
-            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-paper sm:text-5xl">
+          <div className="border-[3px] border-ink bg-ink px-7 py-16 text-center shadow-brut-xl sm:px-12 sm:py-20">
+            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-paper sm:text-5xl">
               See exactly what your automation would cost
             </h2>
             <p className="mx-auto mt-5 max-w-xl leading-relaxed text-gray-300">

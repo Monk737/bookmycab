@@ -64,7 +64,7 @@ const runsColumns: Column<RunRow>[] = [
     key: "trigger",
     header: "Trigger channel",
     render: (row) => (
-      <span className="capitalize">{row.triggerChannel ?? "—"}</span>
+      <span className="capitalize">{row.triggerChannel ?? "·"}</span>
     ),
   },
 ];
@@ -81,7 +81,7 @@ const convColumns: Column<ConversationRow>[] = [
     key: "channel",
     header: "Channel",
     render: (row) => (
-      <span className="capitalize">{row.channelId ?? "—"}</span>
+      <span className="capitalize">{row.channelId ?? "·"}</span>
     ),
   },
   {
@@ -97,7 +97,7 @@ const convColumns: Column<ConversationRow>[] = [
     key: "outcome",
     header: "Outcome",
     render: (row) =>
-      row.outcome ? <StatusBadge status={row.outcome} /> : <span className="text-gray-400">—</span>,
+      row.outcome ? <StatusBadge status={row.outcome} /> : <span className="text-gray-400">·</span>,
   },
 ];
 
@@ -150,12 +150,12 @@ export default async function AutomationOverviewPage({
           <div className="flex flex-wrap items-center gap-2.5">
             <StatusBadge status={card.status} />
             {adapter && (
-              <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-600">
+              <span className="border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-600">
                 {adapter}
               </span>
             )}
           </div>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink">
             {card.name}
           </h1>
           {lastRun && (
@@ -180,7 +180,7 @@ export default async function AutomationOverviewPage({
           { label: "Completion", value: `${revenue.completionPct}%` },
           {
             label: "Avg response",
-            value: response.sampleSize ? `${response.avgSeconds}s` : "—",
+            value: response.sampleSize ? `${response.avgSeconds}s` : "·",
             sub: response.sampleSize ? `p95 ${response.p95Seconds}s` : "No data yet",
           },
           { label: "Active channels", value: card.channels.length },
@@ -189,9 +189,9 @@ export default async function AutomationOverviewPage({
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm lg:col-span-1">
+        <div className="border-[3px] border-ink bg-paper p-5 shadow-brut-sm lg:col-span-1">
           <div className="mb-3 flex items-baseline justify-between">
-            <h3 className="text-sm font-semibold text-gray-700">Bookings trend</h3>
+            <h3 className="text-sm font-bold text-gray-700">Bookings trend</h3>
             <span className="text-[11px] text-gray-400">last 30 days</span>
           </div>
           <OverviewTrend data={trend} />
@@ -199,8 +199,8 @@ export default async function AutomationOverviewPage({
 
         {isBookingType && (
           <>
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-1 text-sm font-semibold text-gray-700">
+            <div className="border-[3px] border-ink bg-paper p-5 shadow-brut-sm">
+              <h3 className="mb-1 text-sm font-bold text-gray-700">
                 Booking mode
               </h3>
               <p className="mb-3 text-[11px] text-gray-400">
@@ -208,8 +208,8 @@ export default async function AutomationOverviewPage({
               </p>
               <DonutChart data={bookingModeData} />
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-1 text-sm font-semibold text-gray-700">Booking status</h3>
+            <div className="border-[3px] border-ink bg-paper p-5 shadow-brut-sm">
+              <h3 className="mb-1 text-sm font-bold text-gray-700">Booking status</h3>
               <p className="mb-3 text-[11px] text-gray-400">Last 30 days.</p>
               <BarChart data={revenue.byStatus} />
             </div>
@@ -221,7 +221,7 @@ export default async function AutomationOverviewPage({
       <section aria-labelledby="live-feed-heading">
         <h2
           id="live-feed-heading"
-          className="mb-3 text-base font-semibold text-gray-900"
+          className="mb-3 text-base font-bold text-ink"
         >
           Live bookings feed
         </h2>
@@ -235,7 +235,7 @@ export default async function AutomationOverviewPage({
       <section aria-labelledby="convos-heading">
         <h2
           id="convos-heading"
-          className="mb-3 text-base font-semibold text-gray-900"
+          className="mb-3 text-base font-bold text-ink"
         >
           Recent conversations
         </h2>
@@ -251,7 +251,7 @@ export default async function AutomationOverviewPage({
       <section aria-labelledby="runs-heading">
         <h2
           id="runs-heading"
-          className="mb-3 text-base font-semibold text-gray-900"
+          className="mb-3 text-base font-bold text-ink"
         >
           Recent runs
         </h2>

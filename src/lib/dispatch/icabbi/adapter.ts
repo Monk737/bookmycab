@@ -12,7 +12,7 @@ import { DispatchNotImplementedError } from "../errors";
 const VENDOR = "iCabbi";
 
 /**
- * iCabbi adapter — v1.2 roadmap (PRD §7.6.2). Stubbed so the factory can route
+ * iCabbi adapter, v1.2 roadmap (PRD §7.6.2). Stubbed so the factory can route
  * `dispatch_adapter='icabbi'` today; every method throws a neutral
  * DispatchNotImplementedError until the real REST/polling adapter lands.
  */

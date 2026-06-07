@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listFlagged } from "@/lib/convintel/service";
 import { IntelClient } from "./intel-client";
 
-export const metadata = { title: "Intelligence — BookMyCab" };
+export const metadata = { title: "Intelligence, BookMyCab" };
 
 export default async function IntelPage() {
   const claims = await requireUser();
@@ -13,7 +13,7 @@ export default async function IntelPage() {
   const flagged = await listFlagged(claims.tenant_id);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-gray-900">Conversation intelligence</h1>
+      <h1 className="mb-1 text-xl font-bold text-ink">Conversation intelligence</h1>
       <p className="mb-4 text-sm text-gray-500">Search transcripts, review QA scores, and flag conversations for coaching.</p>
       <IntelClient orgId={claims.tenant_id} initialFlagged={flagged} isDemo={claims.is_demo} />
     </div>

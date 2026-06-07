@@ -2,7 +2,7 @@
  * IATA airline-code resolution for airport pickups (PRD §7.6.1).
  * The flight number's leading code identifies the carrier. The table covers the
  * carriers UK airport-transfer customers see most; unknown codes resolve to null
- * (airline name is cosmetic — the booking still proceeds on flight number alone).
+ * (airline name is cosmetic, the booking still proceeds on flight number alone).
  */
 const IATA_AIRLINES: Record<string, string> = {
   BA: "British Airways",

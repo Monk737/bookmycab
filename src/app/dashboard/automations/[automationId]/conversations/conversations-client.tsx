@@ -86,7 +86,7 @@ function MessageBubble({ message }: { message: MessageRow }) {
                 Extracted details
               </summary>
               <pre
-                className={`mt-1 overflow-x-auto rounded p-2 text-[11px] max-h-32 ${
+                className={`mt-1 overflow-x-auto  p-2 text-[11px] max-h-32 ${
                   onAmber ? "bg-accent-ink/10 text-accent-ink" : "bg-gray-100 text-gray-600"
                 }`}
               >
@@ -148,10 +148,10 @@ function MessageBubble({ message }: { message: MessageRow }) {
         </span>
       )}
       <div
-        className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
+        className={`max-w-[80%] px-3.5 py-2.5 ${
           onAmber
-            ? "rounded-bl-md bg-accent text-accent-ink"
-            : "rounded-br-md border border-gray-200 bg-paper text-ink"
+            ? "-md bg-accent text-accent-ink"
+            : "-md border border-gray-200 bg-paper text-ink"
         }`}
       >
         {renderContent()}
@@ -223,9 +223,9 @@ export function ConversationsClient({
   }
 
   function durationLabel(row: ConversationRow): string {
-    if (!row.startedAt || !row.endedAt) return "—";
+    if (!row.startedAt || !row.endedAt) return "·";
     const ms = new Date(row.endedAt).getTime() - new Date(row.startedAt).getTime();
-    if (Number.isNaN(ms) || ms < 0) return "—";
+    if (Number.isNaN(ms) || ms < 0) return "·";
     return formatDurationMs(ms);
   }
 
@@ -241,7 +241,7 @@ export function ConversationsClient({
       key: "customer",
       header: "Customer",
       render: (row) => (
-        <span className="font-medium text-gray-900">
+        <span className="font-medium text-ink">
           {row.customerName ?? row.customerHandle}
         </span>
       ),
@@ -250,7 +250,7 @@ export function ConversationsClient({
       key: "channel",
       header: "Channel",
       render: (row) => (
-        <span className="text-sm text-gray-600">{row.channelId ?? "—"}</span>
+        <span className="text-sm text-gray-600">{row.channelId ?? "·"}</span>
       ),
     },
     {
@@ -283,7 +283,7 @@ export function ConversationsClient({
       key: "language",
       header: "Language",
       render: (row) => (
-        <span className="text-sm text-gray-600">{row.language ?? "—"}</span>
+        <span className="text-sm text-gray-600">{row.language ?? "·"}</span>
       ),
     },
     {
@@ -293,7 +293,7 @@ export function ConversationsClient({
         <button
           type="button"
           onClick={() => openDetail(row.id)}
-          className="cursor-pointer rounded text-sm font-medium text-ink underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+          className="cursor-pointer  text-sm font-medium text-ink underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
         >
           View transcript
         </button>
@@ -306,7 +306,7 @@ export function ConversationsClient({
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-5">
       {/* Header */}
-      <h1 className="text-xl font-semibold text-gray-900">Conversations</h1>
+      <h1 className="text-xl font-bold text-ink">Conversations</h1>
 
       {/* Filters */}
       <FilterBar fields={FILTER_FIELDS} values={filterValues} />
@@ -333,7 +333,7 @@ export function ConversationsClient({
             type="button"
             disabled={page <= 1}
             onClick={() => goToPage(page - 1)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
+            className="border-[3px] border-ink bg-paper px-3 py-2 text-sm text-gray-700 shadow-brut-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
           >
             Previous
           </button>
@@ -344,7 +344,7 @@ export function ConversationsClient({
             type="button"
             disabled={page >= totalPages}
             onClick={() => goToPage(page + 1)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
+            className="border-[3px] border-ink bg-paper px-3 py-2 text-sm text-gray-700 shadow-brut-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
           >
             Next
           </button>
@@ -361,7 +361,7 @@ export function ConversationsClient({
           <p className="text-sm text-gray-500 py-6 text-center">Loading transcript…</p>
         )}
         {detailError && (
-          <p className="text-sm text-red-600 py-4">{detailError}</p>
+          <p className="text-sm text-brut-red-deep py-4">{detailError}</p>
         )}
         {detail && !detailLoading && (
           <div className="space-y-4">
@@ -369,7 +369,7 @@ export function ConversationsClient({
             <div className="flex flex-wrap gap-2 items-center">
               {detail.outcome && <StatusBadge status={detail.outcome} />}
               {detail.language && (
-                <span className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-gray-600">
+                <span className=" border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-600">
                   {detail.language}
                 </span>
               )}
@@ -381,14 +381,14 @@ export function ConversationsClient({
             {/* Customer info */}
             <div className="text-sm">
               <span className="text-gray-500">Customer: </span>
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-ink">
                 {detail.customerName ?? detail.customerHandle}
               </span>
             </div>
 
             {/* Abandonment reason */}
             {detail.abandonmentReason && (
-              <div className="rounded bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
+              <div className=" bg-brut-yellow/30 border border-ink px-3 py-2 text-sm text-ink">
                 <span className="font-medium">Abandoned: </span>
                 {detail.abandonmentReason}
               </div>
@@ -396,13 +396,13 @@ export function ConversationsClient({
 
             {/* Linked booking */}
             {detail.bookingId && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <div className="border border-gray-200 bg-gray-50 px-4 py-3">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-gray-500">
                   Linked booking
                 </p>
                 <a
                   href={`/dashboard/automations/${automationId}/bookings?id=${detail.bookingId}`}
-                  className="rounded text-sm font-medium text-ink underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+                  className=" text-sm font-medium text-ink underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
                 >
                   View booking {truncateId(detail.bookingId)} &rarr;
                 </a>
@@ -411,7 +411,7 @@ export function ConversationsClient({
 
             {/* Messages */}
             <div className="space-y-3 pt-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
                 Transcript ({detail.messages.length} messages)
               </h4>
               {detail.messages.length === 0 && (
@@ -429,13 +429,13 @@ export function ConversationsClient({
           <div className="space-y-2 text-sm">
             <p className="text-gray-600">
               Customer:{" "}
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-ink">
                 {selectedRow.customerName ?? selectedRow.customerHandle}
               </span>
             </p>
             <p className="text-gray-600">
               Started:{" "}
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-ink">
                 {formatDateTime(selectedRow.startedAt, "Europe/London")}
               </span>
             </p>

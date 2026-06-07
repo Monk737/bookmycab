@@ -4,7 +4,7 @@ import { getRedis } from "./client";
 // Sentinel stored in place of a null loader result so a cached "known-absent"
 // entry is distinguishable from a cache miss. @upstash/redis .get() returns
 // null for BOTH a missing key AND a stored JSON null, so without the sentinel
-// a loader that returns null would re-run on every call — defeating negative
+// a loader that returns null would re-run on every call, defeating negative
 // caching entirely.
 const NEGATIVE = "__cabby_null__";
 
@@ -16,7 +16,7 @@ const NEGATIVE = "__cabby_null__";
  * is stored instead of the raw null (because @upstash/redis `.get()` returns
  * `null` for both a missing key and a stored JSON null, making them
  * indistinguishable without a sentinel). Subsequent calls within the TTL window
- * return `null` immediately without re-running the loader — preventing DB
+ * return `null` immediately without re-running the loader, preventing DB
  * hammering for unknown keys (e.g. unknown automation IDs in resolveAutomation).
  */
 export async function getOrSet<T>(

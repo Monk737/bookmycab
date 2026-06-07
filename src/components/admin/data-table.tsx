@@ -18,12 +18,12 @@ export type Column<Row> = {
 };
 
 /**
- * Simple, typed, server-render-friendly table. Presentational only — no client
+ * Simple, typed, server-render-friendly table. Presentational only, no client
  * sorting or pagination. Renders a header, zebra/hover body rows, and an empty
  * state when there are no rows.
  *
  * `getRowKey` yields a stable key per row; `getRowHref` (optional) makes the
- * whole row a link target — the first cell wraps its content in an anchor so
+ * whole row a link target, the first cell wraps its content in an anchor so
  * the row is keyboard-accessible without nesting interactive elements.
  */
 export function DataTable<Row>({
@@ -40,15 +40,15 @@ export function DataTable<Row>({
   emptyMessage?: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <div className="overflow-hidden border-[3px] border-ink bg-paper shadow-brut">
       <table className="w-full border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-zinc-200 bg-zinc-50">
+          <tr className="border-b-[3px] border-ink bg-ink">
             {columns.map((col) => (
               <th
                 key={col.key}
                 scope="col"
-                className={`px-4 py-2.5 font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500 ${col.headerClassName ?? ""}`}
+                className={`px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-wider text-paper ${col.headerClassName ?? ""}`}
               >
                 {col.header}
               </th>
@@ -60,7 +60,7 @@ export function DataTable<Row>({
             <tr>
               <td
                 colSpan={columns.length}
-                className="px-4 py-10 text-center text-sm text-zinc-500"
+                className="px-4 py-10 text-center text-sm font-medium text-gray-500"
               >
                 {emptyMessage}
               </td>
@@ -71,19 +71,19 @@ export function DataTable<Row>({
               return (
                 <tr
                   key={getRowKey(row)}
-                  className="border-b border-zinc-100 last:border-0 odd:bg-white even:bg-zinc-50/40 transition-colors hover:bg-emerald-50/50"
+                  className="border-b-2 border-gray-200 last:border-0 odd:bg-paper even:bg-gray-50 transition-colors hover:bg-brut-cyan"
                 >
                   {columns.map((col, i) => {
                     const content = col.render(row);
                     return (
                       <td
                         key={col.key}
-                        className={`px-4 py-3 align-middle text-zinc-700 ${col.cellClassName ?? ""}`}
+                        className={`px-4 py-3 align-middle font-medium text-gray-700 ${col.cellClassName ?? ""}`}
                       >
                         {href && i === 0 ? (
                           <a
                             href={href}
-                            className="font-medium text-zinc-900 underline-offset-2 outline-none hover:underline focus-visible:rounded focus-visible:ring-2 focus-visible:ring-emerald-500"
+                            className="font-bold text-ink underline-offset-2 outline-none hover:underline focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink"
                           >
                             {content}
                           </a>

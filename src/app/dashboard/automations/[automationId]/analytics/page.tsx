@@ -13,7 +13,7 @@ export default async function AnalyticsPage({
   if (!claims.tenant_id) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
-        Unable to load analytics — no organisation found on your account.
+        Unable to load analytics, no organisation found on your account.
       </div>
     );
   }

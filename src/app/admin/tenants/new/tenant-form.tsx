@@ -21,7 +21,7 @@ const DISPATCH_ADAPTERS = [
 const initialState: TenantFormState = { fieldErrors: {}, formError: null };
 
 const inputClass =
-  "rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none transition-colors hover:border-zinc-400 focus-visible:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500/40";
+  "border-[3px] border-ink bg-paper px-3 py-2 text-sm text-ink placeholder:text-gray-400 outline-none transition-colors hover:border-gray-400 focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ink";
 
 /** Labelled text/number/date input with inline aria-live error. */
 function Field({
@@ -42,7 +42,7 @@ function Field({
   const hintId = `${id}-hint`;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-zinc-700">
+      <label htmlFor={id} className="text-sm font-medium text-gray-700">
         {label}
       </label>
       <input
@@ -52,16 +52,16 @@ function Field({
           .filter(Boolean)
           .join(" ") || undefined}
         aria-invalid={error ? true : undefined}
-        className={`${inputClass} ${error ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/40" : ""}`}
+        className={`${inputClass} ${error ? "border-ink focus-visible:border-brut-red-deep focus-visible:ring-ink" : ""}`}
         {...props}
       />
       {hint && (
-        <p id={hintId} className="text-xs text-zinc-500">
+        <p id={hintId} className="text-xs text-gray-500">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-xs text-red-600">
+        <p id={errorId} role="alert" className="text-xs text-brut-red-deep">
           {error}
         </p>
       )}
@@ -90,7 +90,7 @@ function SelectField({
   const errorId = `${id}-error`;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-medium text-zinc-700">
+      <label htmlFor={id} className="text-sm font-medium text-gray-700">
         {label}
       </label>
       <select
@@ -100,12 +100,12 @@ function SelectField({
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
         aria-invalid={error ? true : undefined}
-        className={`${inputClass} ${error ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/40" : ""}`}
+        className={`${inputClass} ${error ? "border-ink focus-visible:border-brut-red-deep focus-visible:ring-ink" : ""}`}
       >
         {children}
       </select>
       {error && (
-        <p id={errorId} role="alert" className="text-xs text-red-600">
+        <p id={errorId} role="alert" className="text-xs text-brut-red-deep">
           {error}
         </p>
       )}
@@ -133,6 +133,7 @@ export function TenantForm() {
   const priceId = useId();
   const stripeId = useId();
   const setupFeeId = useId();
+  const couponId = useId();
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -165,7 +166,7 @@ export function TenantForm() {
         <p
           role="alert"
           aria-live="polite"
-          className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           {state.formError}
         </p>
@@ -295,7 +296,7 @@ export function TenantForm() {
           }}
           hint={
             planBand === "Custom"
-              ? "Custom band has no fixed price — enter the quoted amount."
+              ? "Custom band has no fixed price, enter the quoted amount."
               : "Prefilled from plan band + currency. Editable."
           }
           placeholder="0"
@@ -321,17 +322,34 @@ export function TenantForm() {
         />
       </div>
 
+      {/* Discount coupon. A 100%-off code comps setup + subscription and skips
+          Stripe entirely; partial codes reduce the recorded prices above. */}
+      <fieldset className="flex flex-col gap-2 border-[3px] border-ink bg-paper p-4">
+        <legend className="px-1 text-sm font-medium text-gray-700">
+          Discount coupon
+        </legend>
+        <Field
+          id={couponId}
+          name="coupon_code"
+          label="Coupon code"
+          placeholder="Optional, e.g. LAUNCH100"
+          autoCapitalize="characters"
+          hint="Applies a percentage discount. A 100%-off code fully comps the tenant (setup fee + subscription) and bypasses Stripe payment."
+          error={fe.coupon_code?.[0]}
+        />
+      </fieldset>
+
       <div className="flex items-center gap-3 pt-2">
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer bg-brut-lime px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Creating…" : "Create tenant"}
         </button>
         <Link
           href="/admin/tenants"
-          className="rounded-md px-4 py-2 text-sm font-medium text-zinc-600 outline-none transition-colors hover:text-zinc-900 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          className="px-4 py-2 text-sm font-medium text-gray-600 outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
         >
           Cancel
         </Link>

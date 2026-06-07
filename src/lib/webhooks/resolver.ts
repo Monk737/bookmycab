@@ -3,7 +3,7 @@ import { getOrSet } from "@/lib/redis/cache";
 import { env } from "@/env";
 import { loadAutomationFromDb, type ResolvedAutomation } from "./resolver-loader";
 
-/** Shared cache key for an automation record — used by resolver + control layer. */
+/** Shared cache key for an automation record, used by resolver + control layer. */
 export function automationCacheKey(automationId: string): string {
   return `automation:${automationId}`;
 }

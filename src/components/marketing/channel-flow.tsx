@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 
 /**
  * The runtime story as a diagram: a customer message enters on any channel,
@@ -8,7 +9,15 @@ import type { ReactNode } from "react";
  * prefers-reduced-motion. No JS, no reveal gating.
  */
 
-const CHANNELS = ["WhatsApp", "Telegram", "Messenger", "Instagram", "Web widget"];
+// Channel app icons. Colourful and self-contained, so each sits on a light
+// paper tile with its name beside it.
+const CHANNELS = [
+  { name: "WhatsApp", src: "/social/whatsapp.png" },
+  { name: "Telegram", src: "/social/telegram.png" },
+  { name: "Messenger", src: "/social/messenger.png" },
+  { name: "Instagram", src: "/social/instagram.png" },
+  { name: "Web chat widget", src: "/social/web-widget.png" },
+];
 
 const AUTOMATION_STEPS = [
   "Reads what the customer wants",
@@ -17,28 +26,40 @@ const AUTOMATION_STEPS = [
   "Confirms the booking",
 ];
 
+// Dispatch wordmark logos. Dark marks on transparent, so each sits on paper.
 const DISPATCH = [
-  { name: "AutoCab", live: true },
-  { name: "iCabbi", live: false },
-  { name: "Cordic", live: false },
+  { name: "AutoCab", src: "/dispatch/autocab.png", live: true },
+  { name: "iCabbi", src: "/dispatch/icabbi.png", live: true },
+  { name: "Cordic", src: "/dispatch/cordic.png", live: true },
 ];
 
 export function ChannelFlow() {
   return (
     <div
       role="img"
-      aria-label="A customer message arrives on WhatsApp, Telegram, Messenger, Instagram or a web widget. The automation reads the request, transcribes voice notes, quotes the fare, picks the vehicle and confirms the booking. The confirmed job is written into the firm's dispatch system: AutoCab, with iCabbi and Cordic coming soon."
+      aria-label="A customer message arrives on WhatsApp, Telegram, Messenger, Instagram or a web widget. The automation reads the request, transcribes voice notes, quotes the fare, picks the vehicle and confirms the booking. The confirmed job is written into the firm's dispatch system: AutoCab, iCabbi or Cordic, all supported."
       className="flex flex-col items-stretch lg:flex-row lg:items-stretch"
     >
-      {/* Stage 1 — Channels */}
+      {/* Stage 1, Channels */}
       <Stage label="Customer messages on" className="lg:flex-1">
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {CHANNELS.map((c) => (
             <li
-              key={c}
-              className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 font-medium text-ink"
+              key={c.name}
+              className="brut-hover-lift flex h-16 items-center gap-3.5 border-[3px] border-ink bg-paper px-4 shadow-brut-sm"
             >
-              {c}
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center">
+                <Image
+                  src={c.src}
+                  alt={c.name}
+                  width={512}
+                  height={512}
+                  className="h-11 w-11 object-contain"
+                />
+              </span>
+              <span className="truncate font-display text-lg font-extrabold uppercase tracking-tight text-ink">
+                {c.name}
+              </span>
             </li>
           ))}
         </ul>
@@ -46,15 +67,15 @@ export function ChannelFlow() {
 
       <Connector />
 
-      {/* Stage 2 — Automation */}
+      {/* Stage 2, Automation */}
       <Stage label="Your automation" featured className="lg:flex-[1.1]">
-        <ol className="space-y-3">
+        <ol className="space-y-4">
           {AUTOMATION_STEPS.map((step, i) => (
-            <li key={step} className="flex gap-3">
-              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold tabular-nums text-accent-ink">
+            <li key={step} className="flex items-center gap-3.5">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-ink bg-brut-yellow text-sm font-bold tabular-nums text-ink">
                 {i + 1}
               </span>
-              <span className="text-sm leading-relaxed text-ink">{step}</span>
+              <span className="text-base font-medium leading-snug text-ink sm:text-lg">{step}</span>
             </li>
           ))}
         </ol>
@@ -62,30 +83,36 @@ export function ChannelFlow() {
 
       <Connector />
 
-      {/* Stage 3 — Dispatch */}
+      {/* Stage 3, Dispatch */}
       <Stage label="Lands in your dispatch" className="lg:flex-1">
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {DISPATCH.map((d) => (
             <li
               key={d.name}
-              className="flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5"
+              className="flex items-center justify-between gap-3 border-2 border-ink bg-paper px-4 py-4"
             >
-              <span className="font-medium text-ink">{d.name}</span>
+              <Image
+                src={d.src}
+                alt={d.name}
+                width={767}
+                height={325}
+                className="h-12 w-auto max-w-[62%] object-contain object-left"
+              />
               {d.live ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-accent-ink">
+                <span className="inline-flex shrink-0 items-center gap-1.5 border-2 border-ink bg-brut-lime px-2.5 py-1 text-xs font-bold uppercase text-ink">
                   <CheckIcon />
                   Live
                 </span>
               ) : (
-                <span className="text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-gray-600">
                   Soon
                 </span>
               )}
             </li>
           ))}
         </ul>
-        <p className="mt-4 flex items-center gap-2 text-sm font-medium text-ink">
-          <span className="status-pulse inline-block h-2 w-2 rounded-full bg-accent" />
+        <p className="mt-5 flex items-center gap-2 text-base font-bold text-ink">
+          <span className="status-pulse inline-block h-2.5 w-2.5 border border-ink bg-brut-violet" />
           Job dispatched
         </p>
       </Stage>
@@ -107,15 +134,13 @@ function Stage({
   return (
     <div
       className={
-        "rounded-3xl border p-6 sm:p-7 " +
-        (featured
-          ? "border-ink bg-paper shadow-[0_30px_60px_-30px_rgba(10,10,10,0.3)]"
-          : "border-gray-200 bg-paper") +
+        "border-[3px] border-ink bg-paper p-7 sm:p-8 " +
+        (featured ? "shadow-brut-lg" : "shadow-brut") +
         " " +
         className
       }
     >
-      <p className="mb-4 text-xs font-medium uppercase tracking-[0.12em] text-gray-500">
+      <p className="mb-5 text-sm font-bold uppercase tracking-[0.08em] text-gray-600">
         {label}
       </p>
       {children}
@@ -130,8 +155,8 @@ function Connector() {
       className="flex shrink-0 items-center justify-center py-1.5 lg:w-14 lg:py-0"
     >
       {/* vertical on mobile, horizontal on desktop */}
-      <span className="flow-line-y h-9 w-0.5 rounded-full lg:hidden" />
-      <span className="flow-line-x hidden h-0.5 w-full rounded-full lg:block" />
+      <span className="flow-line-y h-9 w-1 lg:hidden" />
+      <span className="flow-line-x hidden h-1 w-full lg:block" />
     </div>
   );
 }

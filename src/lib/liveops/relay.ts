@@ -4,7 +4,7 @@ import { env } from "@/env";
 /**
  * Relay a human staff message out to the customer's channel via the automation
  * engine. Graceful: when the engine is not configured (no N8N_BASE_URL) it logs
- * and returns false rather than throwing — mirrors sendEmail. The engine is
+ * and returns false rather than throwing, mirrors sendEmail. The engine is
  * expected to expose an inbound relay webhook that forwards to the channel.
  */
 export async function relayToChannel(
@@ -12,7 +12,7 @@ export async function relayToChannel(
   fetchImpl: typeof fetch = fetch,
 ): Promise<boolean> {
   if (!env.N8N_BASE_URL || !env.N8N_API_KEY) {
-    console.warn("relayToChannel: engine not configured — skipping outbound relay", { conversationId: args.conversationId });
+    console.warn("relayToChannel: engine not configured, skipping outbound relay", { conversationId: args.conversationId });
     return false;
   }
   try {

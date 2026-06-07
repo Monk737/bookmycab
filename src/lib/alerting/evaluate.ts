@@ -23,5 +23,5 @@ export function formatAlertText(
   value: number,
 ): string {
   const u = rule.unit ? rule.unit : "";
-  return `Alert: "${rule.name}" — ${rule.metricLabel} is ${value}${u}, which is ${OP_WORD[rule.operator]} your threshold of ${rule.threshold}${u}.`;
+  return `Alert: "${rule.name}", ${rule.metricLabel} is ${value}${u}, which is ${OP_WORD[rule.operator]} your threshold of ${rule.threshold}${u}.`;
 }

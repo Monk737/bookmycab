@@ -4,7 +4,7 @@ import { env } from "@/env";
 
 /**
  * Input contract for an admin audit-log entry. This is the single, centralized
- * shape every admin action must use — keep all writes flowing through
+ * shape every admin action must use, keep all writes flowing through
  * `writeAudit` so the audit contract lives in one place.
  */
 export type AuditEntry = {
@@ -26,16 +26,16 @@ export type AuditEntry = {
  * Appends a row to `public.audit_log` using the service-role client.
  *
  * `audit_log` RLS hard-denies tenant users, so this MUST use the service-role
- * key (which bypasses RLS) — same privileged-write pattern as recordLogin /
+ * key (which bypasses RLS), same privileged-write pattern as recordLogin /
  * acceptInvite in `src/app/(auth)/actions.ts`. Server-only: this module reads
- * the service-role key, so it must only ever be imported from server code —
+ * the service-role key, so it must only ever be imported from server code ,
  * never from a Client Component.
  *
  * `ip_address` is passed as null; capturing the request IP is the caller's
  * concern and is not trivially available here.
  *
  * @returns `true` when the row was inserted successfully, `false` when the
- * insert errored. Never throws and never blocks the admin action — a failed
+ * insert errored. Never throws and never blocks the admin action, a failed
  * audit write is logged via `console.error` and callers decide how to react
  * to the returned boolean.
  */

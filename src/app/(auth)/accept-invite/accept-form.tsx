@@ -12,7 +12,7 @@ type SessionState = "loading" | "valid" | "invalid";
 const initialState: AuthState = { fieldErrors: {}, formError: null };
 
 /**
- * Accept-invite form — client component.
+ * Accept-invite form, client component.
  * Checks for an active Supabase session on mount using onAuthStateChange.
  *
  * Detection method: onAuthStateChange + SIGNED_IN / INITIAL_SESSION events.
@@ -36,7 +36,7 @@ export function AcceptForm() {
       if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
         setSessionState("valid");
       } else {
-        // SIGNED_OUT or any unexpected event — treat as invalid/expired invite.
+        // SIGNED_OUT or any unexpected event, treat as invalid/expired invite.
         setSessionState("invalid");
       }
     });
@@ -53,7 +53,7 @@ export function AcceptForm() {
   if (sessionState === "loading") {
     return (
       <AuthCard heading="Accept invitation" error={null}>
-        <p className="text-sm text-slate-500 text-center">Verifying your invite link&hellip;</p>
+        <p className="text-sm text-gray-600 text-center">Verifying your invite link&hellip;</p>
       </AuthCard>
     );
   }
@@ -61,11 +61,11 @@ export function AcceptForm() {
   if (sessionState === "invalid") {
     return (
       <AuthCard heading="Invitation invalid or expired" error={null}>
-        <p className="mb-4 text-sm text-slate-600 text-center">
+        <p className="mb-4 text-sm text-gray-700 text-center">
           This invitation link is invalid or has expired. Please contact your administrator to
           request a new invite.
         </p>
-        <p className="text-xs text-slate-500 text-center">
+        <p className="text-xs text-gray-600 text-center">
           If you believe this is a mistake, reach out to your BookMyCab administrator.
         </p>
       </AuthCard>
@@ -75,7 +75,7 @@ export function AcceptForm() {
   return (
     <AuthCard heading="Accept invitation" error={state.formError}>
       <form action={formAction} noValidate className="flex flex-col gap-4">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-gray-600">
           Set up your account to get started. Choose a strong password with at least 8 characters.
         </p>
 

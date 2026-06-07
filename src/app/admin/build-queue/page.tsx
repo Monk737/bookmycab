@@ -5,7 +5,7 @@ import { requireStaff } from "@/lib/admin/guard";
 import { resolveEngineerEmails } from "@/lib/admin/resolve-engineers";
 import { BuildQueueBoard, type BuildCard } from "./build-queue-board";
 
-// Always read fresh — stage moves and Go Live should be reflected immediately.
+// Always read fresh, stage moves and Go Live should be reflected immediately.
 export const dynamic = "force-dynamic";
 
 type AutomationRow = {
@@ -22,7 +22,7 @@ type AutomationRow = {
 
 function tenantName(row: AutomationRow): string {
   const rel = Array.isArray(row.tenants) ? row.tenants[0] : row.tenants;
-  return rel?.name ?? "—";
+  return rel?.name ?? "·";
 }
 
 export default async function BuildQueuePage() {
@@ -67,10 +67,10 @@ export default async function BuildQueuePage() {
   return (
     <div className="mx-auto max-w-7xl">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-xl font-bold tracking-tight text-ink">
           Build Queue
         </h1>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="mt-1 text-sm text-gray-600">
           Provisioning pipeline across all tenants. Move cards through the stages;
           take UAT automations live. Staff only.
         </p>
@@ -79,7 +79,7 @@ export default async function BuildQueuePage() {
       {error && (
         <p
           role="alert"
-          className="mt-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           Failed to load the build queue. Please refresh.
         </p>

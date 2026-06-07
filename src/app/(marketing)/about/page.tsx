@@ -4,19 +4,20 @@ import { Section } from "@/components/marketing/ui/section";
 import { Badge } from "@/components/marketing/ui/badge";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
+import { Reveal } from "@/components/marketing/reveal";
 import { COMPANY } from "@/lib/marketing/nav";
 
 export const metadata: Metadata = {
-  title: "About — BookMyCab",
+  title: "About · BookMyCab",
   description:
-    "BookMyCab is built by FlowMo AI LTD, made in the United Kingdom. We build bespoke omnichannel booking automations for cab firms — confident, technical, transparent, no hype. You bring your numbers. You own your customer base.",
+    "BookMyCab is built by FlowMo AI LTD, made in the United Kingdom. We build custom omnichannel booking automations for cab firms, confident, technical, transparent, no hype. You bring your numbers. You own your customer base.",
 };
 
-// §3 — what we believe / how we work. Plain principles, no hype.
+// What we believe / how we work. Plain principles, no hype.
 const PRINCIPLES = [
   {
-    title: "Bespoke, never a template clone",
-    body: "Every firm gets an automation built around its own fares, vehicles and dispatch. No two builds are the same, because no two firms are.",
+    title: "Built for you, never cloned",
+    body: "Every firm gets an automation made around its own fares, vehicles and dispatch. No two builds are the same, because no two firms are.",
   },
   {
     title: "Transparent by default",
@@ -24,7 +25,7 @@ const PRINCIPLES = [
   },
   {
     title: "You stay in control",
-    body: "You connect your own numbers and bring your own keys. We build the automation; you keep the relationship with your customers.",
+    body: "You connect your own numbers and bring your own keys. We run the automation; you keep the relationship with your customers.",
   },
   {
     title: "We stay close",
@@ -32,20 +33,31 @@ const PRINCIPLES = [
   },
 ];
 
+// Who we build for, by trade.
+const SEGMENTS = [
+  "Town private-hire fleets",
+  "Airport-transfer specialists",
+  "Night-economy operators",
+  "School & account contracts",
+  "Accessible & specialist vehicles",
+  "Multi-town omnichannel firms",
+];
+
 export default function AboutPage() {
   return (
     <>
       {/* Header */}
       <Section className="pb-10 sm:pb-14">
-        <Container className="max-w-3xl">
+        <Container className="max-w-3xl rise-group">
           <Badge>About</Badge>
-          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
+          <h1 className="mt-6 text-balance font-display text-5xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-ink sm:text-6xl">
             Built for cab firms, by {COMPANY.entity}.
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            {COMPANY.product} is a bespoke omnichannel booking automation for cab
-            and taxi companies. We build it around your fleet and your dispatch —
-            never a template clone of someone else&apos;s bot.
+            {COMPANY.product} is a custom chatbot that books cabs by text and
+            voice across every channel, then writes the job into your dispatch.
+            We build one for each firm, around its own fleet and fares. Nothing
+            like the generic bot the firm down the road bolted on.
           </p>
           <p className="mt-4 text-base font-medium text-ink">
             Made in the {COMPANY.country} 🇬🇧
@@ -57,61 +69,157 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      {/* Positioning */}
-      <Section className="py-14 sm:py-20">
-        <Container className="max-w-3xl">
-          <h2 className="text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-4xl">
-            Confident and technical, without the hype.
-          </h2>
-          <p className="mt-5 text-lg leading-relaxed text-gray-600">
-            We&apos;re engineers who&apos;d rather show you a clean booking land in
-            your dispatch than sell you a buzzword. Every claim we make is one
-            we&apos;ll stand behind on a discovery call — and one you can see for
-            yourself in the live dashboard.
-          </p>
-          <p className="mt-5 text-lg leading-relaxed text-gray-600">
-            {COMPANY.tagline}
-          </p>
+      {/* Positioning, split: statement + "what that means" callout. */}
+      <Section className="border-t-[3px] border-ink py-14 sm:py-20">
+        <Container>
+          <Reveal className="grid items-start gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+            <div>
+              <span className="inline-block bg-brut-yellow px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-ink">
+                How we talk
+              </span>
+              <h2 className="mt-5 font-display text-3xl font-extrabold uppercase leading-[1.02] tracking-[-0.02em] text-ink sm:text-4xl lg:text-5xl">
+                Confident and technical,{" "}
+                <span className="box-decoration-clone bg-ink px-2 text-paper">
+                  without the hype.
+                </span>
+              </h2>
+            </div>
+            <div className="brut-hover-lift border-[3px] border-ink bg-paper p-7 shadow-brut sm:p-8">
+              <p className="text-lg leading-relaxed text-gray-700">
+                We&apos;re engineers who would rather show you a booking land in
+                your dispatch than sell you a buzzword.
+              </p>
+              <Reveal as="ul" className="mt-6 space-y-3 border-t-2 border-ink pt-6">
+                {[
+                  "Every claim is one you can watch happen in the live dashboard.",
+                  "You see your build working before you ever commit to it.",
+                  "Plain nouns and verbs. We name what the product does, not what it might.",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-3 text-base font-medium text-ink">
+                    <span aria-hidden="true" className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center border-2 border-ink bg-brut-lime text-xs">
+                      ✓
+                    </span>
+                    {line}
+                  </li>
+                ))}
+              </Reveal>
+            </div>
+          </Reveal>
         </Container>
       </Section>
 
-      {/* Principles */}
+      {/* Who we build for. */}
+      <Section className="bg-canvas py-14 sm:py-20">
+        <Container>
+          <Reveal className="max-w-2xl">
+            <span className="inline-block bg-brut-cyan px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-ink">
+              By trade
+            </span>
+            <h2 className="mt-5 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
+              Who we build for
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-700">
+              Private hire, top to bottom. If you run cars and take bookings, the
+              build bends to your trade.
+            </p>
+          </Reveal>
+          <Reveal as="ul" className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {SEGMENTS.map((seg, i) => {
+              const tones = ["bg-brut-yellow", "bg-brut-cyan", "bg-brut-lime", "bg-brut-pink", "bg-brut-violet", "bg-paper"];
+              return (
+                <li
+                  key={seg}
+                  className={`brut-hover-lift group flex items-center gap-3 border-2 border-ink px-4 py-4 text-base font-bold uppercase tracking-[0.03em] text-ink shadow-brut-sm ${tones[i % tones.length]}`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="font-display text-lg font-extrabold tabular-nums text-ink/40 transition-colors duration-200 group-hover:text-ink"
+                  >
+                    0{i + 1}
+                  </span>
+                  {seg}
+                </li>
+              );
+            })}
+          </Reveal>
+        </Container>
+      </Section>
+
+      {/* Principles, numbered manifesto list. */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <p className="text-sm font-medium uppercase tracking-[0.12em] text-gray-500">
+          <h2 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
             How we work
-          </p>
-          <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-gray-200 bg-gray-200 sm:grid-cols-2">
-            {PRINCIPLES.map((principle) => (
-              <div key={principle.title} className="bg-paper p-7 sm:p-9">
-                <h3 className="font-display text-xl font-semibold text-ink">
-                  {principle.title}
-                </h3>
-                <p className="mt-3 text-base leading-relaxed text-gray-600">
-                  {principle.body}
-                </p>
-              </div>
+          </h2>
+          <Reveal as="ol" className="mt-10 divide-y-2 divide-ink border-t-[3px] border-ink">
+            {PRINCIPLES.map((principle, i) => (
+              <li key={principle.title} className="grid gap-3 py-7 sm:grid-cols-[4rem_1fr] sm:gap-8">
+                <span className="font-display text-3xl font-extrabold tabular-nums text-ink sm:text-4xl">
+                  0{i + 1}
+                </span>
+                <div>
+                  <h3 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink sm:text-2xl">
+                    {principle.title}
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-base leading-relaxed text-gray-700">
+                    {principle.body}
+                  </p>
+                </div>
+              </li>
             ))}
-          </div>
+          </Reveal>
         </Container>
       </Section>
 
       {/* Transparency promise */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <div className="rounded-3xl border border-ink bg-accent px-7 py-12 sm:px-12 sm:py-16">
+          <div className="border-[3px] border-ink bg-brut-yellow shadow-brut-xl px-7 py-12 sm:px-12 sm:py-16">
             <p className="text-sm font-medium uppercase tracking-[0.12em] text-accent-ink/70">
               Our transparency promise
             </p>
-            <h2 className="mt-4 text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-accent-ink sm:text-4xl">
-              You bring your numbers. You own your customer base. We never hold
-              you hostage.
+            <h2 className="mt-4 text-balance font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-accent-ink sm:text-4xl">
+              Worth keeping, never holding you hostage.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
-              Your channels, your keys, your customers — all yours. We build the
-              automation that works for you, and we earn our place by being worth
-              keeping, not by locking you in.
+              Your channels, your keys, your customers, all yours. We earn our
+              place month to month by booking fares you would have lost, not by
+              locking you in. Cancel and you walk away with everything you came
+              in with.
             </p>
+          </div>
+        </Container>
+      </Section>
+
+      {/* What we won't do, punchy anti-promises. */}
+      <Section className="border-t-[3px] border-ink bg-canvas py-14 sm:py-20">
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-16">
+            <h2 className="font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
+              Things we will never do
+            </h2>
+            <ul className="grid gap-[3px] self-start overflow-hidden border-[3px] border-ink bg-ink shadow-brut">
+              {[
+                "Sell you a template and call it bespoke",
+                "Take ownership of your customers or your numbers",
+                "Hide channel or AI costs behind a markup",
+                "Switch you on and vanish",
+                "Lock your data so you can't leave",
+              ].map((line) => (
+                <li
+                  key={line}
+                  className="flex items-center gap-3 bg-paper px-5 py-4 text-base font-bold text-ink"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center border-2 border-ink bg-brut-red text-sm font-extrabold text-ink"
+                  >
+                    ✕
+                  </span>
+                  {line}
+                </li>
+              ))}
+            </ul>
           </div>
         </Container>
       </Section>
@@ -119,8 +227,8 @@ export default function AboutPage() {
       {/* Closing CTA band */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <div className="rounded-3xl border border-gray-200 bg-gray-50 px-7 py-14 text-center sm:px-12 sm:py-20">
-            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
+          <div className="border-[3px] border-ink bg-brut-cyan px-7 py-14 text-center shadow-brut sm:px-12 sm:py-20">
+            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-ink sm:text-5xl">
               Let&apos;s talk about your firm.
             </h2>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">

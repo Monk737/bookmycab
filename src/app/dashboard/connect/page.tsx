@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listTenantChannels, listTenantAutomations } from "@/lib/channels/service";
 import { ConnectClient } from "./connect-client";
 
-export const metadata = { title: "Connect a channel — BookMyCab" };
+export const metadata = { title: "Connect a channel, BookMyCab" };
 
 export default async function ConnectPage() {
   const claims = await requireUser();
@@ -16,7 +16,7 @@ export default async function ConnectPage() {
   ]);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-gray-900">Connect a channel</h1>
+      <h1 className="mb-1 text-xl font-bold text-ink">Connect a channel</h1>
       <p className="mb-4 text-sm text-gray-500">Request a new channel; our team reviews and activates it.</p>
       <ConnectClient orgId={claims.tenant_id} channels={channels} automations={automations} isDemo={claims.is_demo} />
     </div>

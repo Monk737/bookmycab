@@ -11,13 +11,13 @@ function svc() {
 export interface ApiKeyRow { id: string; name: string; prefix: string; last_used_at: string | null; revoked_at: string | null; created_at: string }
 export interface WebhookRow { id: string; url: string; events: string[]; enabled: boolean; failure_count: number; created_at: string }
 
-/** List a tenant's keys — NEVER returns key_hash. */
+/** List a tenant's keys, NEVER returns key_hash. */
 export async function listKeys(tenantId: string): Promise<ApiKeyRow[]> {
   const { data } = await svc().from("api_keys").select("id, name, prefix, last_used_at, revoked_at, created_at").eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return (data ?? []) as ApiKeyRow[];
 }
 
-/** Issue a key — returns the RAW key exactly once (caller must show + discard). */
+/** Issue a key, returns the RAW key exactly once (caller must show + discard). */
 export async function issueKey(tenantId: string, name: string, createdBy: string): Promise<{ raw: string; prefix: string }> {
   const k = generateApiKey();
   await svc().from("api_keys").insert({ tenant_id: tenantId, name, prefix: k.prefix, key_hash: k.hash, created_by: createdBy });

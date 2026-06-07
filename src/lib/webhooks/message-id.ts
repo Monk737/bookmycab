@@ -24,7 +24,7 @@ function dig(value: unknown, ...path: (string | number)[]): unknown {
 
 /**
  * Pulls the provider's unique message/update id from a parsed inbound body, used
- * as the idempotency key. Returns null when not found — the caller then forwards
+ * as the idempotency key. Returns null when not found, the caller then forwards
  * without dedupe rather than dropping the event.
  */
 export function extractProviderMessageId(channel: Channel, body: unknown): string | null {

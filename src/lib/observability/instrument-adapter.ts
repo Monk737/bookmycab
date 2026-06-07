@@ -11,8 +11,8 @@ const TIMED_OPS = new Set<string>([
 /**
  * Wraps a DispatchAdapter so every timed op records `dispatch_latency_ms`
  * {adapter, op, status} and reports failures. Implemented as a Proxy so the
- * wrapper preserves the target's prototype chain — `instanceof AutoCabAdapter`
- * (and the other concrete adapters) still holds — while transparently timing
+ * wrapper preserves the target's prototype chain, `instanceof AutoCabAdapter`
+ * (and the other concrete adapters) still holds, while transparently timing
  * the dispatch methods. Non-timed members pass through untouched.
  */
 export function instrumentAdapter(adapter: DispatchAdapter, adapterName: string): DispatchAdapter {

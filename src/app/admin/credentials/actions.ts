@@ -38,7 +38,7 @@ const addSchema = z.object({
  * Adds (encrypts + stores) a channel credential via the vault.
  *
  * Staff guard first (capturing claims for the audit actor), zod validation,
- * then `vault_store_credential_rpc` through the service-role client — the RPC
+ * then `vault_store_credential_rpc` through the service-role client, the RPC
  * sets `app.vault_key` transaction-locally from the env key and delegates to
  * the SECURITY DEFINER vault function, so the plaintext is encrypted server-side
  * by pgcrypto and never stored in the clear. The secret is NEVER written to the
@@ -103,7 +103,7 @@ export async function addCredential(
 }
 
 /**
- * Reveals (decrypts) a stored credential — a deliberate, audited senior-ops
+ * Reveals (decrypts) a stored credential, a deliberate, audited senior-ops
  * action. Calls `vault_read_credential_rpc`, which decrypts and stamps
  * last_accessed_at/by. The decrypted plaintext is RETURNED to the caller for
  * transient display only; it is NEVER logged and NEVER written to audit
@@ -111,7 +111,7 @@ export async function addCredential(
  *
  * TODO(senior-ops-role): reveal/rotate should be gated on a dedicated senior-ops
  * claim once that role exists. requireStaff (is_flowmo_staff) is the current
- * gate — tighten this when the finer-grained role lands.
+ * gate, tighten this when the finer-grained role lands.
  */
 export async function revealCredential(
   id: string,
@@ -166,12 +166,12 @@ export async function revealCredential(
 }
 
 /**
- * Rotates a stored credential by storing a new encrypted secret — a deliberate,
+ * Rotates a stored credential by storing a new encrypted secret, a deliberate,
  * audited senior-ops action. Re-encrypts via the vault store RPC and updates the
  * existing row's ciphertext (the row identity / created_at are preserved). The
  * new secret is NEVER logged or audited. Throws on a DB error.
  *
- * TODO(senior-ops-role): see revealCredential — gate on a senior-ops claim once
+ * TODO(senior-ops-role): see revealCredential, gate on a senior-ops claim once
  * that role exists; requireStaff is the current gate.
  */
 export async function rotateCredential(

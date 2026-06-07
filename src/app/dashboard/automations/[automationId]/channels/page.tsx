@@ -30,12 +30,12 @@ function TokenExpiryBadge({ days }: { days: number | null }): React.JSX.Element 
   }
 
   const colorClass = isRed
-    ? "text-red-600 bg-red-50 border border-red-200"
-    : "text-amber-700 bg-amber-50 border border-amber-200";
+    ? "text-brut-red-deep bg-brut-red/15 border border-ink"
+    : "text-ink bg-brut-yellow/30 border border-ink";
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${colorClass}`}
+      className={`inline-flex items-center gap-1  px-2 py-0.5 text-xs font-medium ${colorClass}`}
     >
       <svg
         aria-hidden="true"
@@ -65,7 +65,7 @@ export default async function ChannelsPage({
   if (!claims.tenant_id) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
-        Unable to load channels — no organisation found on your account.
+        Unable to load channels, no organisation found on your account.
       </div>
     );
   }
@@ -79,14 +79,14 @@ export default async function ChannelsPage({
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-blue-900">Channels</h1>
+          <h1 className="text-lg font-bold text-ink">Channels</h1>
           <p className="mt-0.5 text-sm text-gray-500">
             Messaging channels connected to this automation.
           </p>
         </div>
         <Link
           href="/dashboard/support"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-blue-800 px-3 py-1.5 text-xs font-medium text-blue-800 transition-colors duration-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 cursor-pointer"
+          className="inline-flex items-center gap-1.5 border border-ink px-3 py-1.5 text-xs font-medium font-bold text-ink transition-colors duration-200 hover:bg-brut-cyan focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 cursor-pointer"
         >
           <svg
             aria-hidden="true"
@@ -102,7 +102,7 @@ export default async function ChannelsPage({
 
       {/* Empty state */}
       {channels.length === 0 && (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center shadow-sm">
+        <div className="border border-dashed border-gray-200 bg-paper px-6 py-16 text-center shadow-brut-sm">
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
@@ -123,7 +123,7 @@ export default async function ChannelsPage({
           </p>
           <Link
             href="/dashboard/support"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-800 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 cursor-pointer"
+            className="mt-4 inline-flex items-center gap-1.5 border-2 border-ink bg-brut-yellow shadow-brut-sm px-4 py-2 text-sm font-medium text-ink transition-colors duration-200 hover:bg-ink hover:text-paper focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 cursor-pointer"
           >
             Open a support request
           </Link>
@@ -136,7 +136,7 @@ export default async function ChannelsPage({
           {channels.map((channel) => (
             <li
               key={channel.id}
-              className="rounded-xl bg-white shadow-sm border border-gray-100 p-5 flex flex-col gap-4 transition-shadow duration-200 hover:shadow-md"
+              className="bg-paper shadow-brut-sm border border-gray-100 p-5 flex flex-col gap-4 transition-shadow duration-200 hover:shadow-brut"
             >
               {/* Top row: icon + label + status */}
               <div className="flex items-start justify-between gap-3">
@@ -146,7 +146,7 @@ export default async function ChannelsPage({
                     health={channel.health}
                   />
                   <div>
-                    <p className="text-sm font-semibold text-blue-900">
+                    <p className="text-sm font-bold text-ink">
                       {CHANNEL_LABEL[channel.type] ?? channel.type}
                     </p>
                     {channel.externalId && (
@@ -170,7 +170,7 @@ export default async function ChannelsPage({
                 <span className="text-xs text-gray-600">
                   {channel.lastMessageAt
                     ? formatDateTime(channel.lastMessageAt, "Europe/London")
-                    : "—"}
+                    : "·"}
                 </span>
               </div>
 
@@ -184,7 +184,7 @@ export default async function ChannelsPage({
                 />
                 <Link
                   href="/dashboard/support"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 underline-offset-2 hover:text-blue-800 hover:underline transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 rounded cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 underline-offset-2 hover:font-bold text-ink hover:underline transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink  cursor-pointer"
                 >
                   Reconnect
                 </Link>

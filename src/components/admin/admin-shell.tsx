@@ -22,6 +22,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Build Queue", href: "/admin/build-queue" },
   { label: "Credentials", href: "/admin/credentials" },
   { label: "Billing", href: "/admin/billing" },
+  { label: "Coupons", href: "/admin/coupons" },
   { label: "Impersonate", href: "/admin/impersonate" },
 ];
 
@@ -31,10 +32,13 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+const DARK_FOCUS =
+  "outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-paper";
+
 /**
- * Internal operational console shell. Persistent left sidebar, dense neutral
- * (zinc) palette, monospaced wordmark — deliberately distinct from the
- * marketing (#FFD400) and product-auth (indigo/slate) surfaces. Staff-only.
+ * Internal operational console shell. Persistent left brutalist ink sidebar
+ * with a CYAN active block, the staff surface accent, deliberately distinct
+ * from the tenant dashboard (yellow) and demo (pink). Staff-only.
  */
 export function AdminShell({
   children,
@@ -47,23 +51,21 @@ export function AdminShell({
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen bg-zinc-100 text-zinc-900">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 text-zinc-300">
-        <div className="border-b border-zinc-800 px-5 py-5">
-          <p className="font-mono text-sm font-semibold tracking-tight text-white">
+    <div className="flex min-h-screen bg-canvas text-ink">
+      <aside className="flex w-60 shrink-0 flex-col border-r-[3px] border-ink bg-ink text-gray-300">
+        <div className="border-b-[3px] border-gray-800 px-5 py-5">
+          <span className="inline-flex items-center gap-1.5 font-logo text-sm leading-none tracking-tight text-paper">
             BookMyCab
-          </p>
-          <span className="mt-2 inline-flex items-center gap-1.5 rounded border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider text-emerald-400">
-            <span
-              aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full bg-emerald-400"
-            />
+            <span aria-hidden="true" className="inline-block h-2.5 w-2.5 border-2 border-paper bg-brut-cyan" />
+          </span>
+          <span className="mt-2.5 inline-flex items-center gap-1.5 border-2 border-ink bg-brut-cyan px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
+            <span aria-hidden="true" className="status-pulse h-1.5 w-1.5 bg-ink" />
             FlowMo Staff
           </span>
         </div>
 
         <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">
-          <ul className="space-y-0.5">
+          <ul className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const active = isActive(pathname, item.href);
               return (
@@ -71,10 +73,10 @@ export function AdminShell({
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`block rounded-md px-3 py-2 text-sm font-medium outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 ${
+                    className={`block px-3 py-2 text-sm font-bold uppercase tracking-[0.04em] transition-colors duration-150 ${DARK_FOCUS} ${
                       active
-                        ? "bg-zinc-800 text-white"
-                        : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                        ? "bg-brut-cyan text-ink"
+                        : "text-gray-400 hover:bg-gray-800 hover:text-paper"
                     }`}
                   >
                     {item.label}
@@ -85,11 +87,11 @@ export function AdminShell({
           </ul>
         </nav>
 
-        <div className="border-t border-zinc-800 px-3 py-4">
+        <div className="border-t-[3px] border-gray-800 px-3 py-4">
           <form action={signOut}>
             <button
               type="submit"
-              className="w-full cursor-pointer rounded-md px-3 py-2 text-left text-sm font-medium text-zinc-400 outline-none transition-colors duration-150 hover:bg-zinc-900 hover:text-zinc-100 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+              className={`w-full cursor-pointer border-2 border-gray-700 px-3 py-2 text-left text-sm font-bold uppercase tracking-[0.04em] text-gray-400 transition-colors duration-150 hover:border-paper hover:bg-gray-800 hover:text-paper ${DARK_FOCUS}`}
             >
               Sign out
             </button>

@@ -9,7 +9,7 @@ type CostRow = {
 
 type Tone = "light" | "dark";
 
-// §6.4 — external pass-through costs vs what is paid to BookMyCab.
+// §6.4, external pass-through costs vs what is paid to BookMyCab.
 const PASS_THROUGH: CostRow[] = [
   {
     item: "WhatsApp conversation fees",
@@ -22,74 +22,82 @@ const PASS_THROUGH: CostRow[] = [
     cadence: "Per usage",
   },
   {
-    item: "AI / LLM token usage",
+    item: "AI / chat & voice processing",
     paidTo: "Your AI provider",
-    cadence: "You bring your own key",
+    cadence: "Your own key",
   },
   {
-    item: "AutoCab, iCabbi or Cordic API subscription",
+    item: "AutoCab, iCabbi or Cordic API",
     paidTo: "Your dispatch provider",
-    cadence: "Per your contract",
+    cadence: "Your contract",
   },
 ];
 
 const TO_BOOKMYCAB: CostRow[] = [
   {
-    item: "BookMyCab subscription",
+    item: "Your monthly automation",
     paidTo: "BookMyCab",
     cadence: "Monthly",
   },
   {
-    item: "BookMyCab setup fee",
+    item: "One-time build & setup",
     paidTo: "BookMyCab",
-    cadence: "One-time",
+    cadence: "Once",
   },
 ];
 
-function CostList({
-  title,
+/** A grouped, column-aligned ledger of who gets paid for what. */
+function Ledger({
+  groupLabel,
+  groupTone,
   rows,
-  tone,
+  dark,
 }: {
-  title: string;
+  groupLabel: string;
+  /** "neutral" pass-through band vs "brand" BookMyCab band. */
+  groupTone: "neutral" | "brand";
   rows: CostRow[];
-  tone: Tone;
+  dark: boolean;
 }) {
-  const dark = tone === "dark";
+  const bandClass =
+    groupTone === "brand"
+      ? "bg-brut-yellow text-ink"
+      : dark
+        ? "bg-gray-800 text-paper"
+        : "bg-ink text-paper";
+  const rowBg = dark ? "bg-gray-900" : "bg-paper";
+  const rowText = dark ? "text-paper" : "text-ink";
+  const metaText = dark ? "text-gray-300" : "text-gray-600";
+  const divide = dark ? "divide-gray-700" : "divide-gray-200";
+
   return (
-    <div
-      className={
-        "rounded-3xl border p-7 sm:p-8 " +
-        (dark ? "border-gray-700 bg-gray-900" : "border-gray-200 bg-paper")
-      }
-    >
-      <h3
-        className={
-          "font-display text-xl font-semibold " +
-          (dark ? "text-paper" : "text-ink")
-        }
+    <div>
+      {/* Group band */}
+      <div className={`flex items-center justify-between gap-3 px-5 py-2.5 ${bandClass}`}>
+        <span className="text-xs font-bold uppercase tracking-[0.1em]">{groupLabel}</span>
+      </div>
+      {/* Column header */}
+      <div
+        className={`hidden grid-cols-[minmax(0,1fr)_9rem_8rem] gap-4 border-b-2 px-5 py-2 sm:grid ${
+          dark ? "border-gray-700" : "border-ink"
+        }`}
       >
-        {title}
-      </h3>
-      <ul className="mt-5">
+        {["Item", "Paid to", "When"].map((h) => (
+          <span key={h} className={`text-[11px] font-bold uppercase tracking-[0.1em] ${metaText}`}>
+            {h}
+          </span>
+        ))}
+      </div>
+      {/* Rows */}
+      <ul className={`divide-y-2 ${divide}`}>
         {rows.map((row) => (
           <li
             key={row.item}
-            className={
-              "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t py-4 first:border-t-0 first:pt-0 " +
-              (dark ? "border-gray-800" : "border-gray-200")
-            }
+            className={`grid grid-cols-1 gap-x-4 gap-y-1 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_9rem_8rem] sm:items-baseline ${rowBg}`}
           >
-            <span
-              className={"font-medium " + (dark ? "text-paper" : "text-ink")}
-            >
-              {row.item}
-            </span>
-            <span
-              className={"text-sm " + (dark ? "text-gray-400" : "text-gray-500")}
-            >
-              {row.paidTo} · {row.cadence}
-            </span>
+            <span className={`font-bold ${rowText}`}>{row.item}</span>
+            <span className={`text-sm font-medium ${metaText}`}>{row.paidTo}</span>
+            <span className={`text-sm font-medium ${metaText}`}>{row.cadence}</span>
           </li>
         ))}
       </ul>
@@ -105,24 +113,23 @@ type TransparencySectionProps = {
 };
 
 /**
- * "What you pay externally" — §6.4 cost transparency.
- *
- * Standalone Server Component so Home, Pricing and Channels can reuse it.
- * Splits costs into pass-through usage (paid to your own providers) and what
- * is paid to BookMyCab, so there are no hidden margins. `tone="dark"` adapts
- * the colours for an ink-background section.
+ * "What you pay externally", §6.4 cost transparency, rebuilt as one aligned
+ * ledger: a neutral band for pass-through costs paid to your own providers,
+ * then a yellow band for what is paid to BookMyCab. Columns line up so the
+ * whole thing reads at a glance. `tone="dark"` adapts it for an ink section.
  */
 export function TransparencySection({
-  heading = "What you pay externally",
+  heading = "What you pay, and who you pay it to",
   className = "",
   tone = "light",
 }: TransparencySectionProps) {
   const dark = tone === "dark";
+
   return (
     <div className={className}>
       <h2
         className={
-          "font-display text-3xl font-semibold tracking-tight sm:text-4xl " +
+          "font-display text-3xl font-extrabold uppercase tracking-[-0.02em] sm:text-4xl " +
           (dark ? "text-paper" : "text-ink")
         }
       >
@@ -131,23 +138,42 @@ export function TransparencySection({
       <p
         className={
           "mt-4 max-w-2xl text-lg leading-relaxed " +
-          (dark ? "text-gray-300" : "text-gray-600")
+          (dark ? "text-gray-300" : "text-gray-700")
         }
       >
-        No hidden margins. Channel and AI usage is billed by your own providers
-        at cost. You only pay BookMyCab for the automation itself.
+        No middleman markup on usage. Channel and AI costs are billed straight to
+        you by your own providers, at their price. We charge for the automation,
+        full stop.
       </p>
-      <div className="mt-8 grid gap-5 lg:grid-cols-2">
-        <CostList title="Paid to your own providers" rows={PASS_THROUGH} tone={tone} />
-        <CostList title="Paid to BookMyCab" rows={TO_BOOKMYCAB} tone={tone} />
+
+      <div
+        className={
+          "mt-8 overflow-hidden border-[3px] shadow-brut " +
+          (dark ? "border-paper" : "border-ink")
+        }
+      >
+        <Ledger
+          groupLabel="Paid to your own providers"
+          groupTone="neutral"
+          rows={PASS_THROUGH}
+          dark={dark}
+        />
+        <div className={dark ? "h-[3px] bg-paper" : "h-[3px] bg-ink"} />
+        <Ledger
+          groupLabel="Paid to BookMyCab"
+          groupTone="brand"
+          rows={TO_BOOKMYCAB}
+          dark={dark}
+        />
       </div>
+
       <p
         className={
-          "mt-8 font-display text-xl font-semibold tracking-tight sm:text-2xl " +
+          "mt-8 font-display text-xl font-extrabold uppercase tracking-tight sm:text-2xl " +
           (dark ? "text-paper" : "text-ink")
         }
       >
-        You bring your numbers. You own your customer base.
+        Your numbers stay yours. Your customers stay yours.
       </p>
     </div>
   );

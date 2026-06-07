@@ -3,7 +3,7 @@
  *
  * SCOPE: this module mints and validates the audited, read-only impersonation
  * MARKER only. It does NOT mint a real tenant session and does NOT render a
- * "view-as" dashboard — that binds in Epic 7. // TODO(epic-7)
+ * "view-as" dashboard, that binds in Epic 7. // TODO(epic-7)
  *
  * All functions are pure (no I/O, no clock reads): `now` is injected as an epoch
  * millisecond value so expiry math is deterministic and unit-testable.
@@ -81,7 +81,7 @@ export function isImpersonationValid(
 /**
  * The single gate future "view-as" write paths must call: returns true ONLY when
  * the impersonation is write-mode AND still within its window. Read-only and
- * expired markers always return false. Pure — `now` injected for determinism.
+ * expired markers always return false. Pure, `now` injected for determinism.
  */
 export function impersonationAllowsWrite(record: ImpersonationRecord, now: number): boolean {
   return record.mode === "write" && isImpersonationValid(record, now);

@@ -14,7 +14,7 @@ const initialState: RequestResetState = {
 };
 
 /**
- * Forgot-password form — client component.
+ * Forgot-password form, client component.
  * On success renders a neutral confirmation message to avoid account enumeration.
  */
 export function ForgotForm() {
@@ -29,13 +29,13 @@ export function ForgotForm() {
         <div
           role="status"
           aria-live="polite"
-          className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
+          className="border-[3px] border-ink bg-brut-lime px-4 py-3 text-sm font-bold text-ink"
         >
           {state.successMessage}
         </div>
       ) : (
         <form action={formAction} noValidate className="flex flex-col gap-4">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-600">
             Enter your email and we&apos;ll send you a link to reset your password.
           </p>
 
@@ -55,10 +55,10 @@ export function ForgotForm() {
         </form>
       )}
 
-      <p className="mt-6 text-center text-xs text-slate-500">
+      <p className="mt-6 text-center text-xs text-gray-600">
         <Link
           href="/login"
-          className="text-indigo-600 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 rounded"
+          className="brut-focus font-bold text-ink underline-offset-4 hover:underline"
         >
           Back to sign in
         </Link>

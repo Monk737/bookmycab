@@ -58,7 +58,7 @@ const schema = z.object({
   NEXT_PUBLIC_DEMO_WA_NUMBER: z.string().optional(),
 });
 
-// Vars with no `.optional()`/`.default()` — a blank value here is a real
+// Vars with no `.optional()`/`.default()`, a blank value here is a real
 // misconfiguration and must surface as a validation error, not be hidden.
 const REQUIRED_KEYS = new Set<string>([
   "NEXT_PUBLIC_SUPABASE_URL",

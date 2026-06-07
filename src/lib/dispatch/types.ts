@@ -1,5 +1,5 @@
 /**
- * Dispatch adapter layer — vendor-neutral contract (PRD §7.6).
+ * Dispatch adapter layer, vendor-neutral contract (PRD §7.6).
  * One interface, three adapters (AutoCab live; iCabbi/Cordic stubs). All DTOs
  * are vendor-neutral: vendor JSON is normalised into these shapes by each
  * adapter's mappers so the booking state machine never sees vendor specifics.
@@ -53,7 +53,7 @@ export interface QuoteParams {
 
 export interface QuoteResult {
   /** Single normalised price in major currency units (iCabbi fare ranges
-   *  collapse to one value at the adapter boundary — PRD §7.6.2). */
+   *  collapse to one value at the adapter boundary, PRD §7.6.2). */
   price: number;
   currency: string;
   etaMinutes: number | null;
@@ -99,7 +99,7 @@ export interface FlightResult {
   terminal: string | null;
 }
 
-/** The common dispatch interface — PRD §7.6. */
+/** The common dispatch interface, PRD §7.6. */
 export interface DispatchAdapter {
   lookupAddress(query: string, companyId: number): Promise<AddressResult[]>;
   getZones(companyId: number): Promise<Zone[]>;

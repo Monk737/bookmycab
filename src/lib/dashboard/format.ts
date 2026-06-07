@@ -1,4 +1,4 @@
-const DASH = "—";
+const DASH = "·";
 const CURRENCY_LOCALE: Record<string, string> = { GBP: "en-GB", EUR: "en-IE", USD: "en-US" };
 
 export function formatCurrency(amount: number | null | undefined, currency: string): string {

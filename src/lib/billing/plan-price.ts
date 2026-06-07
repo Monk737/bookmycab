@@ -5,7 +5,7 @@ import { planBandMonthlyPrice, type PlanBand } from "@/lib/admin/plan-bands";
 /**
  * Pure pricing helpers + Stripe param builders.
  *
- * No I/O, no `server-only` — safe to import anywhere and unit-test directly.
+ * No I/O, no `server-only`, safe to import anywhere and unit-test directly.
  * Money: PRD prices are MAJOR units (whole pounds/euros/dollars, 2-dp max);
  * Stripe wants MINOR units (pence/cents). GBP/EUR/USD are all 2-decimal
  * currencies, so the factor is always 100.
@@ -26,7 +26,7 @@ export function setupFeeMinor(currency: Currency): number {
   return minorUnits(SETUP_FEE[currency]);
 }
 
-/** Params for the one-time setup-fee invoice item (legacy amount form — no
+/** Params for the one-time setup-fee invoice item (legacy amount form, no
  *  product catalog entry needed for a one-off charge). */
 export function buildSetupInvoiceItemParams(args: {
   customerId: string;
@@ -36,13 +36,13 @@ export function buildSetupInvoiceItemParams(args: {
     customer: args.customerId,
     amount: setupFeeMinor(args.currency),
     currency: args.currency.toLowerCase(),
-    description: "BookMyCab automation — one-time setup fee",
+    description: "BookMyCab automation, one-time setup fee",
   };
 }
 
 /** Params for the monthly subscription. Uses inline `price_data` against a
  *  shared product so we don't maintain a per-band Stripe price catalog.
- *  Throws for Custom (null price — those are quoted and started manually). */
+ *  Throws for Custom (null price, those are quoted and started manually). */
 export function buildSubscriptionCreateParams(args: {
   customerId: string;
   productId: string;

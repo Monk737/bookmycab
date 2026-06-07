@@ -17,7 +17,7 @@ export interface DispatchArgs {
 
 /**
  * Deliver one alert through one channel: send, write a notification_log row,
- * and meter a notification on success. Never throws — returns the outcome.
+ * and meter a notification on success. Never throws, returns the outcome.
  */
 export async function dispatchNotification(
   args: DispatchArgs,

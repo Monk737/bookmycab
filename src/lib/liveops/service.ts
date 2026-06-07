@@ -13,7 +13,7 @@ export interface ActiveConversation {
   assigned_to: string | null; started_at: string; last_human_reply_at: string | null; automation_id: string;
 }
 
-/** Conversations that are open (not ended) — the live-ops queue. */
+/** Conversations that are open (not ended), the live-ops queue. */
 export async function listActiveConversations(tenantId: string): Promise<ActiveConversation[]> {
   const { data } = await svc()
     .from("conversations")

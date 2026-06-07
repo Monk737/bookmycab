@@ -7,8 +7,10 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
-import { CURRENCIES } from "@/lib/marketing/pricing";
+import { CURRENCIES, CONTRACT_MONTHS } from "@/lib/marketing/pricing";
 import { PLAN_BANDS } from "@/lib/admin/plan-bands";
+import { validateCoupon, applyDiscount, redeemCoupon } from "@/lib/admin/coupons";
+import { addMonthsUTC } from "@/lib/billing/dates";
 
 /** Form-state shape for the provisioning form (mirrors the auth AuthState). */
 export type TenantFormState = {
@@ -62,6 +64,9 @@ const createTenantSchema = z.object({
       message: "Setup fee must be a non-negative number.",
     })
     .optional(),
+  // Optional discount coupon, validated against public.coupons. A 100%-off code
+  // fully comps the tenant and bypasses Stripe (handled in createTenant).
+  coupon_code: optionalText,
 });
 
 /**
@@ -70,7 +75,7 @@ const createTenantSchema = z.object({
  * Defense-in-depth: re-checks staff access (middleware already gates /admin).
  * Validates with zod, inserts into `public.tenants` via the service-role client
  * (admin provisioning is cross-tenant; RLS would block a normal write), records
- * an audit entry, and—when a setup fee amount is supplied—inserts an unpaid
+ * an audit entry, and,when a setup fee amount is supplied,inserts an unpaid
  * `setup_fees` row. On success redirects to the tenant detail page (Task 4).
  */
 export async function createTenant(
@@ -92,6 +97,7 @@ export async function createTenant(
     monthly_price: formData.get("monthly_price"),
     stripe_customer_id: formData.get("stripe_customer_id"),
     setup_fee: formData.get("setup_fee"),
+    coupon_code: formData.get("coupon_code"),
   };
 
   const parsed = createTenantSchema.safeParse(raw);
@@ -109,6 +115,44 @@ export async function createTenant(
     env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
+  // Validate the coupon up front so an invalid code fails before any insert.
+  let discountPercent = 0;
+  let appliedCoupon: { id: string; code: string; times_redeemed: number } | null = null;
+  if (data.coupon_code) {
+    const check = await validateCoupon(serviceClient, data.coupon_code);
+    if (!check.ok) {
+      return { fieldErrors: { coupon_code: [check.error] }, formError: null };
+    }
+    discountPercent = check.coupon.percent_off;
+    appliedCoupon = {
+      id: check.coupon.id,
+      code: check.coupon.code,
+      times_redeemed: check.coupon.times_redeemed,
+    };
+  }
+
+  // A 100%-off coupon fully comps the tenant: zero price, Stripe bypassed.
+  const bypass = discountPercent === 100;
+
+  // Apply the discount to the recorded monthly price + setup fee. A bypassed
+  // tenant is forced to 0 even when no base price was entered.
+  const monthlyPrice = bypass
+    ? 0
+    : data.monthly_price === undefined
+      ? null
+      : applyDiscount(data.monthly_price, discountPercent);
+  // Only record a setup fee when the admin entered one. Bypassed → comped to 0
+  // and marked paid below; otherwise the discount is applied to the amount.
+  const setupAmount =
+    data.setup_fee === undefined
+      ? undefined
+      : bypass
+        ? 0
+        : applyDiscount(data.setup_fee, discountPercent);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const renewal = bypass ? addMonthsUTC(today, CONTRACT_MONTHS) : null;
+
   const { data: inserted, error: insertError } = await serviceClient
     .from("tenants")
     .insert({
@@ -121,9 +165,13 @@ export async function createTenant(
       dispatch_company_id: data.dispatch_company_id ?? null,
       contact_email: data.contact_email,
       stripe_customer_id: data.stripe_customer_id ?? null,
-      contract_start: data.contract_start ?? null,
-      monthly_price: data.monthly_price ?? null,
-      status: "onboarding",
+      contract_start: bypass ? today : data.contract_start ?? null,
+      contract_renewal: renewal,
+      monthly_price: monthlyPrice,
+      coupon_code: appliedCoupon?.code ?? null,
+      discount_percent: discountPercent,
+      billing_bypass: bypass,
+      status: bypass ? "active" : "onboarding",
     })
     .select("id")
     .single();
@@ -147,16 +195,49 @@ export async function createTenant(
 
   const tenantId = inserted.id as string;
 
-  // Capture the setup fee as an unpaid setup_fees row when an amount is given.
-  if (data.setup_fee !== undefined) {
+  // Capture the setup fee as a setup_fees row when an amount is given. A
+  // bypassed (100%-off) tenant has its setup fee comped to 0 and marked paid.
+  if (setupAmount !== undefined) {
     const { error: feeError } = await serviceClient.from("setup_fees").insert({
       tenant_id: tenantId,
-      amount: data.setup_fee,
+      amount: setupAmount,
       currency: data.currency,
-      paid_at: null,
+      paid_at: bypass ? new Date().toISOString() : null,
     });
     if (feeError) {
       console.error("createTenant: failed to record setup fee", feeError);
+    }
+  }
+
+  // 100%-off bypass: comp the subscription locally so the tenant is fully active
+  // without ever touching Stripe. We mirror a zero-price active subscription
+  // (synthetic comp id) the same shape the Stripe webhook would have written.
+  if (bypass) {
+    const nowIso = new Date().toISOString();
+    const { error: subError } = await serviceClient.from("subscriptions").insert({
+      tenant_id: tenantId,
+      stripe_sub_id: `comp_${tenantId}`,
+      plan_band: data.plan_band,
+      monthly_price: 0,
+      currency: data.currency,
+      status: "active",
+      current_period_start: nowIso,
+      current_period_end: renewal,
+      contract_end: renewal,
+    });
+    if (subError) {
+      console.error("createTenant: failed to record comp subscription", subError);
+    }
+  }
+
+  // Record the coupon redemption (best-effort; logged on failure).
+  if (appliedCoupon) {
+    const redeemed = await redeemCoupon(serviceClient, appliedCoupon);
+    if (!redeemed) {
+      console.error("createTenant: failed to record coupon redemption", {
+        coupon: appliedCoupon.code,
+        tenantId,
+      });
     }
   }
 
@@ -173,6 +254,9 @@ export async function createTenant(
       name: data.name,
       plan_band: data.plan_band,
       currency: data.currency,
+      coupon_code: appliedCoupon?.code ?? null,
+      discount_percent: discountPercent,
+      billing_bypass: bypass,
     },
   });
   if (!audited) {

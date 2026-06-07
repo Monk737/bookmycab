@@ -5,18 +5,17 @@ type Variant = "primary" | "secondary" | "ghost";
 type Size = "md" | "lg";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-tight " +
-  "cursor-pointer transition-colors duration-200 " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 " +
-  "disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold uppercase tracking-[0.04em] " +
+  "cursor-pointer brut-focus select-none " +
+  "disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none";
 
 const VARIANTS: Record<Variant, string> = {
-  // Yellow accent primary.
-  primary: "bg-accent text-accent-ink hover:bg-ink hover:text-paper",
-  // Ink-on-paper outline.
-  secondary: "border border-ink text-ink hover:bg-ink hover:text-paper",
-  // Low-key text button.
-  ghost: "text-ink hover:bg-gray-100",
+  // Yellow brand fill, the booking / primary action.
+  primary: "brut-press border-[3px] border-ink bg-brut-yellow text-ink shadow-brut",
+  // Paper outline block.
+  secondary: "brut-press border-[3px] border-ink bg-paper text-ink shadow-brut",
+  // Low-key inline action, no frame/shadow, underline on hover.
+  ghost: "text-ink underline-offset-4 hover:underline",
 };
 
 const SIZES: Record<Size, string> = {
@@ -43,7 +42,7 @@ type ButtonAsLink = CommonProps &
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
 
-/** Polymorphic button — renders an `<a>` when `href` is provided, else a `<button>`. */
+/** Polymorphic button, renders an `<a>` when `href` is provided, else a `<button>`. */
 export function Button({
   variant = "primary",
   size = "md",

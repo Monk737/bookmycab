@@ -1,9 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  /* Editorial palette — light only. */
+  /* ---------------------------------------------------------------------
+     Neo-Brutalism foundation — full clashing palette on hard ink structure.
+     Brand anchor: taxi-yellow #ffd400 (always dark-ink text). Hard constraint.
+     --------------------------------------------------------------------- */
+
+  /* Structure. */
   --color-ink: #0a0a0a;
   --color-paper: #ffffff;
+  /* Page canvas: a flat off-white so white cards + ink borders pop. */
+  --color-canvas: #f4f3ec;
 
   /* Neutral gray ramp. */
   --color-gray-50: #f7f7f6;
@@ -17,18 +24,34 @@
   --color-gray-800: #232322;
   --color-gray-900: #131312;
 
-  /* Accent. */
+  /* Brand accent (legacy alias kept for inherited markup). */
   --color-accent: #ffd400;
   --color-accent-ink: #0a0a0a;
 
+  /* ---- Clashing brutalist palette. Every bright fill takes INK text. ---- */
+  --color-brut-yellow: #ffd400; /* brand anchor */
+  --color-brut-blue: #2f6bff; /* white or ink text per use */
+  --color-brut-lime: #c6f24e;
+  --color-brut-pink: #ff7ac0;
+  --color-brut-red: #ff5247;
+  --color-brut-violet: #b794ff;
+  --color-brut-cyan: #5fd9e8;
+  --color-brut-orange: #ff8a3c;
+
+  /* Deep variants for white-text fills (buttons, sidebars). */
+  --color-brut-blue-deep: #1d3fd6;
+  --color-brut-violet-deep: #6d28d9;
+  --color-brut-red-deep: #c81e1e;
+
   /* Semantic aliases. */
-  --background: var(--color-paper);
+  --background: var(--color-canvas);
   --foreground: var(--color-ink);
 }
 
 @theme inline {
   --color-ink: var(--color-ink);
   --color-paper: var(--color-paper);
+  --color-canvas: var(--color-canvas);
 
   --color-gray-50: var(--color-gray-50);
   --color-gray-100: var(--color-gray-100);
@@ -44,20 +67,45 @@
   --color-accent: var(--color-accent);
   --color-accent-ink: var(--color-accent-ink);
 
+  --color-brut-yellow: var(--color-brut-yellow);
+  --color-brut-blue: var(--color-brut-blue);
+  --color-brut-lime: var(--color-brut-lime);
+  --color-brut-pink: var(--color-brut-pink);
+  --color-brut-red: var(--color-brut-red);
+  --color-brut-violet: var(--color-brut-violet);
+  --color-brut-cyan: var(--color-brut-cyan);
+  --color-brut-orange: var(--color-brut-orange);
+  --color-brut-blue-deep: var(--color-brut-blue-deep);
+  --color-brut-violet-deep: var(--color-brut-violet-deep);
+  --color-brut-red-deep: var(--color-brut-red-deep);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-fraunces);
+  /* Hard offset shadows — no blur. The signature of the system. */
+  --shadow-brut-xs: 1px 1px 0 0 var(--color-ink);
+  --shadow-brut-sm: 2px 2px 0 0 var(--color-ink);
+  --shadow-brut: 4px 4px 0 0 var(--color-ink);
+  --shadow-brut-lg: 6px 6px 0 0 var(--color-ink);
+  --shadow-brut-xl: 10px 10px 0 0 var(--color-ink);
+
+  /* Sharp corners are the default; one chunky radius for soft moments. */
+  --radius-brut: 0px;
+  --radius-brut-chunk: 6px;
+
+  /* Primary: Urbanist carries sans (body, UI) and display (headings). */
+  --font-sans: var(--font-urbanist);
+  --font-display: var(--font-urbanist);
+  /* Secondary: JetBrains Mono for data, fares, references and IDs. */
+  --font-mono: var(--font-jetbrains-mono);
+  /* Logo only: Stalinist One for the BookMyCab wordmark. */
+  --font-logo: var(--font-stalinist);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  /* Inter cv05 gives lowercase l a tail, disambiguating l / I / 1 in fares,
-     booking references and data. Explicit kerning for crisp headings. */
-  font-feature-settings: "cv05" 1;
   font-kerning: normal;
 }
 
@@ -65,7 +113,7 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Reduce orphans and ragged endings in prose. */
@@ -73,7 +121,138 @@ p {
   text-wrap: pretty;
 }
 
-/* --- Marketing motion primitives --- */
+/* ---------------------------------------------------------------------------
+   Brutalist primitives — shared helper classes.
+   Keep components terse; the structure lives here.
+   --------------------------------------------------------------------------- */
+
+/* Hard 3px ink frame. */
+.brut-frame {
+  border: 3px solid var(--color-ink);
+}
+.brut-frame-2 {
+  border: 2px solid var(--color-ink);
+}
+
+/* Card: paper fill, ink frame, hard shadow. */
+.brut-card {
+  background: var(--color-paper);
+  border: 3px solid var(--color-ink);
+  box-shadow: var(--shadow-brut);
+}
+
+/* Press interaction: the object sits on its shadow and slams down when pushed.
+   Applied to interactive cards, buttons and links. */
+.brut-press {
+  transition:
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.12s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.brut-press:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brut-lg);
+}
+.brut-press:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-brut-xs);
+}
+
+/* Focus ring: a hard ink outline, no glow, offset off the surface. */
+.brut-focus:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brut-press {
+    transition: none;
+  }
+  .brut-press:hover,
+  .brut-press:active {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Reveal / entrance motion. Confident first-load choreography on heroes, and a
+   scroll-triggered stagger on genuine lists. Both ENHANCE an already-visible
+   default: no-JS and reduced-motion always render the finished, visible state.
+   --------------------------------------------------------------------------- */
+
+@keyframes brut-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Page-load hero entrance: a group whose direct children rise in, staggered.
+   CSS-only, plays once, no scroll dependency. */
+.rise-group > * {
+  animation: brut-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.rise-group > *:nth-child(1) { animation-delay: 0.04s; }
+.rise-group > *:nth-child(2) { animation-delay: 0.12s; }
+.rise-group > *:nth-child(3) { animation-delay: 0.2s; }
+.rise-group > *:nth-child(4) { animation-delay: 0.28s; }
+.rise-group > *:nth-child(5) { animation-delay: 0.36s; }
+.rise-group > *:nth-child(6) { animation-delay: 0.44s; }
+
+/* Once-per-session gate: after the first hero entrance, later navigations skip it. */
+.no-hero-rise .rise-group > * {
+  animation: none;
+}
+
+/* Scroll reveal: the Reveal client component adds `.reveal` (hides children
+   before first paint, via useLayoutEffect) only when motion + JS are available,
+   then `.is-in` when the group scrolls into view. Stagger by child index. */
+.reveal > * {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.reveal.is-in > * {
+  animation: brut-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.reveal.is-in > *:nth-child(1) { animation-delay: 0s; }
+.reveal.is-in > *:nth-child(2) { animation-delay: 0.06s; }
+.reveal.is-in > *:nth-child(3) { animation-delay: 0.12s; }
+.reveal.is-in > *:nth-child(4) { animation-delay: 0.18s; }
+.reveal.is-in > *:nth-child(5) { animation-delay: 0.24s; }
+.reveal.is-in > *:nth-child(6) { animation-delay: 0.3s; }
+.reveal.is-in > *:nth-child(7) { animation-delay: 0.36s; }
+.reveal.is-in > *:nth-child(8) { animation-delay: 0.42s; }
+
+/* Hover lift delight for non-pressable display chips (channel blocks, badges). */
+.brut-hover-lift {
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.brut-hover-lift:hover {
+  transform: translateY(-3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-group > *,
+  .reveal.is-in > * {
+    animation: none;
+  }
+  /* Force the visible end-state; never leave content hidden. */
+  .reveal > * {
+    opacity: 1;
+    transform: none;
+  }
+  .brut-hover-lift {
+    transition: none;
+  }
+  .brut-hover-lift:hover {
+    transform: none;
+  }
+}
+
+/* --- Marketing / live-feed motion primitives (retained) --- */
 
 /* Chat message entrance: rise + fade, exponential ease-out, plays once on mount. */
 @keyframes msg-in {
@@ -109,23 +288,22 @@ p {
   animation: typing-dot 1.1s ease-in-out infinite;
 }
 
-/* Soft live-pulse for the "online" / dispatch status dot. */
+/* Hard live-pulse for the "online" / dispatch status dot. */
 @keyframes status-pulse {
   0%,
   100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.45;
+    opacity: 0.4;
   }
 }
 
 .status-pulse {
-  animation: status-pulse 2s ease-in-out infinite;
+  animation: status-pulse 1.6s steps(2, jump-none) infinite;
 }
 
-/* Flow connector: an amber highlight sweeping along a line to depict movement.
-   Animates background-position only (no layout), so it stays cheap. */
+/* Flow connector: an amber block marching along a line to depict movement. */
 @keyframes flow-sweep-x {
   from {
     background-position: 200% 0;
@@ -147,27 +325,42 @@ p {
 .flow-line-x {
   background-image: linear-gradient(
     90deg,
-    var(--color-gray-200) 0%,
-    var(--color-gray-200) 40%,
-    var(--color-accent) 50%,
-    var(--color-gray-200) 60%,
-    var(--color-gray-200) 100%
+    var(--color-ink) 0%,
+    var(--color-ink) 44%,
+    var(--color-brut-yellow) 44%,
+    var(--color-brut-yellow) 56%,
+    var(--color-ink) 56%,
+    var(--color-ink) 100%
   );
   background-size: 200% 100%;
-  animation: flow-sweep-x 2.4s linear infinite;
+  animation: flow-sweep-x 2.4s steps(12) infinite;
 }
 
 .flow-line-y {
   background-image: linear-gradient(
     180deg,
-    var(--color-gray-200) 0%,
-    var(--color-gray-200) 40%,
-    var(--color-accent) 50%,
-    var(--color-gray-200) 60%,
-    var(--color-gray-200) 100%
+    var(--color-ink) 0%,
+    var(--color-ink) 44%,
+    var(--color-brut-yellow) 44%,
+    var(--color-brut-yellow) 56%,
+    var(--color-ink) 56%,
+    var(--color-ink) 100%
   );
   background-size: 100% 200%;
-  animation: flow-sweep-y 2.4s linear infinite;
+  animation: flow-sweep-y 2.4s steps(12) infinite;
+}
+
+/* Marquee for the brutalist ticker band. */
+@keyframes brut-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.brut-marquee {
+  animation: brut-marquee 22s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -175,13 +368,14 @@ p {
   .typing-dot,
   .status-pulse,
   .flow-line-x,
-  .flow-line-y {
+  .flow-line-y,
+  .brut-marquee {
     animation: none;
   }
-  /* Static reduced-motion fallback: a calm amber-tinted line, no sweep. */
+  /* Static reduced-motion fallback: a calm ink line, no march. */
   .flow-line-x,
   .flow-line-y {
     background-image: none;
-    background-color: var(--color-gray-300);
+    background-color: var(--color-ink);
   }
 }

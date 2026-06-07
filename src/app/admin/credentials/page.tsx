@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { AddCredentialForm } from "./add-credential-form";
 import { CredentialRowActions } from "./credential-row-actions";
 
-// Always read fresh — a newly stored credential should appear immediately.
+// Always read fresh, a newly stored credential should appear immediately.
 export const dynamic = "force-dynamic";
 
 const CREDENTIAL_TYPE_LABELS: Record<string, string> = {
@@ -49,9 +49,9 @@ function rel<T>(value: T | T[] | null): T | null {
 }
 
 function formatDateTime(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "·";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "·";
   return d.toLocaleString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -76,7 +76,7 @@ function expiryStatus(expiresAt: string | null): "expired" | "expiring" | null {
  * Channel credentials vault (FlowMo staff). Lists every stored credential joined
  * to its tenant name + channel type via the service-role client (admin spans
  * tenants; RLS hard-denies this table to everyone but service_role). The raw
- * `secret_encrypted` column is NEVER selected or rendered — reveal is a separate
+ * `secret_encrypted` column is NEVER selected or rendered, reveal is a separate
  * audited action. Defense-in-depth staff re-check (the admin layout also gates).
  */
 export default async function CredentialsPage() {
@@ -114,7 +114,7 @@ export default async function CredentialsPage() {
     id: c.id,
     type: c.type,
     tenant_id: c.tenant_id,
-    tenant_name: rel(c.tenants)?.name ?? "—",
+    tenant_name: rel(c.tenants)?.name ?? "·",
   }));
 
   const expiringCount = rows.reduce((n, r) => {
@@ -126,13 +126,13 @@ export default async function CredentialsPage() {
     {
       key: "tenant",
       header: "Tenant",
-      render: (r) => rel(r.tenants)?.name ?? "—",
+      render: (r) => rel(r.tenants)?.name ?? "·",
     },
     {
       key: "channel",
       header: "Channel",
       render: (r) => (
-        <span className="capitalize">{rel(r.channels)?.type ?? "—"}</span>
+        <span className="capitalize">{rel(r.channels)?.type ?? "·"}</span>
       ),
     },
     {
@@ -149,7 +149,7 @@ export default async function CredentialsPage() {
         const status = expiryStatus(expiresAt);
         if (status === "expired") return <StatusBadge status="expired" />;
         if (status === "expiring") return <StatusBadge status="expiring" />;
-        return <span className="text-zinc-400">OK</span>;
+        return <span className="text-gray-400">OK</span>;
       },
     },
     {
@@ -174,12 +174,12 @@ export default async function CredentialsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-xl font-bold tracking-tight text-ink">
           Credentials vault
         </h1>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="mt-1 text-sm text-gray-600">
           Encrypted channel secrets. Reveal and rotate are deliberate,
-          audited senior-ops actions — raw values are never listed.
+          audited senior-ops actions, raw values are never listed.
         </p>
       </div>
 
@@ -192,23 +192,23 @@ export default async function CredentialsPage() {
       {error && (
         <p
           role="alert"
-          className="mt-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           Failed to load credentials. Please refresh.
         </p>
       )}
 
       <div className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">
           Add credential
         </h2>
-        <div className="mt-3 rounded-lg border border-zinc-200 bg-white p-5">
+        <div className="mt-3 border-[3px] border-ink bg-paper p-5">
           <AddCredentialForm channels={channels} />
         </div>
       </div>
 
       <div className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">
           Stored credentials
         </h2>
         <div className="mt-3">

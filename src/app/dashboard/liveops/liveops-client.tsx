@@ -38,21 +38,21 @@ export function LiveopsClient(props: { orgId: string; conversations: Conversatio
 
   return (
     <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-      <div className="rounded-lg border border-gray-200">
+      <div className="border border-gray-200">
         <ul className="divide-y divide-gray-100 text-sm">
           {props.conversations.length === 0 && <li className="p-3 text-gray-400">No active conversations.</li>}
           {props.conversations.map((c) => (
             <li key={c.id}>
               <button onClick={() => openConv(c)} className={`flex w-full items-center justify-between p-3 text-left hover:bg-gray-50 ${selected?.id === c.id ? "bg-gray-50" : ""}`}>
                 <span><span className="font-medium text-gray-800">{c.customer_name ?? c.customer_handle}</span><br /><span className="text-xs text-gray-400">{c.customer_handle}</span></span>
-                <span className={c.takeover_status === "human" ? "rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-700" : "rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500"}>{c.takeover_status}</span>
+                <span className={c.takeover_status === "human" ? " bg-brut-yellow/40 px-1.5 py-0.5 text-[11px] text-ink" : " bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500"}>{c.takeover_status}</span>
               </button>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="rounded-lg border border-gray-200 p-4">
+      <div className="border border-gray-200 p-4">
         {!selected && <p className="text-sm text-gray-400">Select a conversation.</p>}
         {selected && (
           <div className="flex h-full flex-col">
@@ -60,13 +60,13 @@ export function LiveopsClient(props: { orgId: string; conversations: Conversatio
               <span className="font-medium text-gray-800">{selected.customer_name ?? selected.customer_handle}</span>
               {!props.isDemo && (
                 selected.takeover_status === "human"
-                  ? <button disabled={busy} onClick={() => act(`${base(selected.id)}/claim?action=release`)} className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700">Hand back to bot</button>
-                  : <button disabled={busy} onClick={() => act(`${base(selected.id)}/claim`)} className="rounded bg-blue-800 px-2 py-1 text-xs font-medium text-white">Take over</button>
+                  ? <button disabled={busy} onClick={() => act(`${base(selected.id)}/claim?action=release`)} className=" border-[3px] border-ink px-2 py-1 text-xs text-gray-700">Hand back to bot</button>
+                  : <button disabled={busy} onClick={() => act(`${base(selected.id)}/claim`)} className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-2 py-1 text-xs font-medium text-ink">Take over</button>
               )}
             </div>
-            <div className="mb-3 max-h-80 flex-1 space-y-1 overflow-y-auto rounded bg-gray-50 p-2 text-sm">
+            <div className="mb-3 max-h-80 flex-1 space-y-1 overflow-y-auto  bg-gray-50 p-2 text-sm">
               {thread.map((m) => (
-                <div key={m.id} className={m.direction === "inbound" ? "text-gray-800" : m.source === "human" ? "text-blue-800" : "text-emerald-700"}>
+                <div key={m.id} className={m.direction === "inbound" ? "text-gray-800" : m.source === "human" ? "font-bold text-ink" : "text-ink"}>
                   <span className="text-[11px] uppercase text-gray-400">{m.direction === "inbound" ? "customer" : m.source}</span> {textOf(m)}
                 </div>
               ))}
@@ -74,11 +74,11 @@ export function LiveopsClient(props: { orgId: string; conversations: Conversatio
             </div>
             {!props.isDemo && selected.takeover_status === "human" && (
               <form onSubmit={(e) => { e.preventDefault(); if (text.trim()) { void act(`${base(selected.id)}/messages`, { text }); setText(""); } }} className="flex gap-2">
-                <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Reply as dispatcher…" className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm" />
-                <button disabled={busy} type="submit" className="rounded bg-blue-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">Send</button>
+                <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Reply as dispatcher…" className="flex-1  border-[3px] border-ink px-2 py-1 text-sm" />
+                <button disabled={busy} type="submit" className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-3 py-1.5 text-sm font-medium text-ink disabled:opacity-50">Send</button>
               </form>
             )}
-            {err && <p className="mt-2 text-sm text-red-600" role="alert">{err}</p>}
+            {err && <p className="mt-2 text-sm text-brut-red-deep" role="alert">{err}</p>}
           </div>
         )}
       </div>

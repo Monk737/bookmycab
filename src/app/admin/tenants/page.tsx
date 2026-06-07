@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { planBandLabel, type PlanBand } from "@/lib/admin/plan-bands";
 import { formatPrice, type Currency } from "@/lib/marketing/pricing";
 
-// Always read fresh — provisioning a tenant should appear immediately.
+// Always read fresh, provisioning a tenant should appear immediately.
 export const dynamic = "force-dynamic";
 
 type TenantRow = {
@@ -27,9 +27,9 @@ type TenantRow = {
 };
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "·";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "·";
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -38,7 +38,7 @@ function formatDate(value: string | null): string {
 }
 
 /**
- * Tenants list (FlowMo staff). Reads ALL tenants via the service-role client —
+ * Tenants list (FlowMo staff). Reads ALL tenants via the service-role client ,
  * admin spans every tenant, and RLS would otherwise scope reads to the staff
  * user's own (null) tenant. Service-role read is confined to this server
  * component; the client never sees the key.
@@ -119,7 +119,7 @@ export default async function TenantsListPage() {
       cellClassName: "text-right tabular-nums",
       render: (t) =>
         t.monthly_price == null
-          ? "—"
+          ? "·"
           : formatPrice(t.currency, Number(t.monthly_price)),
     },
     {
@@ -143,16 +143,16 @@ export default async function TenantsListPage() {
     <div className="mx-auto max-w-6xl">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+          <h1 className="text-xl font-bold tracking-tight text-ink">
             Tenants
           </h1>
-          <p className="mt-1 text-sm text-zinc-600">
+          <p className="mt-1 text-sm text-gray-600">
             Every provisioned cab company. Cross-tenant view, staff only.
           </p>
         </div>
         <Link
           href="/admin/tenants/new"
-          className="shrink-0 cursor-pointer rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          className="shrink-0 cursor-pointer bg-brut-lime px-4 py-2 text-sm font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
         >
           New tenant
         </Link>
@@ -167,7 +167,7 @@ export default async function TenantsListPage() {
       {error && (
         <p
           role="alert"
-          className="mt-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           Failed to load tenants. Please refresh.
         </p>

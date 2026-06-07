@@ -26,7 +26,7 @@ const META_CHANNELS = new Set<Channel>(["whatsapp", "messenger", "instagram"]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Fixed dummy key used only to equalize verify timing on the null-secret
-// (unknown automation) branch — never a real credential.
+// (unknown automation) branch, never a real credential.
 const DUMMY_SECRET = "cabby-dummy-secret-not-a-real-key";
 
 function isChannel(v: string): v is Channel {
@@ -67,7 +67,7 @@ export async function POST(
     return res;
   };
 
-  // Read the raw body ONCE — signature verification needs the exact bytes.
+  // Read the raw body ONCE, signature verification needs the exact bytes.
   const rawBody = await req.text();
 
   // 1) Verify the provider signature using the per-channel vault secret.

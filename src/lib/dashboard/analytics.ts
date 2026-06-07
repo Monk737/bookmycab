@@ -153,7 +153,7 @@ export async function getAbandonment(automationId: string, r: AnalyticsRange, cl
 
 export async function getVoiceStats(automationId: string, r: AnalyticsRange, client?: SupabaseLike): Promise<VoiceStats> {
   const supabase = client ?? (await createClient());
-  // Date-windowed, per-automation fetch — same unbounded read pattern as the
+  // Date-windowed, per-automation fetch, same unbounded read pattern as the
   // sibling analytics queries above. The follow-on .in() over these ids is the
   // only place that compounds it, so very wide ranges on high-volume automations
   // should move to a server-side aggregate (tracked as a cross-cutting follow-up).

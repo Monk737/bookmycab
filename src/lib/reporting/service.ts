@@ -45,7 +45,7 @@ export async function setBranding(tenantId: string, branding: { logoUrl?: string
  * Run a report: gather the selected metrics for the tenant, build the payload,
  * persist a report_runs row, and meter one scheduled_reports unit. Metric values
  * are aggregated tenant-wide from bookings/conversations (v1 keeps the fetch
- * simple — totals over the last 30 days). Returns the built report.
+ * simple, totals over the last 30 days). Returns the built report.
  */
 export async function runReport(tenantId: string, reportId: string): Promise<{ ok: boolean; report?: Report }> {
   const sb = svc();

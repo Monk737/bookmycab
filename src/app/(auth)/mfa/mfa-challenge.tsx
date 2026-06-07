@@ -13,7 +13,7 @@ type Props = {
 };
 
 /**
- * MFA challenge component — client component.
+ * MFA challenge component, client component.
  *
  * Shown when the user already has a verified TOTP factor. Prompts for their
  * 6-digit code and calls challengeAndVerify to elevate the session to aal2.
@@ -57,7 +57,7 @@ export function MfaChallenge({ factorId, redirectTarget = "/dashboard" }: Props)
   return (
     <AuthCard heading="Two-factor authentication" error={null}>
       <div className="flex flex-col gap-5">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-gray-700">
           Open your authenticator app and enter the 6-digit code for BookMyCab.
         </p>
 
@@ -83,10 +83,10 @@ export function MfaChallenge({ factorId, redirectTarget = "/dashboard" }: Props)
             disabled={submitting}
             aria-busy={submitting}
             className={[
-              "mt-2 w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white",
-              "bg-indigo-600 transition-colors duration-150",
-              "hover:bg-indigo-700 active:bg-indigo-800",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1",
+              "mt-2 w-full brut-press brut-focus border-[3px] border-ink px-4 py-3 text-sm font-bold uppercase tracking-[0.06em] text-ink shadow-brut",
+              "bg-brut-yellow transition-colors duration-150",
+              "hover:bg-ink hover:text-paper",
+              "cursor-pointer",
               "disabled:cursor-not-allowed disabled:opacity-60",
               "cursor-pointer",
             ].join(" ")}

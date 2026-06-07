@@ -3,8 +3,9 @@
 
 export type NavItem = { label: string; href: string };
 
+// Desktop nav, the wordmark links home, so "Home" is omitted here to keep the
+// bar on a single, even line. The mobile drawer adds Home back.
 export const MAIN_NAV: NavItem[] = [
-  { label: "Home", href: "/" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "Channels", href: "/channels" },
   { label: "Pricing", href: "/pricing" },

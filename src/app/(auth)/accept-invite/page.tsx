@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AcceptForm } from "./accept-form";
 
 export const metadata = {
-  title: "Accept Invitation — BookMyCab",
+  title: "Accept Invitation, BookMyCab",
   robots: { index: false },
 };
 
@@ -21,7 +21,7 @@ export const metadata = {
  *
  * RLS note: the tenant_users_select policy allows a user to read rows where
  * tenant_id is in current_user_tenants(), which resolves to their own
- * tenant_id — so a fully-authed user can read their own tenant_users row with
+ * tenant_id, so a fully-authed user can read their own tenant_users row with
  * the standard server client. The service-role client is NOT required here.
  */
 export default async function AcceptInvitePage() {

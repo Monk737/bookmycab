@@ -10,7 +10,7 @@ import { env } from "@/env";
  * `getStripe()`, which throws a clear error when the key is absent rather than
  * letting the SDK fail obscurely. The instance is cached across calls.
  *
- * We deliberately do NOT pin `apiVersion` — the account default is used, which
+ * We deliberately do NOT pin `apiVersion`, the account default is used, which
  * keeps us off a hard-coded version string that the installed SDK types might
  * not match.
  */

@@ -36,7 +36,7 @@ export type StartImpersonationState = {
  * user, non-empty reason, mode). Mints the pure record, AUDITS the action
  * (with tenantId, targetUserId, reason, mode), and persists the record as an
  * httpOnly cookie scoped to the marker's TTL. No tenant session is minted here
- * — the view-as rendering binds in Epic 7. // TODO(epic-7)
+ *, the view-as rendering binds in Epic 7. // TODO(epic-7)
  *
  * Throws on a hard failure so a failed start never looks successful.
  */
@@ -66,7 +66,7 @@ export async function startImpersonation(
 
   const { tenantId, targetUserId, reason, mode } = parsed.data;
 
-  // Pure mint — also re-enforces the mandatory-reason rule at the model layer.
+  // Pure mint, also re-enforces the mandatory-reason rule at the model layer.
   const record = mintImpersonation({
     staffUserId: claims.sub,
     tenantId,
@@ -85,7 +85,7 @@ export async function startImpersonation(
     metadata: { tenantId, targetUserId, reason, mode },
   });
   if (!audited) {
-    // Auditing impersonation is not optional — do NOT start an unaudited
+    // Auditing impersonation is not optional, do NOT start an unaudited
     // read-only session. Surface the failure.
     throw new Error("Could not record the impersonation audit entry.");
   }

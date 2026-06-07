@@ -86,7 +86,7 @@ export function reduceRevenue(bookings: { fare: number | null; status: string }[
   return { totalFare, avgFare, completedCount, bookingCount, completionPct, byStatus };
 }
 
-// ——— async getters (mirror analytics.ts) ———————————————————————
+// ,,, async getters (mirror analytics.ts) ,,,,,,,,,,,,,,,,,,,,,,,
 
 interface Range { from?: string; to?: string }
 

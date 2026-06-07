@@ -25,7 +25,7 @@ export default async function TeamPage() {
   ]);
 
   // Service-role read: audit_log RLS denies tenant SELECT (migrations 0005/0011).
-  // This is the documented exception — only Owners can see the audit trail, and
+  // This is the documented exception, only Owners can see the audit trail, and
   // we use the service-role client (never exposed to the browser) solely for this query.
   let audit: Awaited<ReturnType<typeof listAudit>> = [];
   if (isOwner) {

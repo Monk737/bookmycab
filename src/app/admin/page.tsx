@@ -52,12 +52,12 @@ type TopTenantRow = {
 /** Render a per-currency money map as compact "£x · €y · $z", skipping zeros. */
 function MoneyByCurrency({ amounts }: { amounts: Record<Currency, number> }) {
   const parts = CURRENCIES.filter((c) => amounts[c] > 0);
-  if (parts.length === 0) return <>—</>;
+  if (parts.length === 0) return <>·</>;
   return (
     <>
       {parts.map((c, i) => (
         <span key={c}>
-          {i > 0 && <span className="px-1 text-zinc-300">·</span>}
+          {i > 0 && <span className="px-1 text-gray-300">·</span>}
           {formatPrice(c, amounts[c])}
         </span>
       ))}
@@ -66,9 +66,9 @@ function MoneyByCurrency({ amounts }: { amounts: Record<Currency, number> }) {
 }
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "·";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "·";
   return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
@@ -78,7 +78,7 @@ function formatDate(value: string | null): string {
 }
 
 /**
- * Admin Overview — platform analytics.
+ * Admin Overview, platform analytics.
  *
  * READ-ONLY: every figure is computed from LOCAL Supabase tables (`tenants`,
  * `setup_fees`, `automations`, `bookings`) via the service-role client and the
@@ -86,7 +86,7 @@ function formatDate(value: string | null): string {
  * data for staff display is not an audited action).
  *
  * Engine/Stripe live data (real-time run health, reconciled MRR, gross revenue)
- * arrives in Epics 5 and 8 — gross bookings here is a raw row COUNT, which may
+ * arrives in Epics 5 and 8, gross bookings here is a raw row COUNT, which may
  * be 0 until the engine writes confirmed bookings. // TODO(epic-5/8)
  */
 export default async function AdminOverviewPage() {
@@ -105,7 +105,7 @@ export default async function AdminOverviewPage() {
       ),
     serviceClient.from("setup_fees").select("id, tenant_id, amount, currency, paid_at"),
     serviceClient.from("automations").select("type, status"),
-    // Gross bookings volume — raw count. Engine writes these in Epic 5; may be
+    // Gross bookings volume, raw count. Engine writes these in Epic 5; may be
     // 0 today. Live revenue is Epic 8. // TODO(epic-5/8)
     serviceClient.from("bookings").select("id", { count: "exact", head: true }),
   ]);
@@ -204,7 +204,7 @@ export default async function AdminOverviewPage() {
       cellClassName: "text-right tabular-nums",
       render: (r) =>
         r.monthly_price == null
-          ? "—"
+          ? "·"
           : formatPrice(r.currency, Number(r.monthly_price)),
     },
     {
@@ -215,10 +215,10 @@ export default async function AdminOverviewPage() {
       render: (r) => {
         const tone =
           r.days <= 30
-            ? "text-red-700 font-semibold"
+            ? "text-brut-red-deep font-bold"
             : r.days <= 60
-              ? "text-amber-700 font-medium"
-              : "text-zinc-700";
+              ? "text-ink font-medium"
+              : "text-gray-700";
         return <span className={tone}>{r.days}d</span>;
       },
     },
@@ -239,10 +239,10 @@ export default async function AdminOverviewPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-xl font-bold tracking-tight text-ink">
           Overview
         </h1>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="mt-1 text-sm text-gray-600">
           Platform analytics computed from local data &mdash; staff only. Live
           engine run health and reconciled revenue arrive in later epics.
         </p>
@@ -251,7 +251,7 @@ export default async function AdminOverviewPage() {
       {loadError && (
         <p
           role="alert"
-          className="mt-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mt-6 border border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
         >
           Failed to load platform data. Please refresh.
         </p>
@@ -302,7 +302,7 @@ export default async function AdminOverviewPage() {
 
       {/* Automations by type */}
       <section className="mt-8">
-        <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+        <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
           Live automations by type
         </h2>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -314,7 +314,7 @@ export default async function AdminOverviewPage() {
 
       {/* Top tenants by MRR */}
       <section className="mt-8">
-        <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+        <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
           Top tenants by MRR
         </h2>
         <div className="mt-3">
@@ -331,10 +331,10 @@ export default async function AdminOverviewPage() {
       {/* Churn-risk: renewals within 90 days */}
       <section className="mt-8">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+          <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
             Churn risk &mdash; renewals within 90 days
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-gray-500">
             Soonest first. Red &le; 30 days, amber &le; 60 days.
           </p>
         </div>
@@ -349,7 +349,7 @@ export default async function AdminOverviewPage() {
         </div>
       </section>
 
-      <p className="mt-8 text-xs text-zinc-400">
+      <p className="mt-8 text-xs text-gray-400">
         Revenue derives from <code>tenants.monthly_price</code>; gross bookings is
         a raw <code>bookings</code> row count. Reconciled Stripe revenue and live
         engine run health arrive in later epics.

@@ -11,8 +11,8 @@ import {
 } from "recharts";
 import type { NamedValue } from "@/lib/dashboard/analytics-types";
 
-// palette: bar fill = blue-600, axis/grid = gray-400
-const COLOR_BAR = "#0a0a0a"; // blue-600
+// palette: bar fill = ink, axis/grid = gray
+const COLOR_BAR = "#0a0a0a"; // ink
 const COLOR_MUTED = "#6f6f6b"; // gray-400
 
 export function HorizontalBarChart({
@@ -24,7 +24,7 @@ export function HorizontalBarChart({
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-gray-400"
+        className="flex items-center justify-center text-sm font-medium text-gray-500"
       >
         No data for this period.
       </div>
@@ -58,17 +58,20 @@ export function HorizontalBarChart({
         <Tooltip
           contentStyle={{
             backgroundColor: "#0a0a0a",
-            border: "1px solid #383836",
-            borderRadius: 8,
+            border: "2px solid #ffffff",
+            borderRadius: 0,
             color: "#ffffff",
             fontSize: 12,
+            fontWeight: 600,
           }}
           cursor={{ fill: COLOR_MUTED, opacity: 0.1 }}
         />
         <Bar
           dataKey="value"
           fill={COLOR_BAR}
-          radius={[0, 4, 4, 0]}
+          radius={[0, 0, 0, 0]}
+          stroke="#0a0a0a"
+          strokeWidth={1.5}
           name="Value"
         />
       </BarChart>

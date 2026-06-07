@@ -38,5 +38,870 @@
     "mtime": 1780239780.1591272,
     "ast_hash": "e092c3924799d4fc4194f994d8394cc3",
     "semantic_hash": "e092c3924799d4fc4194f994d8394cc3"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/middleware.ts": {
+    "mtime": 1780321574.0955625,
+    "ast_hash": "48be369f36a02dbcc39f5f843b37dd2a",
+    "semantic_hash": "48be369f36a02dbcc39f5f843b37dd2a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/postcss.config.mjs": {
+    "mtime": 1780244849.0,
+    "ast_hash": "239f3ebf717465dc636818a1a619398d",
+    "semantic_hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/package.json": {
+    "mtime": 1780359639.0153258,
+    "ast_hash": "1bd95135a9c59d7087537b75591b5b47",
+    "semantic_hash": "1bd95135a9c59d7087537b75591b5b47"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tsconfig.json": {
+    "mtime": 1780245559.2734401,
+    "ast_hash": "4c20b373a3a6e74bd9825bb4e97fe052",
+    "semantic_hash": "4c20b373a3a6e74bd9825bb4e97fe052"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/vitest.config.ts": {
+    "mtime": 1780359639.0337524,
+    "ast_hash": "b3c5d178490c26a35645cbf685931c81",
+    "semantic_hash": "b3c5d178490c26a35645cbf685931c81"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/.eslintrc.json": {
+    "mtime": 1780245856.8638813,
+    "ast_hash": "5cc89077d438e3d0d0a8308ab7e06a5a",
+    "semantic_hash": "5cc89077d438e3d0d0a8308ab7e06a5a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/next.config.ts": {
+    "mtime": 1780245674.0879803,
+    "ast_hash": "411dc01d6ae751bac3d8005b4857edce",
+    "semantic_hash": "411dc01d6ae751bac3d8005b4857edce"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/schema.test.ts": {
+    "mtime": 1780252453.2956932,
+    "ast_hash": "e4ac27e5208082de6723e532265f706e",
+    "semantic_hash": "e4ac27e5208082de6723e532265f706e"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/access.test.ts": {
+    "mtime": 1780359639.0285964,
+    "ast_hash": "c018cbcc302e185efb5f26276e1f5a18",
+    "semantic_hash": "c018cbcc302e185efb5f26276e1f5a18"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/smoke.test.ts": {
+    "mtime": 1780246286.9034915,
+    "ast_hash": "b5e629d75907dd7b18fb9814fce62e60",
+    "semantic_hash": "b5e629d75907dd7b18fb9814fce62e60"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/auth-session.test.ts": {
+    "mtime": 1780359639.030298,
+    "ast_hash": "2280f5be182131847e14eb73d6188310",
+    "semantic_hash": "2280f5be182131847e14eb73d6188310"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/marketing-brand.test.ts": {
+    "mtime": 1780321574.1159167,
+    "ast_hash": "8c7e9debc9692a033260134e2d875376",
+    "semantic_hash": "8c7e9debc9692a033260134e2d875376"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/roi-calculator.test.tsx": {
+    "mtime": 1780321574.116448,
+    "ast_hash": "6b9bc142ad39d437e8942756454815eb",
+    "semantic_hash": "6b9bc142ad39d437e8942756454815eb"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/hook.test.ts": {
+    "mtime": 1780253511.0039587,
+    "ast_hash": "ef441824227f4a8af4835da8da9d1fe6",
+    "semantic_hash": "ef441824227f4a8af4835da8da9d1fe6"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/pricing.test.ts": {
+    "mtime": 1780321574.1162734,
+    "ast_hash": "7b69fd3fff7c2756fe41aad21e075deb",
+    "semantic_hash": "7b69fd3fff7c2756fe41aad21e075deb"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/marketing-structure.test.ts": {
+    "mtime": 1780321574.1160827,
+    "ast_hash": "fcea457ccdac6e18a2dc8a8f2378238c",
+    "semantic_hash": "fcea457ccdac6e18a2dc8a8f2378238c"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/auth-forms.test.tsx": {
+    "mtime": 1780341631.9017723,
+    "ast_hash": "b1483684995414eb383950fb84a0cb67",
+    "semantic_hash": "b1483684995414eb383950fb84a0cb67"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/auth-structure.test.ts": {
+    "mtime": 1780359639.0309012,
+    "ast_hash": "d8fc334da21ebe68ae248f6400ccf174",
+    "semantic_hash": "d8fc334da21ebe68ae248f6400ccf174"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/roi.test.ts": {
+    "mtime": 1780321574.1167102,
+    "ast_hash": "8bfe7b57d174a705dfd00309815dcbd4",
+    "semantic_hash": "8bfe7b57d174a705dfd00309815dcbd4"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/rls.test.ts": {
+    "mtime": 1780252801.6582868,
+    "ast_hash": "bbc34521abc4e291ab6e1745be92b596",
+    "semantic_hash": "bbc34521abc4e291ab6e1745be92b596"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/helpers/db.ts": {
+    "mtime": 1780253508.6404374,
+    "ast_hash": "ad87e70a4204bb24f6ffbce2efe13c17",
+    "semantic_hash": "ad87e70a4204bb24f6ffbce2efe13c17"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0005_rls_policies.sql": {
+    "mtime": 1780252854.3710053,
+    "ast_hash": "93de83e0597f4ef56ce0ae93d8d42283",
+    "semantic_hash": "93de83e0597f4ef56ce0ae93d8d42283"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0004_billing_audit.sql": {
+    "mtime": 1780252475.2258096,
+    "ast_hash": "7beb711b95e4bcfa7dc4fe8ff1f5fe44",
+    "semantic_hash": "7beb711b95e4bcfa7dc4fe8ff1f5fe44"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0003_conversations_bookings.sql": {
+    "mtime": 1780252280.518431,
+    "ast_hash": "dbf7f7edfc791c8863b65b80fea2c6ee",
+    "semantic_hash": "dbf7f7edfc791c8863b65b80fea2c6ee"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0001_core_tenants.sql": {
+    "mtime": 1780251749.9548244,
+    "ast_hash": "fe1e1734d924862e96b34269ad3862e6",
+    "semantic_hash": "fe1e1734d924862e96b34269ad3862e6"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0002_automations_channels.sql": {
+    "mtime": 1780252184.7608285,
+    "ast_hash": "de659d02a59db0635e89e284852bc495",
+    "semantic_hash": "de659d02a59db0635e89e284852bc495"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/env.ts": {
+    "mtime": 1780359639.0224466,
+    "ast_hash": "c93306d27eaacd1a51354297f9449a94",
+    "semantic_hash": "c93306d27eaacd1a51354297f9449a94"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/middleware/access.ts": {
+    "mtime": 1780359639.0279012,
+    "ast_hash": "9a77ecde9fcaa659f9b6065d5911631a",
+    "semantic_hash": "9a77ecde9fcaa659f9b6065d5911631a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/robots.ts": {
+    "mtime": 1780321574.108875,
+    "ast_hash": "2325493cb250466e1f35dd68e30b1f03",
+    "semantic_hash": "2325493cb250466e1f35dd68e30b1f03"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/sitemap.ts": {
+    "mtime": 1780321574.109441,
+    "ast_hash": "243e63c126f8beb9792a3de77194f880",
+    "semantic_hash": "243e63c126f8beb9792a3de77194f880"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/layout.tsx": {
+    "mtime": 1780321574.1074402,
+    "ast_hash": "54dc5ebea8d01fc78eadcfd48a33567f",
+    "semantic_hash": "54dc5ebea8d01fc78eadcfd48a33567f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/layout.tsx": {
+    "mtime": 1780321574.1044183,
+    "ast_hash": "356572b72eb0dafd2b37358d832ca36a",
+    "semantic_hash": "356572b72eb0dafd2b37358d832ca36a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/page.tsx": {
+    "mtime": 1780321574.104625,
+    "ast_hash": "65976aa74f1d0c216d563282855f5c5f",
+    "semantic_hash": "65976aa74f1d0c216d563282855f5c5f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/contact/page.tsx": {
+    "mtime": 1780321574.1030414,
+    "ast_hash": "7231f87faea8aa2b80a01b90d7d4e091",
+    "semantic_hash": "7231f87faea8aa2b80a01b90d7d4e091"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/privacy/page.tsx": {
+    "mtime": 1780321574.105202,
+    "ast_hash": "09f4b9febf47fdf6e629dbda2a6db2b9",
+    "semantic_hash": "09f4b9febf47fdf6e629dbda2a6db2b9"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/terms/page.tsx": {
+    "mtime": 1780321574.1054711,
+    "ast_hash": "2916cefab10f4965513cb74df8ad62e7",
+    "semantic_hash": "2916cefab10f4965513cb74df8ad62e7"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/about/page.tsx": {
+    "mtime": 1780321574.1019711,
+    "ast_hash": "600ce1e5868932a28b1f8488c55711a8",
+    "semantic_hash": "600ce1e5868932a28b1f8488c55711a8"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/dpa/page.tsx": {
+    "mtime": 1780321574.1037962,
+    "ast_hash": "3b6ad3baae754c0a0892ce5573fcd2f8",
+    "semantic_hash": "3b6ad3baae754c0a0892ce5573fcd2f8"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/how-it-works/page.tsx": {
+    "mtime": 1780321574.104219,
+    "ast_hash": "afd629de90fe1cb7c70d30de5e94f909",
+    "semantic_hash": "afd629de90fe1cb7c70d30de5e94f909"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/case-studies/page.tsx": {
+    "mtime": 1780321574.1023672,
+    "ast_hash": "bab4a042dea82f6c912b012d6ba4a2db",
+    "semantic_hash": "bab4a042dea82f6c912b012d6ba4a2db"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/custom-solutions/page.tsx": {
+    "mtime": 1780321574.1035736,
+    "ast_hash": "8dbe574ab093316585cce67e16c69fd5",
+    "semantic_hash": "8dbe574ab093316585cce67e16c69fd5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/pricing/page.tsx": {
+    "mtime": 1780321574.1049874,
+    "ast_hash": "21f4a1558b912946d7d3daa37b862e2a",
+    "semantic_hash": "21f4a1558b912946d7d3daa37b862e2a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/cookies/page.tsx": {
+    "mtime": 1780321574.1032772,
+    "ast_hash": "a90b42bc4cf320c7741aead13f711c6b",
+    "semantic_hash": "a90b42bc4cf320c7741aead13f711c6b"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(marketing)/channels/page.tsx": {
+    "mtime": 1780321574.1027234,
+    "ast_hash": "755a153f0cf56c63f66a6a726fb3b5fb",
+    "semantic_hash": "755a153f0cf56c63f66a6a726fb3b5fb"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/dashboard/page.tsx": {
+    "mtime": 1780321574.1067343,
+    "ast_hash": "949a93b2fc8feb0f2f09007d1c74bb69",
+    "semantic_hash": "949a93b2fc8feb0f2f09007d1c74bb69"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/actions.ts": {
+    "mtime": 1780321574.098493,
+    "ast_hash": "83a71de55a8417d9948f4d8c76395b70",
+    "semantic_hash": "83a71de55a8417d9948f4d8c76395b70"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/layout.tsx": {
+    "mtime": 1780321574.099258,
+    "ast_hash": "ed6645b51a9362993bdc49116e2da106",
+    "semantic_hash": "ed6645b51a9362993bdc49116e2da106"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/mfa/mfa-challenge.tsx": {
+    "mtime": 1780321574.0999777,
+    "ast_hash": "5809146569b382beb8c29a0b0dbfb8ea",
+    "semantic_hash": "5809146569b382beb8c29a0b0dbfb8ea"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/mfa/page.tsx": {
+    "mtime": 1780321574.100463,
+    "ast_hash": "81f7bc9057e3da9435e920c5ec402dca",
+    "semantic_hash": "81f7bc9057e3da9435e920c5ec402dca"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/mfa/mfa-enroll.tsx": {
+    "mtime": 1780341631.880715,
+    "ast_hash": "ceb16a42b085529ac567737a2747a19b",
+    "semantic_hash": "ceb16a42b085529ac567737a2747a19b"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/forgot-password/forgot-form.tsx": {
+    "mtime": 1780321574.0988176,
+    "ast_hash": "af0947ca205ae8091d265f4806079c77",
+    "semantic_hash": "af0947ca205ae8091d265f4806079c77"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/forgot-password/page.tsx": {
+    "mtime": 1780321574.0989788,
+    "ast_hash": "07e4fffb1f9b75f9ca350387c9f45932",
+    "semantic_hash": "07e4fffb1f9b75f9ca350387c9f45932"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/reset-password/reset-form.tsx": {
+    "mtime": 1780321574.101576,
+    "ast_hash": "fb4bb555cb86659a563fc82a397f55fe",
+    "semantic_hash": "fb4bb555cb86659a563fc82a397f55fe"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/reset-password/page.tsx": {
+    "mtime": 1780321574.1006846,
+    "ast_hash": "77c70d6fd0bd0a84189d6e80b6eff314",
+    "semantic_hash": "77c70d6fd0bd0a84189d6e80b6eff314"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/accept-invite/page.tsx": {
+    "mtime": 1780321574.0980752,
+    "ast_hash": "0fa7dda0f3925234746e13847b17a61e",
+    "semantic_hash": "0fa7dda0f3925234746e13847b17a61e"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/accept-invite/accept-form.tsx": {
+    "mtime": 1780321574.0978174,
+    "ast_hash": "406d57aec2009e3ecaf0bd0f43c57b5a",
+    "semantic_hash": "406d57aec2009e3ecaf0bd0f43c57b5a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/login/login-form.tsx": {
+    "mtime": 1780321574.099559,
+    "ast_hash": "2362c2a6bdbeb0be4609f435bf21431b",
+    "semantic_hash": "2362c2a6bdbeb0be4609f435bf21431b"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/(auth)/login/page.tsx": {
+    "mtime": 1780321574.0997558,
+    "ast_hash": "f3d3c1ed0da674482691b81cdea8d87f",
+    "semantic_hash": "f3d3c1ed0da674482691b81cdea8d87f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/auth/auth-card.tsx": {
+    "mtime": 1780321574.1098077,
+    "ast_hash": "f67b638cce9b09e7f878a5a24cf4fff5",
+    "semantic_hash": "f67b638cce9b09e7f878a5a24cf4fff5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/auth/field.tsx": {
+    "mtime": 1780321574.1101782,
+    "ast_hash": "abc04696d966ed349f71b9eb96d6a1a4",
+    "semantic_hash": "abc04696d966ed349f71b9eb96d6a1a4"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/auth/submit-button.tsx": {
+    "mtime": 1780321574.110465,
+    "ast_hash": "670da2b22852e99dfb03a4e0c512b06d",
+    "semantic_hash": "670da2b22852e99dfb03a4e0c512b06d"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/auth/button-link.tsx": {
+    "mtime": 1780321574.109921,
+    "ast_hash": "61c04997061398bce001d75e72c58837",
+    "semantic_hash": "61c04997061398bce001d75e72c58837"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/discovery-cta.tsx": {
+    "mtime": 1780321574.1109736,
+    "ast_hash": "f9d5097549d6ae8ef56e32f3e4579d24",
+    "semantic_hash": "f9d5097549d6ae8ef56e32f3e4579d24"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/dispatch-badges.tsx": {
+    "mtime": 1780321574.111129,
+    "ast_hash": "0d9a610f5f35911f77c1b8c01f38c42e",
+    "semantic_hash": "0d9a610f5f35911f77c1b8c01f38c42e"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/currency-toggle.tsx": {
+    "mtime": 1780321574.110779,
+    "ast_hash": "3383627cd458c79cf76a80fbed2e1d0e",
+    "semantic_hash": "3383627cd458c79cf76a80fbed2e1d0e"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/transparency-section.tsx": {
+    "mtime": 1780321574.1120994,
+    "ast_hash": "80fc2e261185b496f6f49fe82edcfe51",
+    "semantic_hash": "80fc2e261185b496f6f49fe82edcfe51"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/roi-calculator.tsx": {
+    "mtime": 1780321574.1119237,
+    "ast_hash": "a39c4f844dbc6341f81d53b1fe5948cd",
+    "semantic_hash": "a39c4f844dbc6341f81d53b1fe5948cd"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/footer.tsx": {
+    "mtime": 1780321574.111228,
+    "ast_hash": "233f6922d2167985fa542dc4d14aa43f",
+    "semantic_hash": "233f6922d2167985fa542dc4d14aa43f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/pricing-cards.tsx": {
+    "mtime": 1780321574.1117887,
+    "ast_hash": "3324a3505fdc6dbf4f745d1a9f4d09c2",
+    "semantic_hash": "3324a3505fdc6dbf4f745d1a9f4d09c2"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/try-dashboard-link.tsx": {
+    "mtime": 1780321574.112204,
+    "ast_hash": "cc1d48be44ebd1eb0cfc883e82b243a1",
+    "semantic_hash": "cc1d48be44ebd1eb0cfc883e82b243a1"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/header.tsx": {
+    "mtime": 1780321574.1113877,
+    "ast_hash": "f4d8713756c094298f4a8846e06ec45e",
+    "semantic_hash": "f4d8713756c094298f4a8846e06ec45e"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/legal-page.tsx": {
+    "mtime": 1780321574.1115503,
+    "ast_hash": "031312b5099beeed138f8f19158aaa79",
+    "semantic_hash": "031312b5099beeed138f8f19158aaa79"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/ui/container.tsx": {
+    "mtime": 1780321574.1127036,
+    "ast_hash": "02cae23fdc708eb45a808f4a632540f9",
+    "semantic_hash": "02cae23fdc708eb45a808f4a632540f9"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/ui/section.tsx": {
+    "mtime": 1780321574.112813,
+    "ast_hash": "ee905cd301309e230bddc17328aa3e1a",
+    "semantic_hash": "ee905cd301309e230bddc17328aa3e1a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/ui/badge.tsx": {
+    "mtime": 1780321574.1123316,
+    "ast_hash": "5fd2c4f4d55591a75c86bed601409579",
+    "semantic_hash": "5fd2c4f4d55591a75c86bed601409579"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/marketing/ui/button.tsx": {
+    "mtime": 1780321574.1125264,
+    "ast_hash": "f22def979cbfdf31ce130d7f91aa5f99",
+    "semantic_hash": "f22def979cbfdf31ce130d7f91aa5f99"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/auth/session.ts": {
+    "mtime": 1780321574.1132956,
+    "ast_hash": "95a7030fa935e7e04c6f28a4afe98762",
+    "semantic_hash": "95a7030fa935e7e04c6f28a4afe98762"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/supabase/middleware.ts": {
+    "mtime": 1780254241.619616,
+    "ast_hash": "a91068445182af67ceae7ab0289f48ac",
+    "semantic_hash": "a91068445182af67ceae7ab0289f48ac"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/supabase/browser.ts": {
+    "mtime": 1780253766.0957313,
+    "ast_hash": "0cfe2a904ac9f576bee011e00b6780c0",
+    "semantic_hash": "0cfe2a904ac9f576bee011e00b6780c0"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/supabase/server.ts": {
+    "mtime": 1780254239.1581259,
+    "ast_hash": "8b4c22d8166a47ccc3cecd59c88e75d6",
+    "semantic_hash": "8b4c22d8166a47ccc3cecd59c88e75d6"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/marketing/nav.ts": {
+    "mtime": 1780321574.1135902,
+    "ast_hash": "eb8be8b404b0dae7702812873162ce34",
+    "semantic_hash": "eb8be8b404b0dae7702812873162ce34"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/marketing/pricing.ts": {
+    "mtime": 1780321574.113704,
+    "ast_hash": "dd21fc9076b66d6b20a88fa8980fb527",
+    "semantic_hash": "dd21fc9076b66d6b20a88fa8980fb527"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/marketing/roi.ts": {
+    "mtime": 1780321574.1138139,
+    "ast_hash": "991d9a4d9736809a33c4d30c423bdfe9",
+    "semantic_hash": "991d9a4d9736809a33c4d30c423bdfe9"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/README.md": {
+    "mtime": 1780244849.0,
+    "ast_hash": "f15aaa42d5d299d091b1171097ea56ad",
+    "semantic_hash": "f15aaa42d5d299d091b1171097ea56ad"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/pnpm-workspace.yaml": {
+    "mtime": 1780244849.0,
+    "ast_hash": "bb50e932d44a2dde6b7fe1bbea2c98c5",
+    "semantic_hash": "bb50e932d44a2dde6b7fe1bbea2c98c5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/docs/superpowers/plans/2026-05-31-epic-2-marketing-site.md": {
+    "mtime": 1780321574.0944922,
+    "ast_hash": "0bf95b2cce957ec4fafd1e1d5b35c7d0",
+    "semantic_hash": "0bf95b2cce957ec4fafd1e1d5b35c7d0"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/docs/superpowers/plans/2026-05-31-epic-1-foundations.md": {
+    "mtime": 1780242669.779707,
+    "ast_hash": "32edddfcdc862650a26e1f36f0d37d8a",
+    "semantic_hash": "32edddfcdc862650a26e1f36f0d37d8a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/docs/superpowers/plans/2026-06-01-epic-4-auth-invite-login.md": {
+    "mtime": 1780321574.095278,
+    "ast_hash": "dc8a145b02635f7bf5b837e25ade719f",
+    "semantic_hash": "dc8a145b02635f7bf5b837e25ade719f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/docs/superpowers/plans/00-cabbybot-roadmap.md": {
+    "mtime": 1780321574.094192,
+    "ast_hash": "17fc16d1c8ebc20ad62f83c925686976",
+    "semantic_hash": "17fc16d1c8ebc20ad62f83c925686976"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/.github/workflows/ci.yml": {
+    "mtime": 1780359639.0135746,
+    "ast_hash": "76f236af2b23e9bf40b0a2f04e7f37cb",
+    "semantic_hash": "76f236af2b23e9bf40b0a2f04e7f37cb"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/public/file.svg": {
+    "mtime": 1780244849.0,
+    "ast_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71",
+    "semantic_hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/public/vercel.svg": {
+    "mtime": 1780244849.0,
+    "ast_hash": "c0af2f507b369b085b35ef4bbe3bcf1e",
+    "semantic_hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/public/next.svg": {
+    "mtime": 1780244849.0,
+    "ast_hash": "8e061864f388b47f33a1c3780831193e",
+    "semantic_hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/public/globe.svg": {
+    "mtime": 1780244849.0,
+    "ast_hash": "2aaafa6a49b6563925fe440891e32717",
+    "semantic_hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/public/window.svg": {
+    "mtime": 1780244849.0,
+    "ast_hash": "a2760511c65806022ad20adf74370ff3",
+    "semantic_hash": "a2760511c65806022ad20adf74370ff3"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-engine-links.test.ts": {
+    "mtime": 1780341631.8991282,
+    "ast_hash": "aa4b5fc89d4a4b4b34a2309dc4715187",
+    "semantic_hash": "aa4b5fc89d4a4b4b34a2309dc4715187"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-plan-bands.test.ts": {
+    "mtime": 1780341631.90064,
+    "ast_hash": "1348f4eda75c56b33896a0a21729c852",
+    "semantic_hash": "1348f4eda75c56b33896a0a21729c852"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-impersonation-cookie.test.ts": {
+    "mtime": 1780341631.9001877,
+    "ast_hash": "78fba830ff1b6fb69fb75127684f9056",
+    "semantic_hash": "78fba830ff1b6fb69fb75127684f9056"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/redis-integration.test.ts": {
+    "mtime": 1780359639.0323453,
+    "ast_hash": "af008c0c28bd242fd8d52d6bd4d62fa0",
+    "semantic_hash": "af008c0c28bd242fd8d52d6bd4d62fa0"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-forms.test.tsx": {
+    "mtime": 1780341631.899611,
+    "ast_hash": "cb180fe67b12ecc6b6a08e324041eec1",
+    "semantic_hash": "cb180fe67b12ecc6b6a08e324041eec1"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/setup-env.ts": {
+    "mtime": 1780359639.0325215,
+    "ast_hash": "43d0e95a1383102e5b061b629fed91c4",
+    "semantic_hash": "43d0e95a1383102e5b061b629fed91c4"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/webhook-message-id.test.ts": {
+    "mtime": 1780359639.0330515,
+    "ast_hash": "fb2c828ac0019565c85c06b896fd12d5",
+    "semantic_hash": "fb2c828ac0019565c85c06b896fd12d5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/webhook-gateway.test.ts": {
+    "mtime": 1780359639.032743,
+    "ast_hash": "956f3621dece7dd880d1d43cad855dd8",
+    "semantic_hash": "956f3621dece7dd880d1d43cad855dd8"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/engine-brand.test.ts": {
+    "mtime": 1780359639.0314054,
+    "ast_hash": "02ed71c23e355614c6d04139e2c3c947",
+    "semantic_hash": "02ed71c23e355614c6d04139e2c3c947"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-rls.test.ts": {
+    "mtime": 1780341631.9009156,
+    "ast_hash": "d1ac5903cb61f1d9f2e92aa45dcedd4f",
+    "semantic_hash": "d1ac5903cb61f1d9f2e92aa45dcedd4f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-structure.test.ts": {
+    "mtime": 1780359639.0299146,
+    "ast_hash": "209a574f0af7546556df9bdf24c36839",
+    "semantic_hash": "209a574f0af7546556df9bdf24c36839"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/engine-control.test.ts": {
+    "mtime": 1780359639.0321577,
+    "ast_hash": "2197a40e2531101ea81ef6a7a387355c",
+    "semantic_hash": "2197a40e2531101ea81ef6a7a387355c"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-guard.test.ts": {
+    "mtime": 1780359639.0288472,
+    "ast_hash": "42d835b320730eb4da15a78a487d3a22",
+    "semantic_hash": "42d835b320730eb4da15a78a487d3a22"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/webhook-signatures.test.ts": {
+    "mtime": 1780359639.0335417,
+    "ast_hash": "a96785ee37a35728a164d2d3f62ded1c",
+    "semantic_hash": "a96785ee37a35728a164d2d3f62ded1c"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/webhook-resolver.test.ts": {
+    "mtime": 1780359639.0332963,
+    "ast_hash": "cd6fe1c461f95722882ddb2bd9f43dff",
+    "semantic_hash": "cd6fe1c461f95722882ddb2bd9f43dff"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/api-guard.test.ts": {
+    "mtime": 1780359639.0300486,
+    "ast_hash": "c3816619dc59ae0f3b07c0ec70a8527c",
+    "semantic_hash": "c3816619dc59ae0f3b07c0ec70a8527c"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-billing-math.test.ts": {
+    "mtime": 1780341631.8988614,
+    "ast_hash": "409c24961be7995e3c856504acd515fb",
+    "semantic_hash": "409c24961be7995e3c856504acd515fb"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/engine-client.integration.test.ts": {
+    "mtime": 1780359639.031878,
+    "ast_hash": "cafc8bb065d7089a98d7deb049cef764",
+    "semantic_hash": "cafc8bb065d7089a98d7deb049cef764"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/tests/admin-impersonation.test.ts": {
+    "mtime": 1780341631.9004111,
+    "ast_hash": "a3bb44009fde648937168d738d29f441",
+    "semantic_hash": "a3bb44009fde648937168d738d29f441"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0007_build_queue_fields.sql": {
+    "mtime": 1780341631.8968985,
+    "ast_hash": "5d7d9a2c57870e07d16705773bbb4463",
+    "semantic_hash": "5d7d9a2c57870e07d16705773bbb4463"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0009_tenant_contact_email.sql": {
+    "mtime": 1780341631.8978672,
+    "ast_hash": "51031b784e8c6db2683831b47574a33d",
+    "semantic_hash": "51031b784e8c6db2683831b47574a33d"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0010_vault_rpc_wrappers.sql": {
+    "mtime": 1780341631.8981464,
+    "ast_hash": "7419c7f8980e5f4a9b2b3db919096b7f",
+    "semantic_hash": "7419c7f8980e5f4a9b2b3db919096b7f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0011_audit_log_immutable.sql": {
+    "mtime": 1780341631.8984783,
+    "ast_hash": "71cbeff0affc267d4ff35fb0c3ef6efd",
+    "semantic_hash": "71cbeff0affc267d4ff35fb0c3ef6efd"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/supabase/migrations/0012_automation_engine_webhook_url.sql": {
+    "mtime": 1780359639.0281096,
+    "ast_hash": "6cc01dc92bfe30d223230d1bd9fd99f4",
+    "semantic_hash": "6cc01dc92bfe30d223230d1bd9fd99f4"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/layout.tsx": {
+    "mtime": 1780341631.8888137,
+    "ast_hash": "9f89477fb2bb99efb5761a9a74315feb",
+    "semantic_hash": "9f89477fb2bb99efb5761a9a74315feb"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/page.tsx": {
+    "mtime": 1780341631.8893392,
+    "ast_hash": "bc431fa0d162a7dd6f791e5f09076129",
+    "semantic_hash": "bc431fa0d162a7dd6f791e5f09076129"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/build-queue/actions.ts": {
+    "mtime": 1780341631.8830996,
+    "ast_hash": "c8b194798ec7efec67060e49e2dbd52b",
+    "semantic_hash": "c8b194798ec7efec67060e49e2dbd52b"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/build-queue/build-queue-board.tsx": {
+    "mtime": 1780341631.8834453,
+    "ast_hash": "a426ded09df9f3b851db008fc3b9f214",
+    "semantic_hash": "a426ded09df9f3b851db008fc3b9f214"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/build-queue/page.tsx": {
+    "mtime": 1780341631.8851292,
+    "ast_hash": "786ea4bb656d67fcf945524f0596af35",
+    "semantic_hash": "786ea4bb656d67fcf945524f0596af35"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/tenants/actions.ts": {
+    "mtime": 1780341631.891836,
+    "ast_hash": "6830fee9e1f2eaf64b49c7a45ee5c239",
+    "semantic_hash": "6830fee9e1f2eaf64b49c7a45ee5c239"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/tenants/page.tsx": {
+    "mtime": 1780341631.8928838,
+    "ast_hash": "17b04879f11ac2ac0aff8b93b91a1ced",
+    "semantic_hash": "17b04879f11ac2ac0aff8b93b91a1ced"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/tenants/[tenantId]/tenant-detail-forms.tsx": {
+    "mtime": 1780341631.8914456,
+    "ast_hash": "e08d36408ed8de4e64e5218388219632",
+    "semantic_hash": "e08d36408ed8de4e64e5218388219632"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/tenants/[tenantId]/actions.ts": {
+    "mtime": 1780341631.8899386,
+    "ast_hash": "d1c94f9729dd64169631ad2331ba1fc5",
+    "semantic_hash": "d1c94f9729dd64169631ad2331ba1fc5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/tenants/[tenantId]/page.tsx": {
+    "mtime": 1780341631.8906946,
+    "ast_hash": "499a2a543a088cee0794524e2b739af5",
+    "semantic_hash": "499a2a543a088cee0794524e2b739af5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/tenants/new/page.tsx": {
+    "mtime": 1780341631.8921924,
+    "ast_hash": "1960f688c3874d77752eb35ae26fee55",
+    "semantic_hash": "1960f688c3874d77752eb35ae26fee55"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/tenants/new/tenant-form.tsx": {
+    "mtime": 1780341631.8926232,
+    "ast_hash": "da58e4260ccdb31d1a5f2807acf527ec",
+    "semantic_hash": "da58e4260ccdb31d1a5f2807acf527ec"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/automations/page.tsx": {
+    "mtime": 1780341631.8815956,
+    "ast_hash": "fac4f4f39ee7037a98e6d86accf2e8f2",
+    "semantic_hash": "fac4f4f39ee7037a98e6d86accf2e8f2"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/impersonate/actions.ts": {
+    "mtime": 1780341631.887479,
+    "ast_hash": "7cd263785b1cccbb16e2cb38b69bb39f",
+    "semantic_hash": "7cd263785b1cccbb16e2cb38b69bb39f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/impersonate/start-control.tsx": {
+    "mtime": 1780341631.8884397,
+    "ast_hash": "0d476d95de646173ca4e7a2c19696479",
+    "semantic_hash": "0d476d95de646173ca4e7a2c19696479"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/impersonate/page.tsx": {
+    "mtime": 1780341631.887918,
+    "ast_hash": "fa4605f82d0ff09e4d0015b4c61d234a",
+    "semantic_hash": "fa4605f82d0ff09e4d0015b4c61d234a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/admin/billing/page.tsx": {
+    "mtime": 1780341631.8827622,
+    "ast_hash": "9c7ac6fbdcd5b54f2feb94e25adc88db",
+    "semantic_hash": "9c7ac6fbdcd5b54f2feb94e25adc88db"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/api/orgs/[orgId]/automations/[automationId]/start/route.ts": {
+    "mtime": 1780359639.0193315,
+    "ast_hash": "56e607e887772cbf56c9f1570eddec41",
+    "semantic_hash": "56e607e887772cbf56c9f1570eddec41"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/api/orgs/[orgId]/automations/[automationId]/stop/route.ts": {
+    "mtime": 1780359639.0213006,
+    "ast_hash": "eec2574aefaccdfa978ecc26b92dc7dc",
+    "semantic_hash": "eec2574aefaccdfa978ecc26b92dc7dc"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/api/orgs/[orgId]/automations/[automationId]/status/route.ts": {
+    "mtime": 1780359639.019647,
+    "ast_hash": "c03ad7c1ca56a706d7b7532aab2a1d43",
+    "semantic_hash": "c03ad7c1ca56a706d7b7532aab2a1d43"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/api/orgs/[orgId]/automations/[automationId]/restart/route.ts": {
+    "mtime": 1780359639.018511,
+    "ast_hash": "af5fd0ec6447e8c56b71c23e3c21f22d",
+    "semantic_hash": "af5fd0ec6447e8c56b71c23e3c21f22d"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/api/orgs/[orgId]/automations/[automationId]/runs/route.ts": {
+    "mtime": 1780359639.0189772,
+    "ast_hash": "c306d65ca9aca711dd698ac889fa6d35",
+    "semantic_hash": "c306d65ca9aca711dd698ac889fa6d35"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/app/webhooks/[channel]/[automationId]/route.ts": {
+    "mtime": 1780359639.0219223,
+    "ast_hash": "945b107f9baad195b4e47881af0f689a",
+    "semantic_hash": "945b107f9baad195b4e47881af0f689a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/admin/impersonation-banner.tsx": {
+    "mtime": 1780341631.8938816,
+    "ast_hash": "b3fb3de188aa1eccd37d04cda0626f06",
+    "semantic_hash": "b3fb3de188aa1eccd37d04cda0626f06"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/admin/data-table.tsx": {
+    "mtime": 1780341631.893596,
+    "ast_hash": "c702564ed52f62133a9c8a190bc0a0a0",
+    "semantic_hash": "c702564ed52f62133a9c8a190bc0a0a0"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/admin/status-badge.tsx": {
+    "mtime": 1780341631.8943522,
+    "ast_hash": "2ce381a4119aab9532c212f86640103f",
+    "semantic_hash": "2ce381a4119aab9532c212f86640103f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/admin/stat-card.tsx": {
+    "mtime": 1780341631.8941135,
+    "ast_hash": "e670e71ba9f93121ec1427d7b1e015bc",
+    "semantic_hash": "e670e71ba9f93121ec1427d7b1e015bc"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/components/admin/admin-shell.tsx": {
+    "mtime": 1780341631.8932352,
+    "ast_hash": "4f799903674b5271e2a6aade564b8c13",
+    "semantic_hash": "4f799903674b5271e2a6aade564b8c13"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/audit.ts": {
+    "mtime": 1780359639.0237155,
+    "ast_hash": "662b67db2165bab7cfeac41c52659f0c",
+    "semantic_hash": "662b67db2165bab7cfeac41c52659f0c"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/redis/cache.ts": {
+    "mtime": 1780359639.0255723,
+    "ast_hash": "b3845d231b3e82caac3f31253db9a88a",
+    "semantic_hash": "b3845d231b3e82caac3f31253db9a88a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/redis/client.ts": {
+    "mtime": 1780359639.026008,
+    "ast_hash": "b3c6ef447bdaac106d47f6c2b3d8c4f0",
+    "semantic_hash": "b3c6ef447bdaac106d47f6c2b3d8c4f0"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/redis/idempotency.ts": {
+    "mtime": 1780359639.0262628,
+    "ast_hash": "6c4243bd18303cfc2a023665f1cdd4b2",
+    "semantic_hash": "6c4243bd18303cfc2a023665f1cdd4b2"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/redis/rate-limit.ts": {
+    "mtime": 1780359639.0264308,
+    "ast_hash": "be72c7f5a059287a50403859c55b5ca2",
+    "semantic_hash": "be72c7f5a059287a50403859c55b5ca2"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/resolve-engineers.ts": {
+    "mtime": 1780341631.896629,
+    "ast_hash": "da428ebb9801b99802a9641bf984746f",
+    "semantic_hash": "da428ebb9801b99802a9641bf984746f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/engine-links.ts": {
+    "mtime": 1780341631.8955271,
+    "ast_hash": "6cb4f3b14eb82f0a51f43d689cd49033",
+    "semantic_hash": "6cb4f3b14eb82f0a51f43d689cd49033"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/plan-bands.ts": {
+    "mtime": 1780341631.8963816,
+    "ast_hash": "364d08fc96fc6555a9030fd6af0e88f3",
+    "semantic_hash": "364d08fc96fc6555a9030fd6af0e88f3"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/billing-math.ts": {
+    "mtime": 1780341631.8952193,
+    "ast_hash": "21051f2dc1953147781d29b20e977282",
+    "semantic_hash": "21051f2dc1953147781d29b20e977282"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/guard.ts": {
+    "mtime": 1780341631.8957584,
+    "ast_hash": "985733be2e80245ef0c550d139ba666b",
+    "semantic_hash": "985733be2e80245ef0c550d139ba666b"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/impersonation-cookie.ts": {
+    "mtime": 1780341631.8959777,
+    "ast_hash": "b27b46349f878c263fa972d7cd3d65e5",
+    "semantic_hash": "b27b46349f878c263fa972d7cd3d65e5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/impersonation.ts": {
+    "mtime": 1780341631.8961868,
+    "ast_hash": "937b0521b2d9193690bc9a13d0ae34e8",
+    "semantic_hash": "937b0521b2d9193690bc9a13d0ae34e8"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/admin/audit.ts": {
+    "mtime": 1780341631.8949902,
+    "ast_hash": "766da1e927f569c508b52d42fec5987a",
+    "semantic_hash": "766da1e927f569c508b52d42fec5987a"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/api/guard.ts": {
+    "mtime": 1780359639.0227742,
+    "ast_hash": "0abdf7ea03de4dc710bdbe85bc18d821",
+    "semantic_hash": "0abdf7ea03de4dc710bdbe85bc18d821"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/webhooks/forward.ts": {
+    "mtime": 1780359639.0266287,
+    "ast_hash": "c5b3b2ca60e845a4a4860e2cc827967d",
+    "semantic_hash": "c5b3b2ca60e845a4a4860e2cc827967d"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/webhooks/resolver.ts": {
+    "mtime": 1780359639.027412,
+    "ast_hash": "272055beb7fc2cc8c8890c3693c6ef32",
+    "semantic_hash": "272055beb7fc2cc8c8890c3693c6ef32"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/webhooks/signatures.ts": {
+    "mtime": 1780359639.0276756,
+    "ast_hash": "de488d47914f92e10a0fede807964056",
+    "semantic_hash": "de488d47914f92e10a0fede807964056"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/webhooks/resolver-loader.ts": {
+    "mtime": 1780359639.0271666,
+    "ast_hash": "eb9f06384e220617764ca4dde28adad9",
+    "semantic_hash": "eb9f06384e220617764ca4dde28adad9"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/webhooks/message-id.ts": {
+    "mtime": 1780359639.0268185,
+    "ast_hash": "20be3a601e834f01deb6bf3a7a66f3f2",
+    "semantic_hash": "20be3a601e834f01deb6bf3a7a66f3f2"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/engine/types.ts": {
+    "mtime": 1780359639.0253518,
+    "ast_hash": "0f89d779f874f635d1864e9508bb3ef5",
+    "semantic_hash": "0f89d779f874f635d1864e9508bb3ef5"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/engine/control-db.ts": {
+    "mtime": 1780359639.0246303,
+    "ast_hash": "c24a6aeb39ed70e420b5856405394862",
+    "semantic_hash": "c24a6aeb39ed70e420b5856405394862"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/engine/client.ts": {
+    "mtime": 1780359639.0243545,
+    "ast_hash": "86ab307ea4f84fec26437b077dc6dda8",
+    "semantic_hash": "86ab307ea4f84fec26437b077dc6dda8"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/src/lib/engine/control.ts": {
+    "mtime": 1780359639.0249841,
+    "ast_hash": "53ca896cc51003346b059139018886bc",
+    "semantic_hash": "53ca896cc51003346b059139018886bc"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/docker-compose.engine.yml": {
+    "mtime": 1780359639.0138752,
+    "ast_hash": "f7ada9f76650e87deb3e754da728a52b",
+    "semantic_hash": "f7ada9f76650e87deb3e754da728a52b"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/docs/superpowers/plans/2026-06-01-epic-3-admin-console.md": {
+    "mtime": 1780341631.8779516,
+    "ast_hash": "ead5c66379bca6b8586c4b19ef11bf8f",
+    "semantic_hash": "ead5c66379bca6b8586c4b19ef11bf8f"
+  },
+  "/Users/sarahbose/Desktop/CabbyBot/docs/superpowers/plans/2026-06-01-epic-5-automation-engine.md": {
+    "mtime": 1780359639.0148942,
+    "ast_hash": "1f3cfa2e1fbfb44af6fab84fb8d20679",
+    "semantic_hash": "1f3cfa2e1fbfb44af6fab84fb8d20679"
   }
 }

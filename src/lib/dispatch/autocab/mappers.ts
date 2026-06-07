@@ -145,7 +145,7 @@ export function toBookingBody(params: BookingParams) {
 
 /**
  * Builds a PARTIAL AutoCab booking body for modify (PATCH). Only fields present
- * on `params` are included, each translated to AutoCab's JSON shape — addresses
+ * on `params` are included, each translated to AutoCab's JSON shape, addresses
  * via toAutoCabAddress, quotedPrice -> price. This keeps modifyBooking from
  * sending neutral DTO field names (label/postcode/lat/quotedPrice) that AutoCab
  * would silently ignore.

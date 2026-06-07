@@ -4,62 +4,74 @@ import { Section } from "@/components/marketing/ui/section";
 import { Badge } from "@/components/marketing/ui/badge";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
+import { Reveal } from "@/components/marketing/reveal";
 
 export const metadata: Metadata = {
-  title: "Custom Solutions — BookMyCab",
+  title: "Custom Solutions · BookMyCab",
   description:
-    "Beyond booking. For larger fleets, more channels or anything outside our standard options, we scope and quote bespoke automations individually — support bots, driver tools, lost property, complaints, marketing, custom integrations and inbound voice.",
+    "Beyond booking. For larger fleets, more channels or anything outside our standard options, we scope and quote custom automations individually, support bots, driver tools, lost property, complaints, marketing, custom integrations and inbound voice.",
 };
 
-// §6.1 Option C — quoted-individually framing.
-const OPTION_C = [
+// Full Throttle (formerly Option C), quoted-individually framing.
+const FULL_THROTTLE = [
   {
-    title: "101+ vehicle fleets",
-    body: "Larger operations have their own scale, shift patterns and dispatch demands. We size the build to your fleet rather than squeezing you into a tier.",
+    title: "151+ vehicle fleets",
+    body: "Bigger operations carry their own scale, shift patterns and dispatch load. We size the build to your fleet instead of squeezing you into a tier.",
   },
   {
     title: "Four or more channels",
-    body: "Running everywhere at once — and adding channels beyond our standard set — is scoped to what your customers actually use.",
+    body: "Running everywhere at once, and adding channels past our standard set, is scoped to exactly what your customers actually use.",
   },
   {
-    title: "Anything outside A or B",
-    body: "Non-standard dispatch, unusual booking flows or requirements we haven't met before. If it falls outside our standard options, we quote it individually.",
+    title: "Anything outside Ignition or In Motion",
+    body: "Non-standard dispatch, unusual booking flows or something we have not met before. If it falls outside the fixed plans, we quote it on its own.",
   },
 ];
 
-// §6.3 — add-on automations beyond the core booking build.
-const ADD_ONS = [
+// §6.3, add-on automations beyond the core booking build. Each carries a short
+// mono code so the list reads like an operator's capability sheet.
+type AddOn = { code: string; name: string; body: string; roadmap?: boolean };
+
+const ADD_ONS: AddOn[] = [
   {
+    code: "SB",
     name: "Support Bot",
-    body: "An automation that answers your customers' common questions — fares, coverage, account queries — so your team isn't tied up on the basics.",
+    body: "Answers the questions that tie up your office all day: fares, coverage, account and lost-booking queries, so your controllers stay on the radio, not the FAQ.",
   },
   {
+    code: "DS",
     name: "Driver Solution",
-    body: "A dedicated assistant for your drivers — shift queries, job details and the answers they need without calling the office.",
+    body: "A pocket assistant for your drivers. Shift queries, job details and quick answers, so the office phone stops ringing for things a bot can settle.",
   },
   {
+    code: "LP",
     name: "Lost Property Bot",
-    body: "Logs and triages lost-property reports automatically, matching them to journeys so items get back to customers faster.",
+    body: "Logs every lost-property report, matches it to the journey and chases it down, so a left-behind phone does not become a left-behind customer.",
   },
   {
+    code: "CC",
     name: "Complaints & CSAT",
-    body: "Captures complaints calmly, routes them to the right person and runs post-ride satisfaction follow-ups so you can see how you're really doing.",
+    body: "Takes the heat out of a complaint, routes it to the right person and runs a quick rating after the ride, so you hear about problems before a review does.",
   },
   {
+    code: "MK",
     name: "Marketing automations",
-    body: "Re-engagement for lapsed riders, loyalty nudges and promotions — sent on the channels your customers already use, from your own customer base.",
+    body: "Win back riders who went quiet, reward your regulars and push offers, all on the channels they already use, all from a list you own.",
   },
   {
+    code: "CI",
     name: "Custom integrations",
-    body: "Non-AutoCab dispatch, your CRM, your accounting stack — we connect the bespoke build to the systems you already run.",
+    body: "Your CRM, your accounting stack, a dispatch system that isn't on our list. If your firm runs on it, we wire your build into it.",
   },
   {
+    code: "AC",
     name: "Additional channels",
-    body: "Beyond our standard five. If your customers reach you somewhere else, we can bring that channel into the same automation.",
+    body: "Reach customers somewhere past our standard five and we will fold that channel into the very same automation, no second bot to manage.",
   },
   {
+    code: "VA",
     name: "Voice agent",
-    body: "Inbound call handling — an AI voice agent that answers the phone and takes bookings out loud. On our roadmap for v1.3.",
+    body: "Inbound call handling: an AI voice agent that picks up the phone and takes the booking out loud, for the callers who still want to ring you.",
     roadmap: true,
   },
 ];
@@ -69,95 +81,133 @@ export default function CustomSolutionsPage() {
     <>
       {/* Header */}
       <Section className="pb-10 sm:pb-14">
-        <Container className="max-w-3xl">
+        <Container className="max-w-3xl rise-group">
           <Badge>Custom solutions</Badge>
-          <h1 className="mt-6 text-balance font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink sm:text-6xl">
+          <h1 className="mt-6 text-balance font-display text-5xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-ink sm:text-6xl">
             When your firm needs more than booking.
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            Larger fleets, extra channels and bespoke automations sit outside our
-            standard options — so we scope and quote them individually, built
+            Larger fleets, extra channels and custom automations sit outside our
+            standard options, so we scope and quote them individually, built
             around how your business actually runs.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <DiscoveryCta size="lg" label="Contact us — quoted individually" />
+            <DiscoveryCta size="lg" label="Contact us, priced for you" />
             <TryDashboardLink size="lg" />
           </div>
         </Container>
       </Section>
 
-      {/* Option C framing */}
+      {/* Full Throttle framing, split: statement panel + qualifying ledger. */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <p className="text-sm font-medium uppercase tracking-[0.12em] text-gray-500">
-            Option C — quoted individually
-          </p>
-          <h2 className="mt-4 max-w-2xl font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            101+ fleet, four or more channels, or anything outside A and B.
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
-            There&apos;s no fixed price list here, on purpose. We look at your
-            operation and quote it honestly — no template, no tier you have to
-            bend yourself to fit.
-          </p>
-          <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-gray-200 bg-gray-200 sm:grid-cols-3">
-            {OPTION_C.map((item) => (
-              <div key={item.title} className="bg-paper p-7 sm:p-8">
-                <h3 className="font-display text-xl font-semibold text-ink">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-base leading-relaxed text-gray-600">
-                  {item.body}
-                </p>
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,24rem)_1fr] lg:gap-14">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <span className="inline-flex items-center border-2 border-ink bg-brut-violet px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-ink">
+                Full Throttle, priced for you
+              </span>
+              <h2 className="mt-5 font-display text-3xl font-extrabold leading-[1.05] tracking-[-0.02em] text-ink sm:text-4xl">
+                151+ fleet, four or more channels, or anything outside Ignition and In Motion.
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-gray-700">
+                No fixed price list here, on purpose. We look at your operation
+                and quote it straight. No template, no tier you have to bend
+                yourself to fit.
+              </p>
+              <div className="mt-7">
+                <DiscoveryCta size="lg" label="Get a Full Throttle quote" />
               </div>
-            ))}
+            </div>
+
+            <ul className="grid gap-[3px] self-start overflow-hidden border-[3px] border-ink bg-ink shadow-brut">
+              {FULL_THROTTLE.map((item, i) => (
+                <li key={item.title} className="bg-paper p-7 sm:p-8">
+                  <div className="flex items-start gap-4">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center border-[3px] border-ink bg-brut-yellow font-mono text-xl font-bold tabular-nums text-ink">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <h3 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">
+                        {item.title}
+                      </h3>
+                      <p className="mt-2 text-base leading-relaxed text-gray-700">
+                        {item.body}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </Container>
       </Section>
 
-      {/* Add-on automations */}
-      <Section className="py-14 sm:py-20">
+      {/* Add-on automations, capability ledger, two columns of stacked rows. */}
+      <Section className="bg-canvas py-14 sm:py-20">
         <Container>
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            Add-on automations
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
-            Bolt these onto your core booking build, or run them on their own.
-            Each one is scoped to your firm and quoted individually.
-          </p>
-          <div className="mt-8 grid gap-px overflow-hidden rounded-3xl border border-gray-200 bg-gray-200 sm:grid-cols-2 lg:grid-cols-3">
-            {ADD_ONS.map((addon) => (
-              <div key={addon.name} className="bg-paper p-7 sm:p-8">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="font-display text-xl font-semibold text-ink">
-                    {addon.name}
-                  </h3>
-                  {addon.roadmap ? (
-                    <span className="mt-0.5 shrink-0 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs font-medium uppercase tracking-[0.1em] text-gray-500">
-                      Roadmap
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-3 text-base leading-relaxed text-gray-600">
-                  {addon.body}
-                </p>
-              </div>
-            ))}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <h2 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
+                One booking bot is just the start
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-gray-700">
+                Bolt any of these onto your build, or run them on their own. Each
+                is scoped to your firm and priced when we talk.
+              </p>
+            </div>
+            <span className="inline-flex w-fit items-center border-2 border-ink bg-brut-lime px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-ink">
+              {ADD_ONS.filter((a) => !a.roadmap).length} live · 1 on the way
+            </span>
           </div>
+
+          <Reveal as="ul" className="mt-10 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink shadow-brut md:grid-cols-2">
+            {ADD_ONS.map((addon) => (
+              <li
+                key={addon.name}
+                className="group flex gap-4 bg-paper p-6 transition-colors duration-150 hover:bg-brut-yellow sm:p-7"
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center border-[3px] border-ink bg-brut-cyan font-mono text-sm font-bold text-ink group-hover:bg-paper"
+                >
+                  {addon.code}
+                </span>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-display text-lg font-extrabold uppercase tracking-tight text-ink">
+                      {addon.name}
+                    </h3>
+                    {addon.roadmap ? (
+                      <span className="border-2 border-ink bg-brut-violet px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-ink">
+                        Roadmap · v1.3
+                      </span>
+                    ) : (
+                      <span className="border-2 border-ink bg-brut-lime px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-ink">
+                        Live
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-700 group-hover:text-ink">
+                    {addon.body}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </Reveal>
         </Container>
       </Section>
 
       {/* Transparency emphasis */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <div className="rounded-3xl border border-ink bg-accent px-7 py-12 sm:px-12 sm:py-16">
-            <h2 className="text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-accent-ink sm:text-4xl">
-              Quoted individually — never a template clone.
+          <div className="border-[3px] border-ink bg-brut-yellow shadow-brut-xl px-7 py-12 sm:px-12 sm:py-16">
+            <h2 className="text-balance font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-accent-ink sm:text-4xl">
+              Priced for your firm, not a price list.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
               Every custom build is scoped to your fleet, your channels and your
-              dispatch. You bring your numbers. You own your customer base. The
-              only way to price it is to talk.
+              dispatch, then quoted once we have seen how you actually run. No
+              tier to squeeze into. The only way to price it is to talk.
             </p>
           </div>
         </Container>
@@ -166,12 +216,12 @@ export default function CustomSolutionsPage() {
       {/* Closing CTA band */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <div className="rounded-3xl border border-gray-200 bg-gray-50 px-7 py-14 text-center sm:px-12 sm:py-20">
-            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">
+          <div className="border-[3px] border-ink bg-brut-cyan px-7 py-14 text-center shadow-brut sm:px-12 sm:py-20">
+            <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-ink sm:text-5xl">
               Tell us what you need built.
             </h2>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <DiscoveryCta size="lg" label="Contact us — quoted individually" />
+              <DiscoveryCta size="lg" label="Contact us, priced for you" />
               <TryDashboardLink size="lg" />
             </div>
           </div>

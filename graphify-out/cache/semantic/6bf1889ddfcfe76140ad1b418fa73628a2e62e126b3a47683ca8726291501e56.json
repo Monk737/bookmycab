@@ -1,0 +1,1 @@
+{"nodes": [{"id": "migrations_0006_custom_access_token_hook_hook", "label": "custom_access_token_hook() JWT claim injector", "file_type": "code", "source_file": "supabase/migrations/0006_custom_access_token_hook.sql", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

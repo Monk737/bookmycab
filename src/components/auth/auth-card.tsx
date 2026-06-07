@@ -10,38 +10,42 @@ type AuthCardProps = {
 /**
  * Shared card container for all auth pages.
  * Renders the BookMyCab wordmark, a page heading, an optional error banner,
- * and the card body (slot for form content).
+ * and the card body (slot for form content). Brutalist: ink-framed paper
+ * block on a hard offset shadow.
  */
 export function AuthCard({ heading, error, children }: AuthCardProps) {
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white px-8 py-10 shadow-sm">
-      {/* Wordmark */}
-      <div className="mb-8 text-center">
-        <span className="text-xl font-semibold tracking-tight text-slate-900">
-          Cabby<span className="text-indigo-600">Bot</span>
+    <div className="w-full max-w-sm border-[3px] border-ink bg-paper shadow-brut-xl">
+      {/* Wordmark bar */}
+      <div className="flex items-center justify-center gap-2 border-b-[3px] border-ink bg-brut-yellow px-8 py-4">
+        <span className="font-logo text-base leading-none tracking-tight text-ink">
+          BookMyCab
         </span>
+        <span aria-hidden="true" className="inline-block h-3 w-3 border-2 border-ink bg-paper" />
       </div>
 
-      {/* Page heading */}
-      <h1 className="mb-6 text-center text-2xl font-semibold text-slate-900">
-        {heading}
-      </h1>
+      <div className="px-8 py-8">
+        {/* Page heading */}
+        <h1 className="mb-6 text-2xl font-extrabold tracking-tight text-ink">
+          {heading}
+        </h1>
 
-      {/* Error banner — always present in the DOM so aria-live fires on update */}
-      <div
-        role="alert"
-        aria-live="polite"
-        aria-atomic="true"
-        className={
-          error
-            ? "mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-            : "sr-only"
-        }
-      >
-        {error ?? ""}
+        {/* Error banner, always present in the DOM so aria-live fires on update */}
+        <div
+          role="alert"
+          aria-live="polite"
+          aria-atomic="true"
+          className={
+            error
+              ? "mb-5 border-[3px] border-ink bg-brut-red px-4 py-3 text-sm font-bold text-ink"
+              : "sr-only"
+          }
+        >
+          {error ?? ""}
+        </div>
+
+        {children}
       </div>
-
-      {children}
     </div>
   );
 }

@@ -29,20 +29,21 @@ export const PRIMARY = INK;
  */
 export const PALETTE = [
   INK, // #0a0a0a
-  AMBER, // #ffd400
-  "#0072B2", // blue
-  "#009E73", // bluish green
-  "#CC79A7", // reddish purple
-  "#D55E00", // vermillion
-  "#56B4E9", // sky blue
-  MUTED, // gray-400, overflow/other
+  AMBER, // #ffd400, brut-yellow
+  "#2f6bff", // brut-blue
+  "#c6f24e", // brut-lime
+  "#ff7ac0", // brut-pink
+  "#ff5247", // brut-red
+  "#5fd9e8", // brut-cyan
+  "#b794ff", // brut-violet
 ] as const;
 
-/** Dark tooltip on the ink end of the ramp, paper text. Shared across charts. */
+/** Hard ink tooltip with a paper frame and sharp corners. Shared across charts. */
 export const TOOLTIP_STYLE = {
   backgroundColor: INK,
-  border: "1px solid #383836", // gray-700
-  borderRadius: 8,
+  border: "2px solid #ffffff",
+  borderRadius: 0,
   color: PAPER,
   fontSize: 12,
+  fontWeight: 600,
 } as const;

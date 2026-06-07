@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listRules, listChannels, listRecentEvents } from "@/lib/alerting/queries";
 import { AlertsClient } from "./alerts-client";
 
-export const metadata = { title: "Alerts — BookMyCab" };
+export const metadata = { title: "Alerts, BookMyCab" };
 
 export default async function AlertsPage() {
   const claims = await requireUser();
@@ -19,7 +19,7 @@ export default async function AlertsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-gray-900">Alerts</h1>
+      <h1 className="mb-1 text-xl font-bold text-ink">Alerts</h1>
       <p className="mb-4 text-sm text-gray-500">Get notified when your bot&apos;s metrics cross a threshold.</p>
       <AlertsClient orgId={claims.tenant_id} rules={rules} channels={channels} events={events} isDemo={claims.is_demo} />
     </div>

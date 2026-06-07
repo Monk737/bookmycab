@@ -30,7 +30,7 @@ const signInSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// recordLogin — updates last_login_at for the signed-in user.
+// recordLogin, updates last_login_at for the signed-in user.
 //
 // Design note: public.users has RLS enabled but no UPDATE policy is defined
 // for authenticated users. Rather than rely on RLS behaviour that could block
@@ -97,7 +97,7 @@ export async function signIn(
   //    The middleware handles the MFA gate on the next request.
   const claims = await getCurrentClaims();
   if (!claims) {
-    console.warn("signIn: getCurrentClaims() returned null after successful sign-in — falling back to /dashboard. Check custom access token hook.");
+    console.warn("signIn: getCurrentClaims() returned null after successful sign-in, falling back to /dashboard. Check custom access token hook.");
   }
   const target = claims ? redirectTargetFor(claims) : "/dashboard";
 
@@ -147,7 +147,7 @@ export async function requestReset(
     redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/reset-password`,
   });
 
-  // Always return a neutral message — never reveal whether the email exists.
+  // Always return a neutral message, never reveal whether the email exists.
   return {
     fieldErrors: {},
     formError: null,
@@ -262,7 +262,7 @@ export async function acceptInvite(
   // 3. Redirect to the appropriate dashboard.
   const claims = await getCurrentClaims();
   if (!claims) {
-    console.warn("acceptInvite: getCurrentClaims() returned null after successful acceptance — falling back to /dashboard.");
+    console.warn("acceptInvite: getCurrentClaims() returned null after successful acceptance, falling back to /dashboard.");
   }
   const target = claims ? redirectTargetFor(claims) : "/dashboard";
 

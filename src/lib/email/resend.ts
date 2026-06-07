@@ -15,7 +15,7 @@ export async function sendEmail(
   fetchImpl: typeof fetch = fetch,
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
-    console.warn("sendEmail: RESEND_API_KEY missing — skipping", { subject: args.subject });
+    console.warn("sendEmail: RESEND_API_KEY missing, skipping", { subject: args.subject });
     return false;
   }
   try {

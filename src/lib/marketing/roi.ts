@@ -1,5 +1,5 @@
 /**
- * BookMyCab ROI calculator — pure, currency-agnostic math.
+ * BookMyCab ROI calculator, pure, currency-agnostic math.
  *
  * Computes the revenue a taxi company loses per day/month/year from missed
  * bookings that BookMyCab's automation recovers.
@@ -14,7 +14,7 @@
  *   - All results are whole integers (rounded to nearest unit via Math.round).
  *   - perMonth and perYear are derived from the already-rounded perDay so
  *     rounding error does not compound across the scaling factors.
- *   - Currency is excluded — call formatPrice() from pricing.ts to display.
+ *   - Currency is excluded, call formatPrice() from pricing.ts to display.
  */
 
 /** Default working days per month used when the caller does not override. */

@@ -54,7 +54,7 @@ export async function handleStripeEvent(
         await deps.markSetupFeePaid(invoice.id);
         return { action: "setup_fee.paid" };
       }
-      // Subscription cycle payment — Stripe is the ledger; nothing to mirror
+      // Subscription cycle payment, Stripe is the ledger; nothing to mirror
       // beyond the subscription row we already keep. Just acknowledge.
       return { action: "logged" };
     }

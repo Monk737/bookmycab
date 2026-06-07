@@ -11,19 +11,19 @@ export function DemoBanner(): React.JSX.Element {
     <div
       role="status"
       aria-live="polite"
-      className="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 bg-ink px-4 py-2.5 text-sm text-paper"
+      className="sticky top-0 z-50 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 border-b-[3px] border-ink bg-ink px-4 py-2.5 text-sm text-paper"
     >
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-600 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-paper">
+      <span className="inline-flex items-center gap-1.5 border-2 border-paper bg-brut-pink px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-ink">
         <EyeIcon />
         Read-only demo
       </span>
-      <span className="text-gray-300">
+      <span className="font-medium text-gray-300">
         This is a real dashboard on sample data. Click anything; nothing is
         saved, and it resets every 24 hours.
       </span>
       <Link
         href="/contact"
-        className="rounded-full bg-accent px-3.5 py-1 text-xs font-semibold text-accent-ink transition-colors duration-150 hover:bg-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+        className="brut-press border-2 border-paper bg-brut-yellow px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-ink shadow-[3px_3px_0_0_#ffffff] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-paper"
       >
         Book a call
       </Link>

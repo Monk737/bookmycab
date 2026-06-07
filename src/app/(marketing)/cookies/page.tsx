@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/marketing/legal-page";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — BookMyCab",
+  title: "Cookie Policy · BookMyCab",
   description:
     "How the BookMyCab website and dashboard use cookies and similar technologies. Final, binding terms are issued with your contract at provisioning.",
 };
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const SECTIONS: LegalSection[] = [
   {
     heading: "What cookies are",
-    body: "Cookies are small files a website stores in your browser. We use them sparingly — to keep you signed in to your dashboard and to understand, in aggregate, how the site is used.",
+    body: "Cookies are small files a website stores in your browser. We use them sparingly, to keep you signed in to your dashboard and to understand, in aggregate, how the site is used.",
   },
   {
     heading: "On this marketing site",
@@ -28,9 +28,9 @@ const SECTIONS: LegalSection[] = [
     heading: "Cookies we set",
     body: (
       <ul className="list-disc space-y-2 pl-5">
-        <li><strong>Supabase auth session</strong> — strictly necessary; keeps you signed in to your dashboard. Cleared on sign-out.</li>
-        <li><strong>Demo session</strong> — strictly necessary for the read-only demo; short-lived and removed when the demo ends.</li>
-        <li><strong>Cal.com booking widget</strong> — set by Cal.com only if you open the discovery-call scheduler, under their cookie policy.</li>
+        <li><strong>Supabase auth session</strong>, strictly necessary; keeps you signed in to your dashboard. Cleared on sign-out.</li>
+        <li><strong>Demo session</strong>, strictly necessary for the read-only demo; short-lived and removed when the demo ends.</li>
+        <li><strong>Cal.com booking widget</strong>, set by Cal.com only if you open the discovery-call scheduler, under their cookie policy.</li>
       </ul>
     ),
   },

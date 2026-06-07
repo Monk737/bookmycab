@@ -1,52 +1,54 @@
 import type React from "react";
 
 /**
- * Colored pill for a status string. Covers automation statuses,
- * booking statuses, and conversation outcomes. Color is always
- * paired with visible text so status is never conveyed by color alone.
+ * Brutalist status pill, rectangular, 2px ink frame, flat semantic fill,
+ * INK text, plus a dot. Covers automation statuses, booking statuses, and
+ * conversation outcomes. Status is carried by fill + label + dot, never by
+ * color alone (color-blind safe).
  */
 
-type Tone = "green" | "blue" | "indigo" | "amber" | "red" | "slate";
+type Tone = "lime" | "blue" | "violet" | "yellow" | "red" | "orange" | "gray";
 
 const TONE_CLASSES: Record<Tone, string> = {
-  green: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700",
-  blue: "border-blue-500/40 bg-blue-500/10 text-blue-700",
-  indigo: "border-blue-600/40 bg-blue-600/10 text-blue-600",
-  amber: "border-amber-500/40 bg-amber-500/10 text-amber-700",
-  red: "border-red-500/40 bg-red-500/10 text-red-700",
-  slate: "border-gray-300 bg-gray-100 text-gray-600",
+  lime: "bg-brut-lime text-ink",
+  blue: "bg-brut-blue text-paper",
+  violet: "bg-brut-violet text-ink",
+  yellow: "bg-brut-yellow text-ink",
+  red: "bg-brut-red text-ink",
+  orange: "bg-brut-orange text-ink",
+  gray: "bg-gray-200 text-ink",
 };
 
 const STATUS_TONE: Record<string, Tone> = {
   // automation statuses
-  live: "green",
-  building: "blue",
-  uat: "amber",
-  stopped: "slate",
+  live: "lime",
+  building: "orange",
+  uat: "yellow",
+  stopped: "gray",
   error: "red",
   // booking statuses
   confirmed: "blue",
-  dispatched: "indigo",
-  completed: "green",
-  cancelled: "slate",
+  dispatched: "violet",
+  completed: "lime",
+  cancelled: "gray",
   no_show: "red",
   // conversation outcomes
-  booked: "green",
+  booked: "lime",
   quoted: "blue",
-  abandoned: "amber",
-  managed: "indigo",
-  unknown: "slate",
+  abandoned: "yellow",
+  managed: "violet",
+  unknown: "gray",
 };
 
 export function StatusBadge({ status }: { status: string }): React.JSX.Element {
-  const tone = STATUS_TONE[status.toLowerCase()] ?? "slate";
+  const tone = STATUS_TONE[status.toLowerCase()] ?? "gray";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${TONE_CLASSES[tone]}`}
+      className={`inline-flex items-center gap-1.5 border-2 border-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${TONE_CLASSES[tone]}`}
     >
       <span
         aria-hidden="true"
-        className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-current opacity-70"
+        className="h-1.5 w-1.5 flex-shrink-0 bg-current"
       />
       {status}
     </span>

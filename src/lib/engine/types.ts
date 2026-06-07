@@ -1,4 +1,4 @@
-/** Customer-neutral status — NO n8n vocabulary crosses this boundary. */
+/** Customer-neutral status, NO n8n vocabulary crosses this boundary. */
 export type EngineStatus = "active" | "inactive";
 
 export type EngineRun = {

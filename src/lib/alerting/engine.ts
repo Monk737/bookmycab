@@ -27,7 +27,7 @@ export async function evaluateAlerts(tenantId: string): Promise<{ evaluated: num
 
     fired++;
     const event = await insertAlertEvent(tenantId, rule.id, value);
-    if (!event.id) continue; // event insert failed — skip dispatch to avoid bad FK
+    if (!event.id) continue; // event insert failed, skip dispatch to avoid bad FK
     const eventId = event.id;
     const text = formatAlertText(
       { name: rule.name, metricLabel: metric.label, operator: rule.operator, threshold: rule.threshold, unit: metric.unit },

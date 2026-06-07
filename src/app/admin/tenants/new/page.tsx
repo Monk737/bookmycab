@@ -12,15 +12,15 @@ export default function NewTenantPage() {
       <nav aria-label="Breadcrumb" className="mb-2">
         <Link
           href="/admin/tenants"
-          className="text-xs text-zinc-500 underline-offset-2 hover:text-zinc-800 hover:underline"
+          className="text-xs text-gray-500 underline-offset-2 hover:text-gray-800 hover:underline"
         >
           &larr; Tenants
         </Link>
       </nav>
-      <h1 className="text-xl font-semibold tracking-tight text-zinc-900">
+      <h1 className="text-xl font-bold tracking-tight text-ink">
         New tenant
       </h1>
-      <p className="mt-1 mb-6 text-sm text-zinc-600">
+      <p className="mt-1 mb-6 text-sm text-gray-600">
         Provision a bespoke automation account. The tenant starts in
         &lsquo;onboarding&rsquo; status.
       </p>

@@ -21,7 +21,7 @@ type EnrollState =
     };
 
 /**
- * MFA enroll component — client component.
+ * MFA enroll component, client component.
  *
  * 1. On mount, calls supabase.auth.mfa.enroll({ factorType: "totp" }) to obtain
  *    a QR code and secret.
@@ -56,7 +56,7 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
             (f) => f.factor_type === "totp" && f.status === "unverified",
           );
           for (const factor of stale) {
-            // Ignore individual unenroll errors — proceed to enroll regardless.
+            // Ignore individual unenroll errors, proceed to enroll regardless.
             await supabase.auth.mfa.unenroll({ factorId: factor.id }).catch(() => {});
           }
         }
@@ -71,7 +71,7 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
           return;
         }
 
-        // data.totp.qr_code is a raw SVG string — prepend the data URI prefix.
+        // data.totp.qr_code is a raw SVG string, prepend the data URI prefix.
         const rawQr = data.totp.qr_code;
         const qrCode = rawQr.startsWith("data:")
           ? rawQr
@@ -88,7 +88,7 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
         const msg = err instanceof Error ? err.message : "Unexpected error. Please refresh.";
         setEnrollState({ phase: "error", message: msg });
       });
-    // Run once on mount — enrolling again on re-render would create duplicate factors.
+    // Run once on mount, enrolling again on re-render would create duplicate factors.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -126,7 +126,7 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
   if (enrollState.phase === "loading") {
     return (
       <AuthCard heading="Set up two-factor authentication" error={null}>
-        <p className="text-sm text-slate-500 text-center">
+        <p className="text-sm text-gray-600 text-center">
           Preparing your setup&hellip;
         </p>
       </AuthCard>
@@ -137,43 +137,43 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
   if (enrollState.phase === "error") {
     return (
       <AuthCard heading="Set up two-factor authentication" error={enrollState.message}>
-        <p className="text-sm text-slate-500 text-center">
+        <p className="text-sm text-gray-600 text-center">
           Reload the page to try again, or contact your administrator.
         </p>
       </AuthCard>
     );
   }
 
-  // ── Ready — show QR + code entry ─────────────────────────────────────────
+  // ── Ready, show QR + code entry ─────────────────────────────────────────
   const { qrCode, secret } = enrollState;
 
   return (
     <AuthCard heading="Set up two-factor authentication" error={null}>
       <div className="flex flex-col gap-5">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-gray-700">
           Scan the QR code with your authenticator app (Google Authenticator,
           Authy, 1Password, etc.), then enter the 6-digit code below to confirm.
         </p>
 
-        {/* QR code — SVG data URI; next/image does not support data: URIs */}
+        {/* QR code, SVG data URI; next/image does not support data: URIs */}
         <div className="flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrCode}
-            alt="TOTP QR code — scan with your authenticator app"
+            alt="TOTP QR code, scan with your authenticator app"
             width={160}
             height={160}
-            className="rounded-lg border border-slate-200 bg-white p-2"
+            className="border-[3px] border-ink bg-paper p-2"
           />
         </div>
 
         {/* Manual-entry fallback */}
-        <details className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-          <summary className="cursor-pointer select-none text-xs font-medium text-slate-600">
+        <details className="border-[3px] border-ink bg-canvas px-4 py-3">
+          <summary className="cursor-pointer select-none text-xs font-medium text-gray-700">
             Can&apos;t scan the QR code? Enter the secret manually
           </summary>
           <p
-            className="mt-2 break-all font-mono text-xs text-slate-700 select-all"
+            className="mt-2 break-all font-mono text-xs text-gray-800 select-all"
             aria-label="TOTP secret"
           >
             {secret}
@@ -203,10 +203,10 @@ export function MfaEnroll({ redirectTarget = "/dashboard" }: Props) {
             disabled={submitting}
             aria-busy={submitting}
             className={[
-              "mt-2 w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white",
-              "bg-indigo-600 transition-colors duration-150",
-              "hover:bg-indigo-700 active:bg-indigo-800",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1",
+              "mt-2 w-full brut-press brut-focus border-[3px] border-ink px-4 py-3 text-sm font-bold uppercase tracking-[0.06em] text-ink shadow-brut",
+              "bg-brut-yellow transition-colors duration-150",
+              "hover:bg-ink hover:text-paper",
+              "cursor-pointer",
               "disabled:cursor-not-allowed disabled:opacity-60",
               "cursor-pointer",
             ].join(" ")}

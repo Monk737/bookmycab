@@ -17,7 +17,7 @@ export const IMPERSONATION_COOKIE = "cabby_impersonation";
 /**
  * Server-only HMAC key for the marker signature. We reuse the service-role key:
  * it is already server-only, always present, and never reaches the client. The
- * signature is what makes the cookie authentic — a staff user cannot edit the
+ * signature is what makes the cookie authentic, a staff user cannot edit the
  * payload (e.g. extend `expiresAt` or swap ids) in DevTools without producing a
  * matching HMAC, which they cannot, because the key never leaves the server.
  * This is also what lets Epic 7 trust this record to mint a real "view-as"
@@ -83,7 +83,7 @@ export function verifyImpersonation(
     return null;
   }
 
-  // Shape guard (defense-in-depth — a tampered record fails the HMAC check
+  // Shape guard (defense-in-depth, a tampered record fails the HMAC check
   // above first, but a complete guard rejects malformed records regardless).
   if (
     typeof record?.expiresAt !== "number" ||

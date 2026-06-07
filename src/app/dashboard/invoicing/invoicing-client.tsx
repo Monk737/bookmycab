@@ -24,8 +24,8 @@ export function InvoicingClient(props: { orgId: string; accounts: Account[]; inv
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-lg border border-gray-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Accounts</h2>
+      <section className="border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-bold text-ink">Accounts</h2>
         <ul className="mb-3 divide-y divide-gray-100 text-sm">
           {props.accounts.length === 0 && <li className="py-2 text-gray-400">No accounts yet.</li>}
           {props.accounts.map((a) => (
@@ -42,32 +42,32 @@ export function InvoicingClient(props: { orgId: string; accounts: Account[]; inv
             onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); void call(`${base}/accounts`, "POST", { name: f.get("name"), billingEmail: f.get("billingEmail"), markupPct: Number(f.get("markupPct")) }); e.currentTarget.reset(); }}
             className="flex flex-wrap gap-2"
           >
-            <input name="name" required placeholder="Account name" className="flex-1 rounded border border-gray-300 px-2 py-1 text-sm" />
-            <input name="billingEmail" type="email" placeholder="billing@…" className="rounded border border-gray-300 px-2 py-1 text-sm" />
-            <input name="markupPct" type="number" step="0.1" defaultValue="0" className="w-20 rounded border border-gray-300 px-2 py-1 text-sm" />
-            <button disabled={busy} type="submit" className="rounded bg-blue-800 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">Add account</button>
+            <input name="name" required placeholder="Account name" className="flex-1  border-[3px] border-ink px-2 py-1 text-sm" />
+            <input name="billingEmail" type="email" placeholder="billing@…" className=" border-[3px] border-ink px-2 py-1 text-sm" />
+            <input name="markupPct" type="number" step="0.1" defaultValue="0" className="w-20  border-[3px] border-ink px-2 py-1 text-sm" />
+            <button disabled={busy} type="submit" className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-3 py-1.5 text-sm font-medium text-ink disabled:opacity-50">Add account</button>
           </form>
         )}
       </section>
 
-      <section className="rounded-lg border border-gray-200 p-4">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Invoices</h2>
-        {err && <p className="mb-2 text-sm text-red-600" role="alert">{err}</p>}
+      <section className="border border-gray-200 p-4">
+        <h2 className="mb-3 text-sm font-bold text-ink">Invoices</h2>
+        {err && <p className="mb-2 text-sm text-brut-red-deep" role="alert">{err}</p>}
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50"><tr>{["Account", "Period", "Total", "Status", ""].map((h) => <th key={h} className="px-2 py-2 text-left font-semibold text-gray-700">{h}</th>)}</tr></thead>
+          <thead className="bg-gray-50"><tr>{["Account", "Period", "Total", "Status", ""].map((h) => <th key={h} className="px-2 py-2 text-left font-bold text-gray-700">{h}</th>)}</tr></thead>
           <tbody className="divide-y divide-gray-100">
             {props.invoices.length === 0 && <tr><td colSpan={5} className="px-2 py-6 text-center text-gray-400">No invoices yet.</td></tr>}
             {props.invoices.map((inv) => (
               <tr key={inv.id}>
-                <td className="px-2 py-2 text-gray-800">{nameById.get(inv.account_customer_id) ?? "—"}</td>
+                <td className="px-2 py-2 text-gray-800">{nameById.get(inv.account_customer_id) ?? "·"}</td>
                 <td className="px-2 py-2 text-gray-500">{inv.period_start} → {inv.period_end}</td>
                 <td className="px-2 py-2 text-gray-700">£{Number(inv.total).toFixed(2)}</td>
-                <td className="px-2 py-2"><span className={inv.status === "paid" ? "text-emerald-600" : inv.status === "issued" ? "text-blue-700" : inv.status === "void" ? "text-gray-400" : "text-amber-600"}>{inv.status}</span></td>
+                <td className="px-2 py-2"><span className={inv.status === "paid" ? "text-ink" : inv.status === "issued" ? "text-ink" : inv.status === "void" ? "text-gray-400" : "text-ink"}>{inv.status}</span></td>
                 <td className="px-2 py-2 text-right">
                   {!props.isDemo && inv.status !== "paid" && inv.status !== "void" && (
                     <span className="flex justify-end gap-1">
-                      {inv.status === "draft" && <button disabled={busy} onClick={() => call(`${base}/${inv.id}`, "PATCH", { status: "issued" })} className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700">Issue</button>}
-                      <button disabled={busy} onClick={() => call(`${base}/${inv.id}`, "PATCH", { status: "paid" })} className="rounded bg-emerald-600 px-2 py-1 text-xs font-medium text-white">Mark paid</button>
+                      {inv.status === "draft" && <button disabled={busy} onClick={() => call(`${base}/${inv.id}`, "PATCH", { status: "issued" })} className=" border-[3px] border-ink px-2 py-1 text-xs text-gray-700">Issue</button>}
+                      <button disabled={busy} onClick={() => call(`${base}/${inv.id}`, "PATCH", { status: "paid" })} className=" bg-brut-lime px-2 py-1 text-xs font-medium text-white">Mark paid</button>
                     </span>
                   )}
                 </td>
@@ -82,12 +82,12 @@ export function InvoicingClient(props: { orgId: string; accounts: Account[]; inv
 
 function GenerateForm({ onSubmit, busy }: { onSubmit: (periodStart: string, periodEnd: string) => void; busy: boolean }) {
   const [open, setOpen] = useState(false);
-  if (!open) return <button onClick={() => setOpen(true)} className="rounded border border-gray-300 px-2 py-1 text-xs text-gray-700">Invoice…</button>;
+  if (!open) return <button onClick={() => setOpen(true)} className=" border-[3px] border-ink px-2 py-1 text-xs text-gray-700">Invoice…</button>;
   return (
     <form onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); onSubmit(String(f.get("ps")), String(f.get("pe"))); setOpen(false); }} className="flex items-center gap-1">
-      <input name="ps" type="date" required className="rounded border border-gray-300 px-1 py-0.5 text-xs" />
-      <input name="pe" type="date" required className="rounded border border-gray-300 px-1 py-0.5 text-xs" />
-      <button disabled={busy} type="submit" className="rounded bg-blue-800 px-2 py-1 text-xs font-medium text-white">Go</button>
+      <input name="ps" type="date" required className=" border-[3px] border-ink px-1 py-0.5 text-xs" />
+      <input name="pe" type="date" required className=" border-[3px] border-ink px-1 py-0.5 text-xs" />
+      <button disabled={busy} type="submit" className=" border-2 border-ink bg-brut-yellow shadow-brut-sm px-2 py-1 text-xs font-medium text-ink">Go</button>
     </form>
   );
 }

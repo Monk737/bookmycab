@@ -1,6 +1,6 @@
 // Plain shared constant for the credentials forms. Lives OUTSIDE actions.ts
 // because that file is a "use server" module, which may only export async
-// functions — exporting this array from there makes it a non-callable proxy on
+// functions, exporting this array from there makes it a non-callable proxy on
 // the client (Runtime TypeError: CREDENTIAL_TYPES.map is not a function).
 
 /** The five credential types the vault CHECK constraint allows (migration 0008). */

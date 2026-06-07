@@ -13,7 +13,7 @@ type SessionState = "loading" | "valid" | "invalid";
 const initialState: AuthState = { fieldErrors: {}, formError: null };
 
 /**
- * Reset-password form — client component.
+ * Reset-password form, client component.
  * Checks for a RECOVERY session specifically on mount using onAuthStateChange.
  *
  * Detection method: onAuthStateChange + PASSWORD_RECOVERY event.
@@ -55,7 +55,7 @@ export function ResetForm() {
   if (sessionState === "loading") {
     return (
       <AuthCard heading="Set new password" error={null}>
-        <p className="text-sm text-slate-500 text-center">Verifying your reset link&hellip;</p>
+        <p className="text-sm text-gray-600 text-center">Verifying your reset link&hellip;</p>
       </AuthCard>
     );
   }
@@ -63,7 +63,7 @@ export function ResetForm() {
   if (sessionState === "invalid") {
     return (
       <AuthCard heading="Link invalid or expired" error={null}>
-        <p className="mb-4 text-sm text-slate-600 text-center">
+        <p className="mb-4 text-sm text-gray-700 text-center">
           This password reset link is invalid or has expired.
         </p>
         <ButtonLink href="/forgot-password">
@@ -76,7 +76,7 @@ export function ResetForm() {
   return (
     <AuthCard heading="Set new password" error={state.formError}>
       <form action={formAction} noValidate className="flex flex-col gap-4">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-gray-600">
           Choose a strong password with at least 8 characters.
         </p>
 

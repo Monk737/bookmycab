@@ -38,7 +38,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
 
   function prefillBuildRequest() {
     setCategory("build_request");
-    setSubject("Request a new automation — ");
+    setSubject("Request a new automation, ");
     setSuccessMsg(null);
     setErrorMsg(null);
     // Scroll to and focus the subject field
@@ -108,7 +108,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-10 p-6 lg:p-8">
-      <h1 className="font-mono text-xl font-semibold text-blue-900">Support</h1>
+      <h1 className="font-mono text-xl font-bold text-ink">Support</h1>
 
       {/* External knowledge base link */}
       <div>
@@ -116,7 +116,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
           href="https://help.bookmycab.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-blue-800 px-4 py-2 text-sm font-semibold text-blue-800 transition-colors duration-150 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 cursor-pointer"
+          className="inline-flex items-center gap-1.5 border border-ink px-4 py-2 text-sm font-bold font-bold text-ink transition-colors duration-150 hover:bg-brut-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -149,7 +149,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
           <button
             type="button"
             onClick={prefillBuildRequest}
-            className="inline-flex items-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 cursor-pointer"
+            className="inline-flex items-center bg-brut-yellow px-4 py-2 text-sm font-bold text-white transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 cursor-pointer"
           >
             Request a new automation
           </button>
@@ -170,7 +170,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               render: (r) =>
                 r.category
                   ? CATEGORIES.find((c) => c.value === r.category)?.label ?? r.category
-                  : "—",
+                  : "·",
             },
             {
               key: "status",
@@ -196,7 +196,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
       {/* New ticket form */}
       <section
         aria-labelledby="new-ticket-heading"
-        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+        className="border-[3px] border-ink bg-paper p-6 shadow-brut-sm"
       >
         <h2
           id="new-ticket-heading"
@@ -208,7 +208,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
         {successMsg && (
           <div
             role="status"
-            className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+            className="mb-4 border border-ink/30 bg-brut-lime/30 px-4 py-3 text-sm text-ink"
           >
             {successMsg}
           </div>
@@ -216,7 +216,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
         {errorMsg && (
           <div
             role="alert"
-            className="mb-4 rounded-lg border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-800"
+            className="mb-4 border-[3px] border-ink bg-brut-red/15 px-4 py-3 text-sm text-brut-red-deep"
           >
             {errorMsg}
           </div>
@@ -238,7 +238,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               onChange={(e) => setSubject(e.target.value)}
               disabled={submitting}
               placeholder="Brief description of your issue"
-              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full border-[3px] border-ink bg-paper px-4 py-2.5 text-sm text-ink placeholder:text-gray-400 transition-colors duration-200 focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 
@@ -254,7 +254,7 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               value={category}
               onChange={(e) => setCategory(e.target.value as Category | "")}
               disabled={submitting}
-              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+              className="w-full border-[3px] border-ink bg-paper px-4 py-2.5 text-sm text-ink transition-colors duration-200 focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
             >
               <option value="">Select a category</option>
               {CATEGORIES.map((c) => (
@@ -279,14 +279,14 @@ export function SupportClient({ orgId, initialTickets }: SupportClientProps) {
               disabled={submitting}
               rows={5}
               placeholder="Please provide as much detail as possible"
-              className="w-full resize-y rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 transition-colors duration-200 focus:border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-800/20 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full resize-y border-[3px] border-ink bg-paper px-4 py-2.5 text-sm text-ink placeholder:text-gray-400 transition-colors duration-200 focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:cursor-not-allowed disabled:opacity-60"
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-800 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+            className="inline-flex items-center bg-brut-yellow px-5 py-2.5 text-sm font-bold text-white transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
           >
             {submitting ? "Submitting..." : "Submit ticket"}
           </button>

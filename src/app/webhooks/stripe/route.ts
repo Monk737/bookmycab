@@ -35,7 +35,7 @@ export async function POST(req: Request): Promise<Response> {
   // Claim the event id BEFORE processing so a concurrent duplicate delivery is
   // deduped (prevents e.g. double payment-failed emails). On a handler failure
   // we RELEASE the claim and 500, so Stripe's retry is reprocessed rather than
-  // permanently dropped — the underlying DB writes are idempotent.
+  // permanently dropped, the underlying DB writes are idempotent.
   const dedupeKey = `stripe:evt:${event.id}`;
   const fresh = await claimOnce(dedupeKey, EVENT_DEDUPE_TTL_SEC);
   if (!fresh) return NextResponse.json({ received: true, deduped: true });

@@ -12,7 +12,7 @@ export function ButtonLink({ children, ...props }: ButtonLinkProps) {
   return (
     <Link
       {...props}
-      className="block w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white text-center bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 cursor-pointer"
+      className="brut-press brut-focus block w-full border-[3px] border-ink bg-brut-yellow px-4 py-3 text-center text-sm font-bold uppercase tracking-[0.06em] text-ink shadow-brut cursor-pointer"
     >
       {children}
     </Link>

@@ -15,7 +15,7 @@ type LoginFormProps = {
 };
 
 /**
- * Login form — client component.
+ * Login form, client component.
  * Uses `useActionState` to receive server-action state (field/form errors)
  * and surfaces them accessibly via aria-live regions in AuthCard and Field.
  */
@@ -34,7 +34,7 @@ export function LoginForm({ notice }: LoginFormProps) {
         <p
           role="status"
           aria-live="polite"
-          className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700"
+          className="mb-4 border-[3px] border-ink bg-brut-cyan px-4 py-3 text-sm font-bold text-ink"
         >
           {notice}
         </p>
@@ -66,7 +66,7 @@ export function LoginForm({ notice }: LoginFormProps) {
         <div className="flex items-center justify-end">
           <Link
             href="/forgot-password"
-            className="text-xs text-indigo-600 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 rounded"
+            className="brut-focus text-xs font-bold uppercase tracking-[0.04em] text-ink underline-offset-4 hover:underline"
           >
             Forgot password?
           </Link>
@@ -75,8 +75,8 @@ export function LoginForm({ notice }: LoginFormProps) {
         <SubmitButton label="Sign in" pendingLabel="Signing in…" />
       </form>
 
-      <p className="mt-6 text-center text-xs text-slate-500">
-        Access is invite-only &mdash; contact your BookMyCab administrator.
+      <p className="mt-6 text-center text-xs font-medium text-gray-600">
+        Access is invite-only. Contact your BookMyCab administrator.
       </p>
     </AuthCard>
   );

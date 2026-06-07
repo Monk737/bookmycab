@@ -4,7 +4,7 @@ import { hasFeature } from "@/lib/entitlements/resolve";
 import { listActiveConversations } from "@/lib/liveops/service";
 import { LiveopsClient } from "./liveops-client";
 
-export const metadata = { title: "Live ops — BookMyCab" };
+export const metadata = { title: "Live ops, BookMyCab" };
 
 export default async function LiveopsPage() {
   const claims = await requireUser();
@@ -13,7 +13,7 @@ export default async function LiveopsPage() {
   const conversations = await listActiveConversations(claims.tenant_id);
   return (
     <div className="p-6">
-      <h1 className="mb-1 text-xl font-semibold text-gray-900">Live ops</h1>
+      <h1 className="mb-1 text-xl font-bold text-ink">Live ops</h1>
       <p className="mb-4 text-sm text-gray-500">Watch live conversations and take over from the bot.</p>
       <LiveopsClient orgId={claims.tenant_id} conversations={conversations} isDemo={claims.is_demo} />
     </div>

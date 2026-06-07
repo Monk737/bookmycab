@@ -1,0 +1,45 @@
+# Production deploy for the BookMyCab Next.js app, fronted by the existing
+# Traefik instance on this VPS.
+#
+#   docker compose --env-file .env.production up -d --build
+#
+# Notes:
+#   - Joins the EXTERNAL `traefik-proxy` network created by Traefik.
+#   - Uses the `letsencrypt` HTTP-challenge resolver already configured in Traefik.
+#   - The container port (3000) is NOT published to the host; Traefik reaches it
+#     over the shared docker network only.
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Build-time public vars (interpolated from --env-file .env.production).
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    image: bookmycab:latest
+    container_name: bookmycab
+    restart: unless-stopped
+    env_file: .env.production
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+
+      # --- HTTPS router ---
+      - "traefik.http.routers.bookmycab.rule=Host(`bookmycab.com`) || Host(`www.bookmycab.com`)"
+      - "traefik.http.routers.bookmycab.entrypoints=websecure"
+      - "traefik.http.routers.bookmycab.tls=true"
+      - "traefik.http.routers.bookmycab.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bookmycab.loadbalancer.server.port=3000"
+
+      # --- HTTP -> HTTPS redirect ---
+      - "traefik.http.routers.bookmycab-web.rule=Host(`bookmycab.com`) || Host(`www.bookmycab.com`)"
+      - "traefik.http.routers.bookmycab-web.entrypoints=web"
+      - "traefik.http.routers.bookmycab-web.middlewares=bookmycab-redirect"
+      - "traefik.http.middlewares.bookmycab-redirect.redirectscheme.scheme=https"
+
+networks:
+  traefik-proxy:
+    external: true

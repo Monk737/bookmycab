@@ -13,7 +13,7 @@ export interface TenantChannelRow {
 }
 export interface PendingChannelRow extends TenantChannelRow { tenant_id: string }
 
-/** The tenant's automations (id + name) — used by the Connect page's request form. */
+/** The tenant's automations (id + name), used by the Connect page's request form. */
 export async function listTenantAutomations(tenantId: string): Promise<{ id: string; name: string }[]> {
   const { data } = await svc().from("automations").select("id, name").eq("tenant_id", tenantId).order("name");
   return (data ?? []) as { id: string; name: string }[];

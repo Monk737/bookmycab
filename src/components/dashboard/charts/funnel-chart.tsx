@@ -2,8 +2,8 @@
 
 import React from "react";
 
-// palette: blue-800 primary, gray-400 muted, gray-600 text
-const COLOR_BAR = "#0a0a0a"; // blue-800
+// palette: ink primary, gray muted, gray text
+const COLOR_BAR = "#0a0a0a"; // ink
 const COLOR_MUTED = "#6f6f6b"; // gray-400
 const COLOR_TEXT = "#4f4f4c"; // gray-600
 
@@ -16,7 +16,7 @@ export function FunnelChart({
     return (
       <div
         style={{ height: 256 }}
-        className="flex items-center justify-center text-sm text-gray-400"
+        className="flex items-center justify-center text-sm font-medium text-gray-500"
       >
         No data for this period.
       </div>
@@ -55,11 +55,11 @@ export function FunnelChart({
               </span>
             </div>
             <div
-              className="rounded"
               style={{
-                height: 16,
+                height: 18,
                 width: "100%",
-                backgroundColor: "#dcdcda",
+                backgroundColor: "#ffffff",
+                border: "2px solid #0a0a0a",
                 position: "relative",
                 overflow: "hidden",
               }}
@@ -72,9 +72,8 @@ export function FunnelChart({
                   left: 0,
                   height: "100%",
                   width: `${widthPct}%`,
-                  backgroundColor: COLOR_BAR,
-                  opacity: isFirst ? 1 : 0.55 + 0.45 * (widthPct / 100),
-                  borderRadius: 4,
+                  backgroundColor: isFirst ? "#ffd400" : COLOR_BAR,
+                  borderRight: widthPct > 0 && widthPct < 100 ? "2px solid #0a0a0a" : "none",
                   transition: "width 300ms ease",
                 }}
               />

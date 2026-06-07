@@ -6,7 +6,7 @@ import { checkQuota } from "./meter";
 
 /**
  * Returns a 403 NextResponse when the tenant is NOT entitled to `key`, else null.
- * Mirrors blockIfDemo — call at the top of a mutating route/server action:
+ * Mirrors blockIfDemo, call at the top of a mutating route/server action:
  *
  *   const block = await requireFeature(claims.tenant_id, "alerting");
  *   if (block) return block;

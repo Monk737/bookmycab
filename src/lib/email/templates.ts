@@ -26,21 +26,21 @@ export function paymentFailedEmail(args: {
     `Hi ${args.tenantName},`,
     ``,
     `We were unable to collect your latest BookMyCab payment of ${amount}.`,
-    `Your automation keeps running — there is no interruption — but please`,
+    `Your automation keeps running, there is no interruption, but please`,
     `resolve the payment to avoid any future disruption.`,
     ``,
     payLine,
     ``,
-    `— The BookMyCab team`,
+    `, The BookMyCab team`,
   ].join("\n");
 
   const html = [
     `<p>Hi ${args.tenantName},</p>`,
     `<p>We were unable to collect your latest BookMyCab payment of <strong>${amount}</strong>.`,
-    ` Your automation keeps running — there is no interruption — but please resolve`,
+    ` Your automation keeps running, there is no interruption, but please resolve`,
     ` the payment to avoid any future disruption.</p>`,
     payHtml,
-    `<p>— The BookMyCab team</p>`,
+    `<p>, The BookMyCab team</p>`,
   ].join("");
 
   return { subject, html, text };

@@ -21,7 +21,7 @@ const inviteSchema = z.object({
 
 const roleSchema = z.enum(ROLES, { errorMap: () => ({ message: "Choose a valid role." }) });
 
-/** Service-role Supabase client — never exposed outside server actions. */
+/** Service-role Supabase client, never exposed outside server actions. */
 function serviceClient() {
   return createSupabaseJS(
     env.NEXT_PUBLIC_SUPABASE_URL,

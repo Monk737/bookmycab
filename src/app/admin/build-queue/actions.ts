@@ -22,7 +22,7 @@ const idSchema = z.string().uuid();
 /**
  * No-op placeholder for the stage-change notification email. The real Resend
  * integration (branded build-update emails to the assigned engineer / tenant
- * owner) lands later — see PRD §9.4. Kept as an explicit call site so wiring it
+ * owner) lands later, see PRD §9.4. Kept as an explicit call site so wiring it
  * up is a one-line change.
  */
 // TODO(resend): send a build-stage-changed email here. Will take the automation
@@ -46,7 +46,7 @@ export async function setBuildStage(
   const claims = await requireStaff();
 
   const id = idSchema.parse(automationId);
-  // "Live" is intentionally not accepted here — reaching Live goes through
+  // "Live" is intentionally not accepted here, reaching Live goes through
   // goLive() so build_stage and runtime status stay atomic.
   const to = editableStageSchema.parse(stage);
 

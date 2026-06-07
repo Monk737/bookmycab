@@ -8,7 +8,7 @@ import { fromMinor } from "@/lib/billing/plan-price";
  */
 
 /** A row for `public.subscriptions` (migration 0004). `tenant_id` is null when
- *  the subscription has no `tenant_id` metadata — the caller skips those. */
+ *  the subscription has no `tenant_id` metadata, the caller skips those. */
 export interface SubscriptionMirrorRow {
   tenant_id: string | null;
   stripe_sub_id: string;

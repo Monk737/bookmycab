@@ -1,6 +1,6 @@
 // Plain shared constants for the build-queue Kanban. These live OUTSIDE
 // actions.ts because that file is a "use server" module, which may only export
-// async functions — exporting these arrays from there makes them non-iterable
+// async functions, exporting these arrays from there makes them non-iterable
 // on the client (Runtime TypeError: BUILD_STAGES is not iterable).
 
 export const BUILD_STAGES = [
