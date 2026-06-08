@@ -8,6 +8,7 @@ import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
 import { DispatchBadges } from "@/components/marketing/dispatch-badges";
 import { RoiCalculator } from "@/components/marketing/roi-calculator";
 import { BookingConversation } from "@/components/marketing/booking-conversation";
+import { MotionReel } from "@/components/marketing/motion-reel";
 import { ChannelLogos } from "@/components/marketing/channel-logos";
 import { Reveal } from "@/components/marketing/reveal";
 import { COMPANY } from "@/lib/marketing/nav";
@@ -323,6 +324,25 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+          </div>
+        </Container>
+      </Section>
+
+      {/* On the street: illustrated reel of the dead-signal → booked-cab story. */}
+      <Section className="py-16 sm:py-24">
+        <Container>
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-balance font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
+              When the signal drops, the booking still goes through
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-700">
+              No data, no app, no problem. A customer scans your hoarding or
+              messages your number, books on WhatsApp by text or voice, and your
+              cab is on its way.
+            </p>
+          </div>
+          <div className="mt-10">
+            <MotionReel />
           </div>
         </Container>
       </Section>

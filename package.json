@@ -2,6 +2,7 @@
   "name": "bookmycab",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.32.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,15 +16,19 @@
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "9.2.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.106.2",
+    "@types/three": "0.170.0",
     "@upstash/redis": "^1.38.0",
     "next": "^15.1.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "recharts": "^3.8.1",
     "server-only": "^0.0.1",
-    "stripe": "^22.2.0"
+    "stripe": "^22.2.0",
+    "three": "0.178.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

@@ -28,14 +28,14 @@ services:
       - "traefik.docker.network=traefik-proxy"
 
       # --- HTTPS router ---
-      - "traefik.http.routers.bookmycab.rule=Host(`bookmycab.com`) || Host(`www.bookmycab.com`)"
+      - "traefik.http.routers.bookmycab.rule=Host(`bookmycab.io`) || Host(`www.bookmycab.io`)"
       - "traefik.http.routers.bookmycab.entrypoints=websecure"
       - "traefik.http.routers.bookmycab.tls=true"
       - "traefik.http.routers.bookmycab.tls.certresolver=letsencrypt"
       - "traefik.http.services.bookmycab.loadbalancer.server.port=3000"
 
       # --- HTTP -> HTTPS redirect ---
-      - "traefik.http.routers.bookmycab-web.rule=Host(`bookmycab.com`) || Host(`www.bookmycab.com`)"
+      - "traefik.http.routers.bookmycab-web.rule=Host(`bookmycab.io`) || Host(`www.bookmycab.io`)"
       - "traefik.http.routers.bookmycab-web.entrypoints=web"
       - "traefik.http.routers.bookmycab-web.middlewares=bookmycab-redirect"
       - "traefik.http.middlewares.bookmycab-redirect.redirectscheme.scheme=https"

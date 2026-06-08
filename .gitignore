@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+!.env.production.example
+
+# raw illustration source (optimized copies live in public/motion/ and are tracked)
+/motion
 
 # vercel
 .vercel

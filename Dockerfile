@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 # Multi-stage build for the BookMyCab Next.js app (standalone output).
-# pnpm 9 (lockfileVersion 9.0), Node 20.
+# pnpm 10.32.0 (matches package.json "packageManager", lockfileVersion 9.0), Node 20.
 
 FROM node:20-alpine AS base
-RUN corepack enable && corepack prepare pnpm@9 --activate
+RUN corepack enable && corepack prepare pnpm@10.32.0 --activate
 
 # --- Dependencies ---------------------------------------------------------
 FROM base AS deps

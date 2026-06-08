@@ -14,6 +14,12 @@ PRODUCT.md
 graphify-out
 design-system
 docs
+# Raw illustration source (the optimized copies in public/motion/ are what ship).
+# Anchored with a leading slash so public/motion/ is NOT excluded.
+/motion
+# Standalone Remotion sub-projects — own build pipelines, not part of the app.
+/my-video
+/bmc-vid-remotion
 test-results
 playwright-report
 coverage

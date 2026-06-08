@@ -40,6 +40,8 @@
     "node_modules",
     "supabase/functions",
     "e2e",
-    "playwright.config.ts"
+    "playwright.config.ts",
+    "bmc-vid-remotion",
+    "my-video"
   ]
 }
