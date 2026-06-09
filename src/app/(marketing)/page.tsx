@@ -367,7 +367,7 @@ export default function Home() {
                   title="Coming soon"
                   className="pointer-events-none inline-flex h-12 cursor-not-allowed items-center justify-center border-[3px] border-paper bg-ink px-7 text-base font-bold uppercase tracking-[0.04em] text-paper opacity-60"
                 >
-                  Try the Dashboard
+                  AI Voice Booking
                 </span>
                 <span
                   aria-hidden="true"

@@ -39,7 +39,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     heading: "Get Started",
     items: [
-      { label: "Try the Dashboard", href: "/demo" },
+      { label: "AI Voice Booking", href: "/demo" },
       { label: "Book a Discovery Call", href: "/contact" },
     ],
   },

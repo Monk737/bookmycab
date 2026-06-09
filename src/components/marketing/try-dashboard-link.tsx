@@ -25,7 +25,7 @@ export function TryDashboardLink({
         title="Coming soon"
         className="pointer-events-none"
       >
-        Try the Dashboard
+        AI Voice Booking
       </Button>
       <span
         aria-hidden="true"
