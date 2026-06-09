@@ -31,6 +31,12 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_CAL_LINK=$NEXT_PUBLIC_CAL_LINK \
     NEXT_TELEMETRY_DISABLED=1
 
+# `next build` collects page data, which imports server routes and runs env
+# validation. SUPABASE_SERVICE_ROLE_KEY is required but is a runtime-only secret
+# (injected via env_file). A throwaway value lets the build pass; it is NOT the
+# real key and never reaches the runtime stage, which gets the real one at run time.
+ENV SUPABASE_SERVICE_ROLE_KEY=build-time-placeholder-not-a-real-key
+
 RUN pnpm build
 
 # --- Runtime --------------------------------------------------------------
