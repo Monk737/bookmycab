@@ -35,9 +35,30 @@ const stalinistOne = localFont({
   src: [{ path: "./fonts/stalinist-one.ttf", weight: "400", style: "normal" }],
 });
 
+const SITE_DESCRIPTION =
+  "Bespoke AI booking & support automations for the global taxi industry.";
+
+// metadataBase makes the relative /og.jpg resolve to an absolute URL (required
+// by social crawlers). app/icon.png + app/apple-icon.png are auto-detected by
+// Next for the browser favicon, so no `icons` field is needed here.
 export const metadata: Metadata = {
+  metadataBase: new URL("https://bookmycab.io"),
   title: "BookMyCab",
-  description: "Bespoke AI booking & support automations for the global taxi industry.",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "BookMyCab",
+    url: "https://bookmycab.io",
+    title: "BookMyCab",
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/og.jpg", width: 1200, height: 1200, alt: "BookMyCab" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "BookMyCab",
+    description: SITE_DESCRIPTION,
+    images: ["/og.jpg"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

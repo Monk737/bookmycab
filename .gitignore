@@ -35,8 +35,9 @@ yarn-error.log*
 !.env.example
 !.env.production.example
 
-# raw illustration source (optimized copies live in public/motion/ and are tracked)
+# raw illustration / logo source (optimized copies ship from public/ + src/app/)
 /motion
+/Logo
 
 # vercel
 .vercel

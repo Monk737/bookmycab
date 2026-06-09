@@ -11,22 +11,20 @@ export function Footer() {
       <Container className="py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="inline-flex items-center font-logo text-base leading-none tracking-tight text-paper">
-              {COMPANY.product}
-              <span aria-hidden="true" className="ml-1 inline-block h-3 w-3 border-2 border-paper bg-brut-yellow" />
+            {/* Footer brand logo on a light panel — the wordmark is dark, so it
+                needs a paper card to read on the ink footer. */}
+            <div className="inline-block border-[3px] border-ink bg-paper p-3 shadow-brut">
+              <Image
+                src="/footer-logo.png"
+                alt="BookMyCab"
+                width={800}
+                height={339}
+                className="h-auto w-40 sm:w-48"
+              />
             </div>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-gray-300">
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-gray-300">
               {COMPANY.tagline}
             </p>
-            {/* Brand mark, transparent PNG on the dark footer, no card.
-                Sized to roughly match the header nav logo height. */}
-            <Image
-              src="/BMC-Cab.png"
-              alt="BookMyCab"
-              width={252}
-              height={107}
-              className="mt-6 h-10 w-auto"
-            />
           </div>
 
           {FOOTER_COLUMNS.map((col) => (
