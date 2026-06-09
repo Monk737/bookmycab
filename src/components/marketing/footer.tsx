@@ -9,8 +9,8 @@ export function Footer() {
   return (
     <footer className="border-t-[3px] border-ink bg-ink text-paper">
       <Container className="py-16">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
+        <div className="grid gap-10 lg:grid-cols-4">
+          <div className="lg:col-span-1">
             {/* Footer brand logo — light wordmark, sits directly on the ink footer. */}
             <Image
               src="/footer-logo.png"
@@ -24,8 +24,10 @@ export function Footer() {
             </p>
           </div>
 
-          {FOOTER_COLUMNS.map((col) => (
-            <div key={col.heading}>
+          {/* Link columns: 2-up on mobile, 3-up on tablet, in a row on desktop. */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-3 lg:gap-10">
+            {FOOTER_COLUMNS.map((col) => (
+              <div key={col.heading}>
               <h4 className="inline-block bg-brut-yellow px-2 py-0.5 text-xs font-bold uppercase tracking-[0.08em] text-ink">
                 {col.heading}
               </h4>
@@ -58,7 +60,8 @@ export function Footer() {
                 )}
               </ul>
             </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         <div className="mt-12 flex flex-col items-center gap-4 border-t-2 border-gray-700 pt-6 sm:flex-row sm:justify-between">
