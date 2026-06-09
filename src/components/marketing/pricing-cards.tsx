@@ -60,16 +60,18 @@ function AbCard({
   meta,
   tier,
   currency,
+  bg,
 }: {
   meta: TierMeta;
   tier: PricingTierAB;
   currency: Currency;
+  bg: string;
 }) {
   const featured = meta.featured ?? false;
   return (
     <div
       className={
-        "flex flex-col border-[3px] border-ink bg-paper p-7 sm:p-8 " +
+        `flex flex-col border-[3px] border-ink ${bg} p-7 sm:p-8 ` +
         (featured ? "shadow-brut-xl" : "shadow-brut")
       }
     >
@@ -104,9 +106,9 @@ function AbCard({
   );
 }
 
-function ContactCard({ meta }: { meta: TierMeta }) {
+function ContactCard({ meta, bg }: { meta: TierMeta; bg: string }) {
   return (
-    <div className="flex flex-col border-[3px] border-ink bg-canvas p-7 shadow-brut sm:p-8">
+    <div className={`flex flex-col border-[3px] border-ink ${bg} p-7 shadow-brut sm:p-8`}>
       <h3 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">
         {meta.name}
       </h3>
@@ -149,9 +151,9 @@ export function PricingCards() {
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-3">
-        <AbCard meta={TIERS[0]} tier={PRICING.A} currency={currency} />
-        <AbCard meta={TIERS[1]} tier={PRICING.B} currency={currency} />
-        <ContactCard meta={TIERS[2]} />
+        <AbCard meta={TIERS[0]} tier={PRICING.A} currency={currency} bg="bg-brut-cyan" />
+        <AbCard meta={TIERS[1]} tier={PRICING.B} currency={currency} bg="bg-brut-lime" />
+        <ContactCard meta={TIERS[2]} bg="bg-brut-pink" />
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
