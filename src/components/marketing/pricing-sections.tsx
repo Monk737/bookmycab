@@ -178,12 +178,12 @@ export function PricingSections({ rates }: { rates: Rates }) {
       <div className="mt-10">
         <SectionHeading
           kicker="Chat"
-          title="Chat"
+          title="Chatbot"
           blurb="One bespoke booking bot across WhatsApp, Messenger, Instagram, Telegram and a web chat widget. Priced by fleet size."
         />
         <div className="mt-6 grid gap-5 lg:grid-cols-3">
           {CHAT_TIERS.map((tier, i) => (
-            <ChatCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i]} />
+            <ChatCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i % CARD_BG.length]} />
           ))}
         </div>
         <div className="mt-5">
@@ -200,7 +200,7 @@ export function PricingSections({ rates }: { rates: Rates }) {
         />
         <div className="mt-6 grid gap-5 lg:grid-cols-3">
           {VOICE_TIERS.map((tier, i) => (
-            <VoiceCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i]} />
+            <VoiceCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i % CARD_BG.length]} />
           ))}
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
@@ -219,7 +219,7 @@ export function PricingSections({ rates }: { rates: Rates }) {
         />
         <div className="mt-6 grid gap-5 lg:grid-cols-3">
           {BUNDLE_TIERS.map((tier, i) => (
-            <BundleCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i]} />
+            <BundleCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i % CARD_BG.length]} />
           ))}
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">

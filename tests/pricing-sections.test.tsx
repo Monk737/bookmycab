@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 
 // DiscoveryCta pulls in the Cal.com embed (network at mount) and the validated
 // client env; stub both so the render stays hermetic.
@@ -43,5 +43,12 @@ describe("PricingSections (default GBP)", () => {
   it("renders the currency toggle", () => {
     render(<PricingSections rates={FX_FALLBACK} />);
     expect(screen.getByRole("radiogroup", { name: /currency/i })).toBeInTheDocument();
+  });
+
+  it("switching to EUR re-renders converted prices", () => {
+    render(<PricingSections rates={FX_FALLBACK} />);
+    fireEvent.click(screen.getByRole("radio", { name: "EUR" }));
+    // £499 * 1.18 = 588.82 → €589 (0-decimal formatting)
+    expect(screen.getAllByText(/€589/).length).toBeGreaterThan(0);
   });
 });
