@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   createTenantSchema,
   buildProvisioningRows,
-} from "@/app/admin/tenants/actions";
+} from "@/app/admin/tenants/provisioning";
 
 const base = {
   name: "Speedy Cabs",

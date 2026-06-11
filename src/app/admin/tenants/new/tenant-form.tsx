@@ -2,7 +2,8 @@
 
 import { useActionState, useId, useState } from "react";
 import Link from "next/link";
-import { createTenant, type TenantFormState } from "../actions";
+import { createTenant } from "../actions";
+import { type TenantFormState } from "../provisioning";
 import { slugify } from "@/lib/admin/plan-bands";
 import {
   resolveNewModelPricing,
