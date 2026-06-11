@@ -1,160 +1,137 @@
 /**
  * Tests for src/lib/marketing/pricing.ts
  *
- * GBP is the source of truth. EUR/USD are derived at display time from live FX
- * rates (see fx.ts), so this file tests GBP data + the convert/format helpers.
+ * Verifies all §6.1 pricing values, formatPrice helper, setup fee, and
+ * contract length. Written before the implementation (TDD — must fail first).
  */
+
 import { describe, it, expect } from "vitest";
 import {
-  CHAT_TIERS,
-  CHAT_SETUP_FEE_GBP,
-  VOICE_TIERS,
-  VOICE_SETUP_GBP,
-  BUNDLE_TIERS,
-  BUNDLE_SETUP_GBP,
-  EXTRA_CALL_PRICE_GBP,
+  PRICING,
+  SETUP_FEE,
+  CONTRACT_MONTHS,
   CURRENCIES,
-  BASE_CURRENCY,
-  convert,
   formatPrice,
-  priceFor,
+  type Currency,
+  type PricingOption,
 } from "@/lib/marketing/pricing";
 
-const RATES = { GBP: 1, EUR: 1.18, USD: 1.27 } as const;
+describe("Pricing — Option A (up to 25 drivers)", () => {
+  const optionA = PRICING.A;
 
-describe("Chat tiers", () => {
-  it("has Ignition / In Motion / Full Throttle in order", () => {
-    expect(CHAT_TIERS.map((t) => t.key)).toEqual([
-      "ignition",
-      "in_motion",
-      "full_throttle",
-    ]);
+  it("single channel GBP", () => {
+    expect(optionA.single.GBP).toBe(500);
   });
-  it("Ignition: £499 single / £899 bundle / max 2 channels / ≤50 fleet", () => {
-    const t = CHAT_TIERS[0];
-    expect(t.singleGbp).toBe(499);
-    expect(t.bundleGbp).toBe(899);
-    expect(t.bundleMaxChannels).toBe(2);
-    expect(t.contactOnly).toBe(false);
-    expect(t.fleet).toContain("50");
+  it("single channel EUR", () => {
+    expect(optionA.single.EUR).toBe(500);
   });
-  it("In Motion: £999 single / £1799 bundle / 51–100 fleet / featured", () => {
-    const t = CHAT_TIERS[1];
-    expect(t.singleGbp).toBe(999);
-    expect(t.bundleGbp).toBe(1799);
-    expect(t.bundleMaxChannels).toBe(2);
-    expect(t.featured).toBe(true);
+  it("single channel USD", () => {
+    expect(optionA.single.USD).toBe(600);
   });
-  it("Full Throttle: contact only, no fixed price", () => {
-    const t = CHAT_TIERS[2];
-    expect(t.contactOnly).toBe(true);
-    expect(t.singleGbp).toBeNull();
-    expect(t.bundleGbp).toBeNull();
+
+  it("bundle GBP", () => {
+    expect(optionA.bundle.GBP).toBe(1000);
   });
-  it("Chat setup fee is £1000", () => {
-    expect(CHAT_SETUP_FEE_GBP).toBe(1000);
+  it("bundle EUR", () => {
+    expect(optionA.bundle.EUR).toBe(1000);
+  });
+  it("bundle USD", () => {
+    expect(optionA.bundle.USD).toBe(1200);
+  });
+
+  it("bundle requires minimum 3 channels", () => {
+    expect(optionA.bundleMinChannels).toBe(3);
   });
 });
 
-describe("Voice tiers", () => {
-  it("Ignition: 1500 calls / £1199 / 1 number 1 agent", () => {
-    const t = VOICE_TIERS[0];
-    expect(t.callsPerMonth).toBe(1500);
-    expect(t.priceGbp).toBe(1199);
-    expect(t.config).toMatch(/1 number/i);
+describe("Pricing — Option B (26–100 drivers)", () => {
+  const optionB = PRICING.B;
+
+  it("single channel GBP", () => {
+    expect(optionB.single.GBP).toBe(800);
   });
-  it("In Motion: 2250 calls / £1599 / featured", () => {
-    const t = VOICE_TIERS[1];
-    expect(t.callsPerMonth).toBe(2250);
-    expect(t.priceGbp).toBe(1599);
-    expect(t.featured).toBe(true);
+  it("single channel EUR", () => {
+    expect(optionB.single.EUR).toBe(800);
   });
-  it("Full Throttle: 3000 calls / £1999", () => {
-    const t = VOICE_TIERS[2];
-    expect(t.callsPerMonth).toBe(3000);
-    expect(t.priceGbp).toBe(1999);
+  it("single channel USD", () => {
+    expect(optionB.single.USD).toBe(800);
   });
-  it("Voice setup: £1000 one agent / £1500 two agents / £500 second-agent add-on", () => {
-    expect(VOICE_SETUP_GBP.oneAgent).toBe(1000);
-    expect(VOICE_SETUP_GBP.twoAgents).toBe(1500);
-    expect(VOICE_SETUP_GBP.secondAgentAddOn).toBe(500);
+
+  it("bundle GBP", () => {
+    expect(optionB.bundle.GBP).toBe(1800);
+  });
+  it("bundle EUR", () => {
+    expect(optionB.bundle.EUR).toBe(1800);
+  });
+  it("bundle USD", () => {
+    expect(optionB.bundle.USD).toBe(2000);
+  });
+
+  it("bundle requires minimum 3 channels", () => {
+    expect(optionB.bundleMinChannels).toBe(3);
   });
 });
 
-describe("Double Decker bundle tiers", () => {
-  it("Ignition: single £1599 / bundle £1999", () => {
-    const t = BUNDLE_TIERS[0];
-    expect(t.single.priceGbp).toBe(1599);
-    expect(t.bundle.priceGbp).toBe(1999);
+describe("Pricing — Option C (101+ drivers / 4+ channels / custom)", () => {
+  it("has no fixed numeric price — returns null for GBP single", () => {
+    expect(PRICING.C.single.GBP).toBeNull();
   });
-  it("In Motion: single £2499 / bundle £3199 / featured", () => {
-    const t = BUNDLE_TIERS[1];
-    expect(t.single.priceGbp).toBe(2499);
-    expect(t.bundle.priceGbp).toBe(3199);
-    expect(t.featured).toBe(true);
+  it("has no fixed numeric price — returns null for EUR bundle", () => {
+    expect(PRICING.C.bundle.EUR).toBeNull();
   });
-  it("Full Throttle: single £2999 / bundle £3799", () => {
-    const t = BUNDLE_TIERS[2];
-    expect(t.single.priceGbp).toBe(2999);
-    expect(t.bundle.priceGbp).toBe(3799);
-  });
-  it("Bundle setup: £1500 one voice agent / £2000 two voice agents", () => {
-    expect(BUNDLE_SETUP_GBP.oneVoiceAgent).toBe(1500);
-    expect(BUNDLE_SETUP_GBP.twoVoiceAgents).toBe(2000);
+  it("is marked as contact-only", () => {
+    expect(PRICING.C.contactOnly).toBe(true);
   });
 });
 
-describe("Extra voice credit", () => {
-  it("is £0.90 per call", () => {
-    expect(EXTRA_CALL_PRICE_GBP).toBe(0.9);
+describe("Setup Fee (§6.1 one-time)", () => {
+  it("GBP setup fee is 1000", () => {
+    expect(SETUP_FEE.GBP).toBe(1000);
+  });
+  it("EUR setup fee is 1000", () => {
+    expect(SETUP_FEE.EUR).toBe(1000);
+  });
+  it("USD setup fee is 1200", () => {
+    expect(SETUP_FEE.USD).toBe(1200);
   });
 });
 
-describe("Currencies", () => {
-  it("GBP/EUR/USD with GBP as base", () => {
-    expect(CURRENCIES).toEqual(["GBP", "EUR", "USD"]);
-    expect(BASE_CURRENCY).toBe("GBP");
+describe("Contract length", () => {
+  it("minimum contract is 12 months", () => {
+    expect(CONTRACT_MONTHS).toBe(12);
   });
 });
 
-describe("convert()", () => {
-  it("GBP is identity", () => {
-    expect(convert(499, "GBP", RATES)).toBe(499);
+describe("formatPrice helper", () => {
+  it("GBP 500 → £500", () => {
+    expect(formatPrice("GBP", 500)).toBe("£500");
   });
-  it("EUR multiplies by the EUR rate", () => {
-    expect(convert(1000, "EUR", RATES)).toBeCloseTo(1180, 5);
+  it("EUR 1000 → €1,000", () => {
+    expect(formatPrice("EUR", 1000)).toBe("€1,000");
   });
-  it("USD multiplies by the USD rate", () => {
-    expect(convert(1000, "USD", RATES)).toBeCloseTo(1270, 5);
+  it("USD 1200 → $1,200", () => {
+    expect(formatPrice("USD", 1200)).toBe("$1,200");
   });
-  it("falls back to 1x when a rate is missing", () => {
-    expect(convert(500, "USD", { GBP: 1, EUR: 1.18 } as never)).toBe(500);
+  it("GBP 1000 → £1,000", () => {
+    expect(formatPrice("GBP", 1000)).toBe("£1,000");
   });
-});
-
-describe("formatPrice()", () => {
-  it("GBP 499 → £499 (no decimals by default)", () => {
-    expect(formatPrice("GBP", 499)).toBe("£499");
+  it("USD 600 → $600", () => {
+    expect(formatPrice("USD", 600)).toBe("$600");
   });
-  it("EUR 1180 → €1,180", () => {
-    expect(formatPrice("EUR", 1180)).toBe("€1,180");
+  it("EUR 500 → €500", () => {
+    expect(formatPrice("EUR", 500)).toBe("€500");
   });
-  it("USD 1270 → $1,270", () => {
-    expect(formatPrice("USD", 1270)).toBe("$1,270");
-  });
-  it("rounds to whole numbers by default", () => {
-    expect(formatPrice("GBP", 1180.6)).toBe("£1,181");
-  });
-  it("supports 2 decimals for the per-call credit", () => {
-    expect(formatPrice("GBP", 0.9, { decimals: 2 })).toBe("£0.90");
+  it("no decimal places", () => {
+    // Whole numbers only — no .00 suffix
+    expect(formatPrice("GBP", 800)).not.toContain(".");
   });
 });
 
-describe("priceFor()", () => {
-  it("converts then formats in one call", () => {
-    expect(priceFor(1000, "EUR", RATES)).toBe("€1,180");
-  });
-  it("supports decimals for credit", () => {
-    expect(priceFor(0.9, "USD", RATES, 2)).toBe("$1.14");
+describe("CURRENCIES export", () => {
+  it("includes GBP, EUR, USD", () => {
+    expect(CURRENCIES).toContain("GBP");
+    expect(CURRENCIES).toContain("EUR");
+    expect(CURRENCIES).toContain("USD");
+    expect(CURRENCIES).toHaveLength(3);
   });
 });
