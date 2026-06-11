@@ -17,6 +17,9 @@ export type ActionState = {
 
 const RENEWAL_MODES = ["rolling_monthly", "auto_12mo"] as const;
 const INVITE_ROLES = ["Owner", "Admin", "Viewer"] as const;
+const DISPATCH_ADAPTERS = ["autocab", "icabbi", "cordic"] as const;
+const AUTOMATION_TYPES = ["Booking", "Support", "Driver", "Custom", "Voice"] as const;
+const CHANNEL_TYPES = ["whatsapp", "telegram", "messenger", "instagram", "widget"] as const;
 
 function serviceClient() {
   return createSupabaseJS(
@@ -31,6 +34,9 @@ const optionalDate = z
   .trim()
   .transform((v) => (v === "" ? undefined : v))
   .optional();
+
+// Generic optional free-text field (blank → undefined).
+const optionalText = optionalDate;
 
 const editContractSchema = z.object({
   contract_start: optionalDate,
@@ -305,6 +311,258 @@ export async function sendInvite(
   if (!audited) {
     console.error("audit write failed for tenant.invite", { tenantId, email });
   }
+
+  revalidatePath(`/admin/tenants/${tenantId}`);
+  return { fieldErrors: {}, formError: null, ok: true };
+}
+
+/* ----------------------------------------------------------------------------
+   Granular organisation + membership management (staff authority).
+   -------------------------------------------------------------------------- */
+
+const editOrgSchema = z.object({
+  name: z.string().trim().min(1, "Organisation name is required."),
+  contact_email: z.string().trim().email("Enter a valid contact email."),
+  dispatch_adapter: z.enum(DISPATCH_ADAPTERS),
+  dispatch_company_id: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? null : v))
+    .nullable()
+    .optional(),
+});
+
+/** Edits an organisation's profile (name, contact email, dispatch binding). */
+export async function editOrgProfile(
+  tenantId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const claims = await requireStaff();
+
+  const parsed = editOrgSchema.safeParse({
+    name: formData.get("name"),
+    contact_email: formData.get("contact_email"),
+    dispatch_adapter: formData.get("dispatch_adapter"),
+    dispatch_company_id: formData.get("dispatch_company_id"),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
+  }
+  const data = parsed.data;
+
+  const { error } = await serviceClient()
+    .from("tenants")
+    .update({
+      name: data.name,
+      contact_email: data.contact_email,
+      dispatch_adapter: data.dispatch_adapter,
+      dispatch_company_id: data.dispatch_company_id ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", tenantId);
+  if (error) {
+    return { fieldErrors: {}, formError: "Could not update the organisation. Please try again." };
+  }
+
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "tenant.edit_profile",
+    targetType: "tenant",
+    targetId: tenantId,
+    metadata: { name: data.name, contact_email: data.contact_email, dispatch_adapter: data.dispatch_adapter },
+  });
+
+  revalidatePath(`/admin/tenants/${tenantId}`);
+  return { fieldErrors: {}, formError: null, ok: true };
+}
+
+/** Counts the active Owner memberships for a tenant (last-owner guard). */
+async function ownerCount(client: ReturnType<typeof serviceClient>, tenantId: string): Promise<number> {
+  const { count } = await client
+    .from("tenant_users")
+    .select("user_id", { count: "exact", head: true })
+    .eq("tenant_id", tenantId)
+    .eq("role", "Owner");
+  return count ?? 0;
+}
+
+/**
+ * Changes a member's role within a tenant. Refuses to demote the last Owner so a
+ * tenant is never left without one. Throws on guard violation so the staff member
+ * sees the failure rather than a silent no-op.
+ */
+export async function setMemberRole(tenantId: string, userId: string, formData: FormData): Promise<void> {
+  const claims = await requireStaff();
+  const role = String(formData.get("role") ?? "");
+  if (!(INVITE_ROLES as readonly string[]).includes(role)) {
+    throw new Error("Invalid role.");
+  }
+  const client = serviceClient();
+
+  if (role !== "Owner") {
+    const { data: current } = await client
+      .from("tenant_users")
+      .select("role")
+      .eq("tenant_id", tenantId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (current?.role === "Owner" && (await ownerCount(client, tenantId)) <= 1) {
+      throw new Error("Cannot change the last Owner. Promote another member to Owner first.");
+    }
+  }
+
+  const { error } = await client
+    .from("tenant_users")
+    .update({ role })
+    .eq("tenant_id", tenantId)
+    .eq("user_id", userId);
+  if (error) throw new Error("Failed to change the member's role.");
+
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "tenant.member_role_change",
+    targetType: "user",
+    targetId: userId,
+    metadata: { role },
+  });
+  revalidatePath(`/admin/tenants/${tenantId}`);
+}
+
+/** Removes a member from a tenant. Refuses to remove the last Owner. */
+export async function removeMember(tenantId: string, userId: string): Promise<void> {
+  const claims = await requireStaff();
+  const client = serviceClient();
+
+  const { data: current } = await client
+    .from("tenant_users")
+    .select("role")
+    .eq("tenant_id", tenantId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (current?.role === "Owner" && (await ownerCount(client, tenantId)) <= 1) {
+    throw new Error("Cannot remove the last Owner. Assign another Owner first.");
+  }
+
+  const { error } = await client
+    .from("tenant_users")
+    .delete()
+    .eq("tenant_id", tenantId)
+    .eq("user_id", userId);
+  if (error) throw new Error("Failed to remove the member.");
+
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "tenant.member_remove",
+    targetType: "user",
+    targetId: userId,
+    metadata: {},
+  });
+  revalidatePath(`/admin/tenants/${tenantId}`);
+}
+
+/* ----------------------------------------------------------------------------
+   Manual automation provisioning (DB record only; engine wired separately).
+   -------------------------------------------------------------------------- */
+
+const createAutomationSchema = z
+  .object({
+    name: z.string().trim().min(1, "Automation name is required."),
+    type: z.enum(AUTOMATION_TYPES),
+    dispatch_adapter: z.enum(DISPATCH_ADAPTERS).optional(),
+    phone_number: optionalText,
+    channel_type: z.enum(CHANNEL_TYPES).optional(),
+    channel_handle: optionalText,
+  })
+  .superRefine((d, ctx) => {
+    if (d.type === "Voice" && !d.phone_number) {
+      ctx.addIssue({ code: "custom", path: ["phone_number"], message: "Voice agents need a phone number." });
+    }
+  });
+
+/**
+ * Creates an automation record for a tenant. For a Voice automation it also
+ * creates the voice_agent (phone number); for a chat automation an optional
+ * channel can be bound. Status starts at 'building' / 'Requested' — engineers
+ * wire the actual engine workflow afterwards. Fully audited.
+ */
+export async function createAutomation(
+  tenantId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const claims = await requireStaff();
+
+  const parsed = createAutomationSchema.safeParse({
+    name: formData.get("name"),
+    type: formData.get("type"),
+    dispatch_adapter: formData.get("dispatch_adapter") || undefined,
+    phone_number: formData.get("phone_number"),
+    channel_type: formData.get("channel_type") || undefined,
+    channel_handle: formData.get("channel_handle"),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
+  }
+  const data = parsed.data;
+  const client = serviceClient();
+
+  const { data: created, error: autoErr } = await client
+    .from("automations")
+    .insert({
+      tenant_id: tenantId,
+      name: data.name,
+      type: data.type,
+      status: "building",
+      build_stage: "Requested",
+      dispatch_adapter: data.dispatch_adapter ?? null,
+    })
+    .select("id")
+    .single();
+  if (autoErr || !created) {
+    return { fieldErrors: {}, formError: "Could not create the automation. Please try again." };
+  }
+  const automationId = created.id as string;
+
+  if (data.type === "Voice") {
+    const { error: agentErr } = await client.from("voice_agents").insert({
+      automation_id: automationId,
+      tenant_id: tenantId,
+      display_name: data.name,
+      phone_number: data.phone_number ?? null,
+    });
+    if (agentErr) {
+      // Roll back the orphan automation so a failed agent insert isn't left half-provisioned.
+      await client.from("automations").delete().eq("id", automationId);
+      return { fieldErrors: {}, formError: "Could not create the voice agent. Please try again." };
+    }
+  } else if (data.channel_type) {
+    const { error: chErr } = await client.from("channels").insert({
+      tenant_id: tenantId,
+      automation_id: automationId,
+      type: data.channel_type,
+      webhook_path: `/webhooks/${data.channel_type}/${automationId}`,
+      external_id: data.channel_handle ?? null,
+      status: "active",
+    });
+    if (chErr) {
+      console.error("createAutomation: channel insert failed", chErr);
+      // Keep the automation; the channel can be added later. Surface a soft notice.
+      return { fieldErrors: {}, formError: "Automation created, but binding the channel failed. Add it from Channels." };
+    }
+  }
+
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "tenant.create_automation",
+    targetType: "automation",
+    targetId: automationId,
+    metadata: { name: data.name, type: data.type, dispatch_adapter: data.dispatch_adapter ?? null },
+  });
 
   revalidatePath(`/admin/tenants/${tenantId}`);
   return { fieldErrors: {}, formError: null, ok: true };

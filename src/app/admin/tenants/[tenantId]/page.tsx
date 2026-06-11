@@ -14,6 +14,7 @@ import {
   InviteForm,
   LifecycleControls,
 } from "./tenant-detail-forms";
+import { EditOrgForm, MembersManager, AddAutomationForm } from "./tenant-manage-forms";
 import { BillingPanel } from "./billing-panel";
 import { EntitlementsSection } from "./entitlements-section";
 
@@ -318,21 +319,6 @@ export default async function TenantDetailPage({
     },
   ];
 
-  const memberColumns: Column<MemberRow>[] = [
-    { key: "email", header: "Email", render: (m) => m.email },
-    { key: "role", header: "Role", render: (m) => m.role },
-    {
-      key: "accepted_at",
-      header: "Accepted",
-      render: (m) => formatDate(m.accepted_at),
-    },
-    {
-      key: "last_login_at",
-      header: "Last login",
-      render: (m) => formatDate(m.last_login_at),
-    },
-  ];
-
   const channelColumns: Column<ChannelRow>[] = [
     {
       key: "type",
@@ -446,6 +432,18 @@ export default async function TenantDetailPage({
         </div>
       </div>
 
+      <Section title="Edit organisation">
+        <div className="border-[3px] border-ink bg-paper p-5">
+          <EditOrgForm
+            tenantId={tenant.id}
+            name={tenant.name}
+            contactEmail={tenant.contact_email}
+            dispatchAdapter={tenant.dispatch_adapter}
+            dispatchCompanyId={tenant.dispatch_company_id}
+          />
+        </div>
+      </Section>
+
       <Section title="Billing actions">
         <BillingPanel
           tenantId={tenant.id}
@@ -478,6 +476,10 @@ export default async function TenantDetailPage({
       </Section>
 
       <Section title="Automations">
+        <div className="mb-4 border-[3px] border-ink bg-paper p-5">
+          <h3 className="mb-3 font-display text-sm font-extrabold uppercase tracking-tight text-ink">Add an automation</h3>
+          <AddAutomationForm tenantId={tenant.id} />
+        </div>
         <DataTable
           columns={automationColumns}
           rows={automations}
@@ -487,12 +489,7 @@ export default async function TenantDetailPage({
       </Section>
 
       <Section title="Users">
-        <DataTable
-          columns={memberColumns}
-          rows={members}
-          getRowKey={(m) => m.user_id}
-          emptyMessage="No users invited yet."
-        />
+        <MembersManager tenantId={tenant.id} members={members} />
       </Section>
 
       <Section title="Channels">
