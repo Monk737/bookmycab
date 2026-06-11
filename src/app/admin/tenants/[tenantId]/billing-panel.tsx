@@ -34,6 +34,11 @@ export function BillingPanel({
   // the setup-fee / subscription / sync controls below.
   if (commercialModel) {
     const billingActive = status === "active";
+    // Start billing only acts while onboarding (the action no-ops otherwise);
+    // mirror that in the UI so the control isn't enabled for active / suspended
+    // / churned tenants.
+    const canStart = status === "onboarding";
+    const startLabel = billingActive ? "Billing active" : "Start billing";
     return (
       <section className="border-[3px] border-ink bg-paper p-5">
         <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
@@ -42,11 +47,11 @@ export function BillingPanel({
         <div className="mt-4 flex flex-wrap gap-3">
           <button
             type="button"
-            disabled={pending || billingActive}
+            disabled={pending || !canStart}
             onClick={() => start(() => void startNewModelBilling(tenantId))}
             className="border-2 border-ink bg-brut-lime px-4 py-2 text-sm font-bold uppercase text-ink hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {billingActive ? "Billing active" : "Start billing"}
+            {startLabel}
           </button>
 
           <button

@@ -43,7 +43,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ orgId: string 
   let finalGbp = r.gbp;
   if (couponCode) {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("validate_coupon", { p_code: couponCode });
+    const { data, error } = await supabase.rpc("validate_coupon", {
+      p_code: couponCode,
+      p_applies_to: "credit",
+    });
     if (error) return badRequest("Could not check that coupon.");
     const percent = typeof data === "number" ? data : null;
     if (percent === null) return badRequest("Invalid or ineligible coupon.");
