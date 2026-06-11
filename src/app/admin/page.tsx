@@ -23,8 +23,6 @@ import {
 // Platform figures must reflect provisioning the instant it happens.
 export const dynamic = "force-dynamic";
 
-const AUTOMATION_TYPES = ["Booking", "Support", "Driver", "Custom"] as const;
-
 type TenantRow = BillingTenant & {
   id: string;
   name: string;
@@ -97,18 +95,31 @@ export default async function AdminOverviewPage() {
     env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  const [tenantsRes, feesRes, automationsRes, bookingsRes] = await Promise.all([
-    serviceClient
-      .from("tenants")
-      .select(
-        "id, name, status, currency, monthly_price, contract_start, contract_renewal, plan_band",
-      ),
-    serviceClient.from("setup_fees").select("id, tenant_id, amount, currency, paid_at"),
-    serviceClient.from("automations").select("type, status"),
-    // Gross bookings volume, raw count. Engine writes these in Epic 5; may be
-    // 0 today. Live revenue is Epic 8. // TODO(epic-5/8)
-    serviceClient.from("bookings").select("id", { count: "exact", head: true }),
-  ]);
+  const today = new Date();
+  const monthStartIso = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1))
+    .toISOString()
+    .slice(0, 10);
+
+  const [tenantsRes, feesRes, automationsRes, bookingsRes, chatSubsRes, voiceSubsRes, voiceUsageRes] =
+    await Promise.all([
+      serviceClient
+        .from("tenants")
+        .select(
+          "id, name, status, currency, monthly_price, contract_start, contract_renewal, plan_band, commercial_model",
+        ),
+      serviceClient.from("setup_fees").select("id, tenant_id, amount, currency, paid_at"),
+      serviceClient.from("automations").select("type, status"),
+      // Gross bookings volume, raw count. Engine writes these in Epic 5; may be
+      // 0 today. Live revenue is Epic 8. // TODO(epic-5/8)
+      serviceClient.from("bookings").select("id", { count: "exact", head: true }),
+      serviceClient.from("chat_subscriptions").select("monthly_price_gbp, status"),
+      serviceClient.from("voice_subscriptions").select("monthly_price_gbp, status"),
+      serviceClient
+        .from("usage_counters")
+        .select("used")
+        .eq("feature_key", "voice_calls")
+        .eq("period_start", monthStartIso),
+    ]);
 
   const loadError = tenantsRes.error ?? feesRes.error ?? automationsRes.error;
   const tenants = (tenantsRes.data ?? []) as TenantRow[];
@@ -119,7 +130,28 @@ export default async function AdminOverviewPage() {
   }[];
   const bookingsCount = bookingsRes.count ?? 0;
 
-  const today = new Date();
+  // --- Two-product (new model) platform figures ---
+  type ModelRow = { commercial_model: string | null };
+  const tenantModels = (tenants as unknown as ModelRow[]);
+  const byModel = { chat: 0, voice: 0, double_decker: 0, legacy: 0 };
+  for (const t of tenantModels) {
+    if (t.commercial_model === "chat") byModel.chat += 1;
+    else if (t.commercial_model === "voice") byModel.voice += 1;
+    else if (t.commercial_model === "double_decker") byModel.double_decker += 1;
+    else byModel.legacy += 1;
+  }
+
+  const chatSubs = (chatSubsRes.data ?? []) as { monthly_price_gbp: number | string | null; status: string }[];
+  const voiceSubs = (voiceSubsRes.data ?? []) as { monthly_price_gbp: number | string | null; status: string }[];
+  const sumActiveGbp = (rows: { monthly_price_gbp: number | string | null; status: string }[]) =>
+    rows.reduce((n, r) => (r.status === "active" ? n + Number(r.monthly_price_gbp ?? 0) : n), 0);
+  const newModelMrrGbp = sumActiveGbp(chatSubs) + sumActiveGbp(voiceSubs);
+
+  const voiceAgentsLive = automations.filter((a) => a.type === "Voice" && (a.status === "live" || a.status === "uat")).length;
+  const platformCallsThisMonth = ((voiceUsageRes.data ?? []) as { used: number | string | null }[]).reduce(
+    (n, r) => n + Number(r.used ?? 0),
+    0,
+  );
 
   // --- Recurring revenue (pure) ---
   const mrr = computeMRR(tenants);
@@ -149,20 +181,8 @@ export default async function AdminOverviewPage() {
     if (ms >= monthStart) newMTD += 1;
   }
 
-  // --- Active automations by type ---
-  const byType = AUTOMATION_TYPES.reduce(
-    (acc, t) => {
-      acc[t] = 0;
-      return acc;
-    },
-    {} as Record<(typeof AUTOMATION_TYPES)[number], number>,
-  );
-  for (const a of automations) {
-    if (a.status === "live" && a.type in byType) {
-      byType[a.type as (typeof AUTOMATION_TYPES)[number]] += 1;
-    }
-  }
-  const liveAutomations = AUTOMATION_TYPES.reduce((n, t) => n + byType[t], 0);
+  // --- Live automations (all types: Chat bots + Voice agents) ---
+  const liveAutomations = automations.filter((a) => a.status === "live").length;
 
   // --- Churn-risk: active tenants renewing within 90 days, soonest first ---
   const churnRows: ChurnRiskRow[] = tenants
@@ -243,8 +263,8 @@ export default async function AdminOverviewPage() {
           Overview
         </h1>
         <p className="mt-1 text-sm text-gray-600">
-          Platform analytics computed from local data &mdash; staff only. Live
-          engine run health and reconciled revenue arrive in later epics.
+          Platform analytics across both products (Chat + AI Voice), staff only.
+          Figures are computed live from Supabase.
         </p>
       </div>
 
@@ -284,9 +304,9 @@ export default async function AdminOverviewPage() {
           sub={`${buckets[60]} within 60d · ${buckets[90]} within 90d`}
         />
         <StatCard
-          label="Live automations"
-          value={liveAutomations}
-          sub="Status = live, all types"
+          label="Total tenants"
+          value={tenants.length}
+          sub={`${activeCount} active`}
         />
         <StatCard
           label="Gross bookings"
@@ -300,15 +320,34 @@ export default async function AdminOverviewPage() {
         />
       </div>
 
-      {/* Automations by type */}
+      {/* Two-product platform — the new commercial model */}
       <section className="mt-8">
         <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
-          Live automations by type
+          Two-product platform
         </h2>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {AUTOMATION_TYPES.map((t) => (
-            <StatCard key={t} label={t} value={byType[t]} />
-          ))}
+        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard label="Chat only" value={byModel.chat} sub="commercial_model = chat" />
+          <StatCard label="Voice only" value={byModel.voice} sub="commercial_model = voice" />
+          <StatCard label="Double decker" value={byModel.double_decker} sub="Chat + AI Voice" />
+          <StatCard label="Legacy" value={byModel.legacy} sub="Pre-two-product tenants" />
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard label="Voice agents live" value={voiceAgentsLive} sub="Live or in UAT" />
+          <StatCard
+            label="Voice calls (MTD)"
+            value={platformCallsThisMonth.toLocaleString("en-GB")}
+            sub="Plan pool, all tenants"
+          />
+          <StatCard
+            label="New-model MRR"
+            value={formatPrice("GBP", newModelMrrGbp)}
+            sub="Active chat + voice subs"
+          />
+          <StatCard
+            label="Live automations"
+            value={liveAutomations}
+            sub="All chat bots + voice agents"
+          />
         </div>
       </section>
 

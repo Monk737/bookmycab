@@ -85,17 +85,25 @@ export default async function CouponsPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-right">
-                    <form action={toggleCoupon} className="inline">
-                      <input type="hidden" name="id" value={c.id} />
-                      <input type="hidden" name="active" value={(!c.active).toString()} />
-                      <button
-                        type="submit"
-                        className="cursor-pointer border-2 border-ink px-2 py-1 text-xs font-medium text-ink transition-colors hover:bg-gray-100"
+                  <td className="px-3 py-2">
+                    <div className="flex items-center justify-end gap-2">
+                      <a
+                        href={`/admin/coupons/${c.id}/voucher`}
+                        className="cursor-pointer border-2 border-ink bg-brut-cyan px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-ink transition-colors hover:bg-brut-cyan/80"
                       >
-                        {c.active ? "Deactivate" : "Activate"}
-                      </button>
-                    </form>
+                        Voucher
+                      </a>
+                      <form action={toggleCoupon} className="inline">
+                        <input type="hidden" name="id" value={c.id} />
+                        <input type="hidden" name="active" value={(!c.active).toString()} />
+                        <button
+                          type="submit"
+                          className="cursor-pointer border-2 border-ink px-2 py-1 text-xs font-medium text-ink transition-colors hover:bg-gray-100"
+                        >
+                          {c.active ? "Deactivate" : "Activate"}
+                        </button>
+                      </form>
+                    </div>
                   </td>
                 </tr>
               );
