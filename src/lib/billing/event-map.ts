@@ -74,8 +74,13 @@ const tsToDate = (ts: number | null | undefined): string | null =>
 export function mapNewModelSubscription(sub: Stripe.Subscription): NewModelSubUpdate | null {
   const product = sub.metadata?.product;
   if (product !== "chat" && product !== "voice") return null;
-  // Stripe Basil (API 2025-03+) moved current_period_* off the subscription, so
-  // these are not in the SDK type. Narrow defensively rather than blind-casting.
+  // Stripe Basil (API 2025-03+) moved current_period_* off the subscription root
+  // onto each item (see subscriptionToMirror). Read from the item first, falling
+  // back to the root for older payloads / test fixtures. These fields are not in
+  // the SDK type, so narrow defensively rather than blind-casting.
+  const item = sub.items?.data?.[0] as
+    | { current_period_start?: number; current_period_end?: number }
+    | undefined;
   const s = sub as Stripe.Subscription & {
     current_period_start?: number;
     current_period_end?: number;
@@ -85,8 +90,8 @@ export function mapNewModelSubscription(sub: Stripe.Subscription): NewModelSubUp
     stripe_subscription_id: sub.id,
     update: {
       status: STRIPE_STATUS_MAP[sub.status] ?? "active",
-      current_period_start: tsToDate(s.current_period_start),
-      current_period_end: tsToDate(s.current_period_end),
+      current_period_start: tsToDate(item?.current_period_start ?? s.current_period_start),
+      current_period_end: tsToDate(item?.current_period_end ?? s.current_period_end),
     },
   };
 }

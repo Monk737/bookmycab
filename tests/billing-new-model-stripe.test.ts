@@ -54,4 +54,14 @@ describe("mapNewModelSubscription", () => {
   it("returns null for a subscription without our product metadata (legacy)", () => {
     expect(mapNewModelSubscription({ id: "x", status: "active", metadata: {} } as never)).toBeNull();
   });
+  it("reads periods from the subscription ITEM (Stripe Basil payload shape)", () => {
+    const out = mapNewModelSubscription({
+      id: "sub_basil",
+      status: "active",
+      metadata: { tenant_id: "t1", product: "chat" },
+      items: { data: [{ current_period_start: 1750000000, current_period_end: 1752592000 }] },
+    } as never);
+    expect(out!.update.current_period_start).toBe("2025-06-15");
+    expect(out!.update.current_period_end).not.toBeNull();
+  });
 });
