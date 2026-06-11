@@ -165,9 +165,9 @@ export default async function PlansPage() {
           </p>
         </CatalogCard>
 
-        {/* Feature packaging (entitlements) */}
+        {/* Feature packaging (entitlements) — legacy reference */}
         <section>
-          <SectionTitle sub="Toggles drive entitlements (e.g. the metered voice_calls pool) and feature gating per plan.">
+          <SectionTitle sub="Legacy entitlement reference. The two-product dashboards no longer gate on these flags — the voice call pool is driven by voice_subscriptions + usage_counters, not plan_features. Kept for the metered-feature catalogue.">
             Feature packaging
           </SectionTitle>
           <div className="overflow-x-auto border-[3px] border-ink bg-paper shadow-brut">

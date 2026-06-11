@@ -93,7 +93,7 @@ export async function createSetupFeeInvoice(tenantId: string): Promise<void> {
   const invoice = await stripe.invoices.create({
     customer: customerId,
     collection_method: "send_invoice",
-    days_until_due: 14,
+    days_until_due: 7,
     automatic_tax: { enabled: true },
     metadata: { tenant_id: id, kind: "setup_fee" },
   });
@@ -267,7 +267,7 @@ export async function startNewModelBilling(tenantId: string): Promise<void> {
     const invoice = await stripe.invoices.create({
       customer: customerId,
       collection_method: "send_invoice",
-      days_until_due: 14,
+      days_until_due: 7,
       automatic_tax: { enabled: true },
       metadata: { tenant_id: id, kind: "setup_fee" },
     });

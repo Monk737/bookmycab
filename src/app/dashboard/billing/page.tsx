@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { periodBounds } from "@/lib/entitlements/meter";
 import { CreditTopup } from "@/components/dashboard/credit-topup";
 import { PortalButton } from "./portal-button";
+import { AutopayButton } from "./autopay-button";
 import Link from "next/link";
 
 const TZ = "Europe/London";
@@ -50,7 +51,7 @@ async function getVoiceCreditPanel(
 export default async function BillingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ credit?: string }>;
+  searchParams: Promise<{ credit?: string; autopay?: string }>;
 }) {
   const claims = await requireUser();
 
@@ -62,7 +63,7 @@ export default async function BillingPage({
     );
   }
 
-  const { credit } = await searchParams;
+  const { credit, autopay } = await searchParams;
   const b = await getBillingOverview(claims.tenant_id);
   const voiceCredit = await getVoiceCreditPanel(claims.tenant_id);
 
@@ -89,6 +90,18 @@ export default async function BillingPage({
 
   const currency = b.currency ?? "GBP";
 
+  const TIER_LABEL: Record<string, string> = {
+    ignition: "Ignition",
+    in_motion: "In Motion",
+    full_throttle: "Full Throttle",
+  };
+  const tierLabel = (t: string | null) => (t ? TIER_LABEL[t] ?? t : "·");
+  const MODEL_LABEL: Record<string, string> = {
+    chat: "Chat",
+    voice: "AI Voice",
+    double_decker: "Double Decker",
+  };
+
   return (
     <main className="mx-auto max-w-4xl space-y-8 p-6 lg:p-8">
       <h1 className="font-mono text-xl font-bold text-ink">Billing</h1>
@@ -101,6 +114,16 @@ export default async function BillingPage({
       {credit === "cancelled" && (
         <p className="border-[3px] border-ink bg-paper p-4 text-sm font-medium text-ink shadow-brut-sm">
           Top-up cancelled. No payment was taken.
+        </p>
+      )}
+      {autopay === "success" && (
+        <p className="border-[3px] border-ink bg-brut-lime p-4 text-sm font-bold text-ink shadow-brut-sm">
+          Autopay is set up. Your monthly subscription will auto-charge this card each cycle.
+        </p>
+      )}
+      {autopay === "cancelled" && (
+        <p className="border-[3px] border-ink bg-paper p-4 text-sm font-medium text-ink shadow-brut-sm">
+          Payment setup cancelled. No card was saved.
         </p>
       )}
 
@@ -120,52 +143,103 @@ export default async function BillingPage({
       >
         <h2
           id="plan-heading"
-          className="mb-4 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
+          className="mb-4 flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500"
         >
           Current plan
+          {b.commercialModel && (
+            <span className="border-2 border-ink bg-brut-yellow px-1.5 py-0.5 text-[10px] font-bold tracking-[0.04em] text-ink">
+              {MODEL_LABEL[b.commercialModel] ?? b.commercialModel}
+            </span>
+          )}
         </h2>
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div>
-            <dt className="text-xs font-medium text-gray-500">Plan</dt>
-            <dd className="mt-0.5 text-sm font-bold text-ink">
-              {b.planBand ?? "·"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-gray-500">Monthly price</dt>
-            <dd className="mt-0.5 text-sm font-bold text-ink">
-              {b.monthlyPrice != null
-                ? formatCurrency(b.monthlyPrice, currency)
-                : "·"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-gray-500">Currency</dt>
-            <dd className="mt-0.5 text-sm font-bold text-ink">
-              {b.currency ?? "·"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-gray-500">Contract start</dt>
-            <dd className="mt-0.5 text-sm text-gray-700">
-              {b.contractStart ? formatDateTime(b.contractStart, TZ) : "·"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs font-medium text-gray-500">Contract renewal</dt>
-            <dd className="mt-0.5 text-sm text-gray-700">
-              {b.contractRenewal ? formatDateTime(b.contractRenewal, TZ) : "·"}
-            </dd>
-          </div>
-          {b.subscription?.status && (
+
+        {b.products ? (
+          <>
+            {/* New two-product model: one row per product + a combined total. */}
+            <div className="overflow-hidden border-[3px] border-ink">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left font-bold text-gray-700">Product</th>
+                    <th className="px-3 py-2 text-left font-bold text-gray-700">Tier</th>
+                    <th className="px-3 py-2 text-left font-bold text-gray-700">Includes</th>
+                    <th className="px-3 py-2 text-right font-bold text-gray-700">Monthly</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y-2 divide-gray-100">
+                  {b.products.chat && (
+                    <tr>
+                      <td className="px-3 py-2 font-bold text-ink">Chat</td>
+                      <td className="px-3 py-2 text-gray-700">{tierLabel(b.products.chat.tier)}</td>
+                      <td className="px-3 py-2 text-gray-600">Multi-channel booking bot</td>
+                      <td className="px-3 py-2 text-right font-mono font-bold tabular-nums text-ink">{formatCurrency(b.products.chat.monthlyGbp, "GBP")}</td>
+                    </tr>
+                  )}
+                  {b.products.voice && (
+                    <tr>
+                      <td className="px-3 py-2 font-bold text-ink">AI Voice</td>
+                      <td className="px-3 py-2 text-gray-700">{tierLabel(b.products.voice.tier)}</td>
+                      <td className="px-3 py-2 text-gray-600">{b.products.voice.allowance.toLocaleString("en-GB")} calls / month</td>
+                      <td className="px-3 py-2 text-right font-mono font-bold tabular-nums text-ink">{formatCurrency(b.products.voice.monthlyGbp, "GBP")}</td>
+                    </tr>
+                  )}
+                  <tr className="bg-gray-50">
+                    <td className="px-3 py-2 font-bold uppercase tracking-[0.04em] text-ink" colSpan={3}>Total / month</td>
+                    <td className="px-3 py-2 text-right font-mono text-base font-extrabold tabular-nums text-ink">{formatCurrency(b.products.combinedMonthlyGbp, "GBP")}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <dt className="text-xs font-medium text-gray-500">Billing</dt>
+                <dd className="mt-0.5 text-sm font-bold text-ink">Rolling monthly · GBP</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium text-gray-500">Started</dt>
+                <dd className="mt-0.5 text-sm text-gray-700">{b.contractStart ? formatDateTime(b.contractStart, TZ) : "·"}</dd>
+              </div>
+              {b.subscription?.status && (
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">Subscription status</dt>
+                  <dd className="mt-0.5 text-sm capitalize text-gray-700">{b.subscription.status}</dd>
+                </div>
+              )}
+            </dl>
+          </>
+        ) : (
+          /* Legacy A/B model fallback. */
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <dt className="text-xs font-medium text-gray-500">Subscription status</dt>
-              <dd className="mt-0.5 text-sm text-gray-700 capitalize">
-                {b.subscription.status}
+              <dt className="text-xs font-medium text-gray-500">Plan</dt>
+              <dd className="mt-0.5 text-sm font-bold text-ink">{b.planBand ?? "·"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Monthly price</dt>
+              <dd className="mt-0.5 text-sm font-bold text-ink">
+                {b.monthlyPrice != null ? formatCurrency(b.monthlyPrice, currency) : "·"}
               </dd>
             </div>
-          )}
-        </dl>
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Currency</dt>
+              <dd className="mt-0.5 text-sm font-bold text-ink">{b.currency ?? "·"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Contract start</dt>
+              <dd className="mt-0.5 text-sm text-gray-700">{b.contractStart ? formatDateTime(b.contractStart, TZ) : "·"}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-medium text-gray-500">Contract renewal</dt>
+              <dd className="mt-0.5 text-sm text-gray-700">{b.contractRenewal ? formatDateTime(b.contractRenewal, TZ) : "·"}</dd>
+            </div>
+            {b.subscription?.status && (
+              <div>
+                <dt className="text-xs font-medium text-gray-500">Subscription status</dt>
+                <dd className="mt-0.5 text-sm capitalize text-gray-700">{b.subscription.status}</dd>
+              </div>
+            )}
+          </dl>
+        )}
       </section>
 
       {/* Setup fee */}
@@ -232,7 +306,13 @@ export default async function BillingPage({
         >
           Actions
         </h2>
-        <PortalButton orgId={claims.tenant_id} />
+        <div className="flex flex-wrap items-start gap-3">
+          <AutopayButton orgId={claims.tenant_id} />
+          <PortalButton orgId={claims.tenant_id} />
+        </div>
+        <p className="text-sm text-gray-600">
+          <span className="font-medium text-ink">Set up autopay</span> to save a card for your prepaid monthly subscription, or use the portal to update an existing one.
+        </p>
         <p className="text-sm text-gray-600">
           Need to change your plan or add an automation?{" "}
           <Link

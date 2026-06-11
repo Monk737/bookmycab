@@ -2,7 +2,25 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseLike } from "@/lib/dashboard/queries";
 
+export interface ProductPlan {
+  tier: string | null;
+  monthlyGbp: number;
+}
+export interface VoiceProductPlan extends ProductPlan {
+  allowance: number;
+}
+
+/** New-model plan summary (chat/voice subscriptions). Null for legacy tenants. */
+export interface ProductsSummary {
+  chat: ProductPlan | null;
+  voice: VoiceProductPlan | null;
+  combinedMonthlyGbp: number;
+}
+
 export interface BillingOverview {
+  commercialModel: "chat" | "voice" | "double_decker" | null;
+  /** New-model plan summary; null when the tenant is on the legacy A/B model. */
+  products: ProductsSummary | null;
   planBand: string | null;
   currency: string | null;
   monthlyPrice: number | null;
@@ -29,10 +47,10 @@ export interface BillingOverview {
 export async function getBillingOverview(tenantId: string, client?: SupabaseLike): Promise<BillingOverview> {
   const supabase = client ?? (await createClient());
 
-  const [tenantRes, subscriptionRes, setupFeeRes] = await Promise.all([
+  const [tenantRes, subscriptionRes, setupFeeRes, chatSubRes, voiceSubRes] = await Promise.all([
     supabase
       .from("tenants")
-      .select("plan_band, currency, monthly_price, contract_start, contract_renewal, setup_fee_paid, stripe_customer_id")
+      .select("plan_band, currency, monthly_price, contract_start, contract_renewal, setup_fee_paid, stripe_customer_id, commercial_model")
       .eq("id", tenantId)
       .maybeSingle(),
     supabase
@@ -47,13 +65,42 @@ export async function getBillingOverview(tenantId: string, client?: SupabaseLike
       .select("amount, currency, paid_at")
       .eq("tenant_id", tenantId)
       .maybeSingle(),
+    supabase
+      .from("chat_subscriptions")
+      .select("plan_tier, monthly_price_gbp")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
+    supabase
+      .from("voice_subscriptions")
+      .select("plan_tier, monthly_price_gbp, monthly_call_allowance")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
   ]);
 
   const t = (tenantRes.data as Record<string, unknown> | null) ?? null;
   const s = (subscriptionRes.data as Record<string, unknown> | null) ?? null;
   const f = (setupFeeRes.data as Record<string, unknown> | null) ?? null;
+  const chatSub = (chatSubRes.data as Record<string, unknown> | null) ?? null;
+  const voiceSub = (voiceSubRes.data as Record<string, unknown> | null) ?? null;
+
+  const chatPlan: ProductPlan | null = chatSub
+    ? { tier: (chatSub.plan_tier as string | null) ?? null, monthlyGbp: Number(chatSub.monthly_price_gbp ?? 0) }
+    : null;
+  const voicePlan: VoiceProductPlan | null = voiceSub
+    ? {
+        tier: (voiceSub.plan_tier as string | null) ?? null,
+        monthlyGbp: Number(voiceSub.monthly_price_gbp ?? 0),
+        allowance: Number(voiceSub.monthly_call_allowance ?? 0),
+      }
+    : null;
+  const products: ProductsSummary | null =
+    chatPlan || voicePlan
+      ? { chat: chatPlan, voice: voicePlan, combinedMonthlyGbp: (chatPlan?.monthlyGbp ?? 0) + (voicePlan?.monthlyGbp ?? 0) }
+      : null;
 
   return {
+    commercialModel: (t?.commercial_model as BillingOverview["commercialModel"]) ?? null,
+    products,
     planBand: t ? (t.plan_band as string | null) ?? null : null,
     currency: t ? (t.currency as string | null) ?? null : null,
     monthlyPrice: t ? (t.monthly_price as number | null) ?? null : null,

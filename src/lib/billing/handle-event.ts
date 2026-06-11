@@ -49,6 +49,9 @@ export interface BillingDeps {
     credits: number;
     couponCode: string | undefined;
   }): Promise<void>;
+  /** Set the payment method captured by an autopay-setup Checkout session as the
+   *  customer's default for invoices, so subscription renewals auto-charge. */
+  setDefaultPaymentMethod(args: { customerId: string; setupIntentId: string }): Promise<void>;
 }
 
 export interface StripeEventResult {
@@ -59,6 +62,7 @@ export interface StripeEventResult {
     | "setup_fee.paid"
     | "payment_failed.notified"
     | "topup_credits.granted"
+    | "autopay.enabled"
     | "logged"
     | "skipped"
     | "ignored";
@@ -124,8 +128,20 @@ export async function handleStripeEvent(
 
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      // Only credit top-up checkouts are handled here; other checkout sessions
-      // (e.g. subscription setup) are acknowledged and ignored.
+
+      // Autopay setup (mode: "setup"): persist the captured card as the customer's
+      // default payment method so subscription renewals auto-charge.
+      if (session.metadata?.reason === "autopay_setup") {
+        const si = session.setup_intent;
+        const setupIntentId = typeof si === "string" ? si : si?.id ?? null;
+        const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
+        if (!setupIntentId || !customerId) return { action: "skipped" };
+        await deps.setDefaultPaymentMethod({ customerId, setupIntentId });
+        return { action: "autopay.enabled" };
+      }
+
+      // Only credit top-up checkouts are handled beyond this point; other sessions
+      // are acknowledged and ignored.
       if (session.metadata?.reason !== "topup_purchase") {
         return { action: "ignored" };
       }

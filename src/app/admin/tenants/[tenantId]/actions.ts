@@ -7,6 +7,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
+import { VOICE_PLAN_SPEC, VOICE_PRICE_GBP, type NewTierKey } from "@/lib/billing/pricing";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
 export type ActionState = {
@@ -20,6 +21,7 @@ const INVITE_ROLES = ["Owner", "Admin", "Viewer"] as const;
 const DISPATCH_ADAPTERS = ["autocab", "icabbi", "cordic"] as const;
 const AUTOMATION_TYPES = ["Booking", "Support", "Driver", "Custom", "Voice"] as const;
 const CHANNEL_TYPES = ["whatsapp", "telegram", "messenger", "instagram", "widget"] as const;
+const VOICE_TIERS = ["ignition", "in_motion", "full_throttle"] as const;
 
 function serviceClient() {
   return createSupabaseJS(
@@ -476,12 +478,22 @@ const createAutomationSchema = z
     phone_number: optionalText,
     channel_type: z.enum(CHANNEL_TYPES).optional(),
     channel_handle: optionalText,
+    // Only used when adding a Voice agent to a tenant with no voice plan yet.
+    voice_tier: z.enum(VOICE_TIERS).optional(),
   })
   .superRefine((d, ctx) => {
     if (d.type === "Voice" && !d.phone_number) {
       ctx.addIssue({ code: "custom", path: ["phone_number"], message: "Voice agents need a phone number." });
     }
   });
+
+/** First/last day of the current month as YYYY-MM-DD (voice plan period). */
+function currentMonthBounds(): { start: string; end: string } {
+  const now = new Date();
+  const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+}
 
 /**
  * Creates an automation record for a tenant. For a Voice automation it also
@@ -503,12 +515,55 @@ export async function createAutomation(
     phone_number: formData.get("phone_number"),
     channel_type: formData.get("channel_type") || undefined,
     channel_handle: formData.get("channel_handle"),
+    voice_tier: formData.get("voice_tier") || undefined,
   });
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
   }
   const data = parsed.data;
   const client = serviceClient();
+
+  // Adding a Voice agent to a tenant that has no voice plan would leave the
+  // tenant's call pool at 0/0. Provision a voice_subscription first (and flip the
+  // commercial_model so the tenant Voice surface unlocks).
+  if (data.type === "Voice") {
+    const { data: existingVoice } = await client
+      .from("voice_subscriptions")
+      .select("tenant_id")
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+    if (!existingVoice) {
+      if (!data.voice_tier) {
+        return {
+          fieldErrors: { voice_tier: ["Pick a voice plan tier (this tenant has no voice plan yet)."] },
+          formError: null,
+        };
+      }
+      const tier = data.voice_tier as NewTierKey;
+      const spec = VOICE_PLAN_SPEC[tier];
+      const { start, end } = currentMonthBounds();
+      const { error: subErr } = await client.from("voice_subscriptions").insert({
+        tenant_id: tenantId,
+        plan_tier: tier,
+        monthly_call_allowance: spec.callAllowance,
+        included_agents: spec.includedAgents,
+        monthly_price_gbp: VOICE_PRICE_GBP[tier],
+        status: "active",
+        current_period_start: start,
+        current_period_end: end,
+      });
+      if (subErr) {
+        return { fieldErrors: {}, formError: "Could not provision the voice plan. Please try again." };
+      }
+      // Unlock the voice product: chat-only → double_decker, otherwise → voice.
+      const { data: tRow } = await client.from("tenants").select("commercial_model").eq("id", tenantId).maybeSingle();
+      const cm = (tRow?.commercial_model as string | null) ?? null;
+      const nextModel = cm === "chat" || cm === "double_decker" ? "double_decker" : "voice";
+      if (cm !== nextModel) {
+        await client.from("tenants").update({ commercial_model: nextModel }).eq("id", tenantId);
+      }
+    }
+  }
 
   const { data: created, error: autoErr } = await client
     .from("automations")

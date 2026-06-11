@@ -3,6 +3,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import type { BillingDeps } from "@/lib/billing/handle-event";
 import { periodBounds } from "@/lib/entitlements/meter";
+import { getStripe } from "@/lib/billing/stripe";
 import { sendEmail } from "@/lib/email/resend";
 import { paymentFailedEmail } from "@/lib/email/templates";
 import type { Currency } from "@/lib/marketing/pricing";
@@ -184,6 +185,16 @@ export function buildBillingDeps(): BillingDeps {
         tenantName: (tenant as { name?: string } | null)?.name ?? "your organisation",
         currency: ((fee as { currency?: string }).currency ?? "GBP") as Currency,
       };
+    },
+
+    async setDefaultPaymentMethod({ customerId, setupIntentId }) {
+      const stripe = getStripe();
+      const si = await stripe.setupIntents.retrieve(setupIntentId);
+      const pm = typeof si.payment_method === "string" ? si.payment_method : si.payment_method?.id ?? null;
+      if (!pm) return; // nothing captured; nothing to set
+      await stripe.customers.update(customerId, {
+        invoice_settings: { default_payment_method: pm },
+      });
     },
 
     async sendPaymentFailedEmail(info) {

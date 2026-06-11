@@ -10,6 +10,7 @@ function deps(over: Partial<BillingDeps> = {}): BillingDeps {
     markSetupFeePaid: vi.fn(async () => ({ tenantName: "Speedy Cabs", currency: "GBP" as const })),
     sendPaymentFailedEmail: vi.fn(async () => {}),
     grantTopupCredits: vi.fn(async () => {}),
+    setDefaultPaymentMethod: vi.fn(async () => {}),
     ...over,
   };
 }
@@ -155,6 +156,45 @@ describe("handleStripeEvent", () => {
       couponCode: "SAVE20",
     });
     expect(res.action).toBe("topup_credits.granted");
+  });
+
+  it("sets the default payment method on an autopay-setup checkout completion", async () => {
+    const ev = {
+      id: "evt_autopay",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_setup",
+          customer: "cus_1",
+          setup_intent: "seti_1",
+          metadata: { reason: "autopay_setup", tenant_id: "t1" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.setDefaultPaymentMethod).toHaveBeenCalledWith({ customerId: "cus_1", setupIntentId: "seti_1" });
+    expect(d.grantTopupCredits).not.toHaveBeenCalled();
+    expect(res.action).toBe("autopay.enabled");
+  });
+
+  it("reads expanded setup_intent / customer objects on autopay setup", async () => {
+    const ev = {
+      id: "evt_autopay_exp",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_setup2",
+          customer: { id: "cus_2" },
+          setup_intent: { id: "seti_2" },
+          metadata: { reason: "autopay_setup", tenant_id: "t2" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.setDefaultPaymentMethod).toHaveBeenCalledWith({ customerId: "cus_2", setupIntentId: "seti_2" });
+    expect(res.action).toBe("autopay.enabled");
   });
 
   it("ignores a checkout.session.completed that is not a top-up purchase", async () => {

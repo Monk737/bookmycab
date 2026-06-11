@@ -188,6 +188,7 @@ export default async function TenantDetailPage({
     { data: subsData },
     { data: feesData },
     { data: auditData },
+    { data: voiceSubData },
   ] = await Promise.all([
     serviceClient
       .from("automations")
@@ -218,7 +219,14 @@ export default async function TenantDetailPage({
       .eq("tenant_id", tenantId)
       .order("ts", { ascending: false })
       .limit(50),
+    serviceClient
+      .from("voice_subscriptions")
+      .select("tenant_id")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
   ]);
+
+  const hasVoicePlan = Boolean(voiceSubData);
 
   const automations = (automationsData ?? []) as AutomationRow[];
 
@@ -478,7 +486,7 @@ export default async function TenantDetailPage({
       <Section title="Automations">
         <div className="mb-4 border-[3px] border-ink bg-paper p-5">
           <h3 className="mb-3 font-display text-sm font-extrabold uppercase tracking-tight text-ink">Add an automation</h3>
-          <AddAutomationForm tenantId={tenant.id} />
+          <AddAutomationForm tenantId={tenant.id} hasVoicePlan={hasVoicePlan} />
         </div>
         <DataTable
           columns={automationColumns}

@@ -189,7 +189,7 @@ export function MembersManager({ tenantId, members }: { tenantId: string; member
 const CHAT_TYPES = ["Booking", "Support", "Driver", "Custom"] as const;
 
 /** Manually provision an automation (Chat bot or Voice agent) for the tenant. */
-export function AddAutomationForm({ tenantId }: { tenantId: string }) {
+export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string; hasVoicePlan: boolean }) {
   const [state, formAction, pending] = useActionState(createAutomation.bind(null, tenantId), initialState);
   const [type, setType] = useState<string>("Booking");
   const isVoice = type === "Voice";
@@ -199,6 +199,7 @@ export function AddAutomationForm({ tenantId }: { tenantId: string }) {
   const phoneId = useId();
   const channelId = useId();
   const handleId = useId();
+  const tierId = useId();
   const fe = state.fieldErrors;
 
   return (
@@ -232,11 +233,25 @@ export function AddAutomationForm({ tenantId }: { tenantId: string }) {
         </div>
 
         {isVoice ? (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={phoneId} className="text-sm font-medium text-gray-700">Phone number</label>
-            <input id={phoneId} name="phone_number" placeholder="+44 20 7946 0001" className={inputClass} />
-            <FieldError id={`${phoneId}-error`} error={fe.phone_number?.[0]} />
-          </div>
+          <>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={phoneId} className="text-sm font-medium text-gray-700">Phone number</label>
+              <input id={phoneId} name="phone_number" placeholder="+44 20 7946 0001" className={inputClass} />
+              <FieldError id={`${phoneId}-error`} error={fe.phone_number?.[0]} />
+            </div>
+            {!hasVoicePlan && (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={tierId} className="text-sm font-medium text-gray-700">Voice plan tier</label>
+                <select id={tierId} name="voice_tier" defaultValue="ignition" className={inputClass}>
+                  <option value="ignition">Ignition — 1,500 calls / 1 agent</option>
+                  <option value="in_motion">In Motion — 2,250 calls / 2 agents</option>
+                  <option value="full_throttle">Full Throttle — 3,000 calls / 2 agents</option>
+                </select>
+                <FieldError id={`${tierId}-error`} error={fe.voice_tier?.[0]} />
+                <p className="text-xs text-gray-500">This tenant has no voice plan yet — adding an agent provisions one and unlocks the AI Voice dashboard.</p>
+              </div>
+            )}
+          </>
         ) : (
           <>
             <div className="flex flex-col gap-1.5">
