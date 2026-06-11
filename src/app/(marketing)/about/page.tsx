@@ -10,7 +10,7 @@ import { COMPANY } from "@/lib/marketing/nav";
 export const metadata: Metadata = {
   title: "About · BookMyCab",
   description:
-    "BookMyCab is built by FlowMo AI LTD, made in the United Kingdom. We build custom omnichannel booking automations for cab firms, confident, technical, transparent, no hype. You bring your numbers. You own your customer base.",
+    "BookMyCab is built by FlowMo AI LTD, made in the United Kingdom. We build AI voice agents and WhatsApp booking bots for cab firms, confident, technical, transparent, no hype. You bring your numbers. You own your customer base.",
 };
 
 // What we believe / how we work. Plain principles, no hype.
@@ -40,7 +40,7 @@ const SEGMENTS = [
   "Night-economy operators",
   "School & account contracts",
   "Accessible & specialist vehicles",
-  "Multi-town omnichannel firms",
+  "Multi-branch town firms",
 ];
 
 export default function AboutPage() {
@@ -54,9 +54,10 @@ export default function AboutPage() {
             Built for cab firms, by {COMPANY.entity}.
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            {COMPANY.product} is a custom chatbot that books cabs by text and
-            voice across every channel, then writes the job into your dispatch.
-            We build one for each firm, around its own fleet and fares. Nothing
+            {COMPANY.product} is an AI voice agent that answers your phone and a
+            WhatsApp bot that books by chat, then writes the job into your
+            dispatch. We build one for each firm, around its own fleet and
+            fares. Nothing
             like the generic bot the firm down the road bolted on.
           </p>
           <p className="mt-4 text-base font-medium text-ink">
@@ -182,7 +183,7 @@ export default function AboutPage() {
               Worth keeping, never holding you hostage.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
-              Your channels, your keys, your customers, all yours. We earn our
+              Your numbers, your keys, your customers, all yours. We earn our
               place month to month by booking fares you would have lost, not by
               locking you in. Cancel and you walk away with everything you came
               in with.

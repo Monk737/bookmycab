@@ -1,50 +1,32 @@
-import Image from "next/image";
+import { PRODUCTS, ProductIcon } from "@/components/marketing/product-marks";
 
 /**
- * Convergence visual for the Channels page: five inbound channels funnel into
- * one automation and one customer record. Distinct from the linear runtime
- * flow on How It Works (this one is many-to-one). Fully static and legible by
- * default; the only motion is the amber hub pulse, which prefers-reduced-motion
- * disables. SVG funnel lines use a non-scaling stroke so they stay crisp at any
- * width, and are hidden on mobile in favour of a stacked layout.
- *
- * The channels are shown as their real app icons. The icons are colourful and
- * self-contained, so each sits on a light paper tile with its name beside it.
+ * Convergence visual for the Products page: both products, the AI Voice Booking
+ * Agent and the WhatsApp Chat Bot, funnel into one automation that keeps one
+ * customer record. Distinct from the linear runtime flow on How It Works (this
+ * one is two-into-one). Fully static and legible by default; the only motion is
+ * the amber hub pulse, which prefers-reduced-motion disables. SVG funnel lines
+ * use a non-scaling stroke so they stay crisp at any width.
  */
-
-const CHANNELS = [
-  { name: "WhatsApp", src: "/social/whatsapp.png" },
-  { name: "Telegram", src: "/social/telegram.png" },
-  { name: "Messenger", src: "/social/messenger.png" },
-  { name: "Instagram", src: "/social/instagram.png" },
-  { name: "Web chat widget", src: "/social/web-widget.png" },
-];
-
 export function ChannelConvergence() {
   return (
     <div
       role="img"
-      aria-label="Five channels (WhatsApp, Telegram, Messenger, Instagram and a web chat widget) all funnel into one automation, which keeps one customer record. A customer who messages on Instagram one week and WhatsApp the next is the same customer to you."
+      aria-label="Both products, the AI Voice Booking Agent and the WhatsApp Chat Bot, funnel into one automation, which keeps one customer record. A caller who phones one week and messages on WhatsApp the next is the same customer to you."
       className="grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_7rem_minmax(0,1fr)] lg:gap-0"
     >
-      {/* Channels */}
+      {/* Products */}
       <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
-        {CHANNELS.map((c) => (
+        {PRODUCTS.map((p) => (
           <li
-            key={c.name}
+            key={p.name}
             className="brut-hover-lift flex h-20 items-center gap-4 border-[3px] border-ink bg-paper px-4 shadow-brut-sm"
           >
             <span className="flex h-14 w-14 shrink-0 items-center justify-center">
-              <Image
-                src={c.src}
-                alt={c.name}
-                width={512}
-                height={512}
-                className="h-14 w-14 object-contain"
-              />
+              <ProductIcon mark={p} />
             </span>
-            <span className="font-display text-base font-extrabold uppercase tracking-tight text-ink">
-              {c.name}
+            <span className="font-display text-base font-extrabold uppercase leading-tight tracking-tight text-ink">
+              {p.name}
             </span>
           </li>
         ))}
@@ -57,7 +39,7 @@ export function ChannelConvergence() {
         preserveAspectRatio="none"
         className="hidden h-44 w-full lg:block"
       >
-        {[10, 30, 50, 70, 90].map((y) => (
+        {[28, 72].map((y) => (
           <line
             key={y}
             x1="0"
@@ -87,9 +69,9 @@ export function ChannelConvergence() {
           One customer record, however they reach you.
         </p>
         <p className="mt-3 text-sm leading-relaxed text-gray-700">
-          A customer who sends an Instagram DM this week and a WhatsApp voice
-          note the next is the same person to you, with one history, not two
-          conversations to stitch together.
+          A caller who phones the booking line this week and sends a WhatsApp
+          voice note the next is the same person to you, with one history, not
+          two conversations to stitch together.
         </p>
       </div>
     </div>

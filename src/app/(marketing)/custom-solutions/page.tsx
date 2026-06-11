@@ -9,7 +9,7 @@ import { Reveal } from "@/components/marketing/reveal";
 export const metadata: Metadata = {
   title: "Custom Solutions · BookMyCab",
   description:
-    "Beyond booking. For larger fleets, more channels or anything outside our standard options, we scope and quote custom automations individually, support bots, driver tools, lost property, complaints, marketing, custom integrations and inbound voice.",
+    "Beyond booking. For larger fleets, very high call volume or anything outside our standard options, we scope and quote custom automations individually, support bots, driver tools, lost property, complaints, marketing and custom integrations.",
 };
 
 // Full Throttle (formerly Option C), quoted-individually framing.
@@ -19,8 +19,8 @@ const FULL_THROTTLE = [
     body: "Bigger operations carry their own scale, shift patterns and dispatch load. We size the build to your fleet instead of squeezing you into a tier.",
   },
   {
-    title: "Four or more channels",
-    body: "Running everywhere at once, and adding channels past our standard set, is scoped to exactly what your customers actually use.",
+    title: "Very high call volume",
+    body: "Bigger operations carry their own call volume, shift patterns and busy-hour spikes. We size the build to your fleet and your busiest nights instead of squeezing you into a tier.",
   },
   {
     title: "Anything outside Ignition or In Motion",
@@ -56,23 +56,12 @@ const ADD_ONS: AddOn[] = [
   {
     code: "MK",
     name: "Marketing automations",
-    body: "Win back riders who went quiet, reward your regulars and push offers, all on the channels they already use, all from a list you own.",
+    body: "Win back riders who went quiet, reward your regulars and push offers over WhatsApp, all from a list you own.",
   },
   {
     code: "CI",
     name: "Custom integrations",
     body: "Your CRM, your accounting stack, a dispatch system that isn't on our list. If your firm runs on it, we wire your build into it.",
-  },
-  {
-    code: "AC",
-    name: "Additional channels",
-    body: "Reach customers somewhere past our standard five and we will fold that channel into the very same automation, no second bot to manage.",
-  },
-  {
-    code: "VA",
-    name: "Voice agent",
-    body: "Inbound call handling: an AI voice agent that picks up the phone and takes the booking out loud, for the callers who still want to ring you.",
-    roadmap: true,
   },
 ];
 
@@ -87,9 +76,9 @@ export default function CustomSolutionsPage() {
             When your firm needs more than booking.
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            Larger fleets, extra channels and custom automations sit outside our
-            standard options, so we scope and quote them individually, built
-            around how your business actually runs.
+            Larger fleets, very high call volume and custom automations sit
+            outside our standard options, so we scope and quote them
+            individually, built around how your business actually runs.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <DiscoveryCta size="lg" label="Contact us, priced for you" />
@@ -107,7 +96,7 @@ export default function CustomSolutionsPage() {
                 Full Throttle, priced for you
               </span>
               <h2 className="mt-5 font-display text-3xl font-extrabold leading-[1.05] tracking-[-0.02em] text-ink sm:text-4xl">
-                151+ fleet, four or more channels, or anything outside Ignition and In Motion.
+                151+ fleet, very high call volume, or anything outside Ignition and In Motion.
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-gray-700">
                 No fixed price list here, on purpose. We look at your operation
@@ -205,8 +194,9 @@ export default function CustomSolutionsPage() {
               Priced for your firm, not a price list.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
-              Every custom build is scoped to your fleet, your channels and your
-              dispatch, then quoted once we have seen how you actually run. No
+              Every custom build is scoped to your fleet, your booking line and
+              WhatsApp and your dispatch, then quoted once we have seen how you
+              actually run. No
               tier to squeeze into. The only way to price it is to talk.
             </p>
           </div>

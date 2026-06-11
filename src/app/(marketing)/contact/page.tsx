@@ -11,7 +11,7 @@ import { COMPANY } from "@/lib/marketing/nav";
 export const metadata: Metadata = {
   title: "Contact · BookMyCab",
   description:
-    "Talk to BookMyCab. Email contact@bookmycab.io or call +44 7908 913243, or book a discovery call and we'll scope your fleet, channels and dispatch. No signup, no sales funnel.",
+    "Talk to BookMyCab. Email contact@bookmycab.io or call +44 7908 913243, or book a discovery call and we'll scope your fleet, phone line, WhatsApp and dispatch. No signup, no sales funnel.",
 };
 
 // Primary, one-tap contact routes (no backend form; Resend wiring is later).
@@ -65,7 +65,7 @@ export default async function ContactPage({
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
             The fastest way to start is a discovery call. We&apos;ll look at your
-            fleet, the channels your customers use and the dispatch system you
+            fleet, your phone line and WhatsApp and the dispatch system you
             already run, then quote it honestly. No signup, no obligation.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -157,9 +157,9 @@ export default async function ContactPage({
               {COMPANY.transparency}
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
-              We build it, you own it. Your numbers, your channels, your customer
-              base, start with a conversation and see exactly how it would work
-              for your firm.
+              We build it, you own it. Your numbers, your line and WhatsApp,
+              your customer base, start with a conversation and see exactly how
+              it would work for your firm.
             </p>
           </div>
         </Container>

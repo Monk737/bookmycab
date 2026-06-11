@@ -9,7 +9,7 @@ import { Reveal } from "@/components/marketing/reveal";
 export const metadata: Metadata = {
   title: "Case Studies · BookMyCab",
   description:
-    "How real private-hire firms put BookMyCab to work: after-hours fares, airport transfers, the late-night rush, school and account runs, accessible vehicles and omnichannel booking, with the outcomes each one saw.",
+    "How real private-hire firms put BookMyCab to work: after-hours fares, airport transfers, the late-night rush, school and account runs, accessible vehicles and AI voice plus WhatsApp booking, with the outcomes each one saw.",
 };
 
 type Metric = { value: string; label: string };
@@ -30,7 +30,7 @@ const CASE_STUDIES: CaseStudy[] = [
     challenge:
       "Evening and weekend demand spilled past what two phone lines could answer. Engaged tones meant lost fares, and the office had no idea how many rides were slipping to the rank or the firm next door.",
     solution:
-      "An automation on their own fares and AutoCab dispatch, answering on WhatsApp and an on-site widget. ASAP, scheduled and managed bookings handled in one chat, written straight into dispatch.",
+      "An AI voice agent on their own fares and AutoCab dispatch, picking up every after-hours call, with the WhatsApp bot alongside it. ASAP, scheduled and managed bookings handled in one conversation, written straight into dispatch.",
     outcomes: [
       { value: "24/7", label: "Booking coverage with no night staff" },
       { value: "< 3s", label: "From message to first reply" },
@@ -90,15 +90,15 @@ const CASE_STUDIES: CaseStudy[] = [
     ],
   },
   {
-    segment: "Multi-town omnichannel firm",
-    title: "An operator that turned five inboxes into one",
+    segment: "Multi-branch town firm",
+    title: "An operator that put its phone line and WhatsApp in one place",
     challenge:
-      "Bookings arrived on WhatsApp, Instagram DMs, Messenger and the website, each watched by a different person, and the same rider counted as four separate conversations.",
+      "Calls hit the office line while WhatsApp messages piled up unseen, each watched by a different person, and the same rider counted as two separate conversations.",
     solution:
-      "One automation bound to every channel, with one customer record behind it. A rider who messages on Instagram this week and WhatsApp the next is the same person, with one history.",
+      "One automation behind both the booking line and WhatsApp, with one customer record behind it. A caller who phones this week and messages on WhatsApp the next is the same person, with one history.",
     outcomes: [
-      { value: "1 inbox", label: "Every channel into one bot" },
-      { value: "1 record", label: "One history per rider, not four" },
+      { value: "1 record", label: "Phone and WhatsApp in one place" },
+      { value: "1 history", label: "One thread per rider, not two" },
       { value: "No relearn", label: "Nothing new for staff to log into" },
     ],
   },

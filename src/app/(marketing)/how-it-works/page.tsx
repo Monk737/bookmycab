@@ -11,7 +11,7 @@ import { Reveal } from "@/components/marketing/reveal";
 export const metadata: Metadata = {
   title: "How It Works · BookMyCab",
   description:
-    "From a customer's message to a dispatched cab, and from a discovery call to going live: how your custom automation reads bookings, even voice notes, and lands them in AutoCab, iCabbi or Cordic.",
+    "From a phone call or a WhatsApp to a dispatched cab, and from a discovery call to going live: how your AI voice agent and WhatsApp bot take bookings and land them in AutoCab, iCabbi or Cordic.",
 };
 
 // The customer journey, PRD §9.2 public framing, §5.1.
@@ -19,7 +19,7 @@ const STEPS = [
   {
     n: "01",
     title: "Book a discovery call",
-    body: "We start with a conversation about your firm: your fleet, your channels, your busiest hours and where calls go unanswered today.",
+    body: "We start with a conversation about your firm: your fleet, your phone line and WhatsApp, your busiest hours and where calls go unanswered today.",
   },
   {
     n: "02",
@@ -29,12 +29,12 @@ const STEPS = [
   {
     n: "03",
     title: "We build it around your firm",
-    body: "We build around your own fares, vehicles and dispatch. Your bot is yours alone, tuned to how your firm actually talks to its customers, not a skin on someone else's.",
+    body: "We build around your own fares, vehicles and dispatch. Your voice agent and WhatsApp bot are yours alone, tuned to how your firm actually talks to its customers, not a skin on someone else's.",
   },
   {
     n: "04",
-    title: "Connect your channels",
-    body: "We connect the channels your customers already use, WhatsApp, Telegram, Messenger, Instagram and an on-site chat widget, to your build.",
+    title: "Connect your line and WhatsApp",
+    body: "We point your booking number at the AI voice agent and connect your WhatsApp Business number to the bot. Both run on the one automation behind them.",
   },
   {
     n: "05",
@@ -67,16 +67,17 @@ export default function HowItWorksPage() {
         <Container className="max-w-3xl rise-group">
           <Badge>How it works</Badge>
           <h1 className="mt-6 text-balance font-display text-5xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-ink sm:text-6xl xl:text-7xl">
-            From a message to a{" "}
+            From a call to a{" "}
             <span className="box-decoration-clone bg-brut-yellow px-2 text-ink ring-2 ring-ink">
               dispatched cab
             </span>
             .
           </h1>
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            One chat does the whole job, whether the customer types it or sends a
-            voice note. Below: exactly what happens between their first message
-            and a driver pulling up, and how we build it for your firm.
+            One conversation does the whole job, whether the customer calls and
+            speaks or messages on WhatsApp. Below: exactly what happens between
+            their first call and a driver pulling up, and how we build it for
+            your firm.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <DiscoveryCta size="lg" />
@@ -97,39 +98,40 @@ export default function HowItWorksPage() {
         <Container>
           <div className="max-w-3xl">
             <h2 className="text-balance font-display text-4xl font-extrabold uppercase leading-[1] tracking-[-0.02em] text-paper sm:text-5xl">
-              Two ways to book.{" "}
+              Two products.{" "}
               <span className="box-decoration-clone bg-brut-yellow px-2 text-ink ring-2 ring-ink">
-                One bot.
+                One automation.
               </span>
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-gray-300">
-              Customers reach for whatever is quickest. The chatbot handles both
-              the same way, end to end. Here is each one on its own.
+              Customers reach for whatever is quickest, the phone or WhatsApp.
+              The same automation runs behind both, end to end. Here is each one
+              on its own.
             </p>
           </div>
 
           <div className="mt-10 grid gap-[3px] overflow-hidden border-[3px] border-paper md:grid-cols-2">
             {[
               {
-                tag: "Mode 1",
-                tone: "bg-brut-cyan",
-                title: "Text chatbot",
-                lead: "Tap a quick-reply button or type a line. Nothing to install, no voice note required.",
+                tag: "Product 1",
+                tone: "bg-brut-yellow",
+                title: "AI Voice agent",
+                lead: "Customers call your booking number and just talk. The agent answers on the first ring, no hold music, no queue.",
                 steps: [
-                  ["Tap or type", "“Book a cab”, then the pickup and drop-off, by button or keyboard."],
-                  ["Bot reads it", "Pulls the address, destination, time and vehicle straight from the chat."],
-                  ["Confirm and done", "Fare shown, one tap to confirm, job written into dispatch."],
+                  ["They call and speak", "“I need a cab from fourteen Mill Road to Stansted at half six.”"],
+                  ["The agent listens", "It understands the request, asks only what it must, and reads the fare back."],
+                  ["Confirm and done", "Pickup, destination and time confirmed out loud, job written into dispatch."],
                 ],
               },
               {
-                tag: "Mode 2",
-                tone: "bg-brut-pink",
-                title: "Voice note booking",
-                lead: "Too busy to type? Hold the mic and talk. A ten-second note from a noisy street is enough.",
+                tag: "Product 2",
+                tone: "bg-brut-cyan",
+                title: "WhatsApp bot",
+                lead: "Tap a button, type a line or hold the mic. Text or a ten-second voice note both work.",
                 steps: [
-                  ["Send a voice note", "“Fourteen Mill Road to Stansted, half six tomorrow.”"],
-                  ["Bot transcribes it", "Speech turned to text, accents and background noise handled."],
-                  ["Confirm and done", "Same fare quote, same one-tap confirm, same dispatch hand-off."],
+                  ["Type or send a note", "“Fourteen Mill Road to Stansted, half six tomorrow.”"],
+                  ["The bot reads it", "Text or speech, accents and background noise handled."],
+                  ["Confirm and done", "Same fare quote, one tap to confirm, same dispatch hand-off."],
                 ],
               },
             ].map((mode) => (
@@ -240,7 +242,8 @@ export default function HowItWorksPage() {
             </h2>
             <p className="mx-auto mt-5 max-w-lg leading-relaxed text-gray-300">
               Twenty minutes on a call and you will watch your own build take
-              shape: your channels, your fares, your dispatch, wired together.
+              shape: your phone line, your WhatsApp, your fares and your
+              dispatch, wired together.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <DiscoveryCta size="lg" />

@@ -1,29 +1,20 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
+import { PRODUCTS, ProductIcon } from "@/components/marketing/product-marks";
 
 /**
- * The runtime story as a diagram: a customer message enters on any channel,
- * the automation reads it (voice included), quotes and confirms, and the job
- * lands in the firm's dispatch system. Fully static and legible by default;
- * the amber sweep on the connectors conveys flow and is suppressed under
- * prefers-reduced-motion. No JS, no reveal gating.
+ * The runtime story as a diagram: a customer reaches the firm by phone call or
+ * WhatsApp, the automation reads it (speech included), quotes and confirms, and
+ * the job lands in the firm's dispatch system. Fully static and legible by
+ * default; the amber sweep on the connectors conveys flow and is suppressed
+ * under prefers-reduced-motion. No JS, no reveal gating.
  */
 
-// Channel app icons. Colourful and self-contained, so each sits on a light
-// paper tile with its name beside it.
-const CHANNELS = [
-  { name: "WhatsApp", src: "/social/whatsapp.png" },
-  { name: "Telegram", src: "/social/telegram.png" },
-  { name: "Messenger", src: "/social/messenger.png" },
-  { name: "Instagram", src: "/social/instagram.png" },
-  { name: "Web chat widget", src: "/social/web-widget.png" },
-];
-
 const AUTOMATION_STEPS = [
-  "Reads what the customer wants",
-  "Transcribes voice notes",
+  "Understands the request, by speech or text",
   "Quotes the fare, picks the vehicle",
-  "Confirms the booking",
+  "Confirms pickup, destination and time",
+  "Writes the job to dispatch",
 ];
 
 // Dispatch wordmark logos. Dark marks on transparent, so each sits on paper.
@@ -37,28 +28,22 @@ export function ChannelFlow() {
   return (
     <div
       role="img"
-      aria-label="A customer message arrives on WhatsApp, Telegram, Messenger, Instagram or a web widget. The automation reads the request, transcribes voice notes, quotes the fare, picks the vehicle and confirms the booking. The confirmed job is written into the firm's dispatch system: AutoCab, iCabbi or Cordic, all supported."
+      aria-label="A customer reaches the firm by phone call to the AI Voice Booking Agent or by message to the WhatsApp Chat Bot. The automation understands the request by speech or text, quotes the fare, picks the vehicle and confirms pickup, destination and time. The confirmed job is written into the firm's dispatch system: AutoCab, iCabbi or Cordic, all supported."
       className="flex flex-col items-stretch lg:flex-row lg:items-stretch"
     >
-      {/* Stage 1, Channels */}
-      <Stage label="Customer messages on" className="lg:flex-1">
+      {/* Stage 1, Products */}
+      <Stage label="Customer reaches you on" className="lg:flex-1">
         <ul className="space-y-3">
-          {CHANNELS.map((c) => (
+          {PRODUCTS.map((p) => (
             <li
-              key={c.name}
+              key={p.name}
               className="brut-hover-lift flex h-16 items-center gap-3.5 border-[3px] border-ink bg-paper px-4 shadow-brut-sm"
             >
               <span className="flex h-11 w-11 shrink-0 items-center justify-center">
-                <Image
-                  src={c.src}
-                  alt={c.name}
-                  width={512}
-                  height={512}
-                  className="h-11 w-11 object-contain"
-                />
+                <ProductIcon mark={p} className="h-11 w-11" />
               </span>
-              <span className="truncate font-display text-lg font-extrabold uppercase tracking-tight text-ink">
-                {c.name}
+              <span className="truncate font-display text-base font-extrabold uppercase leading-tight tracking-tight text-ink">
+                {p.name}
               </span>
             </li>
           ))}

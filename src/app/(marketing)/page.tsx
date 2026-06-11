@@ -14,23 +14,23 @@ import { Reveal } from "@/components/marketing/reveal";
 import { COMPANY } from "@/lib/marketing/nav";
 
 export const metadata: Metadata = {
-  title: "BookMyCab, Your cab company, on every channel, on autopilot",
+  title: "BookMyCab, An AI voice agent and WhatsApp bot for your cab firm",
   description:
-    "Custom AI booking and support automations for the global taxi industry. BookMyCab answers every channel, takes bookings around the clock, and books straight into your dispatch system.",
+    "An AI voice agent that answers your phone and a WhatsApp bot that takes bookings by chat. Both quote the fare, confirm the trip and book straight into AutoCab, iCabbi or Cordic, around the clock.",
 };
 
-// The real ordered flow, message in, booked, dispatched. A genuine sequence,
-// so the numbered markers carry information rather than decorate.
+// The real ordered flow, call or message in, booked, dispatched. A genuine
+// sequence, so the numbered markers carry information rather than decorate.
 const STEPS = [
   {
     n: "01",
-    title: "A message lands",
-    body: "WhatsApp, Telegram, Messenger, Instagram or your website. A typed line or a voice note, at 2 in the afternoon or 2 in the morning. Every single one gets answered.",
+    title: "A call or a message lands",
+    body: "Someone phones the booking line or messages on WhatsApp, by text or voice note, at 2 in the afternoon or 2 in the morning. Every one gets answered on the first ring.",
   },
   {
     n: "02",
-    title: "The bot books it",
-    body: "It reads the chat or transcribes the voice note, works out what the customer wants, quotes the fare, picks the vehicle and confirms the trip, all in the conversation.",
+    title: "The agent books it",
+    body: "It listens or reads, works out what the customer wants, quotes the fare, picks the vehicle and confirms pickup, destination and time, all inside the call or chat.",
   },
   {
     n: "03",
@@ -49,17 +49,17 @@ export default function Home() {
             <div className="rise-group">
               <Badge tone="lime">For taxi &amp; private-hire firms</Badge>
               <h1 className="mt-6 text-balance font-display text-5xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] text-ink sm:text-6xl xl:text-7xl">
-                Take every booking,{" "}
+                Answer every call,{" "}
                 <span className="box-decoration-clone bg-brut-yellow px-2 text-ink ring-2 ring-ink">
                   day or night
                 </span>
                 .
               </h1>
               <p className="mt-7 max-w-xl text-lg leading-relaxed text-gray-700 sm:text-xl">
-                A bespoke booking assistant that handles jobs by text or voice on
-                the apps your customers already use, quoting the fare, confirming
-                the trip and writing it straight into your dispatch. Around the
-                clock, with no extra staff on the desk.
+                An AI voice agent picks up your phone and takes the booking by
+                speaking, and a WhatsApp bot does the same by chat. Both quote
+                the fare, confirm the trip and write it straight into your
+                dispatch. Around the clock, with no extra staff on the desk.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <DiscoveryCta size="lg" />
@@ -83,13 +83,12 @@ export default function Home() {
           {Array.from({ length: 2 }).map((_, dup) => (
             <span key={dup} className="flex items-center gap-6" aria-hidden={dup === 1}>
               {[
+                "AI Voice Agent",
+                "Answers the phone",
                 "WhatsApp",
-                "Telegram",
-                "Messenger",
-                "Instagram",
-                "Web widget",
                 "Voice notes",
                 "Airport runs",
+                "After hours",
                 "AutoCab",
                 "iCabbi",
                 "Cordic",
@@ -112,11 +111,11 @@ export default function Home() {
         <Container>
           <div className="max-w-2xl">
             <h2 className="text-balance font-display text-3xl font-extrabold tracking-[-0.02em] text-ink sm:text-4xl">
-              First message to dispatched cab, no human in the middle
+              First call to dispatched cab, no human in the middle
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-700">
-              One chat does the whole job. Here is what happens between a
-              customer&apos;s first message and a driver pulling up.
+              One conversation does the whole job. Here is what happens between a
+              customer&apos;s first call or message and a driver pulling up.
             </p>
           </div>
 
@@ -141,7 +140,7 @@ export default function Home() {
         </Container>
       </Section>
 
-      {/* Always-on, every channel, art-directed dark band for contrast. */}
+      {/* Always-on, two products, art-directed dark band for contrast. */}
       <Section className="border-y-[3px] border-ink bg-ink py-20 sm:py-28">
         <Container>
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
@@ -153,14 +152,15 @@ export default function Home() {
                 </span>
               </h2>
               <p className="mt-6 text-lg leading-relaxed text-gray-300">
-                Your phone can ring out. This can&apos;t. Every message on every
-                channel gets a reply in seconds, at 9am on your busiest Saturday
-                and at 3am when the office is dark. No queue, no hold music, no
-                voicemail nobody checks.
+                Your phone can ring out. The voice agent can&apos;t. Every call
+                is picked up on the first ring and every WhatsApp gets a reply in
+                seconds, at 9am on your busiest Saturday and at 3am when the
+                office is dark. No queue, no hold music, no voicemail nobody
+                checks.
               </p>
               <p className="mt-5 text-lg leading-relaxed text-gray-300">
-                A customer who books on Instagram today and WhatsApp next week is
-                one customer to you, with one history, not two conversations to
+                A customer who phones today and sends a WhatsApp next week is one
+                customer to you, with one history, not two conversations to
                 stitch together.
               </p>
               <div className="mt-8 grid grid-cols-3 gap-[3px] overflow-hidden border-[3px] border-paper">
@@ -181,13 +181,13 @@ export default function Home() {
 
             <div className="lg:pl-8">
               <p className="inline-block bg-brut-yellow px-2 py-0.5 text-xs font-bold uppercase tracking-[0.08em] text-ink">
-                One bot, five front doors
+                Two products, one automation
               </p>
               <ChannelLogos variant="onDark" className="mt-6" />
               <p className="mt-8 max-w-md leading-relaxed text-gray-400">
-                Add a channel and it joins the same bot, the same dispatch, the
-                same customer list. Nothing new for your controllers to learn,
-                nothing extra to log into.
+                The voice agent and the WhatsApp bot run on the same automation,
+                the same dispatch and the same customer list. Nothing new for
+                your controllers to learn, nothing extra to log into.
               </p>
             </div>
           </div>
@@ -336,9 +336,9 @@ export default function Home() {
               When the signal drops, the booking still goes through
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-700">
-              No data, no app, no problem. A customer scans your hoarding or
-              messages your number, books on WhatsApp by text or voice, and your
-              cab is on its way.
+              No data, no app, no problem. A customer calls your number or sends
+              a WhatsApp, books by speaking or typing, and your cab is on its
+              way.
             </p>
           </div>
           <div className="mt-10">
@@ -355,8 +355,8 @@ export default function Home() {
               {COMPANY.tagline}
             </h2>
             <p className="mx-auto mt-6 max-w-lg leading-relaxed text-gray-300">
-              Book a 20-minute discovery call and we will map your channels,
-              fares and dispatch into an automation built for your firm.
+              Book a 20-minute discovery call and we will map your phone line,
+              WhatsApp, fares and dispatch into an automation built for your firm.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <DiscoveryCta size="lg" />

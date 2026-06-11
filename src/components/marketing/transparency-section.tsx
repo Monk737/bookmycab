@@ -17,9 +17,9 @@ const PASS_THROUGH: CostRow[] = [
     cadence: "Per conversation",
   },
   {
-    item: "Telegram, Messenger & Instagram volume",
-    paidTo: "Your provider",
-    cadence: "Per usage",
+    item: "Phone number & inbound call minutes",
+    paidTo: "Your telephony provider",
+    cadence: "Per minute",
   },
   {
     item: "AI / chat & voice processing",

@@ -7,7 +7,7 @@ export type NavItem = { label: string; href: string };
 // bar on a single, even line. The mobile drawer adds Home back.
 export const MAIN_NAV: NavItem[] = [
   { label: "How It Works", href: "/how-it-works" },
-  { label: "Channels", href: "/channels" },
+  { label: "Products", href: "/products" },
   { label: "Pricing", href: "/pricing" },
   { label: "Custom Solutions", href: "/custom-solutions" },
   { label: "Case Studies", href: "/case-studies" },
@@ -22,7 +22,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     heading: "Product",
     items: [
       { label: "How It Works", href: "/how-it-works" },
-      { label: "Channels", href: "/channels" },
+      { label: "Products", href: "/products" },
       { label: "Pricing", href: "/pricing" },
       { label: "Custom Solutions", href: "/custom-solutions" },
     ],
@@ -58,7 +58,7 @@ export const LEGAL_NAV: NavItem[] = [
 export const MARKETING_ROUTES = [
   "/",
   "/how-it-works",
-  "/channels",
+  "/products",
   "/pricing",
   "/custom-solutions",
   "/case-studies",
@@ -75,6 +75,6 @@ export const COMPANY = {
   product: "BookMyCab",
   entity: "FlowMo AI LTD",
   country: "United Kingdom",
-  tagline: "Your cab company. On every channel. On autopilot.",
+  tagline: "Every call answered. Every WhatsApp booked. On autopilot.",
   transparency: "You bring your numbers. You own your customer base.",
 } as const;
