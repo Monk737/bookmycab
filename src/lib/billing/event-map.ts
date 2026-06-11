@@ -2,6 +2,11 @@ import type Stripe from "stripe";
 import { unixToIso } from "@/lib/billing/dates";
 import { fromMinor } from "@/lib/billing/plan-price";
 
+/** Unix SECONDS → date-only `YYYY-MM-DD` (UTC), or null. */
+function tsToDate(ts: number | null | undefined): string | null {
+  return typeof ts === "number" ? new Date(ts * 1000).toISOString().slice(0, 10) : null;
+}
+
 /**
  * Pure Stripe-event → local-row mapping. No I/O. The webhook handler builds
  * these rows and hands them to injected DB writers.
@@ -44,8 +49,48 @@ export function subscriptionToMirror(sub: Stripe.Subscription): SubscriptionMirr
 /** Distinguish a one-time setup-fee invoice from a subscription invoice. Basil
  *  moved the subscription pointer onto invoice.parent.subscription_details. */
 export function classifyInvoice(invoice: Stripe.Invoice): "setup" | "subscription" {
-  const sub = invoice.parent?.subscription_details?.subscription ?? null;
+  const sub = invoiceSubscriptionId(invoice);
   return sub ? "subscription" : "setup";
+}
+
+/** The Stripe subscription id this invoice belongs to, or null. Basil moved the
+ *  pointer onto `invoice.parent.subscription_details.subscription`; older
+ *  payloads / test fixtures may still carry `invoice.subscription` or expose it
+ *  on the first line. Read all three. The value can be an id string or an
+ *  expanded Subscription object. */
+export function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const fromParent = invoice.parent?.subscription_details?.subscription ?? null;
+  const inv = invoice as Stripe.Invoice & {
+    subscription?: string | { id?: string } | null;
+  };
+  const fromRoot = inv.subscription ?? null;
+  const line = invoice.lines?.data?.[0] as
+    | { subscription?: string | { id?: string } | null }
+    | undefined;
+  const fromLine = line?.subscription ?? null;
+  const raw = fromParent ?? fromRoot ?? fromLine;
+  if (!raw) return null;
+  return typeof raw === "string" ? raw : raw.id ?? null;
+}
+
+/** The billing period this invoice covers, as date-only strings. Basil exposes
+ *  the period on each line item (`line.period.{start,end}`); fall back to the
+ *  invoice-level `period_start`/`period_end` for older payloads. */
+export interface InvoicePeriod {
+  period_start: string | null;
+  period_end: string | null;
+}
+
+export function invoicePeriod(invoice: Stripe.Invoice): InvoicePeriod {
+  const line = invoice.lines?.data?.[0] as
+    | { period?: { start?: number; end?: number } }
+    | undefined;
+  const start = line?.period?.start ?? invoice.period_start ?? null;
+  const end = line?.period?.end ?? invoice.period_end ?? null;
+  return {
+    period_start: tsToDate(start),
+    period_end: tsToDate(end),
+  };
 }
 
 type NewModelSubUpdate = {
@@ -63,9 +108,6 @@ const STRIPE_STATUS_MAP: Record<string, "active" | "paused" | "cancelled"> = {
   paused: "paused", unpaid: "paused",
   canceled: "cancelled", incomplete_expired: "cancelled",
 };
-
-const tsToDate = (ts: number | null | undefined): string | null =>
-  typeof ts === "number" ? new Date(ts * 1000).toISOString().slice(0, 10) : null;
 
 /**
  * Map a Stripe subscription to a new-model row update, or null when it is not a

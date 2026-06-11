@@ -1,6 +1,13 @@
 import type Stripe from "stripe";
 import type { Currency } from "@/lib/marketing/pricing";
-import { subscriptionToMirror, classifyInvoice, type SubscriptionMirrorRow } from "@/lib/billing/event-map";
+import {
+  subscriptionToMirror,
+  classifyInvoice,
+  mapNewModelSubscription,
+  invoiceSubscriptionId,
+  invoicePeriod,
+  type SubscriptionMirrorRow,
+} from "@/lib/billing/event-map";
 import { fromMinor } from "@/lib/billing/plan-price";
 
 /**
@@ -11,6 +18,17 @@ import { fromMinor } from "@/lib/billing/plan-price";
 export interface BillingDeps {
   /** Upsert a subscriptions mirror row (onConflict stripe_sub_id). */
   upsertSubscription(row: SubscriptionMirrorRow): Promise<void>;
+  /** Update a new-model chat/voice subscription row, matched by
+   *  `stripe_subscription_id`, with the mapped status + period. */
+  updateNewModelSubscription(out: NonNullable<ReturnType<typeof mapNewModelSubscription>>): Promise<void>;
+  /** Open a fresh `usage_counters` voice-calls period for the tenant whose
+   *  `voice_subscriptions` row matches `stripeSubscriptionId`. No-op (returns
+   *  false) when no voice subscription matches that id. */
+  resetVoiceCallPool(args: {
+    stripeSubscriptionId: string;
+    periodStart: string | null;
+    periodEnd: string | null;
+  }): Promise<boolean>;
   /** Mark the setup_fees row for this Stripe invoice id as paid; return tenant
    *  display info for any follow-up (or null when no matching row). */
   markSetupFeePaid(stripeInvoiceId: string): Promise<{ tenantName: string; currency: Currency } | null>;
@@ -26,6 +44,8 @@ export interface BillingDeps {
 export interface StripeEventResult {
   action:
     | "subscription.upserted"
+    | "new_model.subscription.synced"
+    | "voice_pool.reset"
     | "setup_fee.paid"
     | "payment_failed.notified"
     | "logged"
@@ -42,6 +62,14 @@ export async function handleStripeEvent(
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const sub = event.data.object as Stripe.Subscription;
+      // New-model subs carry `metadata.product` (chat|voice); route them to the
+      // chat_subscriptions/voice_subscriptions row and STOP — do NOT also run the
+      // legacy `subscriptions` mirror for them. Legacy subs return null here.
+      const newModel = mapNewModelSubscription(sub);
+      if (newModel) {
+        await deps.updateNewModelSubscription(newModel);
+        return { action: "new_model.subscription.synced" };
+      }
       const row = subscriptionToMirror(sub);
       if (!row.tenant_id) return { action: "skipped" };
       await deps.upsertSubscription(row);
@@ -54,8 +82,23 @@ export async function handleStripeEvent(
         await deps.markSetupFeePaid(invoice.id);
         return { action: "setup_fee.paid" };
       }
-      // Subscription cycle payment, Stripe is the ledger; nothing to mirror
-      // beyond the subscription row we already keep. Just acknowledge.
+      // Subscription cycle payment. For a NEW-MODEL voice subscription, open a
+      // fresh voice-calls usage period (resets the shared monthly call pool).
+      // resetVoiceCallPool returns false when this invoice's subscription isn't a
+      // tracked voice subscription (legacy tenants / chat subs), in which case we
+      // fall through to the legacy acknowledge.
+      const subId = invoiceSubscriptionId(invoice);
+      if (subId) {
+        const { period_start, period_end } = invoicePeriod(invoice);
+        const reset = await deps.resetVoiceCallPool({
+          stripeSubscriptionId: subId,
+          periodStart: period_start,
+          periodEnd: period_end,
+        });
+        if (reset) return { action: "voice_pool.reset" };
+      }
+      // Legacy subscription cycle payment, Stripe is the ledger; nothing to
+      // mirror beyond the subscription row we already keep. Just acknowledge.
       return { action: "logged" };
     }
 

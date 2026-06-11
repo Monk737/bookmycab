@@ -6,6 +6,49 @@ import { sendEmail } from "@/lib/email/resend";
 import { paymentFailedEmail } from "@/lib/email/templates";
 import type { Currency } from "@/lib/marketing/pricing";
 
+/** The narrow slice of the Supabase client the reset helper needs. Kept minimal
+ *  so the factory is unit-testable with a hand-rolled fake. */
+type SupabaseLike = { from: (table: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/**
+ * Build the voice-call-pool reset operation against a Supabase-like client. On
+ * `invoice.paid` for a tracked voice subscription, opens a fresh voice-calls
+ * usage period (used:0, limit = monthly_call_allowance). Returns false when the
+ * invoice's subscription isn't a tracked voice subscription (legacy / chat).
+ * Exported so it can be unit-tested with a mocked client.
+ */
+export function buildResetVoiceCallPool(
+  db: SupabaseLike,
+): BillingDeps["resetVoiceCallPool"] {
+  return async ({ stripeSubscriptionId, periodStart, periodEnd }) => {
+    const { data: vsub, error: lookupErr } = await db
+      .from("voice_subscriptions")
+      .select("tenant_id, monthly_call_allowance")
+      .eq("stripe_subscription_id", stripeSubscriptionId)
+      .maybeSingle();
+    if (lookupErr) throw new Error(`resetVoiceCallPool lookup failed: ${lookupErr.message}`);
+    if (!vsub) return false;
+
+    const { tenant_id, monthly_call_allowance } = vsub as {
+      tenant_id: string;
+      monthly_call_allowance: number;
+    };
+    const { error: upsertErr } = await db.from("usage_counters").upsert(
+      {
+        tenant_id,
+        feature_key: "voice_calls",
+        period_start: periodStart,
+        period_end: periodEnd,
+        used: 0,
+        limit_amount: monthly_call_allowance,
+      },
+      { onConflict: "tenant_id,feature_key,period_start" },
+    );
+    if (upsertErr) throw new Error(`resetVoiceCallPool upsert failed: ${upsertErr.message}`);
+    return true;
+  };
+}
+
 /**
  * Real `BillingDeps` for the webhook: service-role DB writes (billing mirrors
  * are cross-tenant + RLS-protected, so the service-role key is required) and
@@ -24,6 +67,16 @@ export function buildBillingDeps(): BillingDeps {
       // retry is safe.
       if (error) throw new Error(`upsertSubscription failed: ${error.message}`);
     },
+
+    async updateNewModelSubscription(out) {
+      const { error } = await db
+        .from(out.table)
+        .update(out.update)
+        .eq("stripe_subscription_id", out.stripe_subscription_id);
+      if (error) throw new Error(`updateNewModelSubscription failed: ${error.message}`);
+    },
+
+    resetVoiceCallPool: buildResetVoiceCallPool(db),
 
     async markSetupFeePaid(stripeInvoiceId) {
       const { data: fee, error } = await db

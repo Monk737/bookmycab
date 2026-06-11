@@ -5,6 +5,8 @@ import type Stripe from "stripe";
 function deps(over: Partial<BillingDeps> = {}): BillingDeps {
   return {
     upsertSubscription: vi.fn(async () => {}),
+    updateNewModelSubscription: vi.fn(async () => {}),
+    resetVoiceCallPool: vi.fn(async () => false),
     markSetupFeePaid: vi.fn(async () => ({ tenantName: "Speedy Cabs", currency: "GBP" as const })),
     sendPaymentFailedEmail: vi.fn(async () => {}),
     ...over,
@@ -111,5 +113,133 @@ describe("handleStripeEvent", () => {
     const d = deps();
     const res = await handleStripeEvent(ev, d);
     expect(res.action).toBe("ignored");
+  });
+
+  it("routes a new-model voice subscription to voice_subscriptions, not the legacy mirror", async () => {
+    const ev = subEvent("customer.subscription.updated");
+    (ev.data.object as { metadata: Record<string, string> }).metadata = {
+      tenant_id: "tnt-1",
+      product: "voice",
+    };
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.updateNewModelSubscription).toHaveBeenCalledOnce();
+    expect(d.updateNewModelSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        table: "voice_subscriptions",
+        stripe_subscription_id: "sub_123",
+        update: expect.objectContaining({
+          status: "active",
+          current_period_start: "2023-11-14",
+          current_period_end: "2023-12-14",
+        }),
+      }),
+    );
+    // The legacy mirror must NOT run for a new-model sub.
+    expect(d.upsertSubscription).not.toHaveBeenCalled();
+    expect(res.action).toBe("new_model.subscription.synced");
+  });
+
+  it("still runs the legacy mirror for a subscription with no metadata.product", async () => {
+    // subEvent has tenant_id + plan_band but NO product → legacy path.
+    const d = deps();
+    const res = await handleStripeEvent(subEvent("customer.subscription.updated"), d);
+    expect(d.updateNewModelSubscription).not.toHaveBeenCalled();
+    expect(d.upsertSubscription).toHaveBeenCalledOnce();
+    expect(res.action).toBe("subscription.upserted");
+  });
+
+  it("resets the voice call pool on invoice.paid for a voice subscription", async () => {
+    const ev = {
+      id: "evt_voice_inv",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_voice",
+          parent: {
+            type: "subscription_details",
+            quote_details: null,
+            subscription_details: { subscription: "sub_voice" },
+          },
+          lines: {
+            data: [{ period: { start: 1_700_000_000, end: 1_702_592_000 } }],
+          },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const resetVoiceCallPool = vi.fn(async () => true);
+    const d = deps({ resetVoiceCallPool });
+    const res = await handleStripeEvent(ev, d);
+    expect(resetVoiceCallPool).toHaveBeenCalledWith({
+      stripeSubscriptionId: "sub_voice",
+      periodStart: "2023-11-14",
+      periodEnd: "2023-12-14",
+    });
+    expect(d.markSetupFeePaid).not.toHaveBeenCalled();
+    expect(res.action).toBe("voice_pool.reset");
+  });
+
+  it("falls through to logged on invoice.paid when the sub is not a voice subscription", async () => {
+    const ev = {
+      id: "evt_legacy_inv",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_legacy",
+          parent: {
+            type: "subscription_details",
+            quote_details: null,
+            subscription_details: { subscription: "sub_legacy" },
+          },
+          lines: { data: [{ period: { start: 1_700_000_000, end: 1_702_592_000 } }] },
+        },
+      },
+    } as unknown as Stripe.Event;
+    // resetVoiceCallPool default returns false → not a tracked voice sub.
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.resetVoiceCallPool).toHaveBeenCalledOnce();
+    expect(res.action).toBe("logged");
+  });
+});
+
+describe("usage_counters voice reset (dep contract)", () => {
+  it("upserts used:0 + limit_amount = monthly_call_allowance, onConflict tenant_id,feature_key,period_start", async () => {
+    // Exercise the REAL resetVoiceCallPool against a mocked service-role client,
+    // asserting the exact usage_counters upsert shape the schema requires.
+    const upsert = vi.fn(() => ({ error: null }));
+    const maybeSingle = vi.fn(async () => ({
+      data: { tenant_id: "tnt-9", monthly_call_allowance: 1200 },
+      error: null,
+    }));
+    const db = {
+      from: vi.fn((table: string) => {
+        if (table === "voice_subscriptions") {
+          return {
+            select: () => ({ eq: () => ({ maybeSingle }) }),
+          };
+        }
+        return { upsert };
+      }),
+    };
+    const { buildResetVoiceCallPool } = await import("@/lib/billing/webhook-deps");
+    const reset = buildResetVoiceCallPool(db as never);
+    const ok = await reset({
+      stripeSubscriptionId: "sub_voice",
+      periodStart: "2023-11-14",
+      periodEnd: "2023-12-14",
+    });
+    expect(ok).toBe(true);
+    expect(upsert).toHaveBeenCalledWith(
+      {
+        tenant_id: "tnt-9",
+        feature_key: "voice_calls",
+        period_start: "2023-11-14",
+        period_end: "2023-12-14",
+        used: 0,
+        limit_amount: 1200,
+      },
+      { onConflict: "tenant_id,feature_key,period_start" },
+    );
   });
 });
