@@ -2,8 +2,7 @@
 
 import { useId, useState } from "react";
 import {
-  PRICING,
-  SETUP_FEE,
+  convert,
   formatPrice,
   type Currency,
 } from "@/lib/marketing/pricing";
@@ -18,30 +17,38 @@ import { CurrencyToggle } from "@/components/marketing/currency-toggle";
 const BOOKINGS_PER_DRIVER_MONTH = 240;
 const DISPATCH_MIN_SAVED_PER_BOOKING = 1.5;
 const OUT_OF_HOURS_UPLIFT = 0.05; // 5% of bookings recovered from out-of-hours / missed
-const STAFF_RATE: Record<Currency, number> = { GBP: 12, EUR: 14, USD: 16 };
+// GBP base; converted to the selected currency via the live FX rate.
+const STAFF_RATE_GBP = 12;
+const SETUP_FEE_GBP = 1000;
 
-type Tier = { name: string; monthly: Record<Currency, number> };
+type Tier = { name: string; monthlyGbp: number };
 
 function tierFor(drivers: number): Tier {
-  if (drivers <= 50) return { name: "Ignition", monthly: { GBP: 500, EUR: 500, USD: 600 } };
-  if (drivers <= 150) return { name: "In Motion", monthly: { GBP: 800, EUR: 800, USD: 800 } };
-  // Full Throttle is quoted individually; compare against the In Motion rate as a floor.
-  return { name: "Full Throttle", monthly: PRICING.B.single as Record<Currency, number> };
+  if (drivers <= 50) return { name: "Ignition", monthlyGbp: 499 };
+  if (drivers <= 100) return { name: "In Motion", monthlyGbp: 999 };
+  // Full Throttle is quoted individually; use In Motion as a conservative floor.
+  return { name: "Full Throttle", monthlyGbp: 999 };
 }
 
-function compute(drivers: number, avgFare: number, currency: Currency) {
+function compute(
+  drivers: number,
+  avgFare: number,
+  currency: Currency,
+  rates: Record<Currency, number>,
+) {
   const bookings = drivers * BOOKINGS_PER_DRIVER_MONTH;
   const hoursSaved = (bookings * DISPATCH_MIN_SAVED_PER_BOOKING) / 60;
-  const staffCostSaved = hoursSaved * STAFF_RATE[currency];
+  const staffRate = convert(STAFF_RATE_GBP, currency, rates);
+  const staffCostSaved = hoursSaved * staffRate;
   const extraBookings = bookings * OUT_OF_HOURS_UPLIFT;
   const revenueUplift = extraBookings * avgFare;
 
   const tier = tierFor(drivers);
-  const planMonthly = tier.monthly[currency];
+  const planMonthly = convert(tier.monthlyGbp, currency, rates);
   const monthlyValue = staffCostSaved + revenueUplift;
   const netMonthly = monthlyValue - planMonthly;
   const annualNet = netMonthly * 12;
-  const setup = SETUP_FEE[currency];
+  const setup = convert(SETUP_FEE_GBP, currency, rates);
   const dailyNet = netMonthly / 30;
   const paybackDays = dailyNet > 0 ? Math.ceil(setup / dailyNet) : null;
 
@@ -187,7 +194,7 @@ function DarkMetric({
   );
 }
 
-export function PricingRoi() {
+export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
   const fleetId = useId();
   const fareId = useId();
 
@@ -195,7 +202,7 @@ export function PricingRoi() {
   const [drivers, setDrivers] = useState(20);
   const [avgFare, setAvgFare] = useState(18);
 
-  const r = compute(drivers, avgFare, currency);
+  const r = compute(drivers, avgFare, currency, rates);
   const money = (n: number) => formatPrice(currency, Math.max(0, n));
 
   return (
@@ -261,7 +268,7 @@ export function PricingRoi() {
         <p className="mt-5 text-xs leading-relaxed text-gray-500">
           Based on industry averages: {BOOKINGS_PER_DRIVER_MONTH} bookings per
           driver a month, {DISPATCH_MIN_SAVED_PER_BOOKING} min of dispatcher time
-          saved per booking, {money(STAFF_RATE[currency])}/hr staff rate, a 5%
+          saved per booking, {money(convert(STAFF_RATE_GBP, currency, rates))}/hr staff rate, a 5%
           out-of-hours uplift. An estimate, not a quote.
         </p>
       </div>
