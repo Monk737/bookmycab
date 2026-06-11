@@ -1,28 +1,16 @@
-import { requireUser } from "@/lib/auth/session";
-import { getOrgSummary, getKpiStrip, getAutomationCards, getOrgKpis } from "@/lib/dashboard/queries";
-import { KpiStrip } from "@/components/dashboard/kpi-strip";
-import { StatusBadge } from "@/components/dashboard/status-badge";
-import { ChannelIcon } from "@/components/dashboard/channel-icon";
-import { AutomationControls } from "@/app/dashboard/automations/[automationId]/automation-controls";
-import { formatDateTime } from "@/lib/dashboard/format";
 import Link from "next/link";
+import { requireUser } from "@/lib/auth/session";
+import { getOrgSummary, getKpiStrip } from "@/lib/dashboard/queries";
+import { getProductOverview, tierLabel } from "@/lib/dashboard/product-overview";
+import { ChannelIcon } from "@/components/dashboard/channel-icon";
+import { StatTile, StatGrid, Panel, StatusPill, UsageMeter, EmptyState } from "@/components/dashboard/ui";
 
-const ADAPTER_DISPLAY: Record<string, string> = {
-  autocab: "AutoCab",
-  icabbi: "iCabbi",
-  cordic: "Cordic",
-};
-
-function adapterLabel(raw: string | null): string {
-  if (!raw) return "";
-  return ADAPTER_DISPLAY[raw.toLowerCase()] ?? raw.toUpperCase();
-}
-
-const TYPE_TAG_CLASS: Record<string, string> = {
-  Booking: "bg-brut-blue text-paper",
-  Support: "bg-brut-violet text-ink",
-  Driver: "bg-brut-lime text-ink",
-  Custom: "bg-brut-yellow text-ink",
+const CHANNEL_LABEL: Record<string, string> = {
+  whatsapp: "WhatsApp",
+  telegram: "Telegram",
+  messenger: "Messenger",
+  instagram: "Instagram",
+  widget: "Web widget",
 };
 
 export default async function DashboardPage() {
@@ -33,12 +21,9 @@ export default async function DashboardPage() {
       <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
         <div className="w-full max-w-md border-[3px] border-ink bg-paper px-8 py-10 text-center shadow-brut">
           <p className="text-sm font-medium text-gray-700">
-            No organisation found for your account. Please contact{" "}
-            <a
-              href="mailto:support@bookmycab.com"
-              className="font-bold text-ink underline underline-offset-2 hover:bg-brut-yellow"
-            >
-              BookMyCab support
+            No organisation is linked to your account. Contact{" "}
+            <a href="mailto:support@bookmycab.com" className="font-bold text-ink underline underline-offset-2 hover:bg-brut-yellow">
+              support@bookmycab.com
             </a>
             .
           </p>
@@ -47,198 +32,126 @@ export default async function DashboardPage() {
     );
   }
 
-  const [org, kpis, cards, orgKpis] = await Promise.all([
+  const [org, kpi, overview] = await Promise.all([
     getOrgSummary(claims.tenant_id),
     getKpiStrip(claims.tenant_id),
-    getAutomationCards(claims.tenant_id),
-    getOrgKpis(claims.tenant_id),
+    getProductOverview(claims.tenant_id),
   ]);
 
-  return (
-    <div className="min-h-screen bg-canvas">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="font-display text-3xl font-extrabold uppercase tracking-tight text-ink">
-              {org?.name ?? "Your Organisation"}
-            </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {org?.planBand && (
-                <span className="border-2 border-ink bg-brut-cyan px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
-                  {org.planBand}
-                </span>
-              )}
-              {org?.contractRenewal && (
-                <span className="text-xs font-medium text-gray-600">
-                  Renews{" "}
-                  {formatDateTime(org.contractRenewal, "Europe/London")}
-                </span>
-              )}
-            </div>
-          </div>
-          <p className="text-sm font-medium text-gray-600">
-            Need help?{" "}
-            <Link
-              href="/dashboard/support"
-              className="font-bold text-ink underline underline-offset-2 hover:bg-brut-yellow"
-            >
-              BookMyCab support
-            </Link>
-          </p>
-        </div>
+  const chatLive = overview.chat ? overview.chat.channels.filter((c) => c.health !== "disconnected").length : 0;
+  const voiceLive = overview.voice ? overview.voice.agents.filter((a) => a.status === "live" || a.status === "uat").length : 0;
+  const noProducts = !overview.chat && !overview.voice;
 
-        {/* KPI Strip */}
-        <div className="mb-8">
-          <KpiStrip
-            items={[
-              { label: "Bookings today", value: kpis.bookingsToday },
-              { label: "Bookings (30d)", value: orgKpis.bookings30d },
-              { label: "Revenue (30d)", value: `£${orgKpis.revenue30d.toLocaleString()}` },
-              { label: "Conversations today", value: kpis.conversationsToday },
-              { label: "Live automations", value: kpis.liveAutomations },
-            ]}
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">{org?.name ?? "Your organisation"}</p>
+          <h1 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Overview</h1>
+        </div>
+        <p className="text-xs font-medium text-gray-600">Calls this billing month · live to the minute</p>
+      </header>
+
+      {/* Operational stat band — six glanceable numbers on one ink bed. */}
+      <StatGrid cols="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <StatTile label="Chat channels" value={overview.chat ? overview.chat.channels.length : 0} accent="bg-brut-cyan" sub={overview.chat ? `${chatLive} connected` : "Not provisioned"} />
+        <StatTile label="Voice agents" value={overview.voice ? overview.voice.agents.length : 0} accent="bg-brut-violet" sub={overview.voice ? `${voiceLive} live` : "Not provisioned"} />
+        <StatTile label="Phone numbers" value={overview.phoneNumbers.length} accent="bg-brut-blue" sub="In use across products" />
+        <StatTile label="Calls this month" value={overview.voice ? overview.voice.used.toLocaleString("en-GB") : "—"} accent="bg-brut-yellow" sub={overview.voice ? `of ${overview.voice.allowance.toLocaleString("en-GB")} included` : "No voice plan"} />
+        <StatTile label="Remaining calls" value={overview.voice ? overview.voice.remaining.toLocaleString("en-GB") : "—"} accent="bg-brut-lime" sub={overview.voice ? "Resets next billing month" : "No voice plan"} />
+        <StatTile label="Credit balance" value={overview.voice ? overview.voice.creditBalance.toLocaleString("en-GB") : "—"} accent="bg-brut-pink" sub={overview.voice ? "Top-up calls (carry over)" : "—"} />
+      </StatGrid>
+
+      {noProducts ? (
+        <div className="mt-6">
+          <EmptyState
+            icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className="h-6 w-6"><path d="M4 5h16v11H7l-3 3z" /></svg>}
+            title="Your automation is being built"
+            body="BookMyCab provisions every account by hand. Once your Chat bot or AI Voice agent is live, your channels, calls and analytics appear here."
+            action={
+              <Link href="/dashboard/support" className="brut-press inline-flex h-11 items-center border-[3px] border-ink bg-brut-yellow px-5 text-sm font-bold uppercase tracking-[0.04em] text-ink shadow-brut">
+                Contact your build team
+              </Link>
+            }
           />
         </div>
-
-        {/* Automations Grid */}
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg font-extrabold uppercase tracking-tight text-ink">
-            Your automations
-          </h2>
-        </div>
-
-        {cards.length === 0 ? (
-          <div className="border-[3px] border-dashed border-ink bg-paper px-8 py-16 text-center">
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="mx-auto mb-3 h-10 w-10 text-gray-400"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .28 2.716-1.072 2.716H3.87c-1.352 0-2.072-1.716-1.072-2.716L4.2 15.3"
-              />
-            </svg>
-            <p className="text-sm font-bold text-ink">
-              No automations yet, your BookMyCab team is building yours.
-            </p>
-            <p className="mt-1 text-xs font-medium text-gray-600">
-              We&apos;ll notify you when your automation is ready.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {cards.map((card) => {
-              const adapter = adapterLabel(card.dispatchAdapter);
-              const tagClass =
-                TYPE_TAG_CLASS[card.type] ?? "bg-gray-200 text-ink";
-
-              return (
-                <div
-                  key={card.id}
-                  className="brut-press flex flex-col border-[3px] border-ink bg-paper shadow-brut"
-                >
-                  {/* Card Header */}
-                  <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
-                    <div className="min-w-0">
-                      <h3 className="truncate font-display text-base font-extrabold uppercase tracking-tight text-ink">
-                        {card.name}
-                      </h3>
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span
-                          className={`border-2 border-ink px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${tagClass}`}
-                        >
-                          {card.type}
-                        </span>
-                        {adapter && (
-                          <span className="border-2 border-ink bg-paper px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-ink">
-                            {adapter}
-                          </span>
-                        )}
+      ) : (
+        <div className="mt-6 grid gap-5 lg:grid-cols-2">
+          {/* Chat product */}
+          <Panel
+            title="Chat"
+            badge={overview.chat ? <span className="border-2 border-ink bg-brut-cyan px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">{tierLabel(overview.chat.tier)}</span> : null}
+            action={overview.chat ? { label: "Open", href: "/dashboard/chat" } : undefined}
+          >
+            {overview.chat ? (
+              overview.chat.channels.length > 0 ? (
+                <ul className="divide-y-2 divide-gray-100">
+                  {overview.chat.channels.map((c, i) => (
+                    <li key={`${c.type}-${i}`} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <ChannelIcon type={c.type} health={c.health} />
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-ink">{CHANNEL_LABEL[c.type] ?? c.type}</p>
+                          {c.handle ? <p className="truncate font-mono text-xs text-gray-500">{c.handle}</p> : null}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-shrink-0 pt-0.5">
-                      <StatusBadge status={card.status} />
-                    </div>
-                  </div>
+                      <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.06em] text-gray-600">{c.health}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="py-4 text-sm text-gray-600">No channels connected yet. Your build team wires WhatsApp, Messenger, Instagram, Telegram or the web widget into this plan.</p>
+              )
+            ) : (
+              <p className="py-4 text-sm text-gray-600">This account has no Chat product. Talk to your build team to add multi-channel chat.</p>
+            )}
+          </Panel>
 
-                  {/* Channels */}
-                  {card.channels.length > 0 && (
-                    <div className="flex items-center gap-2 px-5 pb-3">
-                      {card.channels.map((ch, i) => (
-                        <ChannelIcon key={i} type={ch.type} health={ch.health} />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Stat Trio */}
-                  <div className="grid grid-cols-3 gap-[3px] border-y-[3px] border-ink bg-ink">
-                    <div className="bg-paper px-4 py-3 text-center">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
-                        Bookings
-                      </p>
-                      <p className="mt-0.5 text-lg font-extrabold tabular-nums text-ink">
-                        {card.bookingsToday}
-                      </p>
-                      <p className="text-[10px] font-medium text-gray-500">today</p>
-                    </div>
-                    <div className="bg-paper px-4 py-3 text-center">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
-                        Convos
-                      </p>
-                      <p className="mt-0.5 text-lg font-extrabold tabular-nums text-ink">
-                        {card.conversationsToday}
-                      </p>
-                      <p className="text-[10px] font-medium text-gray-500">today</p>
-                    </div>
-                    <div className="bg-paper px-4 py-3 text-center">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-gray-600">
-                        Conv %
-                      </p>
-                      <p className="mt-0.5 text-lg font-extrabold tabular-nums text-ink">
-                        {card.conversionPct}%
-                      </p>
-                      <p className="text-[10px] font-medium text-gray-500">rate</p>
-                    </div>
+          {/* Voice product */}
+          <Panel
+            title="AI Voice"
+            badge={overview.voice ? <span className="border-2 border-ink bg-brut-violet px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">{tierLabel(overview.voice.tier)}</span> : null}
+            action={overview.voice ? { label: "Analytics", href: "/dashboard/voice" } : undefined}
+          >
+            {overview.voice ? (
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-1.5 flex items-baseline justify-between">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-600">Plan calls used</p>
+                    <p className="font-mono text-xs font-bold tabular-nums text-ink">
+                      {overview.voice.used.toLocaleString("en-GB")} / {overview.voice.allowance.toLocaleString("en-GB")}
+                    </p>
                   </div>
-
-                  {/* Footer: controls + open */}
-                  <div className="flex items-center justify-between gap-2 px-5 py-4">
-                    <AutomationControls
-                      orgId={claims.tenant_id!}
-                      automationId={card.id}
-                      status={card.status}
-                    />
-                    <Link
-                      href={`/dashboard/automations/${card.id}`}
-                      className="brut-press brut-focus cursor-pointer border-[3px] border-ink bg-brut-yellow px-4 py-1.5 text-sm font-bold uppercase tracking-[0.04em] text-ink shadow-brut-sm"
-                    >
-                      Open
-                    </Link>
-                  </div>
+                  <UsageMeter used={overview.voice.used} total={overview.voice.allowance} />
                 </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* CTA */}
-        <div className="mt-8 border-[3px] border-dashed border-ink bg-paper px-6 py-5 text-center">
-          <p className="text-sm font-medium text-gray-700">
-            Need another automation?{" "}
-            <Link
-              href="/dashboard/support"
-              className="cursor-pointer font-bold text-ink underline underline-offset-2 hover:bg-brut-yellow"
-            >
-              Request a new automation
-            </Link>
-          </p>
+                {overview.voice.agents.length > 0 ? (
+                  <ul className="divide-y-2 divide-gray-100">
+                    {overview.voice.agents.map((a) => (
+                      <li key={a.id} className="flex items-center justify-between gap-3 py-3 first:pt-0">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-ink">{a.name}</p>
+                          {a.phone ? <p className="font-mono text-xs text-gray-500">{a.phone}</p> : null}
+                        </div>
+                        <StatusPill status={a.status} />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-600">No voice agents provisioned yet.</p>
+                )}
+              </div>
+            ) : (
+              <p className="py-4 text-sm text-gray-600">This account has no AI Voice product. Talk to your build team to add a voice agent.</p>
+            )}
+          </Panel>
         </div>
+      )}
+
+      {/* Today's activity — real figures from the live feed. */}
+      <div className="mt-5 grid grid-cols-3 gap-[3px] border-[3px] border-ink bg-ink shadow-brut">
+        <StatTile label="Bookings today" value={kpi.bookingsToday} sub="Confirmed to dispatch" />
+        <StatTile label="Conversations today" value={kpi.conversationsToday} sub="Across all channels" />
+        <StatTile label="Live automations" value={kpi.liveAutomations} sub="Chat + voice, running now" />
       </div>
     </div>
   );
