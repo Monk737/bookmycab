@@ -13,7 +13,7 @@ type CurrencyToggleProps = {
  * Controlled GBP/EUR/USD segmented switch.
  *
  * Presentational only, the selected currency is owned by the parent
- * (PricingCards) and passed back via onChange. Implemented as an accessible
+ * (PricingSections / PricingRoi) and passed back via onChange. Implemented as an accessible
  * radiogroup: arrow keys move between options, Tab enters/leaves the group.
  */
 export function CurrencyToggle({
