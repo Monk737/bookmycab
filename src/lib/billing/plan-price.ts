@@ -76,3 +76,43 @@ export function buildSubscriptionCreateParams(args: {
     },
   };
 }
+
+/** One-time setup-fee invoice item for the new model (GBP). */
+export function buildNewSetupInvoiceItemParams(args: {
+  customerId: string;
+  setupGbp: number;
+  tenantId: string;
+}): Stripe.InvoiceItemCreateParams {
+  return {
+    customer: args.customerId,
+    amount: minorUnits(args.setupGbp),
+    currency: "gbp",
+    description: "BookMyCab — one-time setup fee",
+    metadata: { tenant_id: args.tenantId },
+  };
+}
+
+/** A rolling-monthly GBP subscription for one product (chat or voice). */
+export function buildProductSubscriptionParams(args: {
+  customerId: string;
+  productId: string;
+  product: "chat" | "voice";
+  monthlyGbp: number;
+  tenantId: string;
+}): Stripe.SubscriptionCreateParams {
+  return {
+    customer: args.customerId,
+    automatic_tax: { enabled: true },
+    items: [
+      {
+        price_data: {
+          currency: "gbp",
+          product: args.productId,
+          unit_amount: minorUnits(args.monthlyGbp),
+          recurring: { interval: "month" },
+        },
+      },
+    ],
+    metadata: { tenant_id: args.tenantId, product: args.product },
+  };
+}
