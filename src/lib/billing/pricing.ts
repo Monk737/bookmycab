@@ -135,3 +135,70 @@ export function voiceMonthlyPriceGbp(
   if (model === "voice") return VOICE_PRICE_GBP[tier];
   return null;
 }
+
+/* ----------------------------------------------------------------------------
+   B2: Provisioning helpers — operational voice plan shape + resolved pricing.
+   -------------------------------------------------------------------------- */
+
+/** Operational shape of a voice plan tier (drives voice_subscriptions). */
+export interface VoicePlanSpec {
+  callAllowance: number;
+  includedAgents: number;
+}
+
+export const VOICE_PLAN_SPEC: Record<NewTierKey, VoicePlanSpec> = {
+  ignition: { callAllowance: 1500, includedAgents: 1 },
+  in_motion: { callAllowance: 2250, includedAgents: 2 },
+  full_throttle: { callAllowance: 3000, includedAgents: 2 },
+};
+
+/** One-time setup fee (GBP) for a commercial model + voice agent count. */
+export function setupFeeGbp(model: CommercialModel, voiceAgents: 0 | 1 | 2): number {
+  if (model === "chat") return NEW_CHAT_SETUP_GBP;
+  if (model === "voice") {
+    return voiceAgents >= 2 ? NEW_VOICE_SETUP_GBP.twoAgents : NEW_VOICE_SETUP_GBP.oneAgent;
+  }
+  return voiceAgents >= 2 ? NEW_BUNDLE_SETUP_GBP.twoVoiceAgents : NEW_BUNDLE_SETUP_GBP.oneVoiceAgent;
+}
+
+export interface NewModelSelection {
+  model: CommercialModel;
+  chatTier: NewTierKey | null;
+  chatMode: ChatChannelMode | null;
+  voiceTier: NewTierKey | null;
+}
+
+export interface ResolvedNewModelPricing {
+  chatGbp: number | null;     // null = no chat product OR quoted (full_throttle)
+  voiceGbp: number | null;    // null = no voice product
+  voiceAllowance: number | null;
+  voiceAgents: number | null;
+  setupGbp: number;
+}
+
+/**
+ * Resolve all GBP figures + voice operational shape for a provisioning
+ * selection. chatGbp is null for a voice-only tenant or a quoted Full Throttle
+ * chat tier (the caller supplies a manual override in that case).
+ */
+export function resolveNewModelPricing(sel: NewModelSelection): ResolvedNewModelPricing {
+  const hasChat = sel.model === "chat" || sel.model === "double_decker";
+  const hasVoice = sel.model === "voice" || sel.model === "double_decker";
+
+  const chatGbp =
+    hasChat && sel.chatTier && sel.chatMode
+      ? chatMonthlyPriceGbp(sel.model, sel.chatTier, sel.chatMode)
+      : null;
+
+  const voiceGbp =
+    hasVoice && sel.voiceTier
+      ? voiceMonthlyPriceGbp(sel.model, sel.voiceTier, sel.chatMode ?? "single")
+      : null;
+
+  const voiceAllowance = hasVoice && sel.voiceTier ? VOICE_PLAN_SPEC[sel.voiceTier].callAllowance : null;
+  const voiceAgents = hasVoice && sel.voiceTier ? VOICE_PLAN_SPEC[sel.voiceTier].includedAgents : null;
+
+  const setupGbp = setupFeeGbp(sel.model, (voiceAgents ?? 0) as 0 | 1 | 2);
+
+  return { chatGbp, voiceGbp, voiceAllowance, voiceAgents, setupGbp };
+}
