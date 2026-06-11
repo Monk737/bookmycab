@@ -2,12 +2,56 @@ import { requireUser } from "@/lib/auth/session";
 import { getBillingOverview } from "@/lib/dashboard/billing-queries";
 import { DataTable } from "@/components/dashboard/data-table";
 import { formatCurrency, formatDateTime } from "@/lib/dashboard/format";
+import { createClient } from "@/lib/supabase/server";
+import { periodBounds } from "@/lib/entitlements/meter";
+import { CreditTopup } from "@/components/dashboard/credit-topup";
 import { PortalButton } from "./portal-button";
 import Link from "next/link";
 
 const TZ = "Europe/London";
 
-export default async function BillingPage() {
+/**
+ * Loads the voice-credit panel data for a tenant — only present when the tenant
+ * has a voice subscription. Returns null for chat-only tenants (no panel shown).
+ */
+async function getVoiceCreditPanel(
+  tenantId: string,
+): Promise<{ balance: number; remainingCalls: number; allowance: number } | null> {
+  const supabase = await createClient();
+
+  const { data: vsub } = await supabase
+    .from("voice_subscriptions")
+    .select("monthly_call_allowance")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (!vsub) return null;
+
+  const allowance = (vsub.monthly_call_allowance as number | null) ?? 0;
+
+  const { start } = periodBounds("month", new Date());
+  const [{ data: balanceData }, { data: usageRow }] = await Promise.all([
+    supabase.rpc("credit_balance", { p_tenant: tenantId }),
+    supabase
+      .from("usage_counters")
+      .select("used")
+      .eq("tenant_id", tenantId)
+      .eq("feature_key", "voice_calls")
+      .eq("period_start", start)
+      .maybeSingle(),
+  ]);
+
+  const balance = typeof balanceData === "number" ? balanceData : Number(balanceData ?? 0);
+  const used = (usageRow?.used as number | null) ?? 0;
+  const remainingCalls = Math.max(0, allowance - used);
+
+  return { balance, remainingCalls, allowance };
+}
+
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ credit?: string }>;
+}) {
   const claims = await requireUser();
 
   if (!claims.tenant_id) {
@@ -18,7 +62,9 @@ export default async function BillingPage() {
     );
   }
 
+  const { credit } = await searchParams;
   const b = await getBillingOverview(claims.tenant_id);
+  const voiceCredit = await getVoiceCreditPanel(claims.tenant_id);
 
   type InvoiceRow = {
     id: string;
@@ -46,6 +92,26 @@ export default async function BillingPage() {
   return (
     <main className="mx-auto max-w-4xl space-y-8 p-6 lg:p-8">
       <h1 className="font-mono text-xl font-bold text-ink">Billing</h1>
+
+      {credit === "success" && (
+        <p className="border-[3px] border-ink bg-brut-yellow p-4 text-sm font-bold text-ink shadow-brut-sm">
+          Top-up complete. Your voice credit will appear here shortly.
+        </p>
+      )}
+      {credit === "cancelled" && (
+        <p className="border-[3px] border-ink bg-paper p-4 text-sm font-medium text-ink shadow-brut-sm">
+          Top-up cancelled. No payment was taken.
+        </p>
+      )}
+
+      {voiceCredit && (
+        <CreditTopup
+          orgId={claims.tenant_id}
+          balance={voiceCredit.balance}
+          remainingCalls={voiceCredit.remainingCalls}
+          allowance={voiceCredit.allowance}
+        />
+      )}
 
       {/* Plan card */}
       <section
