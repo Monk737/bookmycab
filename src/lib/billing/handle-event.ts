@@ -38,6 +38,17 @@ export interface BillingDeps {
     currency: Currency;
     invoiceUrl: string | null;
   }): Promise<void>;
+  /** Grant voice top-up credits to `credit_ledger` for a completed credit
+   *  top-up Checkout session. INSERT-ONLY + idempotent on
+   *  `stripe_payment_intent_id` (the ledger is append-only). Best-effort coupon
+   *  redemption when `couponCode` is present. */
+  grantTopupCredits(args: {
+    sessionId: string;
+    paymentIntentId: string;
+    tenantId: string;
+    credits: number;
+    couponCode: string | undefined;
+  }): Promise<void>;
 }
 
 export interface StripeEventResult {
@@ -47,6 +58,7 @@ export interface StripeEventResult {
     | "voice_pool.reset"
     | "setup_fee.paid"
     | "payment_failed.notified"
+    | "topup_credits.granted"
     | "logged"
     | "skipped"
     | "ignored";
@@ -108,6 +120,27 @@ export async function handleStripeEvent(
       // DECISION (Q-payment-failed): NO auto-suspend. The automation keeps
       // running; we only notify. Recovery is dunning (Stripe) + manual follow-up.
       return { action: "payment_failed.notified" };
+    }
+
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      // Only credit top-up checkouts are handled here; other checkout sessions
+      // (e.g. subscription setup) are acknowledged and ignored.
+      if (session.metadata?.reason !== "topup_purchase") {
+        return { action: "ignored" };
+      }
+      // payment_intent may be a string id or an expanded object; read the id.
+      const pi = session.payment_intent;
+      const paymentIntentId = typeof pi === "string" ? pi : pi?.id ?? null;
+      if (!paymentIntentId) return { action: "skipped" };
+      await deps.grantTopupCredits({
+        sessionId: session.id,
+        paymentIntentId,
+        tenantId: session.metadata.tenant_id,
+        credits: Number(session.metadata.credits),
+        couponCode: session.metadata.coupon_code || undefined,
+      });
+      return { action: "topup_credits.granted" };
     }
 
     default:

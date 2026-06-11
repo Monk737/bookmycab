@@ -56,6 +56,75 @@ export function buildResetVoiceCallPool(
   };
 }
 
+/** Unit price of a single voice top-up credit, in micros (£0.90 → 900,000). */
+const TOPUP_UNIT_PRICE_MICROS = 900_000;
+
+/**
+ * Build the credit top-up grant operation against a Supabase-like client. On a
+ * completed `topup_purchase` Checkout session, INSERTs a `credit_ledger` row
+ * (the ledger is append-only — a trigger blocks UPDATE/DELETE), guarded by a
+ * pre-insert SELECT on `stripe_payment_intent_id` so a re-delivered webhook is a
+ * no-op. When a coupon code is present, best-effort records a `coupon_redemptions`
+ * row and bumps the coupon's `times_redeemed`. Exported for unit testing.
+ */
+export function buildGrantTopupCredits(
+  db: SupabaseLike,
+): BillingDeps["grantTopupCredits"] {
+  return async ({ sessionId, paymentIntentId, tenantId, credits, couponCode }) => {
+    // Idempotency: the ledger is append-only, so we cannot upsert-on-conflict.
+    // A SELECT on the payment-intent id catches a re-delivered webhook.
+    const { data: existing, error: lookupErr } = await db
+      .from("credit_ledger")
+      .select("id")
+      .eq("stripe_payment_intent_id", paymentIntentId)
+      .maybeSingle();
+    if (lookupErr) throw new Error(`grantTopupCredits lookup failed: ${lookupErr.message}`);
+    if (existing) return; // already granted
+
+    const { error: insertErr } = await db.from("credit_ledger").insert({
+      tenant_id: tenantId,
+      delta: credits,
+      reason: "topup_purchase",
+      unit_price_micros: TOPUP_UNIT_PRICE_MICROS,
+      currency: "GBP",
+      stripe_payment_intent_id: paymentIntentId,
+    });
+    if (insertErr) throw new Error(`grantTopupCredits insert failed: ${insertErr.message}`);
+
+    // Best-effort coupon redemption: a failure here must not fail the webhook
+    // (the credits are already granted), so log and move on.
+    if (couponCode) {
+      try {
+        const code = couponCode.trim().toUpperCase();
+        const { data: coupon, error: couponErr } = await db
+          .from("coupons")
+          .select("id, times_redeemed")
+          .eq("code", code)
+          .maybeSingle();
+        if (couponErr) throw new Error(couponErr.message);
+        if (coupon) {
+          const c = coupon as { id: string; times_redeemed: number };
+          const { error: redemptionErr } = await db.from("coupon_redemptions").insert({
+            coupon_id: c.id,
+            tenant_id: tenantId,
+            applied_to: "credit_topup",
+            currency: "GBP",
+            stripe_ref: sessionId,
+          });
+          if (redemptionErr) throw new Error(redemptionErr.message);
+          const { error: bumpErr } = await db
+            .from("coupons")
+            .update({ times_redeemed: c.times_redeemed + 1 })
+            .eq("id", c.id);
+          if (bumpErr) throw new Error(bumpErr.message);
+        }
+      } catch (err) {
+        console.error("grantTopupCredits coupon redemption failed (credits still granted)", err);
+      }
+    }
+  };
+}
+
 /**
  * Real `BillingDeps` for the webhook: service-role DB writes (billing mirrors
  * are cross-tenant + RLS-protected, so the service-role key is required) and
@@ -84,6 +153,8 @@ export function buildBillingDeps(): BillingDeps {
     },
 
     resetVoiceCallPool: buildResetVoiceCallPool(db),
+
+    grantTopupCredits: buildGrantTopupCredits(db),
 
     async markSetupFeePaid(stripeInvoiceId) {
       const { data: fee, error } = await db

@@ -9,6 +9,7 @@ function deps(over: Partial<BillingDeps> = {}): BillingDeps {
     resetVoiceCallPool: vi.fn(async () => false),
     markSetupFeePaid: vi.fn(async () => ({ tenantName: "Speedy Cabs", currency: "GBP" as const })),
     sendPaymentFailedEmail: vi.fn(async () => {}),
+    grantTopupCredits: vi.fn(async () => {}),
     ...over,
   };
 }
@@ -106,6 +107,84 @@ describe("handleStripeEvent", () => {
     const res = await handleStripeEvent(ev, d);
     expect(d.sendPaymentFailedEmail).toHaveBeenCalledOnce();
     expect(res.action).toBe("payment_failed.notified");
+  });
+
+  it("grants top-up credits on checkout.session.completed for a top-up purchase", async () => {
+    const ev = {
+      id: "evt_topup",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_1",
+          payment_intent: "pi_1",
+          metadata: { reason: "topup_purchase", tenant_id: "t1", credits: "50" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.grantTopupCredits).toHaveBeenCalledWith({
+      sessionId: "cs_1",
+      paymentIntentId: "pi_1",
+      tenantId: "t1",
+      credits: 50,
+      couponCode: undefined,
+    });
+    expect(res.action).toBe("topup_credits.granted");
+  });
+
+  it("reads the payment_intent id when it is an expanded object", async () => {
+    const ev = {
+      id: "evt_topup_exp",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_2",
+          payment_intent: { id: "pi_2" },
+          metadata: { reason: "topup_purchase", tenant_id: "t2", credits: "10", coupon_code: "SAVE20" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.grantTopupCredits).toHaveBeenCalledWith({
+      sessionId: "cs_2",
+      paymentIntentId: "pi_2",
+      tenantId: "t2",
+      credits: 10,
+      couponCode: "SAVE20",
+    });
+    expect(res.action).toBe("topup_credits.granted");
+  });
+
+  it("ignores a checkout.session.completed that is not a top-up purchase", async () => {
+    const ev = {
+      id: "evt_other_checkout",
+      type: "checkout.session.completed",
+      data: { object: { id: "cs_3", payment_intent: "pi_3", metadata: {} } },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.grantTopupCredits).not.toHaveBeenCalled();
+    expect(res.action).toBe("ignored");
+  });
+
+  it("acks a top-up checkout with no payment_intent without granting", async () => {
+    const ev = {
+      id: "evt_topup_nopi",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_4",
+          payment_intent: null,
+          metadata: { reason: "topup_purchase", tenant_id: "t4", credits: "5" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.grantTopupCredits).not.toHaveBeenCalled();
+    expect(res.action).toBe("skipped");
   });
 
   it("ignores unhandled event types", async () => {
@@ -241,5 +320,93 @@ describe("usage_counters voice reset (dep contract)", () => {
       },
       { onConflict: "tenant_id,feature_key,period_start", ignoreDuplicates: true },
     );
+  });
+});
+
+describe("grantTopupCredits (dep contract)", () => {
+  it("is a no-op when a credit_ledger row already exists for the payment intent", async () => {
+    // Idempotency: a re-delivered checkout.session.completed must NOT double-insert.
+    const insert = vi.fn(() => ({ error: null }));
+    const ledgerMaybeSingle = vi.fn(async () => ({ data: { id: "cl_existing" }, error: null }));
+    const db = {
+      from: vi.fn((table: string) => {
+        if (table === "credit_ledger") {
+          return {
+            select: () => ({ eq: () => ({ maybeSingle: ledgerMaybeSingle }) }),
+            insert,
+          };
+        }
+        throw new Error(`unexpected table ${table}`);
+      }),
+    };
+    const { buildGrantTopupCredits } = await import("@/lib/billing/webhook-deps");
+    const grant = buildGrantTopupCredits(db as never);
+    await grant({ sessionId: "cs_1", paymentIntentId: "pi_1", tenantId: "t1", credits: 50, couponCode: undefined });
+    expect(ledgerMaybeSingle).toHaveBeenCalledOnce();
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("inserts a credit_ledger row with the correct shape on the happy path", async () => {
+    const insert = vi.fn(() => ({ error: null }));
+    const ledgerMaybeSingle = vi.fn(async () => ({ data: null, error: null }));
+    const db = {
+      from: vi.fn((table: string) => {
+        if (table === "credit_ledger") {
+          return {
+            select: () => ({ eq: () => ({ maybeSingle: ledgerMaybeSingle }) }),
+            insert,
+          };
+        }
+        throw new Error(`unexpected table ${table}`);
+      }),
+    };
+    const { buildGrantTopupCredits } = await import("@/lib/billing/webhook-deps");
+    const grant = buildGrantTopupCredits(db as never);
+    await grant({ sessionId: "cs_1", paymentIntentId: "pi_1", tenantId: "t1", credits: 50, couponCode: undefined });
+    expect(insert).toHaveBeenCalledWith({
+      tenant_id: "t1",
+      delta: 50,
+      reason: "topup_purchase",
+      unit_price_micros: 900000,
+      currency: "GBP",
+      stripe_payment_intent_id: "pi_1",
+    });
+  });
+
+  it("records a coupon redemption + increments times_redeemed when a coupon code is present", async () => {
+    const insert = vi.fn(() => ({ error: null }));
+    const ledgerMaybeSingle = vi.fn(async () => ({ data: null, error: null }));
+    const couponMaybeSingle = vi.fn(async () => ({ data: { id: "coup_1", times_redeemed: 3 }, error: null }));
+    const redemptionInsert = vi.fn(() => ({ error: null }));
+    const couponUpdateEq = vi.fn(() => ({ error: null }));
+    const couponUpdate = vi.fn(() => ({ eq: couponUpdateEq }));
+    const db = {
+      from: vi.fn((table: string) => {
+        if (table === "credit_ledger") {
+          return { select: () => ({ eq: () => ({ maybeSingle: ledgerMaybeSingle }) }), insert };
+        }
+        if (table === "coupons") {
+          return {
+            select: () => ({ eq: () => ({ maybeSingle: couponMaybeSingle }) }),
+            update: couponUpdate,
+          };
+        }
+        if (table === "coupon_redemptions") {
+          return { insert: redemptionInsert };
+        }
+        throw new Error(`unexpected table ${table}`);
+      }),
+    };
+    const { buildGrantTopupCredits } = await import("@/lib/billing/webhook-deps");
+    const grant = buildGrantTopupCredits(db as never);
+    await grant({ sessionId: "cs_1", paymentIntentId: "pi_1", tenantId: "t1", credits: 50, couponCode: "save20" });
+    expect(redemptionInsert).toHaveBeenCalledWith({
+      coupon_id: "coup_1",
+      tenant_id: "t1",
+      applied_to: "credit_topup",
+      currency: "GBP",
+      stripe_ref: "cs_1",
+    });
+    expect(couponUpdate).toHaveBeenCalledWith({ times_redeemed: 4 });
   });
 });
