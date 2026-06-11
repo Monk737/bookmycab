@@ -48,6 +48,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ orgId: string 
     const percent = typeof data === "number" ? data : null;
     if (percent === null) return badRequest("Invalid or ineligible coupon.");
     finalGbp = applyDiscount(r.gbp, percent);
+    // A 100%-off coupon would produce a £0 charge, which Stripe rejects for a
+    // payment-mode line item. Reject it cleanly rather than letting the session
+    // create throw a confusing 502. (Credits are never granted without payment.)
+    if (finalGbp <= 0) {
+      return badRequest("This coupon can't be applied to a credit top-up.");
+    }
   }
 
   const billing = await getBillingOverview(orgId);
