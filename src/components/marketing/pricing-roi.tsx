@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import {
   convert,
   formatPrice,
+  CHAT_SETUP_FEE_GBP,
   type Currency,
 } from "@/lib/marketing/pricing";
 import { CurrencyToggle } from "@/components/marketing/currency-toggle";
@@ -19,7 +20,6 @@ const DISPATCH_MIN_SAVED_PER_BOOKING = 1.5;
 const OUT_OF_HOURS_UPLIFT = 0.05; // 5% of bookings recovered from out-of-hours / missed
 // GBP base; converted to the selected currency via the live FX rate.
 const STAFF_RATE_GBP = 12;
-const SETUP_FEE_GBP = 1000;
 
 type Tier = { name: string; monthlyGbp: number };
 
@@ -48,7 +48,7 @@ function compute(
   const monthlyValue = staffCostSaved + revenueUplift;
   const netMonthly = monthlyValue - planMonthly;
   const annualNet = netMonthly * 12;
-  const setup = convert(SETUP_FEE_GBP, currency, rates);
+  const setup = convert(CHAT_SETUP_FEE_GBP, currency, rates);
   const dailyNet = netMonthly / 30;
   const paybackDays = dailyNet > 0 ? Math.ceil(setup / dailyNet) : null;
 

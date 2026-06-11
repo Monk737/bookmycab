@@ -13,7 +13,7 @@ import { getFxRates } from "@/lib/marketing/fx";
 export const metadata: Metadata = {
   title: "Pricing · BookMyCab",
   description:
-    "Simple, transparent pricing for your custom cab automation. Fixed monthly options by fleet size, a one-time setup fee, and a clear breakdown of what you pay your own providers.",
+    "Transparent pricing for BookMyCab. A multi-channel Chat bot and an AI Voice agent — buy either, or bundle both as a Double Decker. Fixed monthly plans by fleet size and call volume, one-time setup, and pay-as-you-go voice credit at £0.90 per call.",
 };
 
 // §6.3, add-on automations quoted on demand.
