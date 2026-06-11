@@ -15,7 +15,8 @@ import {
 import { subscriptionToMirror } from "@/lib/billing/event-map";
 import { toStripeCountry } from "@/lib/billing/country";
 import { addMonthsUTC } from "@/lib/billing/dates";
-import { CONTRACT_MONTHS, SETUP_FEE, type Currency } from "@/lib/marketing/pricing";
+import type { Currency } from "@/lib/marketing/pricing";
+import { CONTRACT_MONTHS, SETUP_FEE } from "@/lib/billing/pricing";
 import type { PlanBand } from "@/lib/admin/plan-bands";
 
 const idSchema = z.string().uuid();

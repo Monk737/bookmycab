@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
-import { SETUP_FEE, type Currency } from "@/lib/marketing/pricing";
+import type { Currency } from "@/lib/marketing/pricing";
+import { SETUP_FEE } from "@/lib/billing/pricing";
 import { planBandMonthlyPrice, type PlanBand } from "@/lib/admin/plan-bands";
 
 /**

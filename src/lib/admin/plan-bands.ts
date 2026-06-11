@@ -4,12 +4,13 @@
  * The five bands match the `tenants.plan_band` CHECK constraint (migration 0001):
  * `A-Single | A-Bundle | B-Single | B-Bundle | Custom`.
  *
- * Prices are NOT duplicated here, they are derived from the canonical marketing
- * pricing model (`src/lib/marketing/pricing.ts`, PRD §6.1). A-* maps to tier A
- * (single/bundle), B-* to tier B, and Custom has no fixed price.
+ * Prices are NOT duplicated here, they are derived from the billing pricing
+ * model (`src/lib/billing/pricing.ts`, PRD §6.1). A-* maps to band A
+ * (single/bundle), B-* to band B, and Custom has no fixed price.
  */
 
-import { PRICING, type Currency } from "@/lib/marketing/pricing";
+import type { Currency } from "@/lib/marketing/pricing";
+import { BAND_A, BAND_B } from "@/lib/billing/pricing";
 
 export type PlanBand = "A-Single" | "A-Bundle" | "B-Single" | "B-Bundle" | "Custom";
 
@@ -38,7 +39,7 @@ export function planBandLabel(band: PlanBand): string {
 
 /**
  * Monthly price for a band in the given currency, or `null` when no fixed price
- * applies (Custom). Prices are sourced from the marketing PRICING model so there
+ * applies (Custom). Prices are sourced from the billing pricing model so there
  * is a single source of truth for the §6.1 figures.
  */
 export function planBandMonthlyPrice(
@@ -47,13 +48,13 @@ export function planBandMonthlyPrice(
 ): number | null {
   switch (band) {
     case "A-Single":
-      return PRICING.A.single[currency];
+      return BAND_A.single[currency];
     case "A-Bundle":
-      return PRICING.A.bundle[currency];
+      return BAND_A.bundle[currency];
     case "B-Single":
-      return PRICING.B.single[currency];
+      return BAND_B.single[currency];
     case "B-Bundle":
-      return PRICING.B.bundle[currency];
+      return BAND_B.bundle[currency];
     case "Custom":
       return null;
   }
