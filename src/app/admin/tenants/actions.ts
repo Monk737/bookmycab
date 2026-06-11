@@ -73,7 +73,13 @@ export const createTenantSchema = z
       ctx.addIssue({ code: "custom", path: ["chat_channel_mode"], message: "Pick a channel mode." });
     if (hasVoice && !d.voice_tier)
       ctx.addIssue({ code: "custom", path: ["voice_tier"], message: "Pick a voice tier." });
-    if (hasChat && d.chat_tier === "full_throttle" && d.chat_price_override === undefined)
+    // Only CHAT-ONLY Full Throttle is quoted (no list price). Double Decker
+    // Full Throttle has an authored price, so it needs no override.
+    if (
+      d.commercial_model === "chat" &&
+      d.chat_tier === "full_throttle" &&
+      d.chat_price_override === undefined
+    )
       ctx.addIssue({
         code: "custom",
         path: ["chat_price_override"],
@@ -128,8 +134,12 @@ export function buildProvisioningRows(args: {
   });
 
   // Full Throttle chat: use the admin override.
+  // Manual override applies ONLY to chat-only Full Throttle (the quoted tier);
+  // Double Decker Full Throttle uses the authored bundle chat component.
   const chatBase =
-    data.chat_tier === "full_throttle" ? data.chat_price_override ?? 0 : resolved.chatGbp;
+    data.commercial_model === "chat" && data.chat_tier === "full_throttle"
+      ? data.chat_price_override ?? 0
+      : resolved.chatGbp;
 
   const priced = (base: number | null): number | null =>
     base === null ? null : bypass ? 0 : applyDiscount(base, discountPercent);
@@ -268,6 +278,21 @@ export async function createTenant(
 
   const tenantId = inserted.id as string;
 
+  // Compensate when a CORE subscription insert fails: remove the
+  // partially-provisioned tenant (chat/voice rows cascade on the tenant_id FK)
+  // and surface the error instead of redirecting to a broken success page.
+  async function failProvision(message: string): Promise<TenantFormState> {
+    const { error: delErr } = await serviceClient.from("tenants").delete().eq("id", tenantId);
+    if (delErr) {
+      console.error("createTenant: compensating tenant delete failed", { tenantId, delErr });
+    }
+    return { fieldErrors: {}, formError: message };
+  }
+
+  // Non-bypass subscriptions are inserted with the DB default status 'active'
+  // and a null stripe_subscription_id; B3 "Start billing" + the Stripe webhook
+  // backfill the Stripe id + billing periods. (The status CHECK has no 'pending'.)
+  //
   // A bypassed tenant has its subscriptions comped to active locally, mirroring
   // the shape the Stripe webhook would have written (synthetic comp id, period
   // running from now for one month).
@@ -292,6 +317,7 @@ export async function createTenant(
     });
     if (chatError) {
       console.error("createTenant: failed to record chat subscription", chatError);
+      return failProvision("Could not create the chat subscription. Please try again.");
     }
   }
 
@@ -311,6 +337,7 @@ export async function createTenant(
     });
     if (voiceError) {
       console.error("createTenant: failed to record voice subscription", voiceError);
+      return failProvision("Could not create the voice subscription. Please try again.");
     }
   }
 

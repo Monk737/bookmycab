@@ -24,11 +24,18 @@ describe("createTenantSchema", () => {
     const r = createTenantSchema.safeParse({ ...base, commercial_model: "chat" });
     expect(r.success).toBe(false);
   });
-  it("requires a manual chat price for full_throttle chat", () => {
+  it("requires a manual chat price for chat-only full_throttle", () => {
     const r = createTenantSchema.safeParse({
       ...base, commercial_model: "chat", chat_tier: "full_throttle", chat_channel_mode: "single",
     });
     expect(r.success).toBe(false); // chat_price_override required
+  });
+  it("accepts double_decker full_throttle WITHOUT an override (authored price)", () => {
+    const r = createTenantSchema.safeParse({
+      ...base, commercial_model: "double_decker",
+      chat_tier: "full_throttle", chat_channel_mode: "bundle", voice_tier: "full_throttle",
+    });
+    expect(r.success).toBe(true);
   });
 });
 
@@ -74,5 +81,33 @@ describe("buildProvisioningRows", () => {
     expect(out.tenant.billing_bypass).toBe(true);
     expect(out.chat?.monthly_price_gbp).toBe(0);
     expect(out.setupGbp).toBe(0);
+  });
+  it("chat-only full_throttle uses the manual override price", () => {
+    const out = buildProvisioningRows({
+      data: { ...base, commercial_model: "chat", chat_tier: "full_throttle",
+        chat_channel_mode: "single", chat_price_override: 750, voice_tier: undefined, coupon_code: undefined },
+      discountPercent: 0, bypass: false,
+    });
+    expect(out.chat?.monthly_price_gbp).toBe(750);
+    expect(out.voice).toBeNull();
+  });
+  it("double_decker full_throttle uses authored split (chat + voice = bundle total)", () => {
+    const out = buildProvisioningRows({
+      data: { ...base, commercial_model: "double_decker", chat_tier: "full_throttle",
+        chat_channel_mode: "bundle", voice_tier: "full_throttle", chat_price_override: undefined, coupon_code: undefined },
+      discountPercent: 0, bypass: false,
+    });
+    expect(out.chat?.monthly_price_gbp).toBe(1800);
+    expect(out.voice?.monthly_price_gbp).toBe(1999);
+    expect(out.chat!.monthly_price_gbp + out.voice!.monthly_price_gbp).toBe(3799);
+  });
+  it("chat-only → voice row is null", () => {
+    const out = buildProvisioningRows({
+      data: { ...base, commercial_model: "chat", chat_tier: "ignition",
+        chat_channel_mode: "single", voice_tier: undefined, chat_price_override: undefined, coupon_code: undefined },
+      discountPercent: 0, bypass: false,
+    });
+    expect(out.voice).toBeNull();
+    expect(out.chat?.monthly_price_gbp).toBe(499);
   });
 });
