@@ -4,10 +4,11 @@ import { Section } from "@/components/marketing/ui/section";
 import { Badge } from "@/components/marketing/ui/badge";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { DispatchBadges } from "@/components/marketing/dispatch-badges";
-import { PricingCards } from "@/components/marketing/pricing-cards";
+import { PricingSections } from "@/components/marketing/pricing-sections";
 import { PricingRoi } from "@/components/marketing/pricing-roi";
 import { TransparencySection } from "@/components/marketing/transparency-section";
 import { Reveal } from "@/components/marketing/reveal";
+import { getFxRates } from "@/lib/marketing/fx";
 
 export const metadata: Metadata = {
   title: "Pricing · BookMyCab",
@@ -31,7 +32,8 @@ const ADD_ONS = [
   },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const rates = await getFxRates();
   return (
     <>
       {/* Hero */}
@@ -45,9 +47,10 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            Pick the option that fits your fleet. You pay one monthly price and
-            one setup fee to BookMyCab, and your channel and dispatch providers
-            directly, at their cost. Nothing in between.
+            Two products, one bill. A multi-channel Chat bot and an AI Voice
+            agent — buy either on its own, or bundle both as a Double Decker.
+            You pay BookMyCab one monthly price and one setup fee; your channel
+            and dispatch providers you pay directly, at their cost.
           </p>
         </Container>
       </Section>
@@ -64,14 +67,14 @@ export default function PricingPage() {
               puts back, set against what the plan costs.
             </p>
           </div>
-          <PricingRoi />
+          <PricingRoi rates={rates} />
         </Container>
       </Section>
 
-      {/* Cards + currency toggle + setup fee + contract */}
+      {/* Three product sections + currency toggle + setup fees + credit */}
       <Section className="py-10 sm:py-14">
         <Container>
-          <PricingCards />
+          <PricingSections rates={rates} />
         </Container>
       </Section>
 
