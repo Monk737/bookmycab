@@ -73,10 +73,12 @@ describe("TenantForm", () => {
     expect(screen.getByLabelText("Slug")).toBeInTheDocument();
     expect(screen.getByLabelText("Country")).toBeInTheDocument();
     expect(screen.getByLabelText("Primary contact email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Plan band")).toBeInTheDocument();
-    expect(screen.getByLabelText("Currency")).toBeInTheDocument();
     expect(screen.getByLabelText("Dispatch adapter")).toBeInTheDocument();
-    expect(screen.getByLabelText("Monthly price")).toBeInTheDocument();
+    expect(screen.getByLabelText("Product")).toBeInTheDocument();
+    // Default product is Chat → chat tier + channel mode render; voice is hidden.
+    expect(screen.getByLabelText("Chat tier")).toBeInTheDocument();
+    expect(screen.getByLabelText("Channel mode")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Voice tier")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /create tenant/i })).toBeInTheDocument();
   });
 
@@ -95,20 +97,23 @@ describe("TenantForm", () => {
     expect(slugInput.value).toBe("custom-slug");
   });
 
-  it("prefills the monthly price from plan band + currency and clears it for Custom", () => {
+  it("shows product-specific tier fields (chat / voice / double decker)", () => {
     render(<TenantForm />);
+    const product = screen.getByLabelText("Product");
 
-    const priceInput = screen.getByLabelText("Monthly price") as HTMLInputElement;
-    // Default A-Single / GBP → 500.
-    expect(priceInput.value).toBe("500");
+    // Default Chat: chat tier present, voice tier absent.
+    expect(screen.getByLabelText("Chat tier")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Voice tier")).not.toBeInTheDocument();
 
-    // USD A-Single → 600.
-    fireEvent.change(screen.getByLabelText("Currency"), { target: { value: "USD" } });
-    expect(priceInput.value).toBe("600");
+    // Voice: voice tier present, chat tier absent.
+    fireEvent.change(product, { target: { value: "voice" } });
+    expect(screen.getByLabelText("Voice tier")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Chat tier")).not.toBeInTheDocument();
 
-    // Custom → cleared (no fixed price).
-    fireEvent.change(screen.getByLabelText("Plan band"), { target: { value: "Custom" } });
-    expect(priceInput.value).toBe("");
+    // Double Decker: both present.
+    fireEvent.change(product, { target: { value: "double_decker" } });
+    expect(screen.getByLabelText("Chat tier")).toBeInTheDocument();
+    expect(screen.getByLabelText("Voice tier")).toBeInTheDocument();
   });
 
   it("renders field-level errors returned by the action", async () => {
