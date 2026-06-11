@@ -172,8 +172,6 @@ describe("handleStripeEvent", () => {
     const res = await handleStripeEvent(ev, d);
     expect(resetVoiceCallPool).toHaveBeenCalledWith({
       stripeSubscriptionId: "sub_voice",
-      periodStart: "2023-11-14",
-      periodEnd: "2023-12-14",
     });
     expect(d.markSetupFeePaid).not.toHaveBeenCalled();
     expect(res.action).toBe("voice_pool.reset");
@@ -204,7 +202,7 @@ describe("handleStripeEvent", () => {
 });
 
 describe("usage_counters voice reset (dep contract)", () => {
-  it("upserts used:0 + limit_amount = monthly_call_allowance, onConflict tenant_id,feature_key,period_start", async () => {
+  it("inserts used:0 + limit_amount for the current calendar month, ON CONFLICT DO NOTHING", async () => {
     // Exercise the REAL resetVoiceCallPool against a mocked service-role client,
     // asserting the exact usage_counters upsert shape the schema requires.
     const upsert = vi.fn(() => ({ error: null }));
@@ -223,23 +221,25 @@ describe("usage_counters voice reset (dep contract)", () => {
       }),
     };
     const { buildResetVoiceCallPool } = await import("@/lib/billing/webhook-deps");
+    const { periodBounds } = await import("@/lib/entitlements/meter");
     const reset = buildResetVoiceCallPool(db as never);
-    const ok = await reset({
-      stripeSubscriptionId: "sub_voice",
-      periodStart: "2023-11-14",
-      periodEnd: "2023-12-14",
-    });
+    const ok = await reset({ stripeSubscriptionId: "sub_voice" });
     expect(ok).toBe(true);
+
+    // Period must equal the metering layer's calendar-month bounds for "now",
+    // derived the same way (not hard-coded) so the assertion can't drift.
+    const { start, end } = periodBounds("month", new Date());
+    expect(start).toMatch(/^\d{4}-\d{2}-01$/); // 1st of the current month
     expect(upsert).toHaveBeenCalledWith(
       {
         tenant_id: "tnt-9",
         feature_key: "voice_calls",
-        period_start: "2023-11-14",
-        period_end: "2023-12-14",
+        period_start: start,
+        period_end: end,
         used: 0,
         limit_amount: 1200,
       },
-      { onConflict: "tenant_id,feature_key,period_start" },
+      { onConflict: "tenant_id,feature_key,period_start", ignoreDuplicates: true },
     );
   });
 });

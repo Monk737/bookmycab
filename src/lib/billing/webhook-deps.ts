@@ -2,6 +2,7 @@ import "server-only";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import type { BillingDeps } from "@/lib/billing/handle-event";
+import { periodBounds } from "@/lib/entitlements/meter";
 import { sendEmail } from "@/lib/email/resend";
 import { paymentFailedEmail } from "@/lib/email/templates";
 import type { Currency } from "@/lib/marketing/pricing";
@@ -20,7 +21,7 @@ type SupabaseLike = { from: (table: string) => any }; // eslint-disable-line @ty
 export function buildResetVoiceCallPool(
   db: SupabaseLike,
 ): BillingDeps["resetVoiceCallPool"] {
-  return async ({ stripeSubscriptionId, periodStart, periodEnd }) => {
+  return async ({ stripeSubscriptionId }) => {
     const { data: vsub, error: lookupErr } = await db
       .from("voice_subscriptions")
       .select("tenant_id, monthly_call_allowance")
@@ -33,16 +34,22 @@ export function buildResetVoiceCallPool(
       tenant_id: string;
       monthly_call_allowance: number;
     };
+    // Bucket by calendar month — the SAME bounds the metering layer reads/writes
+    // (`periodBounds("month", …)`), so the reset opens the row the meter uses.
+    const { start, end } = periodBounds("month", new Date());
+    // INSERT-ONLY (ON CONFLICT DO NOTHING): a new calendar month inserts a fresh
+    // row (used:0, limit set); a re-delivered invoice.paid in the same month is a
+    // no-op, preserving accrued `used` + `limit`.
     const { error: upsertErr } = await db.from("usage_counters").upsert(
       {
         tenant_id,
         feature_key: "voice_calls",
-        period_start: periodStart,
-        period_end: periodEnd,
+        period_start: start,
+        period_end: end,
         used: 0,
         limit_amount: monthly_call_allowance,
       },
-      { onConflict: "tenant_id,feature_key,period_start" },
+      { onConflict: "tenant_id,feature_key,period_start", ignoreDuplicates: true },
     );
     if (upsertErr) throw new Error(`resetVoiceCallPool upsert failed: ${upsertErr.message}`);
     return true;

@@ -5,7 +5,6 @@ import {
   classifyInvoice,
   mapNewModelSubscription,
   invoiceSubscriptionId,
-  invoicePeriod,
   type SubscriptionMirrorRow,
 } from "@/lib/billing/event-map";
 import { fromMinor } from "@/lib/billing/plan-price";
@@ -22,13 +21,13 @@ export interface BillingDeps {
    *  `stripe_subscription_id`, with the mapped status + period. */
   updateNewModelSubscription(out: NonNullable<ReturnType<typeof mapNewModelSubscription>>): Promise<void>;
   /** Open a fresh `usage_counters` voice-calls period for the tenant whose
-   *  `voice_subscriptions` row matches `stripeSubscriptionId`. No-op (returns
-   *  false) when no voice subscription matches that id. */
-  resetVoiceCallPool(args: {
-    stripeSubscriptionId: string;
-    periodStart: string | null;
-    periodEnd: string | null;
-  }): Promise<boolean>;
+   *  `voice_subscriptions` row matches `stripeSubscriptionId`. The period is the
+   *  current calendar month (owned by the implementation, matching the metering
+   *  layer's `periodBounds("month", …)` buckets) and the write is INSERT-ONLY,
+   *  so a re-delivered `invoice.paid` within the same month is a no-op and never
+   *  zeroes accrued usage. No-op (returns false) when no voice subscription
+   *  matches that id. */
+  resetVoiceCallPool(args: { stripeSubscriptionId: string }): Promise<boolean>;
   /** Mark the setup_fees row for this Stripe invoice id as paid; return tenant
    *  display info for any follow-up (or null when no matching row). */
   markSetupFeePaid(stripeInvoiceId: string): Promise<{ tenantName: string; currency: Currency } | null>;
@@ -89,12 +88,7 @@ export async function handleStripeEvent(
       // fall through to the legacy acknowledge.
       const subId = invoiceSubscriptionId(invoice);
       if (subId) {
-        const { period_start, period_end } = invoicePeriod(invoice);
-        const reset = await deps.resetVoiceCallPool({
-          stripeSubscriptionId: subId,
-          periodStart: period_start,
-          periodEnd: period_end,
-        });
+        const reset = await deps.resetVoiceCallPool({ stripeSubscriptionId: subId });
         if (reset) return { action: "voice_pool.reset" };
       }
       // Legacy subscription cycle payment, Stripe is the ledger; nothing to
