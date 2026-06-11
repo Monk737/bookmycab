@@ -89,7 +89,13 @@ export function buildGrantTopupCredits(
       currency: "GBP",
       stripe_payment_intent_id: paymentIntentId,
     });
-    if (insertErr) throw new Error(`grantTopupCredits insert failed: ${insertErr.message}`);
+    if (insertErr) {
+      // 23505 = unique-violation on the partial index credit_ledger_topup_pi_uniq
+      // (migration 0042): a concurrent delivery already granted this payment.
+      // Treat as already-granted (idempotent) rather than failing the webhook.
+      if ((insertErr as { code?: string }).code === "23505") return;
+      throw new Error(`grantTopupCredits insert failed: ${insertErr.message}`);
+    }
 
     // Best-effort coupon redemption: a failure here must not fail the webhook
     // (the credits are already granted), so log and move on.

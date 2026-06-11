@@ -133,11 +133,15 @@ export async function handleStripeEvent(
       const pi = session.payment_intent;
       const paymentIntentId = typeof pi === "string" ? pi : pi?.id ?? null;
       if (!paymentIntentId) return { action: "skipped" };
+      // Defensive: credits is authored by our own checkout route (a validated
+      // positive integer), but never grant a non-finite/non-positive amount.
+      const credits = Number(session.metadata.credits);
+      if (!Number.isInteger(credits) || credits <= 0) return { action: "skipped" };
       await deps.grantTopupCredits({
         sessionId: session.id,
         paymentIntentId,
         tenantId: session.metadata.tenant_id,
-        credits: Number(session.metadata.credits),
+        credits,
         couponCode: session.metadata.coupon_code || undefined,
       });
       return { action: "topup_credits.granted" };
