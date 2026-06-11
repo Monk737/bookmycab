@@ -3,14 +3,14 @@
 import { useActionState, useId, useState } from "react";
 import Link from "next/link";
 import { createTenant, type TenantFormState } from "../actions";
+import { slugify } from "@/lib/admin/plan-bands";
 import {
-  PLAN_BANDS,
-  planBandLabel,
-  planBandMonthlyPrice,
-  slugify,
-  type PlanBand,
-} from "@/lib/admin/plan-bands";
-import { CURRENCIES, type Currency } from "@/lib/marketing/pricing";
+  resolveNewModelPricing,
+  type CommercialModel,
+  type NewTierKey,
+  type ChatChannelMode,
+} from "@/lib/billing/pricing";
+import { formatPrice } from "@/lib/marketing/pricing";
 import { COUNTRIES } from "@/lib/billing/country";
 
 const DISPATCH_ADAPTERS = [
@@ -18,6 +18,23 @@ const DISPATCH_ADAPTERS = [
   { value: "icabbi", label: "iCabbi" },
   { value: "cordic", label: "Cordic" },
 ] as const;
+
+const COMMERCIAL_MODELS: { value: CommercialModel; label: string }[] = [
+  { value: "chat", label: "Chat" },
+  { value: "voice", label: "Voice" },
+  { value: "double_decker", label: "Double Decker" },
+];
+
+const TIERS: { value: NewTierKey; label: string }[] = [
+  { value: "ignition", label: "Ignition" },
+  { value: "in_motion", label: "In Motion" },
+  { value: "full_throttle", label: "Full Throttle" },
+];
+
+const CHANNEL_MODES: { value: ChatChannelMode; label: string }[] = [
+  { value: "single", label: "Single channel" },
+  { value: "bundle", label: "Channel bundle" },
+];
 
 const initialState: TenantFormState = { fieldErrors: {}, formError: null };
 
@@ -115,9 +132,11 @@ function SelectField({
 }
 
 /**
- * Tenant provisioning form. Slug auto-derives from the org name until the staff
- * member edits it manually; monthly price prefills from the selected plan band +
- * currency (blank for Custom) and stays editable.
+ * Tenant provisioning form (new commercial model). The slug auto-derives from
+ * the org name until edited. The commercial-model selection (model + tiers +
+ * channel mode) drives a live, read-only GBP price summary via
+ * `resolveNewModelPricing`. Currency is always GBP. Chat-only Full Throttle is
+ * quoted (no list price), so it exposes an editable monthly-price override.
  */
 export function TenantForm() {
   const [state, formAction, pending] = useActionState(createTenant, initialState);
@@ -125,42 +144,50 @@ export function TenantForm() {
   const nameId = useId();
   const slugId = useId();
   const countryId = useId();
-  const planId = useId();
-  const currencyId = useId();
+  const emailId = useId();
   const adapterId = useId();
   const companyId = useId();
-  const emailId = useId();
-  const startId = useId();
-  const priceId = useId();
-  const stripeId = useId();
-  const setupFeeId = useId();
+  const modelId = useId();
+  const chatTierId = useId();
+  const chatModeId = useId();
+  const voiceTierId = useId();
+  const overrideId = useId();
   const couponId = useId();
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [slugEdited, setSlugEdited] = useState(false);
   const [country, setCountry] = useState<string>("GB");
-  const [planBand, setPlanBand] = useState<PlanBand>("A-Single");
-  const [currency, setCurrency] = useState<Currency>("GBP");
   const [dispatchAdapter, setDispatchAdapter] = useState<string>("autocab");
-  const [price, setPrice] = useState<string>(
-    () => String(planBandMonthlyPrice("A-Single", "GBP") ?? ""),
-  );
-  const [priceEdited, setPriceEdited] = useState(false);
+
+  const [commercialModel, setCommercialModel] = useState<CommercialModel>("chat");
+  const [chatTier, setChatTier] = useState<NewTierKey>("ignition");
+  const [chatMode, setChatMode] = useState<ChatChannelMode>("single");
+  const [voiceTier, setVoiceTier] = useState<NewTierKey>("ignition");
+  const [chatPriceOverride, setChatPriceOverride] = useState<string>("");
 
   function handleName(v: string) {
     setName(v);
     if (!slugEdited) setSlug(slugify(v));
   }
 
-  // Prefill the price from band+currency unless the staff member typed their own.
-  function syncPrice(band: PlanBand, cur: Currency) {
-    if (priceEdited) return;
-    const p = planBandMonthlyPrice(band, cur);
-    setPrice(p === null ? "" : String(p));
-  }
-
   const fe = state.fieldErrors;
+
+  const hasChat = commercialModel === "chat" || commercialModel === "double_decker";
+  const hasVoice = commercialModel === "voice" || commercialModel === "double_decker";
+
+  // Live price preview from the current selection. Pure + dependency-free.
+  const resolved = resolveNewModelPricing({
+    model: commercialModel,
+    chatTier: hasChat ? chatTier : null,
+    chatMode: hasChat ? chatMode : null,
+    voiceTier: hasVoice ? voiceTier : null,
+  });
+
+  // Chat-only Full Throttle is the single quoted case (resolved.chatGbp is null);
+  // the staff member supplies the monthly price by hand. Double Decker Full
+  // Throttle resolves to a real authored number, so no override is shown.
+  const isChatQuoted = commercialModel === "chat" && chatTier === "full_throttle";
 
   return (
     <form action={formAction} noValidate className="flex flex-col gap-5">
@@ -227,42 +254,6 @@ export function TenantForm() {
           required
         />
         <SelectField
-          id={planId}
-          name="plan_band"
-          label="Plan band"
-          value={planBand}
-          onChange={(v) => {
-            const band = v as PlanBand;
-            setPlanBand(band);
-            syncPrice(band, currency);
-          }}
-          error={fe.plan_band?.[0]}
-        >
-          {PLAN_BANDS.map((b) => (
-            <option key={b} value={b}>
-              {planBandLabel(b)}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField
-          id={currencyId}
-          name="currency"
-          label="Currency"
-          value={currency}
-          onChange={(v) => {
-            const cur = v as Currency;
-            setCurrency(cur);
-            syncPrice(planBand, cur);
-          }}
-          error={fe.currency?.[0]}
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField
           id={adapterId}
           name="dispatch_adapter"
           label="Dispatch adapter"
@@ -283,52 +274,142 @@ export function TenantForm() {
           placeholder="Optional"
           error={fe.dispatch_company_id?.[0]}
         />
-        <Field
-          id={startId}
-          name="contract_start"
-          label="Contract start"
-          type="date"
-          error={fe.contract_start?.[0]}
-        />
-        <Field
-          id={priceId}
-          name="monthly_price"
-          label="Monthly price"
-          type="number"
-          min="0"
-          step="0.01"
-          value={price}
-          onChange={(e) => {
-            setPriceEdited(true);
-            setPrice(e.target.value);
-          }}
-          hint={
-            planBand === "Custom"
-              ? "Custom band has no fixed price, enter the quoted amount."
-              : "Prefilled from plan band + currency. Editable."
-          }
-          placeholder="0"
-          error={fe.monthly_price?.[0]}
-        />
-        <Field
-          id={stripeId}
-          name="stripe_customer_id"
-          label="Stripe customer ID"
-          placeholder="Optional (Epic 8)"
-          error={fe.stripe_customer_id?.[0]}
-        />
-        <Field
-          id={setupFeeId}
-          name="setup_fee"
-          label="Setup fee amount"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="Optional"
-          hint="Recorded as an unpaid setup fee."
-          error={fe.setup_fee?.[0]}
-        />
       </div>
+
+      {/* Commercial model + tiers. Tier/channel selects render conditionally on
+          the chosen model; pricing is previewed live below. */}
+      <fieldset className="flex flex-col gap-5 border-[3px] border-ink bg-paper p-4">
+        <legend className="px-1 text-sm font-medium text-gray-700">
+          Commercial model
+        </legend>
+
+        <SelectField
+          id={modelId}
+          name="commercial_model"
+          label="Product"
+          value={commercialModel}
+          onChange={(v) => setCommercialModel(v as CommercialModel)}
+          error={fe.commercial_model?.[0]}
+        >
+          {COMMERCIAL_MODELS.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </SelectField>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {hasChat && (
+            <>
+              <SelectField
+                id={chatTierId}
+                name="chat_tier"
+                label="Chat tier"
+                value={chatTier}
+                onChange={(v) => setChatTier(v as NewTierKey)}
+                error={fe.chat_tier?.[0]}
+              >
+                {TIERS.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField
+                id={chatModeId}
+                name="chat_channel_mode"
+                label="Channel mode"
+                value={chatMode}
+                onChange={(v) => setChatMode(v as ChatChannelMode)}
+                error={fe.chat_channel_mode?.[0]}
+              >
+                {CHANNEL_MODES.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </SelectField>
+            </>
+          )}
+
+          {hasVoice && (
+            <SelectField
+              id={voiceTierId}
+              name="voice_tier"
+              label="Voice tier"
+              value={voiceTier}
+              onChange={(v) => setVoiceTier(v as NewTierKey)}
+              error={fe.voice_tier?.[0]}
+            >
+              {TIERS.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </SelectField>
+          )}
+        </div>
+
+        {/* Chat-only Full Throttle: editable quoted monthly price. The override
+            input is the submitted chat price for this case. */}
+        {isChatQuoted && (
+          <Field
+            id={overrideId}
+            name="chat_price_override"
+            label="Chat monthly price (quoted)"
+            type="number"
+            min="0"
+            step="0.01"
+            value={chatPriceOverride}
+            onChange={(e) => setChatPriceOverride(e.target.value)}
+            placeholder="0"
+            hint="Full Throttle chat is quoted, not list-priced. Enter the agreed monthly amount in GBP."
+            error={fe.chat_price_override?.[0]}
+          />
+        )}
+
+        {/* Live, read-only price summary computed from the selection. */}
+        <div className="flex flex-col gap-1.5 border-[3px] border-ink bg-brut-lime/10 px-4 py-3 text-sm">
+          <p className="font-medium text-gray-700">Price summary</p>
+          {hasChat && !isChatQuoted && (
+            <p className="text-ink">
+              Chat:{" "}
+              <span className="font-semibold">
+                {resolved.chatGbp === null
+                  ? "—"
+                  : `${formatPrice("GBP", resolved.chatGbp)}/mo`}
+              </span>
+            </p>
+          )}
+          {hasChat && isChatQuoted && (
+            <p className="text-ink">
+              Chat:{" "}
+              <span className="font-semibold">
+                {chatPriceOverride.trim() === ""
+                  ? "Quoted"
+                  : `${formatPrice("GBP", Number(chatPriceOverride))}/mo`}
+              </span>
+            </p>
+          )}
+          {hasVoice && (
+            <p className="text-ink">
+              Voice:{" "}
+              <span className="font-semibold">
+                {resolved.voiceGbp === null
+                  ? "—"
+                  : `${formatPrice("GBP", resolved.voiceGbp)}/mo`}
+              </span>
+            </p>
+          )}
+          <p className="text-ink">
+            Setup (one-time):{" "}
+            <span className="font-semibold">
+              {formatPrice("GBP", resolved.setupGbp)}
+            </span>
+          </p>
+          <p className="text-xs text-gray-500">All prices billed monthly in GBP.</p>
+        </div>
+      </fieldset>
 
       {/* Discount coupon. A 100%-off code comps setup + subscription and skips
           Stripe entirely; partial codes reduce the recorded prices above. */}
