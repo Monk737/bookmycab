@@ -68,10 +68,13 @@ function callHookAsAuthAdmin(userId: string, email: string) {
 }
 
 describe("custom_access_token_hook", () => {
-  it("injects tenant_id, role, automation_restrictions for a tenant user", async () => {
+  it("injects tenant_id, user_role, automation_restrictions for a tenant user", async () => {
     const claims = await callHook(TENANT_USER, "raj@hook-co.com");
     expect(claims.tenant_id).toBe(TENANT);
-    expect(claims.role).toBe("Admin");
+    // App role lives under user_role; the reserved `role` claim is left for
+    // PostgREST (must stay `authenticated`), never overwritten with the app role.
+    expect(claims.user_role).toBe("Admin");
+    expect(claims.role).not.toBe("Admin");
     expect(claims.automation_restrictions).toEqual([AUTO]);
     expect(claims.is_flowmo_staff).toBe(false);
   });
@@ -84,7 +87,7 @@ describe("custom_access_token_hook", () => {
   it("works under the supabase_auth_admin role (RLS-respecting production path)", async () => {
     const claims = await callHookAsAuthAdmin(TENANT_USER, "raj@hook-co.com");
     expect(claims.tenant_id).toBe(TENANT);
-    expect(claims.role).toBe("Admin");
+    expect(claims.user_role).toBe("Admin");
     expect(claims.automation_restrictions).toEqual([AUTO]);
   });
 });

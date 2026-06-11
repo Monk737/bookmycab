@@ -32,7 +32,10 @@ export function parseClaims(raw: Record<string, unknown>): Claims {
   return {
     sub: String(raw.sub),
     tenant_id: (raw.tenant_id as string) ?? null,
-    role: (raw.role as Claims["role"]) ?? null,
+    // App role lives under `user_role`; the reserved `role` claim must stay
+    // `authenticated` for PostgREST. Fall back to `role` for legacy tokens
+    // issued before migration 0045 (until they refresh).
+    role: ((raw.user_role as Claims["role"]) ?? (raw.role as Claims["role"])) ?? null,
     is_flowmo_staff: Boolean(raw.is_flowmo_staff),
     is_demo: Boolean(raw.is_demo),
     aal: (raw.aal as Claims["aal"]) ?? null,
