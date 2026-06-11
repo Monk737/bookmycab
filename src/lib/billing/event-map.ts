@@ -47,3 +47,46 @@ export function classifyInvoice(invoice: Stripe.Invoice): "setup" | "subscriptio
   const sub = invoice.parent?.subscription_details?.subscription ?? null;
   return sub ? "subscription" : "setup";
 }
+
+type NewModelSubUpdate = {
+  table: "chat_subscriptions" | "voice_subscriptions";
+  stripe_subscription_id: string;
+  update: {
+    status: "active" | "paused" | "cancelled";
+    current_period_start: string | null;
+    current_period_end: string | null;
+  };
+};
+
+const STRIPE_STATUS_MAP: Record<string, "active" | "paused" | "cancelled"> = {
+  active: "active", trialing: "active", past_due: "active",
+  paused: "paused", unpaid: "paused",
+  canceled: "cancelled", incomplete_expired: "cancelled",
+};
+
+const tsToDate = (ts: number | null | undefined): string | null =>
+  typeof ts === "number" ? new Date(ts * 1000).toISOString().slice(0, 10) : null;
+
+/**
+ * Map a Stripe subscription to a new-model row update, or null when it is not a
+ * new-model subscription (no `metadata.product`). Routes by product tag.
+ */
+export function mapNewModelSubscription(sub: Stripe.Subscription): NewModelSubUpdate | null {
+  const product = sub.metadata?.product;
+  if (product !== "chat" && product !== "voice") return null;
+  // Stripe Basil (API 2025-03+) moved current_period_* off the subscription, so
+  // these are not in the SDK type. Narrow defensively rather than blind-casting.
+  const s = sub as Stripe.Subscription & {
+    current_period_start?: number;
+    current_period_end?: number;
+  };
+  return {
+    table: product === "chat" ? "chat_subscriptions" : "voice_subscriptions",
+    stripe_subscription_id: sub.id,
+    update: {
+      status: STRIPE_STATUS_MAP[sub.status] ?? "active",
+      current_period_start: tsToDate(s.current_period_start),
+      current_period_end: tsToDate(s.current_period_end),
+    },
+  };
+}

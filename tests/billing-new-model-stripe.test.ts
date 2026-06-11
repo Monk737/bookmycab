@@ -3,6 +3,7 @@ import {
   buildNewSetupInvoiceItemParams,
   buildProductSubscriptionParams,
 } from "@/lib/billing/plan-price";
+import { mapNewModelSubscription } from "@/lib/billing/event-map";
 
 describe("buildNewSetupInvoiceItemParams", () => {
   it("GBP minor units, correct customer + description", () => {
@@ -26,5 +27,31 @@ describe("buildProductSubscriptionParams", () => {
     expect(item.price_data?.recurring?.interval).toBe("month");
     expect(item.price_data?.product).toBe("prod_x");
     expect(p.metadata).toMatchObject({ tenant_id: "t1", product: "voice" });
+  });
+});
+
+describe("mapNewModelSubscription", () => {
+  const sub = {
+    id: "sub_123",
+    status: "active",
+    metadata: { tenant_id: "t1", product: "voice" },
+    current_period_start: 1750000000,
+    current_period_end: 1752592000,
+  };
+  it("routes to voice_subscriptions with mapped status + ISO periods", () => {
+    const out = mapNewModelSubscription(sub as never);
+    expect(out).not.toBeNull();
+    expect(out!.table).toBe("voice_subscriptions");
+    expect(out!.stripe_subscription_id).toBe("sub_123");
+    expect(out!.update.status).toBe("active");
+    expect(out!.update.current_period_start).toBe("2025-06-15");
+  });
+  it("maps canceled → cancelled and chat product → chat_subscriptions", () => {
+    const out = mapNewModelSubscription({ ...sub, status: "canceled", metadata: { tenant_id: "t1", product: "chat" } } as never);
+    expect(out!.table).toBe("chat_subscriptions");
+    expect(out!.update.status).toBe("cancelled");
+  });
+  it("returns null for a subscription without our product metadata (legacy)", () => {
+    expect(mapNewModelSubscription({ id: "x", status: "active", metadata: {} } as never)).toBeNull();
   });
 });
