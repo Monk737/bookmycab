@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import {
   createSetupFeeInvoice,
   startSubscription,
+  startNewModelBilling,
   syncSubscription,
 } from "./billing-actions";
 
@@ -12,10 +13,55 @@ interface BillingPanelProps {
   planBand: string;
   setupFeePaid: boolean;
   hasSubscription: boolean;
+  /** Null for legacy tenants; set ("chat_only" | "voice_only" | "chat_voice") for new-model tenants. */
+  commercialModel: string | null;
+  /** Tenant lifecycle status; new-model billing is only startable while "onboarding". */
+  status: string;
 }
 
-export function BillingPanel({ tenantId, planBand, setupFeePaid, hasSubscription }: BillingPanelProps) {
+export function BillingPanel({
+  tenantId,
+  planBand,
+  setupFeePaid,
+  hasSubscription,
+  commercialModel,
+  status,
+}: BillingPanelProps) {
   const [pending, start] = useTransition();
+
+  // New-model tenants (commercial_model set) use a single "Start billing" action
+  // that provisions setup invoice + per-product subscriptions; legacy tenants keep
+  // the setup-fee / subscription / sync controls below.
+  if (commercialModel) {
+    const billingActive = status === "active";
+    return (
+      <section className="border-[3px] border-ink bg-paper p-5">
+        <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          Stripe billing
+        </h2>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            type="button"
+            disabled={pending || billingActive}
+            onClick={() => start(() => void startNewModelBilling(tenantId))}
+            className="border-2 border-ink bg-brut-lime px-4 py-2 text-sm font-bold uppercase text-ink hover:bg-ink hover:text-paper disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {billingActive ? "Billing active" : "Start billing"}
+          </button>
+
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => start(() => void syncSubscription(tenantId))}
+            className="border-[3px] border-ink px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Sync from Stripe
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   const isCustom = planBand === "Custom";
 
   return (

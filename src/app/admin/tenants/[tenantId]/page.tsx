@@ -66,6 +66,7 @@ type Tenant = {
   contact_email: string | null;
   stripe_customer_id: string | null;
   setup_fee_paid: boolean | null;
+  commercial_model: string | null;
 };
 
 type AutomationRow = {
@@ -163,7 +164,7 @@ export default async function TenantDetailPage({
   const { data: tenantData, error: tenantError } = await serviceClient
     .from("tenants")
     .select(
-      "id, name, slug, status, country, plan_band, currency, monthly_price, contract_start, contract_renewal, renewal_mode, dispatch_adapter, dispatch_company_id, contact_email, stripe_customer_id, setup_fee_paid",
+      "id, name, slug, status, country, plan_band, currency, monthly_price, contract_start, contract_renewal, renewal_mode, dispatch_adapter, dispatch_company_id, contact_email, stripe_customer_id, setup_fee_paid, commercial_model",
     )
     .eq("id", tenantId)
     .maybeSingle();
@@ -451,6 +452,8 @@ export default async function TenantDetailPage({
           planBand={tenant.plan_band}
           setupFeePaid={Boolean(tenant.setup_fee_paid)}
           hasSubscription={(subsData ?? []).length > 0}
+          commercialModel={tenant.commercial_model}
+          status={tenant.status}
         />
       </Section>
 
