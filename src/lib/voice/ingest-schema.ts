@@ -19,6 +19,9 @@ export const ingestSchema = z.object({
   ended_at: z.string().optional(),
   duration_s: z.number().int().nonnegative().optional(),
   outcome: z.enum(OUTCOMES),
+  /** Vapi analysisPlan output, stored verbatim on the call row. */
+  summary: z.string().max(4000).optional(),
+  success: z.boolean().optional(),
 });
 
 export function parseIngestBody(input: unknown) {

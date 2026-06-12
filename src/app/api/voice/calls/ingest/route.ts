@@ -37,6 +37,8 @@ export async function POST(req: Request) {
     p_ended_at: d.ended_at ?? null,
     p_duration_s: d.duration_s ?? null,
     p_outcome: d.outcome,
+    p_summary: d.summary ?? null,
+    p_success: d.success ?? null,
   });
   if (error) {
     console.error("record_voice_call failed", error);

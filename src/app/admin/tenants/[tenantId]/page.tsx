@@ -76,6 +76,14 @@ type AutomationRow = {
   status: string;
   build_stage: string;
   dispatch_adapter: string | null;
+  engine_workflow_id: string | null;
+};
+
+type VoiceAgentRow = {
+  automation_id: string;
+  display_name: string;
+  phone_number: string | null;
+  vapi_assistant_id: string | null;
 };
 
 type MemberRow = {
@@ -188,10 +196,11 @@ export default async function TenantDetailPage({
     { data: feesData },
     { data: auditData },
     { data: voiceSubData },
+    { data: voiceAgentsData },
   ] = await Promise.all([
     serviceClient
       .from("automations")
-      .select("id, name, type, status, build_stage, dispatch_adapter")
+      .select("id, name, type, status, build_stage, dispatch_adapter, engine_workflow_id")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false }),
     serviceClient
@@ -223,11 +232,17 @@ export default async function TenantDetailPage({
       .select("tenant_id")
       .eq("tenant_id", tenantId)
       .maybeSingle(),
+    serviceClient
+      .from("voice_agents")
+      .select("automation_id, display_name, phone_number, vapi_assistant_id")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: true }),
   ]);
 
   const hasVoicePlan = Boolean(voiceSubData);
 
   const automations = (automationsData ?? []) as AutomationRow[];
+  const voiceAgents = (voiceAgentsData ?? []) as VoiceAgentRow[];
 
   const members: MemberRow[] = (
     (membersData ?? []) as Array<{
@@ -490,6 +505,57 @@ export default async function TenantDetailPage({
           getRowKey={(a) => a.id}
           emptyMessage="No automations provisioned yet."
         />
+
+        {voiceAgents.length > 0 && (
+          <div className="mt-4 border-[3px] border-ink bg-paper p-5">
+            <h3 className="font-display text-sm font-extrabold uppercase tracking-tight text-ink">
+              Engine wiring — AI Voice
+            </h3>
+            <p className="mt-1 text-xs text-gray-500">
+              Paste these values into the <span className="font-mono">Analytics Tenant Config</span> node
+              of the tenant&rsquo;s cloned n8n voice workflow, and set the same webhook secret on the
+              Vapi assistant (<span className="font-mono">server.secret</span>). Calls then meter and
+              report into this tenant&rsquo;s dashboard automatically.
+            </p>
+            <div className="mt-4 flex flex-col gap-4">
+              {voiceAgents.map((agent) => {
+                const auto = automations.find((a) => a.id === agent.automation_id);
+                return (
+                  <div key={agent.automation_id} className="border-2 border-ink bg-canvas p-4">
+                    <p className="font-display text-sm font-extrabold uppercase tracking-tight text-ink">
+                      {agent.display_name}
+                      {agent.phone_number ? (
+                        <span className="ml-2 font-mono text-xs font-medium normal-case text-gray-600">{agent.phone_number}</span>
+                      ) : null}
+                    </p>
+                    <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+                      <div className="flex justify-between gap-3 sm:block">
+                        <dt className="font-medium text-gray-500">tenant_id</dt>
+                        <dd className="font-mono text-ink">{tenantId}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3 sm:block">
+                        <dt className="font-medium text-gray-500">automation_id</dt>
+                        <dd className="font-mono text-ink">{agent.automation_id}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3 sm:block">
+                        <dt className="font-medium text-gray-500">ingest_url</dt>
+                        <dd className="font-mono text-ink">{env.NEXT_PUBLIC_SITE_URL}/api/voice/calls/ingest</dd>
+                      </div>
+                      <div className="flex justify-between gap-3 sm:block">
+                        <dt className="font-medium text-gray-500">n8n workflow</dt>
+                        <dd className="font-mono text-ink">{auto?.engine_workflow_id ?? "— not set"}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3 sm:block">
+                        <dt className="font-medium text-gray-500">Vapi assistant</dt>
+                        <dd className="font-mono text-ink">{agent.vapi_assistant_id ?? "— not set"}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </Section>
 
       <Section title="Users">

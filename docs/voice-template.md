@@ -1,0 +1,84 @@
+# AI Voice Booking — per-tenant template (n8n + Vapi)
+
+One n8n workflow + one Vapi assistant per tenant. The reference pair (wired to
+the demo tenant "Premier Cabs London") is the template to clone:
+
+| Piece | Reference |
+|---|---|
+| n8n workflow | `0x5hOeCgWfr3N7pR` — "Premier Cab — Vapi Voice Backend" |
+| Vapi assistant | `15c5709f-7585-4d39-96cf-ffe85e42bd40` — "Premier Cab — Voice Booking" |
+
+## How the numbers flow
+
+```
+Caller ──► Vapi assistant ──(tool calls)──► n8n /webhook/vapi/tools ──► AutoCab
+                 │                              (quote / book / modify / cancel / track)
+                 │ call ends
+                 ▼
+   Vapi analysisPlan runs (summary + structuredData.outcome + successEvaluation)
+                 │  server message: end-of-call-report  (header x-vapi-secret)
+                 ▼
+   n8n /webhook/vapi/analytics
+     ├─ Analytics Tenant Config   ← the ONLY node edited per tenant
+     ├─ Parse End Of Call Report  (secret check, outcome mapping)
+     └─ Ingest Call To BookMyCab  → POST {SITE}/api/voice/calls/ingest
+                 ▼
+   record_voice_call (Postgres, atomic + idempotent on provider_call_id)
+     ├─ usage_counters  'voice_calls' monthly pool (allowance from voice_subscriptions)
+     ├─ credit_ledger   −1 when the pool is exhausted (top-up credit)
+     └─ calls           outcome, duration, credit_source, summary, success
+                 ▼
+   Tenant dashboard  /dashboard/voice + Overview   (same rows)
+   Admin dashboard   platform calls / voice agents (same rows)
+```
+
+The dashboard never computes credit itself — every number (pool used/remaining,
+plan vs top-up split, outcomes, durations) comes from what this pipeline wrote.
+
+## Vapi assistant — analysis section (required on every clone)
+
+Set via `PATCH /assistant/:id` (the MCP tool cannot set these):
+
+- `serverMessages: ["end-of-call-report"]`
+- `server.url` = `https://workflow.flowjob.app/webhook/vapi/analytics`
+- `server.secret` = per-tenant secret (the workflow drops requests without it)
+- `analysisPlan`:
+  - `summaryPlan` — 1–2 sentence operator summary
+  - `structuredDataPlan.schema.outcome` — **enum must stay exactly**
+    `booked | quoted | abandoned | transferred | failed | unknown`
+    (this is the dashboard's outcome taxonomy; `no_credit` is assigned
+    server-side when the tenant has no allowance/credit left)
+  - `successEvaluationPlan` — PassFail rubric
+
+## Cloning for a new tenant (runbook)
+
+1. **Admin console** → tenant → Automations → *Add an automation* → type
+   "AI Voice agent". Enter the agent phone number (+ plan tier if the tenant has
+   no voice plan yet), and — once known — the **Engine workflow ID** and **Vapi
+   assistant ID**. Supplying the workflow id activates the agent (status: live).
+2. **Clone the n8n workflow**; update the per-tenant AutoCab credentials, then
+   open **Analytics Tenant Config** and paste the values shown in the admin
+   *Engine wiring — AI Voice* panel:
+   `tenant_id`, `automation_id`, `ingest_url`, the deployment's
+   `VOICE_INGEST_SECRET`, and a fresh `vapi_webhook_secret`.
+3. **Duplicate the Vapi assistant**; point its tools at the cloned workflow's
+   `/webhook/vapi/tools` URL, and set `server.url`/`server.secret`/`analysisPlan`
+   as above (secret = the one pasted into the n8n config node).
+4. Publish the n8n workflow. Make a test call; the call must appear in the
+   tenant's `/dashboard/voice` within seconds of hang-up.
+
+## Guarantees
+
+- **Idempotent**: Vapi retries are safe — `record_voice_call` dedupes on
+  `provider_call_id`.
+- **Authenticated twice**: Vapi→n8n via `x-vapi-secret`; n8n→app via
+  `Authorization: Bearer VOICE_INGEST_SECRET`.
+- **Race-safe metering**: a per-tenant advisory lock serializes pool/credit
+  consumption.
+
+## Known deployment note
+
+`https://bookmycab.io` must be redeployed with the current `main`/branch build —
+the live deploy predates `/api/voice/calls/ingest` (verified 404 on 2026-06-12).
+Until then the ingest hop fails in the n8n execution log (and the workflow run
+shows an error); everything upstream is live.

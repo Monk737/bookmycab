@@ -480,6 +480,9 @@ const createAutomationSchema = z
     channel_handle: optionalText,
     // Only used when adding a Voice agent to a tenant with no voice plan yet.
     voice_tier: z.enum(VOICE_TIERS).optional(),
+    // Engine wiring (Voice): the tenant's cloned n8n workflow + Vapi assistant.
+    engine_workflow_id: optionalText,
+    vapi_assistant_id: optionalText,
   })
   .superRefine((d, ctx) => {
     if (d.type === "Voice" && !d.phone_number) {
@@ -516,6 +519,8 @@ export async function createAutomation(
     channel_type: formData.get("channel_type") || undefined,
     channel_handle: formData.get("channel_handle"),
     voice_tier: formData.get("voice_tier") || undefined,
+    engine_workflow_id: formData.get("engine_workflow_id"),
+    vapi_assistant_id: formData.get("vapi_assistant_id"),
   });
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
@@ -565,15 +570,20 @@ export async function createAutomation(
     }
   }
 
+  // When the engine workflow id is supplied at creation time the automation is
+  // already wired (cloned n8n workflow + Vapi assistant exist) — it goes
+  // straight to live. Otherwise it starts in the build queue as before.
+  const wired = Boolean(data.engine_workflow_id);
   const { data: created, error: autoErr } = await client
     .from("automations")
     .insert({
       tenant_id: tenantId,
       name: data.name,
       type: data.type,
-      status: "building",
-      build_stage: "Requested",
+      status: wired ? "live" : "building",
+      build_stage: wired ? "Live" : "Requested",
       dispatch_adapter: data.dispatch_adapter ?? null,
+      engine_workflow_id: data.engine_workflow_id ?? null,
     })
     .select("id")
     .single();
@@ -588,6 +598,7 @@ export async function createAutomation(
       tenant_id: tenantId,
       display_name: data.name,
       phone_number: data.phone_number ?? null,
+      vapi_assistant_id: data.vapi_assistant_id ?? null,
     });
     if (agentErr) {
       // Roll back the orphan automation so a failed agent insert isn't left half-provisioned.
@@ -616,7 +627,7 @@ export async function createAutomation(
     action: "tenant.create_automation",
     targetType: "automation",
     targetId: automationId,
-    metadata: { name: data.name, type: data.type, dispatch_adapter: data.dispatch_adapter ?? null },
+    metadata: { name: data.name, type: data.type, dispatch_adapter: data.dispatch_adapter ?? null, engine_workflow_id: data.engine_workflow_id ?? null, vapi_assistant_id: data.vapi_assistant_id ?? null },
   });
 
   revalidatePath(`/admin/tenants/${tenantId}`);

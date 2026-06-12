@@ -200,6 +200,8 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
   const channelId = useId();
   const handleId = useId();
   const tierId = useId();
+  const workflowId = useId();
+  const assistantId = useId();
   const fe = state.fieldErrors;
 
   return (
@@ -251,6 +253,15 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
                 <p className="text-xs text-gray-500">This tenant has no voice plan yet — adding an agent provisions one and unlocks the AI Voice dashboard.</p>
               </div>
             )}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={workflowId} className="text-sm font-medium text-gray-700">Engine workflow ID (optional)</label>
+              <input id={workflowId} name="engine_workflow_id" placeholder="n8n workflow id, e.g. 0x5hOeCgWfr3N7pR" className={inputClass} />
+              <p className="text-xs text-gray-500">The tenant&rsquo;s cloned voice workflow. Providing it activates the agent immediately (status: live).</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={assistantId} className="text-sm font-medium text-gray-700">Vapi assistant ID (optional)</label>
+              <input id={assistantId} name="vapi_assistant_id" placeholder="e.g. 15c5709f-7585-4d39-96cf-ffe85e42bd40" className={inputClass} />
+            </div>
           </>
         ) : (
           <>
