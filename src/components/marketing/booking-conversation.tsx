@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 /**
  * Animated WhatsApp-style booking demo used as the homepage hero centrepiece.
@@ -214,8 +215,16 @@ export function BookingConversation() {
       >
         {/* Chat header */}
         <div className="flex items-center gap-3 border-b-[3px] border-ink bg-paper px-5 py-4">
-          <div className="flex h-10 w-10 items-center justify-center border-2 border-ink bg-brut-yellow font-logo text-sm leading-none text-ink">
+          <div className="relative flex h-10 w-10 items-center justify-center border-2 border-ink bg-brut-yellow font-logo text-sm leading-none text-ink">
             B
+            {/* WhatsApp corner badge — this bot lives on WhatsApp. */}
+            <Image
+              src="/social/whatsapp.png"
+              alt=""
+              width={40}
+              height={40}
+              className="absolute -bottom-1.5 -right-1.5 h-5 w-5 object-contain"
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="inline-flex items-center gap-1.5 truncate font-logo text-sm leading-none tracking-tight text-ink">
@@ -224,7 +233,7 @@ export function BookingConversation() {
             </p>
             <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-gray-600">
               <span className="status-pulse inline-block h-1.5 w-1.5 bg-brut-lime ring-1 ring-ink" />
-              Automation online
+              On WhatsApp · online
             </p>
           </div>
           {/* Which mode is playing now. */}

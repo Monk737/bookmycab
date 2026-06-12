@@ -7,8 +7,8 @@ type TryDashboardLinkProps = {
 };
 
 /**
- * Demo-dashboard CTA. The live demo isn't available yet, so this renders as a
- * disabled (non-clickable) button with a "Coming Soon" ribbon, not a link.
+ * Demo-dashboard CTA. Opens the read-only demo session (/demo signs in the
+ * demo user and lands on a live, populated dashboard).
  */
 export function TryDashboardLink({
   size = "md",
@@ -16,23 +16,8 @@ export function TryDashboardLink({
   className = "",
 }: TryDashboardLinkProps) {
   return (
-    <span className={`relative inline-flex ${className}`}>
-      <Button
-        variant={variant}
-        size={size}
-        disabled
-        aria-disabled="true"
-        title="Coming soon"
-        className="pointer-events-none"
-      >
-        AI Voice Booking
-      </Button>
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-2.5 -top-2.5 z-10 rotate-3 border-2 border-ink bg-brut-pink px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink shadow-brut-sm"
-      >
-        Coming Soon
-      </span>
-    </span>
+    <Button href="/demo" variant={variant} size={size} className={className}>
+      Try Demo Dashboard
+    </Button>
   );
 }

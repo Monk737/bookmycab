@@ -108,7 +108,7 @@ export function VoiceCall() {
       ref={rootRef}
       className="relative mx-auto w-full max-w-md"
       role="img"
-      aria-label="A live AI voice booking call: the agent answers Premier Cabs, the caller asks for a saloon from 14 Mill Road to Stansted Airport at 6:30 tomorrow, the agent quotes £48 and confirms, and the job is written into AutoCab as #4827."
+      aria-label="A live BookMyCab AI Voice Agent call: the agent answers, the caller asks for a saloon from 14 Mill Road to Stansted Airport at 6:30 tomorrow, the agent quotes £48 and confirms, and the job is written into AutoCab as #4827."
     >
       <div aria-hidden="true" className="overflow-hidden border-[3px] border-ink bg-canvas shadow-brut-xl">
         {/* Call header */}
@@ -118,8 +118,14 @@ export function VoiceCall() {
             {live && <span className="call-ping absolute inset-0 border-2 border-brut-lime" />}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-sm font-extrabold uppercase tracking-tight text-paper">
-              Premier Cabs · Voice agent
+            <p className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-logo text-sm leading-none tracking-tight text-paper">
+                BookMyCab
+                <span className="ml-1 inline-block h-2 w-2 border border-paper bg-brut-yellow" />
+              </span>
+              <span className="shrink-0 border-2 border-paper bg-brut-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-ink">
+                AI Voice Agent
+              </span>
             </p>
             <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-gray-300">
               <span className="status-pulse inline-block h-1.5 w-1.5 bg-brut-lime ring-1 ring-paper" />

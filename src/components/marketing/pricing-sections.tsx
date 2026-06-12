@@ -14,16 +14,14 @@ import {
   priceFor,
   type Currency,
   type TierKey,
-  type ChatTier,
-  type VoiceTier,
 } from "@/lib/marketing/pricing";
+import Image from "next/image";
+import { VoiceGlyph } from "@/components/marketing/product-marks";
 import { CurrencyToggle } from "@/components/marketing/currency-toggle";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { Badge } from "@/components/marketing/ui/badge";
 
 type Rates = Record<Currency, number>;
-
-const CARD_BG = ["bg-brut-cyan", "bg-brut-lime", "bg-brut-pink"] as const;
 
 function SectionHeading({ kicker, title, blurb }: { kicker: string; title: string; blurb: string }) {
   return (
@@ -34,77 +32,6 @@ function SectionHeading({ kicker, title, blurb }: { kicker: string; title: strin
       </h3>
       <p className="mt-3 text-base leading-relaxed text-gray-700">{blurb}</p>
     </div>
-  );
-}
-
-function CardShell({
-  name,
-  sub,
-  featured,
-  bg,
-  children,
-}: {
-  name: string;
-  sub: string;
-  featured?: boolean;
-  bg: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={
-        `flex flex-col border-[3px] border-ink ${bg} p-7 sm:p-8 ` +
-        (featured ? "shadow-brut-xl" : "shadow-brut")
-      }
-    >
-      <div className="flex items-center justify-between gap-3">
-        <h4 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">
-          {name}
-        </h4>
-        {featured ? <Badge tone="yellow">Most popular</Badge> : null}
-      </div>
-      <p className="mt-1.5 text-sm leading-relaxed text-gray-700">{sub}</p>
-      <div className="mt-7 flex flex-1 flex-col">{children}</div>
-      <div className="mt-auto pt-7">
-        <DiscoveryCta size="md" className="w-full" />
-      </div>
-    </div>
-  );
-}
-
-/** Big price + /mo unit. */
-function PriceTag({ priceGbp, currency, rates }: { priceGbp: number; currency: Currency; rates: Rates }) {
-  return (
-    <p className="flex items-baseline gap-1">
-      <span className="font-display text-4xl font-extrabold tabular-nums text-ink">
-        {priceFor(priceGbp, currency, rates)}
-      </span>
-      <span className="text-sm font-medium text-gray-600">/mo</span>
-    </p>
-  );
-}
-
-function ChatCard({ tier, currency, rates, bg }: { tier: ChatTier; currency: Currency; rates: Rates; bg: string }) {
-  return (
-    <CardShell name={tier.name} sub={tier.fleet} featured={tier.featured} bg={bg}>
-      <PriceTag priceGbp={tier.priceGbp} currency={currency} rates={rates} />
-      <p className="mt-3 text-sm font-medium text-ink">WhatsApp Chat + Voice Note</p>
-      {tier.note ? <p className="mt-1 text-sm text-gray-600">{tier.note}</p> : null}
-    </CardShell>
-  );
-}
-
-function VoiceCard({ tier, currency, rates, bg }: { tier: VoiceTier; currency: Currency; rates: Rates; bg: string }) {
-  return (
-    <CardShell
-      name={tier.name}
-      sub={`${tier.callsPerMonth.toLocaleString("en-US")} calls / mo`}
-      featured={tier.featured}
-      bg={bg}
-    >
-      <PriceTag priceGbp={tier.priceGbp} currency={currency} rates={rates} />
-      <p className="mt-3 text-sm font-medium text-ink">{tier.config}</p>
-    </CardShell>
   );
 }
 
@@ -235,39 +162,114 @@ export function PricingSections({ rates }: { rates: Rates }) {
         </p>
       )}
 
-      {/* 1. CHAT */}
+      {/* 1. CHAT — one rate-card panel: WhatsApp identity header, three tier
+          columns on shared ink hairlines, setup + CTA in the footer band. */}
       <div className="mt-10">
-        <SectionHeading
-          kicker="Chat"
-          title="WhatsApp Chat + Voice Note"
-          blurb="One WhatsApp chatbot that books by text or voice note, writes the job straight to dispatch, and is priced by your fleet size."
-        />
-        <div className="mt-6 grid gap-5 lg:grid-cols-3">
-          {CHAT_TIERS.map((tier, i) => (
-            <ChatCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i % CARD_BG.length]} />
-          ))}
-        </div>
-        <div className="mt-5">
-          <SetupTile label="One-time Chat setup fee" value={priceFor(CHAT_SETUP_FEE_GBP, currency, rates)} />
+        <Badge>Chat</Badge>
+        <div className="mt-4 grid gap-[3px] border-[3px] border-ink bg-ink shadow-brut-xl">
+          <div className="flex flex-wrap items-center gap-4 bg-paper px-6 py-5 sm:px-8">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-ink bg-paper">
+              <Image src="/social/whatsapp.png" alt="" width={48} height={48} className="h-9 w-9 object-contain" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-display text-2xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-3xl">
+                WhatsApp Chat + Voice Note
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-700 sm:text-base">
+                One WhatsApp chatbot that books by text or voice note and writes the job straight to dispatch. Priced by fleet size.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-[3px] bg-ink sm:grid-cols-3">
+            {CHAT_TIERS.map((tier) => (
+              <div key={tier.key} className={`flex flex-col p-6 sm:p-7 ${tier.featured ? "bg-brut-cyan" : "bg-paper"}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="font-display text-lg font-extrabold uppercase tracking-tight text-ink">{tier.name}</h4>
+                  {tier.featured ? <Badge tone="yellow">Most popular</Badge> : null}
+                </div>
+                <p className="mt-1 text-sm font-medium text-gray-700">{tier.fleet}</p>
+                <p className="mt-5 flex items-baseline gap-1">
+                  <span className="font-display text-4xl font-extrabold tabular-nums text-ink">
+                    {priceFor(tier.priceGbp, currency, rates)}
+                  </span>
+                  <span className="text-sm font-medium text-gray-600">/mo</span>
+                </p>
+                {tier.note ? <p className="mt-2 text-sm text-gray-700">{tier.note}</p> : null}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-4 bg-paper px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <p className="text-sm font-medium text-gray-700">
+              One-time setup{" "}
+              <span className="ml-1 font-display text-xl font-extrabold tabular-nums text-ink">
+                {priceFor(CHAT_SETUP_FEE_GBP, currency, rates)}
+              </span>
+            </p>
+            <DiscoveryCta size="md" />
+          </div>
         </div>
       </div>
 
-      {/* 2. AI VOICE BOOKING */}
-      <div className="mt-16">
-        <SectionHeading
-          kicker="Voice"
-          title="AI Voice Booking"
-          blurb="An always-on voice agent that answers the phone and books the job. Priced by monthly call allowance; calls reset each month and do not carry over."
-        />
-        <div className="mt-6 grid gap-5 lg:grid-cols-3">
-          {VOICE_TIERS.map((tier, i) => (
-            <VoiceCard key={tier.key} tier={tier} currency={currency} rates={rates} bg={CARD_BG[i % CARD_BG.length]} />
-          ))}
-        </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
-          <SetupTile label="Setup · 1 agent" value={priceFor(VOICE_SETUP_GBP.oneAgent, currency, rates)} />
-          <SetupTile label="Setup · 2 agents" value={priceFor(VOICE_SETUP_GBP.twoAgents, currency, rates)} />
-          <SetupTile label="Add a 2nd agent later" value={priceFor(VOICE_SETUP_GBP.secondAgentAddOn, currency, rates)} />
+      {/* 2. AI VOICE BOOKING — ink-headed panel mirroring the call UI; the
+          monthly call allowance is the product, so it leads each column. */}
+      <div className="mt-14">
+        <Badge>Voice</Badge>
+        <div className="mt-4 grid gap-[3px] border-[3px] border-ink bg-ink shadow-brut-xl">
+          <div className="flex flex-wrap items-center gap-4 bg-ink px-6 py-5 sm:px-8">
+            <VoiceGlyph className="h-12 w-12 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <h3 className="font-display text-2xl font-extrabold uppercase tracking-[-0.02em] text-paper sm:text-3xl">
+                AI Voice Booking
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-300 sm:text-base">
+                An always-on agent that answers the phone and books the job. Priced by monthly call allowance; calls reset each month and do not carry over.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-[3px] bg-ink sm:grid-cols-3">
+            {VOICE_TIERS.map((tier) => (
+              <div key={tier.key} className={`flex flex-col p-6 sm:p-7 ${tier.featured ? "bg-brut-yellow" : "bg-paper"}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="font-display text-lg font-extrabold uppercase tracking-tight text-ink">{tier.name}</h4>
+                  {tier.featured ? <Badge tone="paper">Most popular</Badge> : null}
+                </div>
+                <p className="mt-4 flex items-baseline gap-1.5">
+                  <span className="font-display text-4xl font-extrabold tabular-nums text-ink">
+                    {tier.callsPerMonth.toLocaleString("en-US")}
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-[0.06em] text-ink/70">calls / mo</span>
+                </p>
+                <p className="mt-1 text-sm font-medium text-ink/80">{tier.config}</p>
+                <p className="mt-5 flex items-baseline gap-1 border-t-2 border-ink/15 pt-4">
+                  <span className="font-display text-3xl font-extrabold tabular-nums text-ink">
+                    {priceFor(tier.priceGbp, currency, rates)}
+                  </span>
+                  <span className="text-sm font-medium text-ink/70">/mo</span>
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-4 bg-paper px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+            <dl className="flex flex-wrap gap-x-7 gap-y-2">
+              {[
+                ["Setup · 1 agent", VOICE_SETUP_GBP.oneAgent],
+                ["Setup · 2 agents", VOICE_SETUP_GBP.twoAgents],
+                ["Add a 2nd agent later", VOICE_SETUP_GBP.secondAgentAddOn],
+              ].map(([label, gbp]) => (
+                <div key={label as string}>
+                  <dt className="text-xs font-bold uppercase tracking-[0.08em] text-gray-600">{label}</dt>
+                  <dd className="mt-0.5 font-display text-xl font-extrabold tabular-nums text-ink">
+                    {priceFor(gbp as number, currency, rates)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <DiscoveryCta size="md" />
+          </div>
         </div>
       </div>
 
