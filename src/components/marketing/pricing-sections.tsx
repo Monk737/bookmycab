@@ -229,6 +229,11 @@ export function PricingSections({ rates }: { rates: Rates }) {
         </p>
         <CurrencyToggle value={currency} onChange={setCurrency} />
       </div>
+      {currency !== "GBP" && (
+        <p className="mt-2 text-xs font-medium text-gray-500">
+          {currency} figures are indicative, converted from GBP at today&apos;s rate. Billing is in GBP (£).
+        </p>
+      )}
 
       {/* 1. CHAT */}
       <div className="mt-10">

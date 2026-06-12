@@ -10,32 +10,37 @@
 
 begin;
 
--- 1. Commercial model: run BOTH products (double decker), GBP.
-update tenants set commercial_model = 'double_decker', currency = 'GBP'
+-- 1. Commercial model: run BOTH products (Double Decker, Mix & Match), GBP.
+--    monthly_price is the MRR source of truth = chat (799) + voice (1799) = 2598.
+update tenants
+   set commercial_model = 'double_decker', currency = 'GBP', monthly_price = 2598
  where id = 'd0000000-0000-0000-0000-000000000001';
 
--- 2. Clear prior seed (scoped to this tenant; channels left intact).
-delete from calls         where tenant_id = 'd0000000-0000-0000-0000-000000000001';
-delete from credit_ledger where tenant_id = 'd0000000-0000-0000-0000-000000000001';
-delete from voice_agents  where tenant_id = 'd0000000-0000-0000-0000-000000000001';
-delete from automations   where tenant_id = 'd0000000-0000-0000-0000-000000000001'
-                            and id in ('a2222222-2222-2222-2222-222222222222',
-                                       'a3333333-3333-3333-3333-333333333333');
+-- 2. Clear prior seed (scoped to this tenant). NOTE: `calls` and `credit_ledger`
+--    are append-only (immutability triggers, migration 0044) — they are NOT
+--    deleted; the call/credit inserts in steps 6-7 are guarded with NOT EXISTS
+--    so re-runs (and 24h demo resets) never duplicate or attempt a delete.
+delete from voice_agents where tenant_id = 'd0000000-0000-0000-0000-000000000001';
+delete from automations  where tenant_id = 'd0000000-0000-0000-0000-000000000001'
+                           and id in ('a2222222-2222-2222-2222-222222222222',
+                                      'a3333333-3333-3333-3333-333333333333');
 
--- 3. Subscriptions (In Motion tier on both, bundle pricing).
-insert into chat_subscriptions (tenant_id, plan_tier, channel_mode, monthly_price_gbp, status,
+-- 3. Subscriptions. Double Decker In Motion (Mix & Match):
+--      chat = In Motion (£999) − £200 bundle discount = £799
+--      voice = In Motion (£1799, 2,250 calls, 2 agents), never discounted
+insert into chat_subscriptions (tenant_id, plan_tier, monthly_price_gbp, status,
                                 current_period_start, current_period_end)
-values ('d0000000-0000-0000-0000-000000000001', 'in_motion', 'bundle', 999, 'active',
+values ('d0000000-0000-0000-0000-000000000001', 'in_motion', 799, 'active',
         date_trunc('month', now())::date, (date_trunc('month', now()) + interval '1 month - 1 day')::date)
 on conflict (tenant_id) do update
-  set plan_tier = excluded.plan_tier, channel_mode = excluded.channel_mode,
+  set plan_tier = excluded.plan_tier,
       monthly_price_gbp = excluded.monthly_price_gbp, status = 'active',
       current_period_start = excluded.current_period_start,
       current_period_end = excluded.current_period_end, updated_at = now();
 
 insert into voice_subscriptions (tenant_id, plan_tier, monthly_call_allowance, included_agents,
                                  monthly_price_gbp, status, current_period_start, current_period_end)
-values ('d0000000-0000-0000-0000-000000000001', 'in_motion', 2250, 2, 1599, 'active',
+values ('d0000000-0000-0000-0000-000000000001', 'in_motion', 2250, 2, 1799, 'active',
         date_trunc('month', now())::date, (date_trunc('month', now()) + interval '1 month - 1 day')::date)
 on conflict (tenant_id) do update
   set plan_tier = excluded.plan_tier, monthly_call_allowance = excluded.monthly_call_allowance,
@@ -106,17 +111,30 @@ from (
       cross join lateral generate_series(1, 2 + (abs(hashtext(d.ago::text)) % 7)) as g(n)
     ) base
   ) o
-) f;
+) f
+-- Append-only guard: only seed calls the first time (no delete is possible).
+where not exists (
+  select 1 from calls where tenant_id = 'd0000000-0000-0000-0000-000000000001'
+);
 
 -- 7. Top-up ledger: two purchases minus per-call consumption -> net positive.
+--    Append-only: guarded so re-runs never duplicate (no delete is possible).
 insert into credit_ledger (tenant_id, delta, reason, unit_price_micros, currency, created_at)
-values
-  ('d0000000-0000-0000-0000-000000000001', 50, 'topup_purchase', 900000, 'GBP', now() - interval '18 days'),
-  ('d0000000-0000-0000-0000-000000000001', 20, 'topup_purchase', 900000, 'GBP', now() - interval '6 days');
+select * from (values
+  ('d0000000-0000-0000-0000-000000000001'::uuid, 50, 'topup_purchase', 900000, 'GBP', now() - interval '18 days'),
+  ('d0000000-0000-0000-0000-000000000001'::uuid, 20, 'topup_purchase', 900000, 'GBP', now() - interval '6 days')
+) v(tenant_id, delta, reason, unit_price_micros, currency, created_at)
+where not exists (
+  select 1 from credit_ledger where tenant_id = 'd0000000-0000-0000-0000-000000000001'
+);
 
 insert into credit_ledger (tenant_id, delta, reason, created_at)
 select 'd0000000-0000-0000-0000-000000000001', -1, 'call_consumption', started_at
 from calls
-where tenant_id = 'd0000000-0000-0000-0000-000000000001' and credit_source = 'topup';
+where tenant_id = 'd0000000-0000-0000-0000-000000000001' and credit_source = 'topup'
+  and not exists (
+    select 1 from credit_ledger
+    where tenant_id = 'd0000000-0000-0000-0000-000000000001' and reason = 'call_consumption'
+  );
 
 commit;

@@ -3,8 +3,8 @@
  * scripts/seed-entitlements.ts — idempotent.
  *
  * Upserts the feature catalog (from src/lib/entitlements/catalog.ts) into
- * public.features, three default plans (Starter / Pro / Enterprise) into
- * public.plans, and their plan_features mapping. Safe to re-run.
+ * public.features, three default plans (Ignition / In Motion / Full Throttle)
+ * into public.plans, and their plan_features mapping. Safe to re-run.
  *
  * Usage: npx tsx scripts/seed-entitlements.ts
  */
@@ -21,9 +21,9 @@ if (!url || !key) throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE
 const sb = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 
 const PLANS = [
-  { id: "b0000000-0000-0000-0000-000000000001", code: "starter", name: "Starter", base_price: 149 },
-  { id: "b0000000-0000-0000-0000-000000000002", code: "pro", name: "Pro", base_price: 349 },
-  { id: "b0000000-0000-0000-0000-000000000003", code: "enterprise", name: "Enterprise", base_price: 749 },
+  { id: "b0000000-0000-0000-0000-000000000001", code: "starter", name: "Ignition", base_price: 149 },
+  { id: "b0000000-0000-0000-0000-000000000002", code: "pro", name: "In Motion", base_price: 349 },
+  { id: "b0000000-0000-0000-0000-000000000003", code: "enterprise", name: "Full Throttle", base_price: 749 },
 ];
 
 // Which features each plan includes (+ quota where metered).

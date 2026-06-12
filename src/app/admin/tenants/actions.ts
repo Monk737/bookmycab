@@ -177,7 +177,11 @@ export async function createTenant(
     paid_at: bypass ? nowIso : null,
   });
   if (feeError) {
+    // The setup fee is part of the commercial contract; a tenant without one
+    // would silently under-bill. Compensate (the chat/voice rows cascade) rather
+    // than redirect to a half-provisioned tenant.
     console.error("createTenant: failed to record setup fee", feeError);
+    return failProvision("Could not record the setup fee. Please try again.");
   }
 
   // Record the coupon redemption (best-effort; logged on failure).

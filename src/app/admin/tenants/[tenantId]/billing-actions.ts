@@ -189,7 +189,14 @@ export async function startNewModelBilling(tenantId: string): Promise<void> {
       .eq("tenant_id", id);
   }
 
-  await db().from("tenants").update({ status: "active" }).eq("id", id);
+  // Keep tenants.monthly_price (the MRR source of truth) in sync with the sum of
+  // the per-product subscription prices when billing goes live.
+  const combinedMonthly =
+    Number(chat?.monthly_price_gbp ?? 0) + Number(voice?.monthly_price_gbp ?? 0);
+  await db()
+    .from("tenants")
+    .update({ status: "active", monthly_price: combinedMonthly })
+    .eq("id", id);
 
   await writeAudit({
     actorUserId: claims.sub,

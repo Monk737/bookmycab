@@ -104,7 +104,7 @@ export default async function BillingPage() {
     env.SUPABASE_SERVICE_ROLE_KEY,
   );
 
-  const [tenantsRes, feesRes, subsRes] = await Promise.all([
+  const [tenantsRes, feesRes, chatSubsRes, voiceSubsRes] = await Promise.all([
     serviceClient
       .from("tenants")
       .select(
@@ -114,13 +114,15 @@ export default async function BillingPage() {
     serviceClient
       .from("setup_fees")
       .select("id, tenant_id, amount, currency, paid_at"),
-    serviceClient.from("subscriptions").select("id", { count: "exact", head: true }),
+    serviceClient.from("chat_subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
+    serviceClient.from("voice_subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
   ]);
 
   const loadError = tenantsRes.error ?? feesRes.error;
   const tenants = (tenantsRes.data ?? []) as TenantRow[];
   const fees = (feesRes.data ?? []) as BillingSetupFee[];
-  const subscriptionCount = subsRes.count ?? 0;
+  // Active product subscriptions across the two-product model (chat + voice).
+  const subscriptionCount = (chatSubsRes.count ?? 0) + (voiceSubsRes.count ?? 0);
 
   const today = new Date();
 
@@ -339,12 +341,10 @@ export default async function BillingPage() {
       </section>
 
       <p className="mt-8 text-xs text-gray-400">
-        Figures derive from <code>tenants.monthly_price</code>. The{" "}
-        <code>subscriptions</code> mirror{" "}
-        {subscriptionCount > 0
-          ? `holds ${subscriptionCount} row(s)`
-          : "is empty"}{" "}
-        and is reconciled from Stripe via webhooks and per-tenant Manual sync.
+        Figures derive from <code>tenants.monthly_price</code> (the sum of each
+        tenant&apos;s chat + voice subscription). {subscriptionCount} active product
+        subscription{subscriptionCount === 1 ? "" : "s"} across the platform, reconciled
+        from Stripe via webhooks and per-tenant Manual sync.
       </p>
     </div>
   );

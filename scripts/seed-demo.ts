@@ -255,8 +255,8 @@ async function main() {
     name: "Premier Cabs London",
     slug: "premier-cabs-demo",
     country: "GB",
-    plan_band: "A-Bundle",
-    // Demo showcases every advanced feature: assign the Enterprise plan, which
+    commercial_model: "double_decker",
+    // Demo showcases every advanced feature: assign the Full Throttle plan, which
     // grants all entitlements (see scripts/seed-entitlements.ts). The dashboard
     // gates each feature nav entry on hasFeature(), so without a plan the demo
     // would show only the base nav. Requires seed-entitlements.ts to have run
@@ -270,7 +270,9 @@ async function main() {
     is_demo: true,
     contract_start: "2025-09-01",
     contract_renewal: "2026-09-01",
-    monthly_price: 149.00,
+    // Double Decker In Motion (Mix & Match): chat £799 + voice £1799 = £2598.
+    // The MRR source of truth; seed-demo-dashboard.sql keeps this in sync.
+    monthly_price: 2598.00,
     setup_fee_paid: true,
     created_at: "2025-09-01T09:00:00Z",
     updated_at: new Date().toISOString(),
@@ -314,11 +316,9 @@ async function main() {
   }, { onConflict: "tenant_id,user_id" });
   console.log("  ✓ demo user");
 
-  // 3. Automations
+  // 3. Automations — single WhatsApp Chat Bot for the Chat product.
   for (const [id, name, type] of [
-    [AUTO_WA, "WA Booking Bot", "Booking"],
-    [AUTO_TG, "Telegram Booking Bot", "Booking"],
-    [AUTO_WG, "Widget Support Bot", "Support"],
+    [AUTO_WA, "WhatsApp Chat Bot", "Booking"],
   ] as const) {
     const { error } = await sb.from("automations").upsert({
       id, name, type,
@@ -331,13 +331,11 @@ async function main() {
     }, { onConflict: "id" });
     if (error) throw new Error(`automations upsert ${name}: ${error.message}`);
   }
-  console.log("  ✓ automations (3)");
+  console.log("  ✓ automations (1 chat)");
 
-  // 4. Channels
+  // 4. Channels — WhatsApp only (Chat + Voice Note).
   for (const [id, autoId, type, extId, path] of [
     [CHAN_WA, AUTO_WA, "whatsapp", "+44 7700 900 DEMO", `/webhooks/whatsapp/${AUTO_WA}`],
-    [CHAN_TG, AUTO_TG, "telegram", "@PremierCabsDemo", `/webhooks/telegram/${AUTO_TG}`],
-    [CHAN_WG, AUTO_WG, "widget", "widget-demo", `/webhooks/widget/${AUTO_WG}`],
   ] as const) {
     const { error } = await sb.from("channels").upsert({
       id, tenant_id: DEMO_TENANT_ID, automation_id: autoId,
@@ -347,13 +345,28 @@ async function main() {
     }, { onConflict: "id" });
     if (error) throw new Error(`channels upsert: ${error.message}`);
   }
-  console.log("  ✓ channels (3)");
+  console.log("  ✓ channels (1 whatsapp)");
+
+  // Retire any legacy non-WhatsApp channels (Telegram / web widget from older
+  // seeds). The platform now offers WhatsApp Chat + Voice Note and AI Voice
+  // Booking only. Reassign their conversations to the WhatsApp chat bot first
+  // (some rows are FK-protected by append-only children and cannot be deleted),
+  // then drop the channels. Runs AFTER the WhatsApp channel exists.
+  const { data: legacyChans } = await sb
+    .from("channels").select("id").eq("tenant_id", DEMO_TENANT_ID).neq("type", "whatsapp");
+  const legacyChanIds = (legacyChans ?? []).map((c) => (c as { id: string }).id);
+  if (legacyChanIds.length > 0) {
+    await sb.from("conversations")
+      .update({ channel_id: CHAN_WA, automation_id: AUTO_WA })
+      .in("channel_id", legacyChanIds);
+    await sb.from("channels").delete().in("id", legacyChanIds);
+  }
+  await sb.from("automation_config").delete().in("automation_id", [AUTO_TG, AUTO_WG]);
+  console.log("  ✓ legacy channels retired");
 
   // 5. Automation config
   for (const [autoId, langs, askNote] of [
     [AUTO_WA, ["en"], true],
-    [AUTO_TG, ["en"], false],
-    [AUTO_WG, ["en", "ar"], true],
   ] as const) {
     const { error } = await sb.from("automation_config").upsert({
       automation_id: autoId,
@@ -376,7 +389,7 @@ async function main() {
   const runs: object[] = [];
   for (let day = 0; day < 180; day++) {
     for (let r = 0; r < randInt(2, 8); r++) {
-      const autoId = pick([AUTO_WA, AUTO_TG, AUTO_WG] as const);
+      const autoId = AUTO_WA;
       const started = daysAgo(180 - day);
       const durationMs = randInt(120_000, 3_600_000);
       const status = pick(runStatuses);
@@ -386,7 +399,7 @@ async function main() {
         started_at: isoStr(started),
         finished_at: status !== "running" ? isoStr(new Date(started.getTime() + durationMs)) : null,
         duration_ms: status !== "running" ? durationMs : null,
-        trigger_channel: pick(["whatsapp", "telegram", "widget"] as const),
+        trigger_channel: "whatsapp",
         error_message: status === "error" ? "AutoCab timeout after 30s" : null,
       });
     }
@@ -409,6 +422,10 @@ async function main() {
   }
   await sb.from("conversations").delete().in("automation_id", [AUTO_WA, AUTO_TG, AUTO_WG]);
 
+  // Now that their conversations/bookings/runs are gone, drop the retired
+  // Telegram + widget automation rows themselves.
+  await sb.from("automations").delete().in("id", [AUTO_TG, AUTO_WG]);
+
   type ConvType = "booking_asap" | "booking_scheduled" | "booking_airport" | "cancel" | "manage" | "voice";
   const convWeights: Record<ConvType, number> = {
     booking_asap: 0.30, booking_scheduled: 0.28, booking_airport: 0.17,
@@ -426,9 +443,11 @@ async function main() {
 
   let totalConvs = 0, totalBookings = 0, totalMessages = 0;
 
-  for (const autoId of [AUTO_WA, AUTO_TG, AUTO_WG] as const) {
-    const chanId = autoId === AUTO_WA ? CHAN_WA : autoId === AUTO_TG ? CHAN_TG : CHAN_WG;
-    const isBookingAuto = autoId !== AUTO_WG;
+  for (const autoId of [AUTO_WA] as const) {
+    const chanId = CHAN_WA;
+    // Single WhatsApp Chat Bot handles every flow (booking, manage, cancel,
+    // voice note), so every conversation can produce a booking outcome.
+    const isBookingAuto = true;
     for (let day = 0; day < 180; day++) {
       // Bump the most recent day's volume so "today" always looks active on the
       // dashboard (the demo window rolls so day 179 == today, see `started`).
@@ -528,7 +547,7 @@ async function main() {
             tenant_id: DEMO_TENANT_ID,
             automation_id: autoId,
             conversation_id: convId,
-            channel_type: autoId === AUTO_WA ? "whatsapp" : autoId === AUTO_TG ? "telegram" : "widget",
+            channel_type: "whatsapp",
             dispatch_ref: `DEMO-${randInt(100000, 999999)}`,
             dispatch_adapter: "autocab",
             passenger_name: customerName,

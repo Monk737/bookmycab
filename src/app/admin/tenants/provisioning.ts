@@ -71,6 +71,8 @@ export interface ProvisioningRows {
     country: string;
     currency: "GBP";
     commercial_model: CommercialModel;
+    /** Combined monthly GBP (chat + voice), the source of truth for MRR. */
+    monthly_price: number;
     dispatch_adapter: string;
     dispatch_company_id: string | null;
     contact_email: string;
@@ -115,6 +117,11 @@ export function buildProvisioningRows(args: {
   const hasChat = data.commercial_model === "chat" || data.commercial_model === "double_decker";
   const hasVoice = data.commercial_model === "voice" || data.commercial_model === "double_decker";
 
+  // Final, discount-applied product prices. The tenant's monthly_price is the
+  // sum of these — the single source of truth for MRR/ARR reporting.
+  const chatGbp = hasChat && data.chat_tier ? priced(chatBase) ?? 0 : 0;
+  const voiceGbp = hasVoice && data.voice_tier ? priced(resolved.voiceGbp) ?? 0 : 0;
+
   return {
     tenant: {
       name: data.name,
@@ -122,6 +129,7 @@ export function buildProvisioningRows(args: {
       country: data.country,
       currency: "GBP",
       commercial_model: data.commercial_model,
+      monthly_price: chatGbp + voiceGbp,
       dispatch_adapter: data.dispatch_adapter,
       dispatch_company_id: data.dispatch_company_id ?? null,
       contact_email: data.contact_email,
@@ -134,14 +142,14 @@ export function buildProvisioningRows(args: {
       hasChat && data.chat_tier
         ? {
             plan_tier: data.chat_tier,
-            monthly_price_gbp: priced(chatBase) ?? 0,
+            monthly_price_gbp: chatGbp,
           }
         : null,
     voice:
       hasVoice && data.voice_tier
         ? {
             plan_tier: data.voice_tier,
-            monthly_price_gbp: priced(resolved.voiceGbp) ?? 0,
+            monthly_price_gbp: voiceGbp,
             monthly_call_allowance: resolved.voiceAllowance ?? 0,
             included_agents: resolved.voiceAgents ?? 0,
           }

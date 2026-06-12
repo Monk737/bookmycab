@@ -52,6 +52,8 @@ describe("buildProvisioningRows", () => {
     expect(out.tenant.status).toBe("onboarding");
     expect(out.chat?.monthly_price_gbp).toBeCloseTo(719.1, 2);
     expect(out.voice?.monthly_price_gbp).toBeCloseTo(1619.1, 2);
+    // monthly_price (MRR source) = chat + voice
+    expect(out.tenant.monthly_price).toBeCloseTo(2338.2, 2);
     expect(out.voice?.monthly_call_allowance).toBe(2250);
     expect(out.voice?.included_agents).toBe(2);
     expect(out.setupGbp).toBeCloseTo(1800, 2);
@@ -64,6 +66,7 @@ describe("buildProvisioningRows", () => {
     });
     expect(out.chat).toBeNull();
     expect(out.voice?.monthly_price_gbp).toBe(1299);
+    expect(out.tenant.monthly_price).toBe(1299);
   });
   it("bypass (100%-off) → zero prices, status active", () => {
     const out = buildProvisioningRows({

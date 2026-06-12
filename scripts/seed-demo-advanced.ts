@@ -199,7 +199,7 @@ async function main() {
       },
       {
         tenant_id: DEMO_TENANT_ID,
-        automation_id: AUTO_TG,
+        automation_id: AUTO_WA,
         name: "Slow response time",
         metric: "avg_response_time_ms",
         operator: "gt",
@@ -396,7 +396,7 @@ async function main() {
 
   const allVersionIds: Record<string, string> = {};
 
-  for (const autoId of [AUTO_WA, AUTO_TG, AUTO_WG]) {
+  for (const autoId of [AUTO_WA]) {
     // Config snapshot — use automation_config data if available
     const acRow = automationConfigs.find(
       (r) => r["automation_id"] === autoId,
@@ -569,7 +569,7 @@ async function main() {
     // Pad to 40 rows with extra entries
     const extra = Array.from({ length: Math.max(0, 40 - dispatchRows.length) }, (_, i) => ({
       tenant_id: DEMO_TENANT_ID,
-      automation_id: pick([AUTO_WA, AUTO_TG, AUTO_WG] as const),
+      automation_id: pick([AUTO_WA] as const),
       booking_id: null,
       adapter: "autocab",
       operation: "lookup",
@@ -748,7 +748,7 @@ async function main() {
           tenant_id: DEMO_TENANT_ID,
           name: "Response Health",
           metrics: ["response_time"],
-          filters: { automations: [AUTO_WA, AUTO_TG] },
+          filters: { automations: [AUTO_WA] },
           schedule: null,
           format: "json",
           recipients: [],
@@ -819,9 +819,9 @@ async function main() {
   const { error: ssErr } = await sb.from("channels").insert({
     tenant_id: DEMO_TENANT_ID,
     automation_id: AUTO_WA,
-    type: "telegram",
-    external_id: "@PremierCabsOverflow",
-    webhook_path: `/webhooks/telegram/${AUTO_WA}`,
+    type: "whatsapp",
+    external_id: "+44 7700 900 OVRF",
+    webhook_path: `/webhooks/whatsapp/${AUTO_WA}`,
     credentials_ref: null,
     status: "disconnected",
     provisioning_status: "pending_review",
@@ -1029,7 +1029,7 @@ async function main() {
     const usageEventsInsert = Array.from({ length: 20 }, (_, i) => ({
       tenant_id: DEMO_TENANT_ID,
       feature_key: featureKeys[i % featureKeys.length],
-      automation_id: pick([AUTO_WA, AUTO_TG, AUTO_WG] as const),
+      automation_id: pick([AUTO_WA] as const),
       quantity: randInt(1, 50),
       unit: "call",
       cost_micros: randInt(1000, 50000),

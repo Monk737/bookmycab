@@ -6,9 +6,10 @@
  * Stripe calls anywhere here, Epic 8 will reconcile these figures against the
  * `subscriptions` mirror once Stripe is wired up. // TODO(epic-8)
  *
- * SOURCE OF TRUTH (today): `tenants.monthly_price`. It is always populated at
- * provisioning time, whereas the `subscriptions` table stays empty until Epic 8.
- * So MRR/renewals are derived from tenants; Epic 8 reconciles. // TODO(epic-8)
+ * SOURCE OF TRUTH: `tenants.monthly_price`. For two-product tenants it is set to
+ * the SUM of the chat + voice subscription prices at provisioning time and kept
+ * in sync when billing starts (see provisioning.ts / billing-actions.ts). So
+ * MRR/renewals are derived from tenants; Stripe reconciles via the webhook.
  *
  * CURRENCY: amounts are NEVER summed across currencies, mixing £/€/$ into one
  * number is meaningless. Every total is grouped by currency (`MrrByCurrency`).
