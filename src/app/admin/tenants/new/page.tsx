@@ -21,7 +21,7 @@ export default function NewTenantPage() {
         New tenant
       </h1>
       <p className="mt-1 mb-6 text-sm text-gray-600">
-        Provision a bespoke automation account. The tenant starts in
+        Provision a new automation account. The tenant starts in
         &lsquo;onboarding&rsquo; status.
       </p>
       <TenantForm />

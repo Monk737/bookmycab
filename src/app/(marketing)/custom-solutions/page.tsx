@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 // Full Throttle (formerly Option C), quoted-individually framing.
 const FULL_THROTTLE = [
   {
-    title: "151+ vehicle fleets",
+    title: "101+ vehicle fleets",
     body: "Bigger operations carry their own scale, shift patterns and dispatch load. We size the build to your fleet instead of squeezing you into a tier.",
   },
   {
@@ -96,12 +96,12 @@ export default function CustomSolutionsPage() {
                 Full Throttle, priced for you
               </span>
               <h2 className="mt-5 font-display text-3xl font-extrabold leading-[1.05] tracking-[-0.02em] text-ink sm:text-4xl">
-                151+ fleet, very high call volume, or anything outside Ignition and In Motion.
+                When your operation is too big for a fixed plan.
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-gray-700">
-                No fixed price list here, on purpose. We look at your operation
-                and quote it straight. No template, no tier you have to bend
-                yourself to fit.
+                No fixed price list here, on purpose. We look at your fleet, your
+                call volume and your dispatch, then quote it straight against what
+                you actually run.
               </p>
               <div className="mt-7">
                 <DiscoveryCta size="lg" label="Get a Full Throttle quote" />

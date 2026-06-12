@@ -22,7 +22,7 @@ const SECTIONS: LegalSection[] = [
   },
   {
     heading: "Ownership",
-    body: "You own your customer base and your data. We own the BookMyCab platform, tooling and the underlying automation engine. Your custom configuration is licensed to you for the term of your contract.",
+    body: "Your customer base and your data remain yours at all times. We own the BookMyCab platform, tooling and the underlying automation engine. Your configuration is licensed to you for the term of your contract.",
   },
   {
     heading: "Term and termination",

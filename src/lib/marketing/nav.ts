@@ -39,7 +39,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     heading: "Get Started",
     items: [
-      { label: "AI Voice Booking", href: "/demo" },
+      { label: "AI Voice Booking", href: "/products" },
       { label: "Book a Discovery Call", href: "/contact" },
     ],
   },
@@ -76,5 +76,5 @@ export const COMPANY = {
   entity: "FlowMo AI LTD",
   country: "United Kingdom",
   tagline: "Every call answered. Every WhatsApp booked. On autopilot.",
-  transparency: "You bring your numbers. You own your customer base.",
+  transparency: "Your switchboard, your accounts, your drivers. We just answer faster.",
 } as const;

@@ -36,7 +36,7 @@ const stalinistOne = localFont({
 });
 
 const SITE_DESCRIPTION =
-  "Bespoke AI booking & support automations for the global taxi industry.";
+  "AI voice and WhatsApp booking automations for the global taxi industry.";
 
 // metadataBase makes the relative /og.jpg resolve to an absolute URL (required
 // by social crawlers). app/icon.png + app/apple-icon.png are auto-detected by

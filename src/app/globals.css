@@ -363,13 +363,41 @@ p {
   animation: brut-marquee 22s linear infinite;
 }
 
+/* Voice waveform: each bar pulses its height, staggered, to read as "speaking". */
+@keyframes voice-bar {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+.voice-bar {
+  transform-origin: center bottom;
+  animation: voice-bar 0.9s ease-in-out infinite;
+}
+
+/* Live card: a breathing lime ring on top of the hard ink offset, "live, click". */
+@keyframes live-glow {
+  0%, 100% { box-shadow: 6px 6px 0 0 var(--color-ink); }
+  50% { box-shadow: 6px 6px 0 0 var(--color-ink), 0 0 0 5px var(--color-brut-lime); }
+}
+.live-glow { animation: live-glow 2.2s ease-in-out infinite; }
+
+/* Incoming-call ping ring. */
+@keyframes call-ping {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  70% { transform: scale(1.7); opacity: 0; }
+  100% { opacity: 0; }
+}
+.call-ping { animation: call-ping 1.6s ease-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-msg-in,
   .typing-dot,
   .status-pulse,
   .flow-line-x,
   .flow-line-y,
-  .brut-marquee {
+  .brut-marquee,
+  .voice-bar,
+  .live-glow,
+  .call-ping {
     animation: none;
   }
   /* Static reduced-motion fallback: a calm ink line, no march. */
@@ -378,4 +406,7 @@ p {
     background-image: none;
     background-color: var(--color-ink);
   }
+  /* Static fallbacks: bars at mid height, live card keeps its hard shadow. */
+  .voice-bar { transform: scaleY(0.7); }
+  .live-glow { box-shadow: 6px 6px 0 0 var(--color-ink); }
 }

@@ -29,7 +29,7 @@ const STEPS = [
   {
     n: "03",
     title: "We build it around your firm",
-    body: "We build around your own fares, vehicles and dispatch. Your voice agent and WhatsApp bot are yours alone, tuned to how your firm actually talks to its customers, not a skin on someone else's.",
+    body: "We set it up around your own fares, vehicles and dispatch, so the voice agent and WhatsApp bot answer the way your firm actually talks to its customers, on day one.",
   },
   {
     n: "04",
@@ -174,9 +174,8 @@ export default function HowItWorksPage() {
               How we get you there
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-600">
-              We don&apos;t hand you a generic bot. We scope your firm, quote it
-              honestly, build around your fleet and dispatch, then stay close
-              while you go live.
+              We scope your firm, quote it honestly, set the agent up around your
+              fleet and dispatch, then stay close while you go live.
             </p>
           </div>
 

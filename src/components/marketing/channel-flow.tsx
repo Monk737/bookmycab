@@ -53,7 +53,7 @@ export function ChannelFlow() {
       <Connector />
 
       {/* Stage 2, Automation */}
-      <Stage label="Your automation" featured className="lg:flex-[1.1]">
+      <Stage label="Your automation" featured className="lg:flex-1">
         <ol className="space-y-4">
           {AUTOMATION_STEPS.map((step, i) => (
             <li key={step} className="flex items-center gap-3.5">
@@ -119,7 +119,7 @@ function Stage({
   return (
     <div
       className={
-        "border-[3px] border-ink bg-paper p-7 sm:p-8 " +
+        "flex flex-col border-[3px] border-ink bg-paper p-7 sm:p-8 " +
         (featured ? "shadow-brut-lg" : "shadow-brut") +
         " " +
         className
@@ -128,7 +128,9 @@ function Stage({
       <p className="mb-5 text-sm font-bold uppercase tracking-[0.08em] text-gray-600">
         {label}
       </p>
-      {children}
+      {/* Center the content vertically so unequal item counts still balance
+          across the three equal-height columns on desktop. */}
+      <div className="flex flex-1 flex-col justify-center">{children}</div>
     </div>
   );
 }

@@ -32,32 +32,16 @@ export function Footer() {
                 {col.heading}
               </h4>
               <ul className="mt-4 space-y-2.5">
-                {col.items.map((item) =>
-                  item.href === "/demo" ? (
-                    // Demo dashboard not live yet — non-clickable + Coming soon tag.
-                    <li key={item.href}>
-                      <span
-                        aria-disabled="true"
-                        title="Coming soon"
-                        className="inline-flex cursor-not-allowed items-center gap-2 text-sm font-medium text-gray-500"
-                      >
-                        {item.label}
-                        <span className="border border-gray-600 bg-gray-800 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-gray-300">
-                          Coming soon
-                        </span>
-                      </span>
-                    </li>
-                  ) : (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className="brut-focus text-sm font-medium text-gray-300 underline-offset-4 transition-colors duration-150 hover:text-brut-yellow hover:underline"
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  ),
-                )}
+                {col.items.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className="brut-focus text-sm font-medium text-gray-300 underline-offset-4 transition-colors duration-150 hover:text-brut-yellow hover:underline"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
             ))}

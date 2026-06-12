@@ -8,6 +8,8 @@ import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
 import { DispatchBadges } from "@/components/marketing/dispatch-badges";
 import { RoiCalculator } from "@/components/marketing/roi-calculator";
 import { BookingConversation } from "@/components/marketing/booking-conversation";
+import { VoiceCall } from "@/components/marketing/voice-call";
+import { VoiceLiveCard } from "@/components/marketing/voice-live-card";
 import { MotionReel } from "@/components/marketing/motion-reel";
 import { ChannelLogos } from "@/components/marketing/channel-logos";
 import { Reveal } from "@/components/marketing/reveal";
@@ -66,7 +68,7 @@ export default function Home() {
                 <TryDashboardLink size="lg" />
               </div>
               <p className="mt-6 inline-flex border-2 border-ink bg-paper px-3 py-1.5 text-sm font-semibold text-ink shadow-brut-sm">
-                Built for your firm, never a template. Set up by our team, not a sign-up form.
+                Set up around your firm by our team, not a sign-up form.
               </p>
             </div>
 
@@ -105,6 +107,62 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* AI Voice spotlight — the hero product, with a live call animation. */}
+      <Section id="ai-voice" className="border-b-[3px] border-ink bg-canvas py-16 sm:py-24">
+        <Container>
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
+            {/* Live call demo */}
+            <div className="order-2 lg:order-1">
+              <VoiceCall />
+            </div>
+
+            {/* Selling content */}
+            <div className="order-1 lg:order-2">
+              <span className="inline-flex items-center gap-2 border-2 border-ink bg-brut-yellow px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-ink">
+                <span className="status-pulse inline-block h-2 w-2 border border-ink bg-brut-lime" aria-hidden="true" />
+                The AI Voice Booking Agent
+              </span>
+              <h2 className="mt-5 text-balance font-display text-4xl font-extrabold uppercase leading-[0.98] tracking-[-0.03em] text-ink sm:text-5xl">
+                Put a dispatcher on the phones that{" "}
+                <span className="box-decoration-clone bg-brut-yellow px-2 text-ink ring-2 ring-ink">
+                  never sleeps
+                </span>
+                .
+              </h2>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-gray-700">
+                It answers your booking line on the first ring, takes the whole
+                job by talking, quotes the fare and writes it into dispatch. No
+                wages, no rota, no sick days, and it never puts a caller on hold.
+              </p>
+
+              <ul className="mt-8 space-y-3.5">
+                {[
+                  ["Answers in one ring, 24/7", "At 3am and on your busiest Saturday alike. No engaged tone, no fare lost to the rank or the firm down the road."],
+                  ["Sounds like your best controller", "A natural British voice under your firm's name, quoting your fares and asking only what it needs to."],
+                  ["Works the hours nobody wants", "The 2am chucking-out rush and the dead-of-night airport run, handled while the office is dark."],
+                  ["Answering calls the same day", "Point your booking number at it and it picks up. Nothing to install, no new screen for your team."],
+                ].map(([k, v]) => (
+                  <li key={k} className="flex gap-3.5">
+                    <span aria-hidden="true" className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center border-2 border-ink bg-brut-lime text-xs font-bold text-ink">
+                      ✓
+                    </span>
+                    <p className="text-base leading-relaxed text-gray-700">
+                      <span className="font-display font-extrabold uppercase tracking-tight text-ink">{k}.</span>{" "}
+                      {v}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-9 flex flex-wrap items-center gap-4">
+                <VoiceLiveCard href="/products" sub="See the agent take a booking" />
+                <DiscoveryCta size="lg" label="Add one to your team" />
+              </div>
+            </div>
+          </div>
+        </Container>
+      </Section>
 
       {/* How it works, real 3-step sequence. */}
       <Section className="py-16 sm:py-24">
@@ -358,24 +416,9 @@ export default function Home() {
               Book a 20-minute discovery call and we will map your phone line,
               WhatsApp, fares and dispatch into an automation built for your firm.
             </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
               <DiscoveryCta size="lg" />
-              {/* Demo not live yet — non-clickable + Coming Soon ribbon (dark-band styling). */}
-              <span className="relative inline-flex">
-                <span
-                  aria-disabled="true"
-                  title="Coming soon"
-                  className="pointer-events-none inline-flex h-12 cursor-not-allowed items-center justify-center border-[3px] border-paper bg-ink px-7 text-base font-bold uppercase tracking-[0.04em] text-paper opacity-60"
-                >
-                  AI Voice Booking
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -right-2.5 -top-2.5 z-10 rotate-3 border-2 border-ink bg-brut-pink px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink shadow-brut-sm"
-                >
-                  Coming Soon
-                </span>
-              </span>
+              <VoiceLiveCard href="/products" tone="onDark" sub="Hear the agent take a booking" />
             </div>
           </div>
         </Container>

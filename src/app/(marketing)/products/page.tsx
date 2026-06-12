@@ -22,6 +22,7 @@ const PRODUCT_DETAIL = [
   {
     short: "AI Voice",
     accent: "bg-brut-yellow",
+    medium: "On your phone line",
     lead: "An AI agent answers your booking line on the first ring, speaks naturally in a British voice under your firm's name, and takes the whole booking by talking. No hold music, no queue, no voicemail nobody returns.",
     points: [
       ["Picks up day and night", "Every call answered on the first ring, at 3am and on your busiest Saturday alike. No call left ringing out to a rival."],
@@ -33,6 +34,7 @@ const PRODUCT_DETAIL = [
   {
     short: "WhatsApp",
     accent: "bg-brut-cyan",
+    medium: "On WhatsApp Business",
     lead: "The app most of your customers already message you on. A typed line or a ten-second voice note both become confirmed bookings, quoted and written into dispatch without anyone at the desk picking up.",
     points: [
       ["Text or voice note", "A quick-reply tap, a typed address or a voice note from a noisy street all turn into the same clean booking."],
@@ -89,37 +91,58 @@ export default function ProductsPage() {
             </p>
           </div>
 
-          <Reveal as="div" className="mt-10 grid gap-6 lg:grid-cols-2">
-            {PRODUCT_DETAIL.map((detail) => {
+          <Reveal as="div" className="mt-12 space-y-9 lg:space-y-12">
+            {PRODUCT_DETAIL.map((detail, idx) => {
               const mark = PRODUCTS.find((p) => p.short === detail.short)!;
+              const flip = idx % 2 === 1; // alternate the identity panel left/right
               return (
                 <section
                   key={detail.short}
-                  className="flex flex-col border-[3px] border-ink bg-paper shadow-brut"
+                  className="grid items-stretch gap-[3px] border-[3px] border-ink bg-ink shadow-brut-xl lg:grid-cols-[minmax(0,23rem)_1fr]"
                 >
-                  <header className={`flex items-center gap-4 border-b-[3px] border-ink ${detail.accent} px-6 py-5`}>
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center bg-paper/0">
-                      <ProductIcon mark={mark} className="h-12 w-12" />
-                    </span>
-                    <h3 className="font-display text-2xl font-extrabold uppercase leading-none tracking-tight text-ink">
-                      {mark.name}
-                    </h3>
-                  </header>
-                  <div className="flex flex-1 flex-col p-6 sm:p-7">
-                    <p className="text-base leading-relaxed text-gray-700">{detail.lead}</p>
-                    <ul className="mt-6 space-y-5 border-t-2 border-gray-100 pt-6">
-                      {detail.points.map(([k, v]) => (
-                        <li key={k} className="flex gap-3.5">
-                          <span aria-hidden="true" className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center border-2 border-ink bg-brut-lime text-[11px] font-bold text-ink">
-                            ✓
-                          </span>
-                          <div>
-                            <p className="font-display text-base font-extrabold uppercase tracking-tight text-ink">{k}</p>
-                            <p className="mt-1 text-sm leading-relaxed text-gray-600">{v}</p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
+                  {/* Identity panel: the product's own colour carries it. */}
+                  <div
+                    className={`flex flex-col justify-between ${detail.accent} p-7 sm:p-9 ${
+                      flip ? "lg:order-2" : ""
+                    }`}
+                  >
+                    <div>
+                      <span className="inline-flex items-center gap-2 border-2 border-ink bg-paper px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
+                        {detail.medium}
+                      </span>
+                      <div className="mt-6 flex items-center gap-3.5">
+                        <span className="flex h-14 w-14 shrink-0 items-center justify-center border-2 border-ink bg-paper">
+                          <ProductIcon mark={mark} className="h-12 w-12" />
+                        </span>
+                        <h3 className="font-display text-2xl font-extrabold uppercase leading-[0.95] tracking-tight text-accent-ink sm:text-[1.7rem]">
+                          {mark.name}
+                        </h3>
+                      </div>
+                    </div>
+                    <p className="mt-7 text-[15px] leading-relaxed text-accent-ink/85">
+                      {detail.lead}
+                    </p>
+                  </div>
+
+                  {/* Capability grid: shared hairlines, not floating cards. */}
+                  <div
+                    className={`grid bg-ink gap-[3px] sm:grid-cols-2 ${flip ? "lg:order-1" : ""}`}
+                  >
+                    {detail.points.map(([k, v], i) => {
+                      const wide =
+                        detail.points.length % 2 === 1 && i === detail.points.length - 1;
+                      return (
+                        <div
+                          key={k}
+                          className={`flex flex-col bg-paper p-6 ${wide ? "sm:col-span-2" : ""}`}
+                        >
+                          <p className="font-display text-base font-extrabold uppercase leading-tight tracking-tight text-ink">
+                            {k}
+                          </p>
+                          <p className="mt-2 text-sm leading-relaxed text-gray-600">{v}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </section>
               );
@@ -133,13 +156,13 @@ export default function ProductsPage() {
         <Container>
           <div className="border-[3px] border-ink bg-brut-yellow shadow-brut-xl px-7 py-12 sm:px-12 sm:py-16">
             <h2 className="text-balance font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-accent-ink sm:text-4xl">
-              You own your number. You own your customers.
+              Your number. Your accounts. Your data.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
               You connect your own phone number and WhatsApp Business account. You
               pay call minutes and conversation fees directly to your telco and
-              WhatsApp provider. You own your customer base, and nothing is ever
-              held hostage.
+              WhatsApp provider. Every rider and account stays on your books, and
+              nothing is ever held hostage.
             </p>
           </div>
         </Container>

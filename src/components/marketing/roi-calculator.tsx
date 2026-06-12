@@ -127,7 +127,7 @@ export function RoiCalculator() {
         </div>
 
         <p className="text-sm font-medium text-gray-600">
-          Estimate only. You bring your numbers, your automation does the rest.
+          Estimate only. Plug in your own figures, your automation does the rest.
         </p>
       </div>
     </div>

@@ -10,14 +10,14 @@ import { COMPANY } from "@/lib/marketing/nav";
 export const metadata: Metadata = {
   title: "About · BookMyCab",
   description:
-    "BookMyCab is built by FlowMo AI LTD, made in the United Kingdom. We build AI voice agents and WhatsApp booking bots for cab firms, confident, technical, transparent, no hype. You bring your numbers. You own your customer base.",
+    "BookMyCab is built by FlowMo AI LTD, made in the United Kingdom. We build AI voice agents and WhatsApp booking bots for cab firms, confident, technical, transparent, no hype. Your switchboard, your accounts, your drivers, answered faster.",
 };
 
 // What we believe / how we work. Plain principles, no hype.
 const PRINCIPLES = [
   {
-    title: "Built for you, never cloned",
-    body: "Every firm gets an automation made around its own fares, vehicles and dispatch. No two builds are the same, because no two firms are.",
+    title: "Configured around your firm",
+    body: "Your voice agent and WhatsApp bot run on your own fares, vehicles and dispatch. One proven product, set up to match how your firm actually works.",
   },
   {
     title: "Transparent by default",
@@ -56,9 +56,9 @@ export default function AboutPage() {
           <p className="mt-7 text-lg leading-relaxed text-gray-600 sm:text-xl">
             {COMPANY.product} is an AI voice agent that answers your phone and a
             WhatsApp bot that books by chat, then writes the job into your
-            dispatch. We build one for each firm, around its own fleet and
-            fares. Nothing
-            like the generic bot the firm down the road bolted on.
+            dispatch. We set it up around your own fleet and fares, so it books
+            the way your best controller would, not the way some off-the-shelf
+            menu makes a caller jump through hoops.
           </p>
           <p className="mt-4 text-base font-medium text-ink">
             Made in the {COMPANY.country} 🇬🇧
@@ -201,7 +201,7 @@ export default function AboutPage() {
             </h2>
             <ul className="grid gap-[3px] self-start overflow-hidden border-[3px] border-ink bg-ink shadow-brut">
               {[
-                "Sell you a template and call it bespoke",
+                "Sell you a half-finished bot and bill you to fix it",
                 "Take ownership of your customers or your numbers",
                 "Hide channel or AI costs behind a markup",
                 "Switch you on and vanish",
