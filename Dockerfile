@@ -32,10 +32,12 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_TELEMETRY_DISABLED=1
 
 # `next build` collects page data, which imports server routes and runs env
-# validation. SUPABASE_SERVICE_ROLE_KEY is required but is a runtime-only secret
-# (injected via env_file). A throwaway value lets the build pass; it is NOT the
-# real key and never reaches the runtime stage, which gets the real one at run time.
-ENV SUPABASE_SERVICE_ROLE_KEY=build-time-placeholder-not-a-real-key
+# validation. SUPABASE_SERVICE_ROLE_KEY and VOICE_INGEST_SECRET are required but
+# are runtime-only secrets (injected via env_file). Throwaway values let the
+# build pass; they are NOT the real secrets and never reach the runtime stage,
+# which gets the real ones from .env.production at run time.
+ENV SUPABASE_SERVICE_ROLE_KEY=build-time-placeholder-not-a-real-key \
+    VOICE_INGEST_SECRET=build-time-placeholder-not-a-real-secret
 
 RUN pnpm build
 
