@@ -18,17 +18,18 @@
  */
 
 import { CURRENCIES, type Currency } from "@/lib/marketing/pricing";
-import type { PlanBand } from "@/lib/admin/plan-bands";
+import type { CommercialModel } from "@/lib/billing/pricing";
 
 /** Minimal tenant shape these functions need. Mirrors `tenants` columns. */
 export type BillingTenant = {
   status: string; // onboarding | active | suspended | churned
   currency: Currency;
-  /** numeric column; null for Custom (quoted, no fixed price). */
+  /** numeric column; null for quoted / not-yet-priced tenants. */
   monthly_price: number | string | null;
   /** ISO date string (date column) or null when no contract renewal set. */
   contract_renewal: string | null;
-  plan_band: PlanBand;
+  /** "chat" | "voice" | "double_decker" | null (not yet set). */
+  commercial_model: CommercialModel | string | null;
 };
 
 /** Minimal setup-fee shape. Mirrors `setup_fees` columns. */
@@ -98,30 +99,34 @@ export function computeARR(mrrByCurrency: MrrByCurrency): MrrByCurrency {
   return arr;
 }
 
+/** The product breakdown keys (commercial models + an "unset" bucket). */
+export const COMMERCIAL_MODELS = ["chat", "voice", "double_decker"] as const;
+export type CommercialModelKey = (typeof COMMERCIAL_MODELS)[number] | "unset";
+
 /**
- * Active MRR grouped by plan band, then by currency. Custom contributes 0
- * (null price) but the band key is still present so the breakdown shows it.
+ * Active MRR grouped by commercial model, then by currency. Tenants with no
+ * commercial_model set are bucketed under "unset" so the breakdown is total.
  */
-export function mrrByPlanBand(
+export function mrrByCommercialModel(
   tenants: BillingTenant[],
-): Record<PlanBand, MrrByCurrency> {
-  const bands: PlanBand[] = [
-    "A-Single",
-    "A-Bundle",
-    "B-Single",
-    "B-Bundle",
-    "Custom",
-  ];
-  const result = bands.reduce(
-    (acc, b) => {
-      acc[b] = emptyByCurrency();
+): Record<CommercialModelKey, MrrByCurrency> {
+  const keys: CommercialModelKey[] = [...COMMERCIAL_MODELS, "unset"];
+  const result = keys.reduce(
+    (acc, k) => {
+      acc[k] = emptyByCurrency();
       return acc;
     },
-    {} as Record<PlanBand, MrrByCurrency>,
+    {} as Record<CommercialModelKey, MrrByCurrency>,
   );
   for (const t of tenants) {
     if (!isActive(t)) continue;
-    result[t.plan_band][t.currency] += toPrice(t.monthly_price);
+    const key: CommercialModelKey =
+      t.commercial_model === "chat" ||
+      t.commercial_model === "voice" ||
+      t.commercial_model === "double_decker"
+        ? t.commercial_model
+        : "unset";
+    result[key][t.currency] += toPrice(t.monthly_price);
   }
   return result;
 }

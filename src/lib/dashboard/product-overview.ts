@@ -48,7 +48,6 @@ export interface ProductOverview {
   currency: string;
   chat: {
     tier: string | null;
-    channelMode: string | null;
     channels: ChatChannelSummary[];
   } | null;
   voice: {
@@ -72,7 +71,7 @@ export async function getProductOverview(
 
   const [tenant, chatSub, channels, voiceSub, voiceAgents, counter, balance] = await Promise.all([
     supabase.from("tenants").select("commercial_model, currency").eq("id", tenantId).maybeSingle(),
-    supabase.from("chat_subscriptions").select("plan_tier, channel_mode").eq("tenant_id", tenantId).maybeSingle(),
+    supabase.from("chat_subscriptions").select("plan_tier").eq("tenant_id", tenantId).maybeSingle(),
     supabase.from("channels").select("type, status, token_expires_at, external_id").eq("tenant_id", tenantId),
     supabase.from("voice_subscriptions").select("plan_tier, monthly_call_allowance").eq("tenant_id", tenantId).maybeSingle(),
     supabase
@@ -127,7 +126,6 @@ export async function getProductOverview(
     chat: hasChat || chatSub.data || chatChannels.length > 0
       ? {
           tier: (chatSub.data?.plan_tier as string) ?? null,
-          channelMode: (chatSub.data?.channel_mode as string) ?? null,
           channels: chatChannels,
         }
       : null,

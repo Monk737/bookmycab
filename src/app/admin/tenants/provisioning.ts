@@ -11,7 +11,6 @@ import {
   resolveNewModelPricing,
   type CommercialModel,
   type NewTierKey,
-  type ChatChannelMode,
 } from "@/lib/billing/pricing";
 import { applyDiscount } from "@/lib/admin/coupons";
 import { COUNTRY_CODES } from "@/lib/billing/country";
@@ -32,7 +31,6 @@ const optionalText = z
 
 const COMMERCIAL_MODELS = ["chat", "voice", "double_decker"] as const;
 const TIERS = ["ignition", "in_motion", "full_throttle"] as const;
-const CHANNEL_MODES = ["single", "bundle"] as const;
 const DISPATCH_ADAPTERS = ["autocab", "icabbi", "cordic"] as const;
 
 export const createTenantSchema = z
@@ -52,16 +50,7 @@ export const createTenantSchema = z
     dispatch_company_id: optionalText,
     commercial_model: z.enum(COMMERCIAL_MODELS),
     chat_tier: z.enum(TIERS).optional(),
-    chat_channel_mode: z.enum(CHANNEL_MODES).optional(),
     voice_tier: z.enum(TIERS).optional(),
-    chat_price_override: z
-      .string()
-      .trim()
-      .transform((v) => (v === "" ? undefined : Number(v)))
-      .refine((v) => v === undefined || (Number.isFinite(v) && v >= 0), {
-        message: "Price must be ≥ 0.",
-      })
-      .optional(),
     coupon_code: optionalText,
   })
   .superRefine((d, ctx) => {
@@ -69,22 +58,8 @@ export const createTenantSchema = z
     const hasVoice = d.commercial_model === "voice" || d.commercial_model === "double_decker";
     if (hasChat && !d.chat_tier)
       ctx.addIssue({ code: "custom", path: ["chat_tier"], message: "Pick a chat tier." });
-    if (hasChat && !d.chat_channel_mode)
-      ctx.addIssue({ code: "custom", path: ["chat_channel_mode"], message: "Pick a channel mode." });
     if (hasVoice && !d.voice_tier)
       ctx.addIssue({ code: "custom", path: ["voice_tier"], message: "Pick a voice tier." });
-    // Only CHAT-ONLY Full Throttle is quoted (no list price). Double Decker
-    // Full Throttle has an authored price, so it needs no override.
-    if (
-      d.commercial_model === "chat" &&
-      d.chat_tier === "full_throttle" &&
-      d.chat_price_override === undefined
-    )
-      ctx.addIssue({
-        code: "custom",
-        path: ["chat_price_override"],
-        message: "Enter a quoted monthly price for Full Throttle.",
-      });
   });
 
 export type CreateTenantData = z.infer<typeof createTenantSchema>;
@@ -105,7 +80,7 @@ export interface ProvisioningRows {
     billing_bypass: boolean;
     status: "onboarding" | "active";
   };
-  chat: { plan_tier: NewTierKey; channel_mode: ChatChannelMode; monthly_price_gbp: number } | null;
+  chat: { plan_tier: NewTierKey; monthly_price_gbp: number } | null;
   voice: {
     plan_tier: NewTierKey;
     monthly_price_gbp: number;
@@ -129,16 +104,11 @@ export function buildProvisioningRows(args: {
   const resolved = resolveNewModelPricing({
     model: data.commercial_model,
     chatTier: data.chat_tier ?? null,
-    chatMode: data.chat_channel_mode ?? null,
     voiceTier: data.voice_tier ?? null,
   });
 
-  // Manual override applies ONLY to chat-only Full Throttle (the quoted tier);
-  // Double Decker Full Throttle uses the authored bundle chat component.
-  const chatBase =
-    data.commercial_model === "chat" && data.chat_tier === "full_throttle"
-      ? data.chat_price_override ?? 0
-      : resolved.chatGbp;
+  // Every chat tier now has a fixed list price (Full Throttle included).
+  const chatBase = resolved.chatGbp;
 
   const priced = (base: number | null): number | null =>
     base === null ? null : bypass ? 0 : applyDiscount(base, discountPercent);
@@ -163,10 +133,9 @@ export function buildProvisioningRows(args: {
       status: bypass ? "active" : "onboarding",
     },
     chat:
-      hasChat && data.chat_tier && data.chat_channel_mode
+      hasChat && data.chat_tier
         ? {
             plan_tier: data.chat_tier,
-            channel_mode: data.chat_channel_mode,
             monthly_price_gbp: priced(chatBase) ?? 0,
           }
         : null,

@@ -13,7 +13,7 @@ import { getFxRates } from "@/lib/marketing/fx";
 export const metadata: Metadata = {
   title: "Pricing · BookMyCab",
   description:
-    "Transparent pricing for BookMyCab. A multi-channel Chat bot and an AI Voice agent — buy either, or bundle both as a Double Decker. Fixed monthly plans by fleet size and call volume, one-time setup, and pay-as-you-go voice credit at £0.90 per call.",
+    "Transparent pricing for BookMyCab. A WhatsApp Chat + Voice Note bot and an AI Voice Booking agent. Buy either on its own, or mix and match both as a Double Decker. Fixed monthly plans by fleet size and call volume, one-time setup, and pay-as-you-go voice credit at £0.90 per call.",
 };
 
 // §6.3, add-on automations quoted on demand.
@@ -47,10 +47,11 @@ export default async function PricingPage() {
             </span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-gray-600 sm:text-xl">
-            Two products, one bill. A multi-channel Chat bot and an AI Voice
-            agent — buy either on its own, or bundle both as a Double Decker.
-            You pay BookMyCab one monthly price and one setup fee; your channel
-            and dispatch providers you pay directly, at their cost.
+            Two products, one bill. A WhatsApp Chat + Voice Note bot and an AI
+            Voice Booking agent. Buy either on its own, or mix and match both as
+            a Double Decker. You pay BookMyCab one monthly price and one setup
+            fee; your telco, WhatsApp and dispatch providers you pay directly, at
+            their cost.
           </p>
         </Container>
       </Section>
@@ -141,7 +142,7 @@ export default async function PricingPage() {
               See exactly what your automation would cost
             </h2>
             <p className="mx-auto mt-5 max-w-xl leading-relaxed text-gray-300">
-              Book a discovery call and we will scope your fleet, channels and
+              Book a discovery call and we will scope your fleet, call volume and
               dispatch into one clear quote.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">

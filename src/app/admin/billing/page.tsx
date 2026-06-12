@@ -6,7 +6,7 @@ import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { StatCard } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { planBandLabel, type PlanBand } from "@/lib/admin/plan-bands";
+import { commercialModelLabel, type CommercialModel } from "@/lib/billing/pricing";
 import {
   formatPrice,
   CURRENCIES,
@@ -15,7 +15,8 @@ import {
 import {
   computeMRR,
   computeARR,
-  mrrByPlanBand,
+  mrrByCommercialModel,
+  COMMERCIAL_MODELS,
   renewalBuckets,
   daysUntil,
   setupFeePipeline,
@@ -35,7 +36,7 @@ type TenantRow = BillingTenant & {
 type RenewalRow = {
   id: string;
   name: string;
-  plan_band: PlanBand;
+  commercial_model: CommercialModel | string | null;
   currency: Currency;
   monthly_price: number | string | null;
   contract_renewal: string;
@@ -107,7 +108,7 @@ export default async function BillingPage() {
     serviceClient
       .from("tenants")
       .select(
-        "id, name, status, currency, monthly_price, contract_renewal, plan_band, stripe_customer_id",
+        "id, name, status, currency, monthly_price, contract_renewal, commercial_model, stripe_customer_id",
       )
       .order("contract_renewal", { ascending: true, nullsFirst: false }),
     serviceClient
@@ -127,7 +128,7 @@ export default async function BillingPage() {
   const mrr = computeMRR(tenants);
   const arr = computeARR(mrr);
   const buckets = renewalBuckets(tenants, today);
-  const byBand = mrrByPlanBand(tenants);
+  const byModel = mrrByCommercialModel(tenants);
   const pipeline = setupFeePipeline(fees);
 
   const activeCount = tenants.filter((t) => t.status === "active").length;
@@ -138,7 +139,7 @@ export default async function BillingPage() {
     .map((t) => ({
       id: t.id,
       name: t.name,
-      plan_band: t.plan_band,
+      commercial_model: t.commercial_model,
       currency: t.currency,
       monthly_price: t.monthly_price,
       contract_renewal: t.contract_renewal as string,
@@ -165,7 +166,7 @@ export default async function BillingPage() {
       header: "Renewal",
       render: (r) => formatDate(r.contract_renewal),
     },
-    { key: "plan", header: "Plan", render: (r) => planBandLabel(r.plan_band) },
+    { key: "plan", header: "Product", render: (r) => commercialModelLabel(r.commercial_model) },
     {
       key: "mrr",
       header: "MRR",
@@ -301,19 +302,17 @@ export default async function BillingPage() {
         </div>
       </section>
 
-      {/* MRR by plan band */}
+      {/* MRR by product */}
       <section className="mt-8">
         <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
-          MRR by plan band
+          MRR by product
         </h2>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {(
-            ["A-Single", "A-Bundle", "B-Single", "B-Bundle", "Custom"] as const
-          ).map((band) => (
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {COMMERCIAL_MODELS.map((model) => (
             <StatCard
-              key={band}
-              label={planBandLabel(band)}
-              value={<MoneyByCurrency amounts={byBand[band]} />}
+              key={model}
+              label={commercialModelLabel(model)}
+              value={<MoneyByCurrency amounts={byModel[model]} />}
             />
           ))}
         </div>

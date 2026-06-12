@@ -44,7 +44,7 @@ export function RoiCalculator() {
       <div className="grid gap-6">
         <div>
           <label htmlFor={missedId} className={LABEL_CLASS}>
-            Missed bookings per day
+            Missed calls + chats per day
           </label>
           <input
             id={missedId}

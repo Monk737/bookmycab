@@ -21,18 +21,18 @@ describe("PricingSections (default GBP)", () => {
   it("renders the three product section headings", () => {
     render(<PricingSections rates={FX_FALLBACK} />);
     expect(screen.getAllByText(/^Chat$/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/AI Voice Booking/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/AI Voice Booking/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Double Decker/i)).toBeInTheDocument();
   });
 
-  it("renders chat Ignition single-channel price in GBP", () => {
+  it("renders chat Ignition price in GBP", () => {
     render(<PricingSections rates={FX_FALLBACK} />);
-    expect(screen.getAllByText(/£499/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/£599/).length).toBeGreaterThan(0);
   });
 
   it("renders a voice tier price in GBP", () => {
     render(<PricingSections rates={FX_FALLBACK} />);
-    expect(screen.getAllByText(/£1,199/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/£1,299/).length).toBeGreaterThan(0);
   });
 
   it("renders the extra voice credit price", () => {
@@ -48,7 +48,7 @@ describe("PricingSections (default GBP)", () => {
   it("switching to EUR re-renders converted prices", () => {
     render(<PricingSections rates={FX_FALLBACK} />);
     fireEvent.click(screen.getByRole("radio", { name: "EUR" }));
-    // £499 * 1.18 = 588.82 → €589 (0-decimal formatting)
-    expect(screen.getAllByText(/€589/).length).toBeGreaterThan(0);
+    // £599 * 1.18 = 706.82 → €707 (0-decimal formatting)
+    expect(screen.getAllByText(/€707/).length).toBeGreaterThan(0);
   });
 });

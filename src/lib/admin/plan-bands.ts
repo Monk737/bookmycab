@@ -1,62 +1,37 @@
 /**
- * Plan band model for tenant provisioning.
+ * Legacy plan-band display helper.
  *
- * The five bands match the `tenants.plan_band` CHECK constraint (migration 0001):
- * `A-Single | A-Bundle | B-Single | B-Bundle | Custom`.
- *
- * Prices are NOT duplicated here, they are derived from the billing pricing
- * model (`src/lib/billing/pricing.ts`, PRD §6.1). A-* maps to band A
- * (single/bundle), B-* to band B, and Custom has no fixed price.
+ * The A/B single/bundle commercial model has been retired in favour of the new
+ * two-product model (`commercial_model` + chat/voice subscription tiers). The
+ * `tenants.plan_band` column is kept nullable for historical tenants only; new
+ * tenants are provisioned with `plan_band = null`. This module now only labels
+ * any legacy value for display and provides `slugify`.
  */
 
-import type { Currency } from "@/lib/marketing/pricing";
-import { BAND_A, BAND_B } from "@/lib/billing/pricing";
+/** Legacy band values still present on historical tenant rows (nullable now). */
+export type PlanBand =
+  | "A-Single"
+  | "A-Bundle"
+  | "B-Single"
+  | "B-Bundle"
+  | "Custom"
+  | null;
 
-export type PlanBand = "A-Single" | "A-Bundle" | "B-Single" | "B-Bundle" | "Custom";
-
-/** Ordered list of plan bands (selection order in the provisioning form). */
-export const PLAN_BANDS = [
-  "A-Single",
-  "A-Bundle",
-  "B-Single",
-  "B-Bundle",
-  "Custom",
-] as const satisfies readonly PlanBand[];
-
-/** Human-readable labels for each band. */
-const PLAN_BAND_LABELS: Record<PlanBand, string> = {
-  "A-Single": "Plan A, Single channel",
-  "A-Bundle": "Plan A, Channel bundle",
-  "B-Single": "Plan B, Single channel",
-  "B-Bundle": "Plan B, Channel bundle",
-  Custom: "Custom (quoted)",
-};
-
-/** Returns the human-readable label for a plan band. */
+/** Human-readable label for a (possibly null) legacy band value. */
 export function planBandLabel(band: PlanBand): string {
-  return PLAN_BAND_LABELS[band];
-}
-
-/**
- * Monthly price for a band in the given currency, or `null` when no fixed price
- * applies (Custom). Prices are sourced from the billing pricing model so there
- * is a single source of truth for the §6.1 figures.
- */
-export function planBandMonthlyPrice(
-  band: PlanBand,
-  currency: Currency,
-): number | null {
   switch (band) {
     case "A-Single":
-      return BAND_A.single[currency];
+      return "Legacy · Plan A (single)";
     case "A-Bundle":
-      return BAND_A.bundle[currency];
+      return "Legacy · Plan A (bundle)";
     case "B-Single":
-      return BAND_B.single[currency];
+      return "Legacy · Plan B (single)";
     case "B-Bundle":
-      return BAND_B.bundle[currency];
+      return "Legacy · Plan B (bundle)";
     case "Custom":
-      return null;
+      return "Custom (quoted)";
+    default:
+      return "—";
   }
 }
 

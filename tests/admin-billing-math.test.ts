@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMRR,
   computeARR,
-  mrrByPlanBand,
+  mrrByCommercialModel,
   renewalBuckets,
   daysUntil,
   setupFeePipeline,
@@ -20,7 +20,7 @@ function tenant(overrides: Partial<BillingTenant>): BillingTenant {
     currency: "GBP",
     monthly_price: 500,
     contract_renewal: null,
-    plan_band: "A-Single",
+    commercial_model: "chat",
     ...overrides,
   };
 }
@@ -58,9 +58,9 @@ describe("computeMRR", () => {
     expect(computeMRR(tenants)).toEqual({ GBP: 500, EUR: 0, USD: 0 });
   });
 
-  it("treats Custom (null monthly_price) as 0 — no NaN", () => {
+  it("treats null monthly_price as 0 — no NaN", () => {
     const tenants = [
-      tenant({ status: "active", plan_band: "Custom", monthly_price: null }),
+      tenant({ status: "active", commercial_model: null, monthly_price: null }),
       tenant({ status: "active", monthly_price: 500 }),
     ];
     expect(computeMRR(tenants)).toEqual({ GBP: 500, EUR: 0, USD: 0 });
@@ -98,31 +98,31 @@ describe("computeARR", () => {
   });
 });
 
-describe("mrrByPlanBand", () => {
-  it("groups active MRR by band then currency, Custom present at 0", () => {
-    const result = mrrByPlanBand([
-      tenant({ plan_band: "A-Single", currency: "GBP", monthly_price: 500 }),
-      tenant({ plan_band: "A-Single", currency: "GBP", monthly_price: 500 }),
-      tenant({ plan_band: "B-Bundle", currency: "USD", monthly_price: 2000 }),
-      tenant({ plan_band: "Custom", currency: "GBP", monthly_price: null }),
+describe("mrrByCommercialModel", () => {
+  it("groups active MRR by product then currency, unset bucketed", () => {
+    const result = mrrByCommercialModel([
+      tenant({ commercial_model: "chat", currency: "GBP", monthly_price: 500 }),
+      tenant({ commercial_model: "chat", currency: "GBP", monthly_price: 500 }),
+      tenant({ commercial_model: "voice", currency: "USD", monthly_price: 2000 }),
+      tenant({ commercial_model: null, currency: "GBP", monthly_price: 300 }),
       tenant({
-        plan_band: "B-Single",
+        commercial_model: "double_decker",
         currency: "EUR",
         monthly_price: 800,
         status: "onboarding",
       }),
     ]);
-    expect(result["A-Single"].GBP).toBe(1000);
-    expect(result["B-Bundle"].USD).toBe(2000);
-    expect(result["Custom"]).toEqual({ GBP: 0, EUR: 0, USD: 0 });
-    // onboarding B-Single excluded
-    expect(result["B-Single"].EUR).toBe(0);
+    expect(result.chat.GBP).toBe(1000);
+    expect(result.voice.USD).toBe(2000);
+    expect(result.unset.GBP).toBe(300);
+    // onboarding double_decker excluded
+    expect(result.double_decker.EUR).toBe(0);
   });
 
-  it("includes all five bands even when empty", () => {
-    const result = mrrByPlanBand([]);
+  it("includes all product buckets even when empty", () => {
+    const result = mrrByCommercialModel([]);
     expect(Object.keys(result).sort()).toEqual(
-      ["A-Bundle", "A-Single", "B-Bundle", "B-Single", "Custom"].sort(),
+      ["chat", "double_decker", "unset", "voice"].sort(),
     );
   });
 });

@@ -6,10 +6,11 @@
  * EUR/USD figures shown on the page are derived at render time from live FX
  * rates (see ./fx.ts) via convert()/priceFor(); they are never stored here.
  *
- * Three products:
- *   1. Chat (multi-channel chatbot)
- *   2. AI Voice Booking (priced by monthly call allowance)
- *   3. Double Decker (Chat + AI Voice bundle)
+ * Two products, sold standalone or together:
+ *   1. Chat — WhatsApp Chat + Voice Note, priced by fleet size.
+ *   2. AI Voice Booking — priced by monthly call allowance.
+ *   3. Double Decker — Mix & Match: any Voice tier (full price) + any Chat tier
+ *      (chat discounted). Not a fixed tier list; composed at selection time.
  */
 
 export type Currency = "GBP" | "EUR" | "USD";
@@ -22,20 +23,17 @@ export const BASE_CURRENCY: Currency = "GBP";
 export type TierKey = "ignition" | "in_motion" | "full_throttle";
 
 /* ----------------------------------------------------------------------------
-   1. CHAT
+   1. CHAT — WhatsApp Chat + Voice Note
    -------------------------------------------------------------------------- */
 
 export interface ChatTier {
   key: TierKey;
   name: string;
   fleet: string;
-  /** GBP/month for a single channel, or null when contact-only. */
-  singleGbp: number | null;
-  /** GBP/month for the channel bundle, or null when contact-only. */
-  bundleGbp: number | null;
-  /** Maximum channels included in the bundle rate, or null when contact-only. */
-  bundleMaxChannels: number | null;
-  contactOnly: boolean;
+  /** GBP/month. Every chat tier now has a fixed price. */
+  priceGbp: number;
+  /** Optional note shown under the fleet line (e.g. Full Throttle's 2nd bot). */
+  note?: string;
   featured?: boolean;
 }
 
@@ -44,29 +42,21 @@ export const CHAT_TIERS: ChatTier[] = [
     key: "ignition",
     name: "Ignition",
     fleet: "Up to 50 drivers / fleet",
-    singleGbp: 499,
-    bundleGbp: 899,
-    bundleMaxChannels: 2,
-    contactOnly: false,
+    priceGbp: 599,
   },
   {
     key: "in_motion",
     name: "In Motion",
     fleet: "51–100 drivers / fleet",
-    singleGbp: 999,
-    bundleGbp: 1799,
-    bundleMaxChannels: 2,
-    contactOnly: false,
+    priceGbp: 999,
     featured: true,
   },
   {
     key: "full_throttle",
     name: "Full Throttle",
-    fleet: "101+ drivers, or 4+ channels / custom",
-    singleGbp: null,
-    bundleGbp: null,
-    bundleMaxChannels: null,
-    contactOnly: true,
+    fleet: "101+ drivers / fleet",
+    priceGbp: 1299,
+    note: "Optional 2nd WhatsApp chatbot",
   },
 ];
 
@@ -92,14 +82,14 @@ export const VOICE_TIERS: VoiceTier[] = [
     key: "ignition",
     name: "Ignition",
     callsPerMonth: 1500,
-    priceGbp: 1199,
+    priceGbp: 1299,
     config: "1 number · 1 agent",
   },
   {
     key: "in_motion",
     name: "In Motion",
     callsPerMonth: 2250,
-    priceGbp: 1599,
+    priceGbp: 1799,
     config: "2 numbers · 2 agents",
     featured: true,
   },
@@ -107,7 +97,7 @@ export const VOICE_TIERS: VoiceTier[] = [
     key: "full_throttle",
     name: "Full Throttle",
     callsPerMonth: 3000,
-    priceGbp: 1999,
+    priceGbp: 2199,
     config: "2 numbers · 2 agents",
   },
 ];
@@ -120,63 +110,32 @@ export const VOICE_SETUP_GBP = {
 } as const;
 
 /* ----------------------------------------------------------------------------
-   3. DOUBLE DECKER (Chat + AI Voice)
+   3. DOUBLE DECKER (Mix & Match: any Voice tier + any Chat tier)
+
+   The bundle is composed at selection time: the chosen AI Voice tier keeps its
+   full price, and the chosen Chat tier is discounted by a fixed GBP amount that
+   grows with the chat tier. There is no fixed bundle-tier list.
    -------------------------------------------------------------------------- */
 
-export interface BundleRow {
-  label: string;
-  priceGbp: number;
+/** GBP knocked off the Chat tier's monthly price when bundled with Voice. */
+export const BUNDLE_CHAT_DISCOUNT_GBP: Record<TierKey, number> = {
+  ignition: 100,
+  in_motion: 200,
+  full_throttle: 300,
+};
+
+/** A chat tier's discounted monthly price inside a Double Decker bundle. */
+export function bundleChatPriceGbp(chatTier: TierKey): number {
+  const chat = CHAT_TIERS.find((t) => t.key === chatTier);
+  const full = chat ? chat.priceGbp : 0;
+  return full - BUNDLE_CHAT_DISCOUNT_GBP[chatTier];
 }
 
-export interface BundleTier {
-  key: TierKey;
-  name: string;
-  /** Single chat channel + voice calls. */
-  single: BundleRow;
-  /** Bundle chat (2 channels) + voice calls. */
-  bundle: BundleRow;
-  featured?: boolean;
+/** Total monthly bundle price: full voice price + discounted chat price. */
+export function bundleTotalGbp(voiceTier: TierKey, chatTier: TierKey): number {
+  const voice = VOICE_TIERS.find((t) => t.key === voiceTier);
+  return (voice ? voice.priceGbp : 0) + bundleChatPriceGbp(chatTier);
 }
-
-export const BUNDLE_TIERS: BundleTier[] = [
-  {
-    key: "ignition",
-    name: "Ignition",
-    single: {
-      label: "Single chat channel (up to 50 fleet) + 1,500 calls/mo",
-      priceGbp: 1599,
-    },
-    bundle: {
-      label: "Bundle chat (2 channels) + 2,250 calls/mo",
-      priceGbp: 1999,
-    },
-  },
-  {
-    key: "in_motion",
-    name: "In Motion",
-    single: {
-      label: "Single chat channel (51–100 fleet) + 2,250 calls/mo",
-      priceGbp: 2499,
-    },
-    bundle: {
-      label: "Bundle chat (2 channels) + 2,250 calls/mo",
-      priceGbp: 3199,
-    },
-    featured: true,
-  },
-  {
-    key: "full_throttle",
-    name: "Full Throttle",
-    single: {
-      label: "Single chat channel (101+ fleet) + 3,000 calls/mo",
-      priceGbp: 2999,
-    },
-    bundle: {
-      label: "Bundle chat (2 channels) + 3,000 calls/mo",
-      priceGbp: 3799,
-    },
-  },
-];
 
 /** One-time Chat + AI Voice bundle setup fees, GBP. */
 export const BUNDLE_SETUP_GBP = {

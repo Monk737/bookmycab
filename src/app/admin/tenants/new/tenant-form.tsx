@@ -9,7 +9,6 @@ import {
   resolveNewModelPricing,
   type CommercialModel,
   type NewTierKey,
-  type ChatChannelMode,
 } from "@/lib/billing/pricing";
 import { formatPrice } from "@/lib/marketing/pricing";
 import { COUNTRIES } from "@/lib/billing/country";
@@ -30,11 +29,6 @@ const TIERS: { value: NewTierKey; label: string }[] = [
   { value: "ignition", label: "Ignition" },
   { value: "in_motion", label: "In Motion" },
   { value: "full_throttle", label: "Full Throttle" },
-];
-
-const CHANNEL_MODES: { value: ChatChannelMode; label: string }[] = [
-  { value: "single", label: "Single channel" },
-  { value: "bundle", label: "Channel bundle" },
 ];
 
 const initialState: TenantFormState = { fieldErrors: {}, formError: null };
@@ -150,9 +144,7 @@ export function TenantForm() {
   const companyId = useId();
   const modelId = useId();
   const chatTierId = useId();
-  const chatModeId = useId();
   const voiceTierId = useId();
-  const overrideId = useId();
   const couponId = useId();
 
   const [name, setName] = useState("");
@@ -163,9 +155,7 @@ export function TenantForm() {
 
   const [commercialModel, setCommercialModel] = useState<CommercialModel>("chat");
   const [chatTier, setChatTier] = useState<NewTierKey>("ignition");
-  const [chatMode, setChatMode] = useState<ChatChannelMode>("single");
   const [voiceTier, setVoiceTier] = useState<NewTierKey>("ignition");
-  const [chatPriceOverride, setChatPriceOverride] = useState<string>("");
 
   function handleName(v: string) {
     setName(v);
@@ -181,14 +171,8 @@ export function TenantForm() {
   const resolved = resolveNewModelPricing({
     model: commercialModel,
     chatTier: hasChat ? chatTier : null,
-    chatMode: hasChat ? chatMode : null,
     voiceTier: hasVoice ? voiceTier : null,
   });
-
-  // Chat-only Full Throttle is the single quoted case (resolved.chatGbp is null);
-  // the staff member supplies the monthly price by hand. Double Decker Full
-  // Throttle resolves to a real authored number, so no override is shown.
-  const isChatQuoted = commercialModel === "chat" && chatTier === "full_throttle";
 
   return (
     <form action={formAction} noValidate className="flex flex-col gap-5">
@@ -316,20 +300,6 @@ export function TenantForm() {
                   </option>
                 ))}
               </SelectField>
-              <SelectField
-                id={chatModeId}
-                name="chat_channel_mode"
-                label="Channel mode"
-                value={chatMode}
-                onChange={(v) => setChatMode(v as ChatChannelMode)}
-                error={fe.chat_channel_mode?.[0]}
-              >
-                {CHANNEL_MODES.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </SelectField>
             </>
           )}
 
@@ -351,28 +321,10 @@ export function TenantForm() {
           )}
         </div>
 
-        {/* Chat-only Full Throttle: editable quoted monthly price. The override
-            input is the submitted chat price for this case. */}
-        {isChatQuoted && (
-          <Field
-            id={overrideId}
-            name="chat_price_override"
-            label="Chat monthly price (quoted)"
-            type="number"
-            min="0"
-            step="0.01"
-            value={chatPriceOverride}
-            onChange={(e) => setChatPriceOverride(e.target.value)}
-            placeholder="0"
-            hint="Full Throttle chat is quoted, not list-priced. Enter the agreed monthly amount in GBP."
-            error={fe.chat_price_override?.[0]}
-          />
-        )}
-
         {/* Live, read-only price summary computed from the selection. */}
         <div className="flex flex-col gap-1.5 border-[3px] border-ink bg-brut-lime/10 px-4 py-3 text-sm">
           <p className="font-medium text-gray-700">Price summary</p>
-          {hasChat && !isChatQuoted && (
+          {hasChat && (
             <p className="text-ink">
               Chat:{" "}
               <span className="font-semibold">
@@ -380,16 +332,9 @@ export function TenantForm() {
                   ? "—"
                   : `${formatPrice("GBP", resolved.chatGbp)}/mo`}
               </span>
-            </p>
-          )}
-          {hasChat && isChatQuoted && (
-            <p className="text-ink">
-              Chat:{" "}
-              <span className="font-semibold">
-                {chatPriceOverride.trim() === ""
-                  ? "Quoted"
-                  : `${formatPrice("GBP", Number(chatPriceOverride))}/mo`}
-              </span>
+              {commercialModel === "double_decker" && resolved.chatGbp !== null ? (
+                <span className="ml-1 text-xs text-gray-500">(bundle discount applied)</span>
+              ) : null}
             </p>
           )}
           {hasVoice && (

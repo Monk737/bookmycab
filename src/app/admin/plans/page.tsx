@@ -4,7 +4,8 @@ import {
   CHAT_PRICE_GBP,
   VOICE_PRICE_GBP,
   VOICE_PLAN_SPEC,
-  DOUBLE_DECKER_GBP,
+  BUNDLE_CHAT_DISCOUNT_GBP,
+  bundleChatPriceGbp,
   NEW_CHAT_SETUP_GBP,
   NEW_VOICE_SETUP_GBP,
   NEW_BUNDLE_SETUP_GBP,
@@ -80,25 +81,24 @@ export default async function PlansPage() {
 
       <div className="flex flex-col gap-6">
         {/* Chat */}
-        <CatalogCard accent="bg-brut-cyan" title="Chat — multi-channel booking bot">
+        <CatalogCard accent="bg-brut-cyan" title="Chat — WhatsApp Chat + Voice Note">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
-              <tr><Th>Tier</Th><Th right>Single channel</Th><Th right>Channel bundle</Th><Th right>Setup (one-time)</Th></tr>
+              <tr><Th>Tier</Th><Th>Fleet</Th><Th right>Monthly</Th><Th right>Setup (one-time)</Th></tr>
             </thead>
             <tbody className="divide-y-2 divide-gray-100">
               {TIERS.map((t) => (
                 <tr key={t}>
                   <Td strong>{TIER_LABEL[t]}</Td>
-                  <Td right>{gbp(CHAT_PRICE_GBP[t].single)}</Td>
-                  <Td right>{gbp(CHAT_PRICE_GBP[t].bundle)}</Td>
+                  <Td>{t === "ignition" ? "Up to 50" : t === "in_motion" ? "51–100" : "101+"}</Td>
+                  <Td right>{gbp(CHAT_PRICE_GBP[t])}</Td>
                   <Td right>{gbp(NEW_CHAT_SETUP_GBP)}</Td>
                 </tr>
               ))}
             </tbody>
           </table>
           <p className="border-t-2 border-gray-100 px-3 py-2 text-xs text-gray-500">
-            Single = one channel (e.g. WhatsApp). Bundle = all channels (WhatsApp, Messenger, Instagram, Telegram, web widget).
-            Full Throttle is individually quoted.
+            One WhatsApp chatbot with voice-note handling, priced by fleet size. Full Throttle includes an optional 2nd WhatsApp chatbot.
           </p>
         </CatalogCard>
 
@@ -132,36 +132,31 @@ export default async function PlansPage() {
           </p>
         </CatalogCard>
 
-        {/* Double Decker */}
-        <CatalogCard accent="bg-brut-yellow" title="Double Decker — Chat + AI Voice bundle">
+        {/* Double Decker — Mix & Match */}
+        <CatalogCard accent="bg-brut-yellow" title="Double Decker — Mix & Match (any Voice tier + any Chat tier)">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <Th>Tier</Th><Th>Chat mode</Th><Th right>Bundle total</Th>
-                <Th right>Chat split</Th><Th right>Voice split</Th>
+                <Th>Chat tier</Th><Th right>Chat list</Th><Th right>Bundle discount</Th>
+                <Th right>Bundle chat price</Th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-gray-100">
-              {TIERS.map((t) =>
-                (["single", "bundle"] as const).map((mode) => {
-                  const s = DOUBLE_DECKER_GBP[t][mode];
-                  return (
-                    <tr key={`${t}-${mode}`}>
-                      <Td strong>{TIER_LABEL[t]}</Td>
-                      <Td>{mode === "single" ? "Single channel" : "Channel bundle"}</Td>
-                      <Td right strong>{gbp(s.total)}</Td>
-                      <Td right>{gbp(s.chat)}</Td>
-                      <Td right>{gbp(s.voice)}</Td>
-                    </tr>
-                  );
-                }),
-              )}
+              {TIERS.map((t) => (
+                <tr key={t}>
+                  <Td strong>{TIER_LABEL[t]}</Td>
+                  <Td right>{gbp(CHAT_PRICE_GBP[t])}</Td>
+                  <Td right>− {gbp(BUNDLE_CHAT_DISCOUNT_GBP[t])}</Td>
+                  <Td right strong>{gbp(bundleChatPriceGbp(t))}</Td>
+                </tr>
+              ))}
             </tbody>
           </table>
           <p className="border-t-2 border-gray-100 px-3 py-2 text-xs text-gray-500">
-            Billed as two Stripe subscriptions (chat + voice) that sum to the bundle total. Setup:{" "}
-            <span className="font-mono font-bold text-ink">{gbp(NEW_BUNDLE_SETUP_GBP.oneVoiceAgent)}</span> (1 voice agent) /{" "}
-            <span className="font-mono font-bold text-ink">{gbp(NEW_BUNDLE_SETUP_GBP.twoVoiceAgents)}</span> (2 voice agents).
+            The chosen AI Voice tier keeps its full price; the chat tier is discounted by the amount above.
+            Bundle total = voice monthly + bundle chat price. Billed as two Stripe subscriptions (voice + discounted chat). Setup:{" "}
+            <span className="font-mono font-bold text-ink">{gbp(NEW_BUNDLE_SETUP_GBP.oneVoiceAgent)}</span> (1 chat + 1 voice) /{" "}
+            <span className="font-mono font-bold text-ink">{gbp(NEW_BUNDLE_SETUP_GBP.twoVoiceAgents)}</span> (1 chat + 2 voice).
           </p>
         </CatalogCard>
 

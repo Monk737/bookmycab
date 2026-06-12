@@ -4,7 +4,7 @@ import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { StatCard } from "@/components/admin/stat-card";
-import { planBandLabel, type PlanBand } from "@/lib/admin/plan-bands";
+import { commercialModelLabel, type CommercialModel } from "@/lib/billing/pricing";
 import {
   formatPrice,
   CURRENCIES,
@@ -32,7 +32,7 @@ type TenantRow = BillingTenant & {
 type ChurnRiskRow = {
   id: string;
   name: string;
-  plan_band: PlanBand;
+  commercial_model: CommercialModel | string | null;
   currency: Currency;
   monthly_price: number | string | null;
   contract_renewal: string;
@@ -42,7 +42,7 @@ type ChurnRiskRow = {
 type TopTenantRow = {
   id: string;
   name: string;
-  plan_band: PlanBand;
+  commercial_model: CommercialModel | string | null;
   currency: Currency;
   monthly_price: number;
 };
@@ -190,7 +190,7 @@ export default async function AdminOverviewPage() {
     .map((t) => ({
       id: t.id,
       name: t.name,
-      plan_band: t.plan_band,
+      commercial_model: t.commercial_model,
       currency: t.currency,
       monthly_price: t.monthly_price,
       contract_renewal: t.contract_renewal as string,
@@ -205,7 +205,7 @@ export default async function AdminOverviewPage() {
     .map((t) => ({
       id: t.id,
       name: t.name,
-      plan_band: t.plan_band,
+      commercial_model: t.commercial_model,
       currency: t.currency,
       monthly_price: Number(t.monthly_price),
     }))
@@ -216,7 +216,7 @@ export default async function AdminOverviewPage() {
   const churnColumns: Column<ChurnRiskRow>[] = [
     { key: "name", header: "Tenant", render: (r) => r.name },
     { key: "renewal", header: "Renewal", render: (r) => formatDate(r.contract_renewal) },
-    { key: "plan", header: "Plan", render: (r) => planBandLabel(r.plan_band) },
+    { key: "plan", header: "Product", render: (r) => commercialModelLabel(r.commercial_model) },
     {
       key: "mrr",
       header: "MRR",
@@ -246,7 +246,7 @@ export default async function AdminOverviewPage() {
 
   const topColumns: Column<TopTenantRow>[] = [
     { key: "name", header: "Tenant", render: (r) => r.name },
-    { key: "plan", header: "Plan", render: (r) => planBandLabel(r.plan_band) },
+    { key: "plan", header: "Product", render: (r) => commercialModelLabel(r.commercial_model) },
     {
       key: "mrr",
       header: "MRR",

@@ -5,21 +5,21 @@ import { describe, it, expect } from "vitest";
 import {
   CHAT_TIERS,
   VOICE_TIERS,
-  BUNDLE_TIERS,
+  BUNDLE_CHAT_DISCOUNT_GBP as MKT_BUNDLE_DISCOUNT,
+  bundleChatPriceGbp as mktBundleChatPriceGbp,
   type TierKey,
 } from "@/lib/marketing/pricing";
 import {
   CHAT_PRICE_GBP,
   VOICE_PRICE_GBP,
-  DOUBLE_DECKER_GBP,
+  BUNDLE_CHAT_DISCOUNT_GBP,
+  bundleChatPriceGbp,
 } from "@/lib/billing/pricing";
 
 describe("billing GBP figures match marketing canonical GBP", () => {
-  it("chat single/bundle per tier", () => {
+  it("chat price per tier", () => {
     for (const t of CHAT_TIERS) {
-      const key = t.key as TierKey;
-      expect(CHAT_PRICE_GBP[key].single).toBe(t.singleGbp);
-      expect(CHAT_PRICE_GBP[key].bundle).toBe(t.bundleGbp);
+      expect(CHAT_PRICE_GBP[t.key as TierKey]).toBe(t.priceGbp);
     }
   });
 
@@ -29,11 +29,10 @@ describe("billing GBP figures match marketing canonical GBP", () => {
     }
   });
 
-  it("double decker single/bundle totals", () => {
-    for (const t of BUNDLE_TIERS) {
-      const key = t.key as TierKey;
-      expect(DOUBLE_DECKER_GBP[key].single.total).toBe(t.single.priceGbp);
-      expect(DOUBLE_DECKER_GBP[key].bundle.total).toBe(t.bundle.priceGbp);
+  it("bundle chat discount + discounted chat price match marketing", () => {
+    for (const tier of ["ignition", "in_motion", "full_throttle"] as TierKey[]) {
+      expect(BUNDLE_CHAT_DISCOUNT_GBP[tier]).toBe(MKT_BUNDLE_DISCOUNT[tier]);
+      expect(bundleChatPriceGbp(tier)).toBe(mktBundleChatPriceGbp(tier));
     }
   });
 });

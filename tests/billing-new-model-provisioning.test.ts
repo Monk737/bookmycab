@@ -30,26 +30,26 @@ describe("setupFeeGbp", () => {
 describe("resolveNewModelPricing", () => {
   it("chat-only: chat price set, voice null, setup 1000", () => {
     const r = resolveNewModelPricing({
-      model: "chat", chatTier: "in_motion", chatMode: "bundle", voiceTier: null,
+      model: "chat", chatTier: "in_motion", voiceTier: null,
     });
-    expect(r).toEqual({ chatGbp: 1799, voiceGbp: null, voiceAllowance: null, voiceAgents: null, setupGbp: 1000 });
+    expect(r).toEqual({ chatGbp: 999, voiceGbp: null, voiceAllowance: null, voiceAgents: null, setupGbp: 1000 });
   });
   it("voice-only: voice price + allowance/agents, chat null, setup by agents", () => {
     const r = resolveNewModelPricing({
-      model: "voice", chatTier: null, chatMode: null, voiceTier: "in_motion",
+      model: "voice", chatTier: null, voiceTier: "in_motion",
     });
-    expect(r).toEqual({ chatGbp: null, voiceGbp: 1599, voiceAllowance: 2250, voiceAgents: 2, setupGbp: 1500 });
+    expect(r).toEqual({ chatGbp: null, voiceGbp: 1799, voiceAllowance: 2250, voiceAgents: 2, setupGbp: 1500 });
   });
-  it("double_decker: authored split + allowance + bundle setup", () => {
+  it("double_decker: voice full price + discounted chat + bundle setup", () => {
     const r = resolveNewModelPricing({
-      model: "double_decker", chatTier: "in_motion", chatMode: "bundle", voiceTier: "in_motion",
+      model: "double_decker", chatTier: "in_motion", voiceTier: "in_motion",
     });
-    expect(r).toEqual({ chatGbp: 1600, voiceGbp: 1599, voiceAllowance: 2250, voiceAgents: 2, setupGbp: 2000 });
+    expect(r).toEqual({ chatGbp: 799, voiceGbp: 1799, voiceAllowance: 2250, voiceAgents: 2, setupGbp: 2000 });
   });
-  it("full_throttle chat is quoted: chatGbp null (caller must supply override)", () => {
+  it("full_throttle chat is now priced (£1299)", () => {
     const r = resolveNewModelPricing({
-      model: "chat", chatTier: "full_throttle", chatMode: "single", voiceTier: null,
+      model: "chat", chatTier: "full_throttle", voiceTier: null,
     });
-    expect(r.chatGbp).toBeNull();
+    expect(r.chatGbp).toBe(1299);
   });
 });

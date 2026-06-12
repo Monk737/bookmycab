@@ -24,10 +24,9 @@ const STAFF_RATE_GBP = 12;
 type Tier = { name: string; monthlyGbp: number };
 
 function tierFor(drivers: number): Tier {
-  if (drivers <= 50) return { name: "Ignition", monthlyGbp: 499 };
+  if (drivers <= 50) return { name: "Ignition", monthlyGbp: 599 };
   if (drivers <= 100) return { name: "In Motion", monthlyGbp: 999 };
-  // Full Throttle is quoted individually; use In Motion as a conservative floor.
-  return { name: "Full Throttle", monthlyGbp: 999 };
+  return { name: "Full Throttle", monthlyGbp: 1299 };
 }
 
 function compute(
@@ -214,7 +213,7 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
             ROI calculator
           </p>
           <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-tight text-paper">
-            What it puts back on the meter
+            What WhatsApp Chat + AI Voice put back on the meter
           </p>
         </div>
         <CurrencyToggle value={currency} onChange={setCurrency} />

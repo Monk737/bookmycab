@@ -1,60 +1,12 @@
 import { describe, it, expect } from "vitest";
-import {
-  PLAN_BANDS,
-  planBandLabel,
-  planBandMonthlyPrice,
-  slugify,
-  type PlanBand,
-} from "@/lib/admin/plan-bands";
+import { planBandLabel, slugify, type PlanBand } from "@/lib/admin/plan-bands";
 
-describe("PLAN_BANDS", () => {
-  it("lists the five bands matching the tenants.plan_band CHECK", () => {
-    expect(PLAN_BANDS).toEqual([
-      "A-Single",
-      "A-Bundle",
-      "B-Single",
-      "B-Bundle",
-      "Custom",
-    ]);
-  });
-});
-
-describe("planBandLabel", () => {
-  it("returns a distinct human label for every band", () => {
-    const labels = PLAN_BANDS.map(planBandLabel);
-    expect(new Set(labels).size).toBe(PLAN_BANDS.length);
+describe("planBandLabel (legacy display)", () => {
+  it("labels legacy band values and null", () => {
     expect(planBandLabel("Custom")).toMatch(/custom/i);
-    expect(planBandLabel("A-Single")).toMatch(/single/i);
-    expect(planBandLabel("B-Bundle")).toMatch(/bundle/i);
-  });
-});
-
-describe("planBandMonthlyPrice", () => {
-  it("returns the §6.1 GBP prices", () => {
-    expect(planBandMonthlyPrice("A-Single", "GBP")).toBe(500);
-    expect(planBandMonthlyPrice("A-Bundle", "GBP")).toBe(1000);
-    expect(planBandMonthlyPrice("B-Single", "GBP")).toBe(800);
-    expect(planBandMonthlyPrice("B-Bundle", "GBP")).toBe(1800);
-  });
-
-  it("returns the §6.1 EUR prices", () => {
-    expect(planBandMonthlyPrice("A-Single", "EUR")).toBe(500);
-    expect(planBandMonthlyPrice("A-Bundle", "EUR")).toBe(1000);
-    expect(planBandMonthlyPrice("B-Single", "EUR")).toBe(800);
-    expect(planBandMonthlyPrice("B-Bundle", "EUR")).toBe(1800);
-  });
-
-  it("returns the §6.1 USD prices (A tier differs from GBP/EUR)", () => {
-    expect(planBandMonthlyPrice("A-Single", "USD")).toBe(600);
-    expect(planBandMonthlyPrice("A-Bundle", "USD")).toBe(1200);
-    expect(planBandMonthlyPrice("B-Single", "USD")).toBe(800);
-    expect(planBandMonthlyPrice("B-Bundle", "USD")).toBe(2000);
-  });
-
-  it("returns null for Custom in every currency", () => {
-    expect(planBandMonthlyPrice("Custom", "GBP")).toBeNull();
-    expect(planBandMonthlyPrice("Custom", "EUR")).toBeNull();
-    expect(planBandMonthlyPrice("Custom", "USD")).toBeNull();
+    expect(planBandLabel("A-Single")).toMatch(/legacy/i);
+    expect(planBandLabel("B-Bundle")).toMatch(/legacy/i);
+    expect(planBandLabel(null)).toBe("—");
   });
 });
 
@@ -92,9 +44,8 @@ describe("slugify", () => {
     expect(out.endsWith("-")).toBe(false);
   });
 
-  it("accepts every band value as a valid PlanBand union member", () => {
-    // Compile-time guard that PLAN_BANDS is typed as PlanBand[].
-    const first: PlanBand = PLAN_BANDS[0];
+  it("accepts a legacy band value as a valid PlanBand union member", () => {
+    const first: PlanBand = "A-Single";
     expect(first).toBe("A-Single");
   });
 });

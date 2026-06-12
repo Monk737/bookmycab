@@ -10,8 +10,10 @@ import {
   CHAT_SETUP_FEE_GBP,
   VOICE_TIERS,
   VOICE_SETUP_GBP,
-  BUNDLE_TIERS,
   BUNDLE_SETUP_GBP,
+  BUNDLE_CHAT_DISCOUNT_GBP,
+  bundleChatPriceGbp,
+  bundleTotalGbp,
   EXTRA_CALL_PRICE_GBP,
   CURRENCIES,
   BASE_CURRENCY,
@@ -30,26 +32,20 @@ describe("Chat tiers", () => {
       "full_throttle",
     ]);
   });
-  it("Ignition: £499 single / £899 bundle / max 2 channels / ≤50 fleet", () => {
+  it("Ignition: £599 / ≤50 fleet", () => {
     const t = CHAT_TIERS[0];
-    expect(t.singleGbp).toBe(499);
-    expect(t.bundleGbp).toBe(899);
-    expect(t.bundleMaxChannels).toBe(2);
-    expect(t.contactOnly).toBe(false);
+    expect(t.priceGbp).toBe(599);
     expect(t.fleet).toContain("50");
   });
-  it("In Motion: £999 single / £1799 bundle / 51–100 fleet / featured", () => {
+  it("In Motion: £999 / 51–100 fleet / featured", () => {
     const t = CHAT_TIERS[1];
-    expect(t.singleGbp).toBe(999);
-    expect(t.bundleGbp).toBe(1799);
-    expect(t.bundleMaxChannels).toBe(2);
+    expect(t.priceGbp).toBe(999);
     expect(t.featured).toBe(true);
   });
-  it("Full Throttle: contact only, no fixed price", () => {
+  it("Full Throttle: £1299 / priced (not contact-only)", () => {
     const t = CHAT_TIERS[2];
-    expect(t.contactOnly).toBe(true);
-    expect(t.singleGbp).toBeNull();
-    expect(t.bundleGbp).toBeNull();
+    expect(t.priceGbp).toBe(1299);
+    expect(t.note).toBeTruthy();
   });
   it("Chat setup fee is £1000", () => {
     expect(CHAT_SETUP_FEE_GBP).toBe(1000);
@@ -57,22 +53,22 @@ describe("Chat tiers", () => {
 });
 
 describe("Voice tiers", () => {
-  it("Ignition: 1500 calls / £1199 / 1 number 1 agent", () => {
+  it("Ignition: 1500 calls / £1299 / 1 number 1 agent", () => {
     const t = VOICE_TIERS[0];
     expect(t.callsPerMonth).toBe(1500);
-    expect(t.priceGbp).toBe(1199);
+    expect(t.priceGbp).toBe(1299);
     expect(t.config).toMatch(/1 number/i);
   });
-  it("In Motion: 2250 calls / £1599 / featured", () => {
+  it("In Motion: 2250 calls / £1799 / featured", () => {
     const t = VOICE_TIERS[1];
     expect(t.callsPerMonth).toBe(2250);
-    expect(t.priceGbp).toBe(1599);
+    expect(t.priceGbp).toBe(1799);
     expect(t.featured).toBe(true);
   });
-  it("Full Throttle: 3000 calls / £1999", () => {
+  it("Full Throttle: 3000 calls / £2199", () => {
     const t = VOICE_TIERS[2];
     expect(t.callsPerMonth).toBe(3000);
-    expect(t.priceGbp).toBe(1999);
+    expect(t.priceGbp).toBe(2199);
   });
   it("Voice setup: £1000 one agent / £1500 two agents / £500 second-agent add-on", () => {
     expect(VOICE_SETUP_GBP.oneAgent).toBe(1000);
@@ -81,22 +77,22 @@ describe("Voice tiers", () => {
   });
 });
 
-describe("Double Decker bundle tiers", () => {
-  it("Ignition: single £1599 / bundle £1999", () => {
-    const t = BUNDLE_TIERS[0];
-    expect(t.single.priceGbp).toBe(1599);
-    expect(t.bundle.priceGbp).toBe(1999);
+describe("Double Decker (Mix & Match)", () => {
+  it("chat discounts: ignition −100, in_motion −200, full_throttle −300", () => {
+    expect(BUNDLE_CHAT_DISCOUNT_GBP.ignition).toBe(100);
+    expect(BUNDLE_CHAT_DISCOUNT_GBP.in_motion).toBe(200);
+    expect(BUNDLE_CHAT_DISCOUNT_GBP.full_throttle).toBe(300);
   });
-  it("In Motion: single £2499 / bundle £3199 / featured", () => {
-    const t = BUNDLE_TIERS[1];
-    expect(t.single.priceGbp).toBe(2499);
-    expect(t.bundle.priceGbp).toBe(3199);
-    expect(t.featured).toBe(true);
+  it("bundle chat price = chat list − discount", () => {
+    expect(bundleChatPriceGbp("ignition")).toBe(499); // 599 − 100
+    expect(bundleChatPriceGbp("in_motion")).toBe(799); // 999 − 200
+    expect(bundleChatPriceGbp("full_throttle")).toBe(999); // 1299 − 300
   });
-  it("Full Throttle: single £2999 / bundle £3799", () => {
-    const t = BUNDLE_TIERS[2];
-    expect(t.single.priceGbp).toBe(2999);
-    expect(t.bundle.priceGbp).toBe(3799);
+  it("bundle total = full voice price + discounted chat", () => {
+    // In Motion voice (£1799) + Ignition chat (£499) = £2298
+    expect(bundleTotalGbp("in_motion", "ignition")).toBe(2298);
+    // Full Throttle voice (£2199) + Full Throttle chat (£999) = £3198
+    expect(bundleTotalGbp("full_throttle", "full_throttle")).toBe(3198);
   });
   it("Bundle setup: £1500 one voice agent / £2000 two voice agents", () => {
     expect(BUNDLE_SETUP_GBP.oneVoiceAgent).toBe(1500);

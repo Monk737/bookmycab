@@ -75,9 +75,8 @@ describe("TenantForm", () => {
     expect(screen.getByLabelText("Primary contact email")).toBeInTheDocument();
     expect(screen.getByLabelText("Dispatch adapter")).toBeInTheDocument();
     expect(screen.getByLabelText("Product")).toBeInTheDocument();
-    // Default product is Chat → chat tier + channel mode render; voice is hidden.
+    // Default product is Chat → chat tier renders; voice is hidden.
     expect(screen.getByLabelText("Chat tier")).toBeInTheDocument();
-    expect(screen.getByLabelText("Channel mode")).toBeInTheDocument();
     expect(screen.queryByLabelText("Voice tier")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /create tenant/i })).toBeInTheDocument();
   });

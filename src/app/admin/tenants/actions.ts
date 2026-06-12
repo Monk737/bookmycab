@@ -39,9 +39,7 @@ export async function createTenant(
     dispatch_company_id: formData.get("dispatch_company_id"),
     commercial_model: formData.get("commercial_model"),
     chat_tier: formData.get("chat_tier"),
-    chat_channel_mode: formData.get("chat_channel_mode"),
     voice_tier: formData.get("voice_tier"),
-    chat_price_override: formData.get("chat_price_override"),
     coupon_code: formData.get("coupon_code"),
   };
 

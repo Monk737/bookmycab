@@ -6,7 +6,7 @@ import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { planBandLabel, type PlanBand } from "@/lib/admin/plan-bands";
+import { commercialModelLabel } from "@/lib/billing/pricing";
 import { formatPrice, type Currency } from "@/lib/marketing/pricing";
 import { countryLabel } from "@/lib/billing/country";
 import {
@@ -56,7 +56,7 @@ type Tenant = {
   slug: string;
   status: string;
   country: string;
-  plan_band: PlanBand;
+  plan_band: string | null;
   currency: Currency;
   monthly_price: number | string | null;
   contract_start: string | null;
@@ -395,7 +395,7 @@ export default async function TenantDetailPage({
       <div className="mt-6 border-[3px] border-ink bg-paper p-5">
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
           <Detail label="Country" value={countryLabel(tenant.country)} />
-          <Detail label="Plan band" value={planBandLabel(tenant.plan_band)} />
+          <Detail label="Product" value={commercialModelLabel(tenant.commercial_model)} />
           <Detail label="Currency" value={tenant.currency} />
           <Detail
             label="Monthly price"
@@ -455,9 +455,6 @@ export default async function TenantDetailPage({
       <Section title="Billing actions">
         <BillingPanel
           tenantId={tenant.id}
-          planBand={tenant.plan_band}
-          setupFeePaid={Boolean(tenant.setup_fee_paid)}
-          hasSubscription={(subsData ?? []).length > 0}
           commercialModel={tenant.commercial_model}
           status={tenant.status}
         />

@@ -81,7 +81,6 @@ export interface ChatAnalytics {
   hasChat: boolean;
   rangeDays: number;
   tier: string | null;
-  channelMode: string | null;
   aggregate: ChatStatBlock;
   channels: ChannelStat[];
   trend: DayPoint[];
@@ -193,7 +192,6 @@ export async function getChatAnalytics(
     hasChat: overview.chat != null,
     rangeDays,
     tier: overview.chat?.tier ?? null,
-    channelMode: overview.chat?.channelMode ?? null,
     aggregate: reduceChatStats(rows),
     channels,
     trend: reduceChatTrend(rows, rangeDays),

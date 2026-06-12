@@ -12,7 +12,7 @@ describe("RoiCalculator", () => {
   it("renders with default inputs and a yearly figure", () => {
     render(<RoiCalculator />);
 
-    const missed = screen.getByLabelText(/missed bookings per day/i) as HTMLInputElement;
+    const missed = screen.getByLabelText(/missed calls \+ chats per day/i) as HTMLInputElement;
     const fare = screen.getByLabelText(/average fare/i) as HTMLInputElement;
 
     // Defaults are present and numeric.
@@ -31,7 +31,7 @@ describe("RoiCalculator", () => {
   it("recomputes the yearly figure when missed bookings change", () => {
     render(<RoiCalculator />);
 
-    const missed = screen.getByLabelText(/missed bookings per day/i) as HTMLInputElement;
+    const missed = screen.getByLabelText(/missed calls \+ chats per day/i) as HTMLInputElement;
     const fare = screen.getByLabelText(/average fare/i) as HTMLInputElement;
 
     fireEvent.change(missed, { target: { value: "10" } });
@@ -47,7 +47,7 @@ describe("RoiCalculator", () => {
   it("recomputes the yearly figure when average fare changes", () => {
     render(<RoiCalculator />);
 
-    const missed = screen.getByLabelText(/missed bookings per day/i) as HTMLInputElement;
+    const missed = screen.getByLabelText(/missed calls \+ chats per day/i) as HTMLInputElement;
     const fare = screen.getByLabelText(/average fare/i) as HTMLInputElement;
 
     fireEvent.change(fare, { target: { value: "42" } });
@@ -63,7 +63,7 @@ describe("RoiCalculator", () => {
   it("floors to zero (not NaN) when the missed-bookings field is cleared", () => {
     render(<RoiCalculator />);
 
-    const missed = screen.getByLabelText(/missed bookings per day/i);
+    const missed = screen.getByLabelText(/missed calls \+ chats per day/i);
     fireEvent.change(missed, { target: { value: "" } });
 
     expect(screen.getByTestId("roi-per-year")).toHaveTextContent(

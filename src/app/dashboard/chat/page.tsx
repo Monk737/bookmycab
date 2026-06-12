@@ -61,7 +61,7 @@ export default async function ChatPage() {
         <StatTile label="Bookings" value={c.aggregate.booked.toLocaleString("en-GB")} accent="bg-brut-yellow" sub="from chat" />
         <StatTile label="Channels live" value={connected} accent="bg-brut-blue" sub={`of ${c.channels.length} connected`} />
         <StatTile label="Busiest" value={busiest ? channelLabel(busiest.type) : "—"} accent="bg-brut-violet" sub={busiest ? `${busiest.conversations.toLocaleString("en-GB")} chats` : "No traffic yet"} />
-        <StatTile label="Plan" value={tierLabel(c.tier)} accent="bg-brut-pink" sub={c.channelMode === "bundle" ? "Channel bundle" : c.channelMode === "single" ? "Single channel" : "—"} />
+        <StatTile label="Plan" value={tierLabel(c.tier)} accent="bg-brut-pink" sub="WhatsApp + Voice Note" />
       </StatGrid>
 
       {/* Volume + outcomes. */}
