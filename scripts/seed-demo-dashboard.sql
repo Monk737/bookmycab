@@ -49,15 +49,18 @@ on conflict (tenant_id) do update
       current_period_end = excluded.current_period_end, updated_at = now();
 
 -- 4. Voice automations + agents (one Live, one in UAT -> exercises StatusPill).
-insert into automations (id, tenant_id, name, type, status, build_stage, dispatch_adapter)
+-- Daytime line is wired to the TEMPLATE engine pair (n8n workflow + Vapi
+-- assistant, see docs/voice-template.md); the After-Hours line stays unwired to
+-- exercise the admin "Engine wiring" form.
+insert into automations (id, tenant_id, name, type, status, build_stage, dispatch_adapter, engine_workflow_id)
 values
-  ('a2222222-2222-2222-2222-222222222222', 'd0000000-0000-0000-0000-000000000001', 'Daytime Booking Line', 'Voice', 'live', 'Live', 'autocab'),
-  ('a3333333-3333-3333-3333-333333333333', 'd0000000-0000-0000-0000-000000000001', 'After-Hours Line',     'Voice', 'uat',  'UAT',  'autocab');
+  ('a2222222-2222-2222-2222-222222222222', 'd0000000-0000-0000-0000-000000000001', 'Daytime Booking Line', 'Voice', 'live', 'Live', 'autocab', '0x5hOeCgWfr3N7pR'),
+  ('a3333333-3333-3333-3333-333333333333', 'd0000000-0000-0000-0000-000000000001', 'After-Hours Line',     'Voice', 'uat',  'UAT',  'autocab', null);
 
-insert into voice_agents (automation_id, tenant_id, display_name, phone_number)
+insert into voice_agents (automation_id, tenant_id, display_name, phone_number, vapi_assistant_id)
 values
-  ('a2222222-2222-2222-2222-222222222222', 'd0000000-0000-0000-0000-000000000001', 'Daytime Booking Line', '+44 20 7946 0001'),
-  ('a3333333-3333-3333-3333-333333333333', 'd0000000-0000-0000-0000-000000000001', 'After-Hours Line',     '+44 20 7946 0002');
+  ('a2222222-2222-2222-2222-222222222222', 'd0000000-0000-0000-0000-000000000001', 'Daytime Booking Line', '+44 20 7946 0001', '15c5709f-7585-4d39-96cf-ffe85e42bd40'),
+  ('a3333333-3333-3333-3333-333333333333', 'd0000000-0000-0000-0000-000000000001', 'After-Hours Line',     '+44 20 7946 0002', null);
 
 -- 5. Voice plan pool counter (this calendar month).
 insert into usage_counters (tenant_id, feature_key, period_start, period_end, used, limit_amount)

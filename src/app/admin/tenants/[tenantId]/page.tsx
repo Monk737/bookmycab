@@ -14,7 +14,9 @@ import {
   InviteForm,
   LifecycleControls,
 } from "./tenant-detail-forms";
-import { EditOrgForm, MembersManager, AddAutomationForm } from "./tenant-manage-forms";
+import { EditOrgForm, MembersManager, AddAutomationForm,
+  EngineWiringForm,
+} from "./tenant-manage-forms";
 import { BillingPanel } from "./billing-panel";
 import { EntitlementsSection } from "./entitlements-section";
 
@@ -541,15 +543,13 @@ export default async function TenantDetailPage({
                         <dt className="font-medium text-gray-500">ingest_url</dt>
                         <dd className="font-mono text-ink">{env.NEXT_PUBLIC_SITE_URL}/api/voice/calls/ingest</dd>
                       </div>
-                      <div className="flex justify-between gap-3 sm:block">
-                        <dt className="font-medium text-gray-500">n8n workflow</dt>
-                        <dd className="font-mono text-ink">{auto?.engine_workflow_id ?? "— not set"}</dd>
-                      </div>
-                      <div className="flex justify-between gap-3 sm:block">
-                        <dt className="font-medium text-gray-500">Vapi assistant</dt>
-                        <dd className="font-mono text-ink">{agent.vapi_assistant_id ?? "— not set"}</dd>
-                      </div>
                     </dl>
+                    <EngineWiringForm
+                      tenantId={tenantId}
+                      automationId={agent.automation_id}
+                      engineWorkflowId={auto?.engine_workflow_id ?? null}
+                      vapiAssistantId={agent.vapi_assistant_id ?? null}
+                    />
                   </div>
                 );
               })}

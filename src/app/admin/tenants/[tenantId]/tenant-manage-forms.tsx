@@ -4,6 +4,7 @@ import { useActionState, useId, useState } from "react";
 import {
   editOrgProfile,
   createAutomation,
+  updateAutomationWiring,
   setMemberRole,
   removeMember,
   type ActionState,
@@ -286,6 +287,54 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
       <div>
         <button type="submit" disabled={pending} className={primaryBtn}>
           {pending ? "Creating…" : isVoice ? "Add voice agent" : "Add automation"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Wire (or re-wire) an existing automation to its engine pair: the tenant's
+ * cloned n8n workflow id and, for Voice agents, the Vapi assistant id. Rendered
+ * inside the "Engine wiring" panel on the tenant detail page.
+ */
+export function EngineWiringForm({
+  tenantId,
+  automationId,
+  engineWorkflowId,
+  vapiAssistantId,
+}: {
+  tenantId: string;
+  automationId: string;
+  engineWorkflowId: string | null;
+  vapiAssistantId: string | null;
+}) {
+  const [state, formAction, pending] = useActionState(updateAutomationWiring.bind(null, tenantId), initialState);
+  const wfId = useId();
+  const vaId = useId();
+  const fe = state.fieldErrors;
+
+  return (
+    <form action={formAction} noValidate className="mt-3 flex flex-col gap-3 border-t-2 border-gray-200 pt-3">
+      <Notice state={state} okText="Engine wiring saved." />
+      <input type="hidden" name="automation_id" value={automationId} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-1">
+          <label htmlFor={wfId} className="text-xs font-medium text-gray-600">n8n workflow ID</label>
+          <input id={wfId} name="engine_workflow_id" defaultValue={engineWorkflowId ?? ""} placeholder="e.g. 0x5hOeCgWfr3N7pR" className={inputClass} />
+          <FieldError id={`${wfId}-error`} error={fe.engine_workflow_id?.[0]} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor={vaId} className="text-xs font-medium text-gray-600">Vapi assistant ID</label>
+          <input id={vaId} name="vapi_assistant_id" defaultValue={vapiAssistantId ?? ""} placeholder="e.g. 15c5709f-7585-4d39-…" className={inputClass} />
+          <FieldError id={`${vaId}-error`} error={fe.vapi_assistant_id?.[0]} />
+        </div>
+      </div>
+      <div>
+        <button type="submit" disabled={pending} className={primaryBtn}>
+          {pending ? "Saving…" : "Save wiring"}
         </button>
       </div>
     </form>

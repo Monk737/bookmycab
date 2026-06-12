@@ -101,6 +101,46 @@ export default async function VoicePage() {
         </div>
       </div>
 
+      {/* Recent calls — the Vapi end-of-call analysis, verbatim. */}
+      {v.recent.length > 0 && (
+        <div className="mt-5">
+          <Panel title="Recent calls">
+            <ul className="divide-y-2 divide-gray-100">
+              {v.recent.map((c) => (
+                <li key={c.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="font-mono text-xs tabular-nums text-gray-500">
+                      {new Date(c.startedAt).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-[0.04em] text-ink">{c.agentName}</span>
+                    {c.caller ? <span className="font-mono text-xs text-gray-500">{c.caller}</span> : null}
+                    <span className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${
+                      c.outcome === "booked" ? "bg-brut-lime" : c.outcome === "quoted" ? "bg-brut-cyan" : c.outcome === "no_credit" || c.outcome === "failed" ? "bg-brut-pink" : "bg-gray-100"
+                    }`}>
+                      {c.outcome.replace("_", " ")}
+                    </span>
+                    {c.durationS != null ? (
+                      <span className="font-mono text-xs tabular-nums text-gray-500">{formatDuration(c.durationS)}</span>
+                    ) : null}
+                    <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-gray-400">
+                      {c.creditSource === "plan" ? "plan call" : c.creditSource === "topup" ? "top-up credit" : "not charged"}
+                    </span>
+                    {c.success != null ? (
+                      <span className={`text-[10px] font-bold uppercase tracking-[0.06em] ${c.success ? "text-ink" : "text-brut-red-deep"}`}>
+                        {c.success ? "✓ goal met" : "✗ goal missed"}
+                      </span>
+                    ) : null}
+                  </div>
+                  {c.summary ? (
+                    <p className="max-w-3xl text-sm leading-relaxed text-gray-700">{c.summary}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </div>
+      )}
+
       {/* Per-agent split (only when more than one agent). */}
       {multiAgent ? (
         <div className="mt-8">

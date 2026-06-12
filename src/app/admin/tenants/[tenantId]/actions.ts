@@ -490,6 +490,81 @@ const createAutomationSchema = z
     }
   });
 
+const wiringSchema = z.object({
+  automation_id: z.string().uuid(),
+  engine_workflow_id: optionalText,
+  vapi_assistant_id: optionalText,
+});
+
+/**
+ * Wires (or re-wires) an EXISTING automation to its engine: the tenant's cloned
+ * n8n workflow id and, for Voice agents, the Vapi assistant id. Setting a
+ * workflow id on a still-building automation takes it live (the engine pair
+ * exists, so the agent is operational). Clearing both leaves status untouched.
+ */
+export async function updateAutomationWiring(
+  tenantId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const claims = await requireStaff();
+
+  const parsed = wiringSchema.safeParse({
+    automation_id: formData.get("automation_id"),
+    engine_workflow_id: formData.get("engine_workflow_id"),
+    vapi_assistant_id: formData.get("vapi_assistant_id"),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
+  }
+  const data = parsed.data;
+  const client = serviceClient();
+
+  const { data: auto } = await client
+    .from("automations")
+    .select("id, status")
+    .eq("id", data.automation_id)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (!auto) {
+    return { fieldErrors: {}, formError: "Automation not found for this tenant." };
+  }
+
+  const goLive = Boolean(data.engine_workflow_id) && (auto.status as string) === "building";
+  const { error: autoErr } = await client
+    .from("automations")
+    .update({
+      engine_workflow_id: data.engine_workflow_id ?? null,
+      ...(goLive ? { status: "live", build_stage: "Live" } : {}),
+    })
+    .eq("id", data.automation_id);
+  if (autoErr) {
+    return { fieldErrors: {}, formError: "Could not update the engine wiring. Please try again." };
+  }
+
+  // Voice agents also carry the Vapi assistant id (no-op for chat automations).
+  await client
+    .from("voice_agents")
+    .update({ vapi_assistant_id: data.vapi_assistant_id ?? null })
+    .eq("automation_id", data.automation_id);
+
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "automation.wire_engine",
+    targetType: "automation",
+    targetId: data.automation_id,
+    metadata: {
+      engine_workflow_id: data.engine_workflow_id ?? null,
+      vapi_assistant_id: data.vapi_assistant_id ?? null,
+      went_live: goLive,
+    },
+  });
+
+  revalidatePath(`/admin/tenants/${tenantId}`);
+  return { fieldErrors: {}, formError: null, ok: true };
+}
+
 /** First/last day of the current month as YYYY-MM-DD (voice plan period). */
 function currentMonthBounds(): { start: string; end: string } {
   const now = new Date();

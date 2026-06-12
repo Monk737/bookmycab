@@ -194,6 +194,19 @@ export interface DayPoint {
   booked: number;
 }
 
+export interface RecentCall {
+  id: string;
+  agentName: string;
+  caller: string | null;
+  startedAt: string;
+  durationS: number | null;
+  outcome: string;
+  creditSource: string;
+  /** Vapi analysisPlan output: operator summary + success evaluation. */
+  summary: string | null;
+  success: boolean | null;
+}
+
 export interface VoiceAnalytics {
   hasVoice: boolean;
   rangeDays: number;
@@ -205,6 +218,7 @@ export interface VoiceAnalytics {
   aggregate: VoiceStatBlock;
   perAgent: VoiceAgentAnalytics[];
   trend: DayPoint[];
+  recent: RecentCall[];
 }
 
 /** Pure: reduce a set of call rows into an aggregate stat block. */
@@ -267,7 +281,7 @@ export async function getVoiceAnalytics(
 
   const { data } = await supabase
     .from("calls")
-    .select("automation_id, outcome, duration_s, credit_source, started_at")
+    .select("id, automation_id, outcome, duration_s, credit_source, started_at, caller_number, summary, success")
     .eq("tenant_id", tenantId)
     .gte("started_at", `${since}T00:00:00Z`);
 
@@ -290,6 +304,23 @@ export async function getVoiceAnalytics(
     aggregate: reduceCallStats(rows),
     perAgent,
     trend: reduceDayTrend(rows, rangeDays),
+    recent: [...rows]
+      .sort((a, b) => (a.started_at < b.started_at ? 1 : -1))
+      .slice(0, 8)
+      .map((r) => {
+        const rec = r as CallRow & { id?: string; caller_number?: string | null; summary?: string | null; success?: boolean | null };
+        return {
+          id: rec.id ?? `${rec.automation_id}-${rec.started_at}`,
+          agentName: agents.find((a) => a.id === rec.automation_id)?.name ?? "Voice agent",
+          caller: rec.caller_number ?? null,
+          startedAt: rec.started_at,
+          durationS: rec.duration_s ?? null,
+          outcome: rec.outcome,
+          creditSource: rec.credit_source,
+          summary: rec.summary ?? null,
+          success: rec.success ?? null,
+        };
+      }),
   };
 }
 
