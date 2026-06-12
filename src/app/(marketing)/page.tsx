@@ -156,7 +156,7 @@ export default function Home() {
               </ul>
 
               <div className="mt-9 flex flex-wrap items-center gap-4">
-                <VoiceLiveCard href="/products" sub="See the agent take a booking" />
+                <VoiceLiveCard sub="See the agent take a booking" />
                 <DiscoveryCta size="lg" label="Add one to your team" />
               </div>
             </div>
@@ -434,7 +434,7 @@ export default function Home() {
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
               <DiscoveryCta size="lg" />
-              <VoiceLiveCard href="/products" tone="onDark" sub="Hear the agent take a booking" />
+              <TryDashboardLink size="lg" />
             </div>
           </div>
         </Container>

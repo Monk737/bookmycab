@@ -1,20 +1,18 @@
-import Link from "next/link";
 import { VoiceGlyph } from "@/components/marketing/product-marks";
 
 /**
- * Clickable "AI Voice Booking, live" card. Replaces the old muted / coming-soon
- * button: a hard-framed card with a breathing lime ring (live-glow) and a
- * pulsing LIVE dot, so it reads as active and inviting. `tone` adapts it for the
- * ink band (onDark) or a light surface (onLight).
+ * "AI Voice Booking, live" showcase card. Static (not a link): a hard-framed
+ * card with a breathing lime ring (live-glow), a pulsing LIVE dot, and an
+ * "On Request" ribbon — the agent is demonstrated on a discovery call rather
+ * than self-served. `tone` adapts it for the ink band (onDark) or a light
+ * surface (onLight).
  */
 export function VoiceLiveCard({
-  href = "/products",
   tone = "onLight",
   label = "AI Voice Booking",
   sub = "Live now, hear it in action",
   className = "",
 }: {
-  href?: string;
   tone?: "onDark" | "onLight";
   label?: string;
   sub?: string;
@@ -22,9 +20,8 @@ export function VoiceLiveCard({
 }) {
   const onDark = tone === "onDark";
   return (
-    <Link
-      href={href}
-      className={`live-glow brut-focus group inline-flex items-center gap-4 border-[3px] border-ink px-5 py-3.5 transition-transform duration-150 hover:-translate-y-0.5 ${
+    <span
+      className={`live-glow relative inline-flex items-center gap-4 border-[3px] border-ink px-5 py-3.5 ${
         onDark ? "bg-paper" : "bg-brut-yellow"
       } ${className}`}
     >
@@ -41,11 +38,12 @@ export function VoiceLiveCard({
         </span>
         <span className="mt-1 block text-xs font-medium text-ink/70">{sub}</span>
       </span>
-      <span aria-hidden="true" className="ml-1 shrink-0 text-ink transition-transform duration-150 group-hover:translate-x-1">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square">
-          <path d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-2.5 -top-2.5 z-10 rotate-3 border-2 border-ink bg-brut-pink px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-ink shadow-brut-sm"
+      >
+        On Request
       </span>
-    </Link>
+    </span>
   );
 }
