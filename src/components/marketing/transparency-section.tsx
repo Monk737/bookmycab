@@ -9,22 +9,31 @@ type CostRow = {
 
 type Tone = "light" | "dark";
 
-// §6.4, external pass-through costs vs what is paid to BookMyCab.
+// Costs BookMyCab carries inside the plan — nothing extra to set up or pay.
+const INCLUDED_IN_PLAN: CostRow[] = [
+  {
+    item: "AI / chat & voice processing",
+    paidTo: "Covered by BookMyCab",
+    cadence: "Included in plan",
+  },
+  {
+    item: "AI Voice calling minutes",
+    paidTo: "Covered by BookMyCab",
+    cadence: "Included in plan",
+  },
+];
+
+// The few pass-through costs that stay with the operator's own providers.
 const PASS_THROUGH: CostRow[] = [
+  {
+    item: "Phone number & any operator fees",
+    paidTo: "Your telephony provider",
+    cadence: "Monthly",
+  },
   {
     item: "WhatsApp conversation fees",
     paidTo: "Your provider",
     cadence: "Per conversation",
-  },
-  {
-    item: "Phone number & inbound call minutes",
-    paidTo: "Your telephony provider",
-    cadence: "Per minute",
-  },
-  {
-    item: "AI / chat & voice processing",
-    paidTo: "Your AI provider",
-    cadence: "Your own key",
   },
   {
     item: "AutoCab, iCabbi or Cordic API",
@@ -54,17 +63,19 @@ function Ledger({
   dark,
 }: {
   groupLabel: string;
-  /** "neutral" pass-through band vs "brand" BookMyCab band. */
-  groupTone: "neutral" | "brand";
+  /** "included" plan-covered band, "neutral" pass-through band, "brand" BookMyCab band. */
+  groupTone: "included" | "neutral" | "brand";
   rows: CostRow[];
   dark: boolean;
 }) {
   const bandClass =
     groupTone === "brand"
       ? "bg-brut-yellow text-ink"
-      : dark
-        ? "bg-gray-800 text-paper"
-        : "bg-ink text-paper";
+      : groupTone === "included"
+        ? "bg-brut-lime text-ink"
+        : dark
+          ? "bg-gray-800 text-paper"
+          : "bg-ink text-paper";
   const rowBg = dark ? "bg-gray-900" : "bg-paper";
   const rowText = dark ? "text-paper" : "text-ink";
   const metaText = dark ? "text-gray-300" : "text-gray-600";
@@ -141,9 +152,10 @@ export function TransparencySection({
           (dark ? "text-gray-300" : "text-gray-700")
         }
       >
-        No middleman markup on usage. Channel and AI costs are billed straight to
-        you by your own providers, at their price. We charge for the automation,
-        full stop.
+        AI processing and voice calling minutes are carried inside your plan, not
+        billed on top. You bring your own phone number and dispatch contract; the
+        few costs that stay with your providers are billed at their price, with
+        no middleman markup.
       </p>
 
       <div
@@ -152,6 +164,13 @@ export function TransparencySection({
           (dark ? "border-paper" : "border-ink")
         }
       >
+        <Ledger
+          groupLabel="Included in your plan"
+          groupTone="included"
+          rows={INCLUDED_IN_PLAN}
+          dark={dark}
+        />
+        <div className={dark ? "h-[3px] bg-paper" : "h-[3px] bg-ink"} />
         <Ledger
           groupLabel="Paid to your own providers"
           groupTone="neutral"

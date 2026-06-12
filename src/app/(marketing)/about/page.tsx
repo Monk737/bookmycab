@@ -25,7 +25,7 @@ const PRINCIPLES = [
   },
   {
     title: "You stay in control",
-    body: "You connect your own numbers and bring your own keys. We run the automation; you keep the relationship with your customers.",
+    body: "You connect your own numbers; we run the AI, the call minutes and the automation inside your plan. You keep the relationship with your customers.",
   },
   {
     title: "We stay close",

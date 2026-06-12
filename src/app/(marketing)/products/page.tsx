@@ -159,9 +159,10 @@ export default function ProductsPage() {
               Your number. Your accounts. Your data.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-accent-ink/80">
-              You connect your own phone number and WhatsApp Business account. You
-              pay call minutes and conversation fees directly to your telco and
-              WhatsApp provider. Every rider and account stays on your books, and
+              You connect your own phone number and WhatsApp Business account;
+              AI processing and voice calling minutes are included in your plan.
+              You pay only your number and WhatsApp conversation fees directly,
+              at provider price. Every rider and account stays on your books, and
               nothing is ever held hostage.
             </p>
           </div>
