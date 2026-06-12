@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth/session";
 import { getBillingOverview } from "@/lib/dashboard/billing-queries";
+import { commercialModelLabel } from "@/lib/billing/pricing";
 import { DataTable } from "@/components/dashboard/data-table";
 import { formatCurrency, formatDateTime } from "@/lib/dashboard/format";
 import { createClient } from "@/lib/supabase/server";
@@ -208,11 +209,11 @@ export default async function BillingPage({
             </dl>
           </>
         ) : (
-          /* Legacy A/B model fallback. */
+          /* No chat/voice product configured yet. */
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <dt className="text-xs font-medium text-gray-500">Plan</dt>
-              <dd className="mt-0.5 text-sm font-bold text-ink">{b.planBand ?? "·"}</dd>
+              <dt className="text-xs font-medium text-gray-500">Product</dt>
+              <dd className="mt-0.5 text-sm font-bold text-ink">{commercialModelLabel(b.commercialModel)}</dd>
             </div>
             <div>
               <dt className="text-xs font-medium text-gray-500">Monthly price</dt>

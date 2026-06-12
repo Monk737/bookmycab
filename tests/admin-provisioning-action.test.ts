@@ -49,7 +49,6 @@ describe("buildProvisioningRows", () => {
     // bundle chat 799, voice 1799; 10% off → 719.1 / 1619.1, setup 2000 → 1800
     expect(out.tenant.commercial_model).toBe("double_decker");
     expect(out.tenant.currency).toBe("GBP");
-    expect(out.tenant.plan_band).toBeNull();
     expect(out.tenant.status).toBe("onboarding");
     expect(out.chat?.monthly_price_gbp).toBeCloseTo(719.1, 2);
     expect(out.voice?.monthly_price_gbp).toBeCloseTo(1619.1, 2);

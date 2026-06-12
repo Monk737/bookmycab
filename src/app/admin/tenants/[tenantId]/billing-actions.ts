@@ -17,7 +17,6 @@ import { planNewModelCharges } from "@/lib/billing/new-model-charges";
 import { toStripeCountry } from "@/lib/billing/country";
 import { unixToIso } from "@/lib/billing/dates";
 import type { Currency } from "@/lib/marketing/pricing";
-import type { PlanBand } from "@/lib/admin/plan-bands";
 
 const idSchema = z.string().uuid();
 
@@ -29,7 +28,6 @@ type TenantBillingRow = {
   id: string;
   name: string;
   currency: Currency;
-  plan_band: PlanBand;
   country: string;
   contact_email: string | null;
   stripe_customer_id: string | null;
@@ -40,7 +38,7 @@ async function loadTenant(tenantId: string): Promise<TenantBillingRow> {
   const { data, error } = await db()
     .from("tenants")
     .select(
-      "id, name, currency, plan_band, country, contact_email, stripe_customer_id, billing_bypass",
+      "id, name, currency, country, contact_email, stripe_customer_id, billing_bypass",
     )
     .eq("id", tenantId)
     .single();
@@ -95,7 +93,7 @@ export async function startNewModelBilling(tenantId: string): Promise<void> {
   const { data: tenant, error: tenantErr } = await db()
     .from("tenants")
     .select(
-      "id, name, currency, plan_band, country, contact_email, stripe_customer_id, billing_bypass, commercial_model, status",
+      "id, name, currency, country, contact_email, stripe_customer_id, billing_bypass, commercial_model, status",
     )
     .eq("id", id)
     .single();

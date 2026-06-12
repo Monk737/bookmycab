@@ -36,9 +36,9 @@ function startOfTodayUtcIso(): string {
 export async function getOrgSummary(tenantId: string, client?: SupabaseLike): Promise<OrgSummary | null> {
   const supabase = client ?? (await createClient());
   const { data } = await supabase
-    .from("tenants").select("id, name, plan_band, contract_renewal, currency").eq("id", tenantId).maybeSingle();
+    .from("tenants").select("id, name, commercial_model, contract_renewal, currency").eq("id", tenantId).maybeSingle();
   if (!data) return null;
-  return { id: data.id, name: data.name, planBand: data.plan_band, contractRenewal: data.contract_renewal, currency: data.currency };
+  return { id: data.id, name: data.name, commercialModel: data.commercial_model, contractRenewal: data.contract_renewal, currency: data.currency };
 }
 
 export async function getKpiStrip(tenantId: string, client?: SupabaseLike): Promise<KpiStrip> {

@@ -19,9 +19,8 @@ export interface ProductsSummary {
 
 export interface BillingOverview {
   commercialModel: "chat" | "voice" | "double_decker" | null;
-  /** New-model plan summary; null when the tenant is on the legacy A/B model. */
+  /** New-model plan summary; null when the tenant has no chat/voice product yet. */
   products: ProductsSummary | null;
-  planBand: string | null;
   currency: string | null;
   monthlyPrice: number | null;
   contractStart: string | null;
@@ -50,7 +49,7 @@ export async function getBillingOverview(tenantId: string, client?: SupabaseLike
   const [tenantRes, subscriptionRes, setupFeeRes, chatSubRes, voiceSubRes] = await Promise.all([
     supabase
       .from("tenants")
-      .select("plan_band, currency, monthly_price, contract_start, contract_renewal, setup_fee_paid, stripe_customer_id, commercial_model")
+      .select("currency, monthly_price, contract_start, contract_renewal, setup_fee_paid, stripe_customer_id, commercial_model")
       .eq("id", tenantId)
       .maybeSingle(),
     supabase
@@ -101,7 +100,6 @@ export async function getBillingOverview(tenantId: string, client?: SupabaseLike
   return {
     commercialModel: (t?.commercial_model as BillingOverview["commercialModel"]) ?? null,
     products,
-    planBand: t ? (t.plan_band as string | null) ?? null : null,
     currency: t ? (t.currency as string | null) ?? null : null,
     monthlyPrice: t ? (t.monthly_price as number | null) ?? null : null,
     contractStart: t ? (t.contract_start as string | null) ?? null : null,

@@ -56,7 +56,6 @@ type Tenant = {
   slug: string;
   status: string;
   country: string;
-  plan_band: string | null;
   currency: Currency;
   monthly_price: number | string | null;
   contract_start: string | null;
@@ -165,7 +164,7 @@ export default async function TenantDetailPage({
   const { data: tenantData, error: tenantError } = await serviceClient
     .from("tenants")
     .select(
-      "id, name, slug, status, country, plan_band, currency, monthly_price, contract_start, contract_renewal, renewal_mode, dispatch_adapter, dispatch_company_id, contact_email, stripe_customer_id, setup_fee_paid, commercial_model",
+      "id, name, slug, status, country, currency, monthly_price, contract_start, contract_renewal, renewal_mode, dispatch_adapter, dispatch_company_id, contact_email, stripe_customer_id, setup_fee_paid, commercial_model",
     )
     .eq("id", tenantId)
     .maybeSingle();

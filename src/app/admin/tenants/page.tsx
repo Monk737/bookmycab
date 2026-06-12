@@ -6,7 +6,7 @@ import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { StatCard } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { planBandLabel, type PlanBand } from "@/lib/admin/plan-bands";
+import { commercialModelLabel, type CommercialModel } from "@/lib/billing/pricing";
 import { formatPrice, type Currency } from "@/lib/marketing/pricing";
 
 // Always read fresh, provisioning a tenant should appear immediately.
@@ -17,7 +17,7 @@ type TenantRow = {
   name: string;
   slug: string;
   status: string;
-  plan_band: PlanBand;
+  commercial_model: CommercialModel | string | null;
   currency: Currency;
   dispatch_adapter: string;
   monthly_price: number | string | null;
@@ -56,7 +56,7 @@ export default async function TenantsListPage() {
   const { data, error } = await serviceClient
     .from("tenants")
     .select(
-      "id, name, slug, status, plan_band, currency, dispatch_adapter, monthly_price, contract_renewal, created_at",
+      "id, name, slug, status, commercial_model, currency, dispatch_adapter, monthly_price, contract_renewal, created_at",
     )
     .order("created_at", { ascending: false });
 
@@ -103,9 +103,9 @@ export default async function TenantsListPage() {
       render: (t) => <StatusBadge status={t.status} />,
     },
     {
-      key: "plan_band",
-      header: "Plan",
-      render: (t) => planBandLabel(t.plan_band),
+      key: "commercial_model",
+      header: "Product",
+      render: (t) => commercialModelLabel(t.commercial_model),
     },
     {
       key: "dispatch_adapter",

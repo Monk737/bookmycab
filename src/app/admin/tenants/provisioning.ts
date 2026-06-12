@@ -70,7 +70,6 @@ export interface ProvisioningRows {
     slug: string;
     country: string;
     currency: "GBP";
-    plan_band: null;
     commercial_model: CommercialModel;
     dispatch_adapter: string;
     dispatch_company_id: string | null;
@@ -122,7 +121,6 @@ export function buildProvisioningRows(args: {
       slug: data.slug,
       country: data.country,
       currency: "GBP",
-      plan_band: null,
       commercial_model: data.commercial_model,
       dispatch_adapter: data.dispatch_adapter,
       dispatch_company_id: data.dispatch_company_id ?? null,

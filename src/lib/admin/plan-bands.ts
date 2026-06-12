@@ -1,14 +1,14 @@
 /**
- * Legacy plan-band display helper.
+ * Legacy plan-band labels + slugify.
  *
- * The A/B single/bundle commercial model has been retired in favour of the new
- * two-product model (`commercial_model` + chat/voice subscription tiers). The
- * `tenants.plan_band` column is kept nullable for historical tenants only; new
- * tenants are provisioned with `plan_band = null`. This module now only labels
- * any legacy value for display and provides `slugify`.
+ * The A/B single/bundle commercial model has been fully retired in favour of the
+ * two-product model (`commercial_model` + chat/voice subscription tiers), and the
+ * `tenants.plan_band` column has been dropped (migration 0046). This module is
+ * kept only to label any legacy band value still present on the `subscriptions`
+ * mirror and to provide `slugify`.
  */
 
-/** Legacy band values still present on historical tenant rows (nullable now). */
+/** Legacy band values (no longer stored on tenants; may appear on subscriptions). */
 export type PlanBand =
   | "A-Single"
   | "A-Bundle"

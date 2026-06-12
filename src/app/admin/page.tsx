@@ -105,7 +105,7 @@ export default async function AdminOverviewPage() {
       serviceClient
         .from("tenants")
         .select(
-          "id, name, status, currency, monthly_price, contract_start, contract_renewal, plan_band, commercial_model",
+          "id, name, status, currency, monthly_price, contract_start, contract_renewal, commercial_model",
         ),
       serviceClient.from("setup_fees").select("id, tenant_id, amount, currency, paid_at"),
       serviceClient.from("automations").select("type, status"),

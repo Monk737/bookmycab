@@ -11,7 +11,7 @@ export type ConversationOutcome =
 export interface OrgSummary {
   id: string;
   name: string;
-  planBand: string;
+  commercialModel: string | null;
   contractRenewal: string | null;
   currency: "GBP" | "EUR" | "USD";
 }
