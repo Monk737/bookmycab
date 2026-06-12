@@ -35,20 +35,32 @@ Caller ──► Vapi assistant ──(tool calls)──► n8n /webhook/vapi/to
 The dashboard never computes credit itself — every number (pool used/remaining,
 plan vs top-up split, outcomes, durations) comes from what this pipeline wrote.
 
-## Vapi assistant — analysis section (required on every clone)
+## Vapi assistant — call analysis via Structured Output (required on every clone)
 
-Set via `PATCH /assistant/:id` (the MCP tool cannot set these):
+Vapi has DEPRECATED the three separate analysis sections (`summaryPlan`,
+`structuredDataPlan`, `successEvaluationPlan`). The pipeline now uses one
+unified **Structured Output** instead:
 
-- `serverMessages: ["end-of-call-report"]`
-- `server.url` = `https://workflow.flowjob.app/webhook/vapi/analytics`
-- `server.secret` = per-tenant secret (the workflow drops requests without it)
-- `analysisPlan`:
-  - `summaryPlan` — 1–2 sentence operator summary
-  - `structuredDataPlan.schema.outcome` — **enum must stay exactly**
-    `booked | quoted | abandoned | transferred | failed | unknown`
-    (this is the dashboard's outcome taxonomy; `no_credit` is assigned
-    server-side when the tenant has no allowance/credit left)
-  - `successEvaluationPlan` — PassFail rubric
+- Reference output: **"BookMyCab Call Report"** (`e71b9220-cdaf-4194-99b9-1d3aac81107e`),
+  created via `POST /structured-output`. One schema carries everything the
+  dashboard needs: `outcome` (**enum must stay exactly**
+  `booked | quoted | abandoned | transferred | failed | unknown` — `no_credit`
+  is assigned server-side), `summary` (operator summary), `success` (boolean
+  goal evaluation), plus booking facts (`booking_reference`, `pickup`,
+  `destination`, `caller_name`, `quoted_fare`).
+- Attach it to the assistant: `PATCH /assistant/:id` with
+  `artifactPlan.structuredOutputIds: ["<output id>"]`. The SAME output
+  definition can be attached to every tenant's assistant — no per-tenant clone
+  of the schema needed.
+- Plus, as before: `serverMessages: ["end-of-call-report"]`,
+  `server.url` = `https://workflow.flowjob.app/webhook/vapi/analytics`,
+  `server.secret` = per-tenant secret.
+
+The results arrive in the end-of-call report at
+`message.artifact.structuredOutputs[<output id>].result`. The workflow's
+`Parse End Of Call Report` node prefers that location and FALLS BACK to the
+deprecated `message.analysis.*` fields while Vapi still emits them, so
+assistants not yet migrated keep reporting correctly.
 
 ## Cloning for a new tenant (runbook)
 
