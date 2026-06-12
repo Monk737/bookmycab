@@ -56,8 +56,9 @@ export default async function PricingPage() {
         </Container>
       </Section>
 
-      {/* Advanced ROI calculator, the proof before the price. */}
-      <Section className="pb-12 pt-2 sm:pb-16">
+      {/* Advanced ROI calculator, the proof before the price. The homepage
+          "Calculate your missed fares" CTA deep-links to #roi. */}
+      <Section id="roi" className="scroll-mt-24 pb-12 pt-2 sm:pb-16">
         <Container>
           <div className="mb-6 max-w-2xl">
             <h2 className="font-display text-2xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-3xl">

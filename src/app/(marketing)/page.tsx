@@ -6,7 +6,7 @@ import { Button } from "@/components/marketing/ui/button";
 import { DiscoveryCta } from "@/components/marketing/discovery-cta";
 import { TryDashboardLink } from "@/components/marketing/try-dashboard-link";
 import { DispatchBadges } from "@/components/marketing/dispatch-badges";
-import { RoiCalculator } from "@/components/marketing/roi-calculator";
+import Link from "next/link";
 import { BookingConversation } from "@/components/marketing/booking-conversation";
 import { VoiceCall } from "@/components/marketing/voice-call";
 import { VoiceLiveCard } from "@/components/marketing/voice-live-card";
@@ -306,7 +306,7 @@ export default function Home() {
         </Container>
       </Section>
 
-      {/* Missed fares + ROI calculator. */}
+      {/* Missed fares — pointer to the full ROI calculator on Pricing. */}
       <Section className="border-t-[3px] border-ink py-16 sm:py-24">
         <Container>
           <div className="max-w-2xl">
@@ -315,12 +315,28 @@ export default function Home() {
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-700">
               When your line is engaged or it is the middle of the night, the
-              customer does not wait. They book elsewhere. See what an always-on
-              automation puts back on the meter.
+              customer does not wait. They book elsewhere. Our ROI calculator
+              takes your fleet size and average fare and shows what an always-on
+              automation puts back on the meter, every month.
             </p>
           </div>
-          <div className="mt-10">
-            <RoiCalculator />
+          <div className="mt-8">
+            <Link
+              href="/pricing#roi"
+              className="live-glow brut-focus group inline-flex items-center gap-3 border-[3px] border-ink bg-brut-yellow px-7 py-4 transition-transform duration-150 hover:-translate-y-0.5"
+            >
+              <span className="font-display text-lg font-extrabold uppercase tracking-tight text-ink">
+                Calculate your missed fares
+              </span>
+              <span
+                aria-hidden="true"
+                className="text-ink transition-transform duration-150 group-hover:translate-x-1.5"
+              >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </Link>
           </div>
         </Container>
       </Section>
