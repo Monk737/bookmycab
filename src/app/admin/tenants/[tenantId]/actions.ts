@@ -511,8 +511,8 @@ export async function updateAutomationWiring(
 
   const parsed = wiringSchema.safeParse({
     automation_id: formData.get("automation_id"),
-    engine_workflow_id: formData.get("engine_workflow_id"),
-    vapi_assistant_id: formData.get("vapi_assistant_id"),
+    engine_workflow_id: formData.get("engine_workflow_id") ?? undefined,
+    vapi_assistant_id: formData.get("vapi_assistant_id") ?? undefined,
   });
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
@@ -586,16 +586,21 @@ export async function createAutomation(
 ): Promise<ActionState> {
   const claims = await requireStaff();
 
+  // The form renders fields conditionally on the automation type (Voice shows
+  // phone/engine fields, chat shows channel fields). formData.get() returns
+  // null for non-rendered fields and zod .optional() rejects null, so every
+  // optional field must be coerced or the submit fails on a hidden field with
+  // no visible error.
   const parsed = createAutomationSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
     dispatch_adapter: formData.get("dispatch_adapter") || undefined,
-    phone_number: formData.get("phone_number"),
+    phone_number: formData.get("phone_number") ?? undefined,
     channel_type: formData.get("channel_type") || undefined,
-    channel_handle: formData.get("channel_handle"),
+    channel_handle: formData.get("channel_handle") ?? undefined,
     voice_tier: formData.get("voice_tier") || undefined,
-    engine_workflow_id: formData.get("engine_workflow_id"),
-    vapi_assistant_id: formData.get("vapi_assistant_id"),
+    engine_workflow_id: formData.get("engine_workflow_id") ?? undefined,
+    vapi_assistant_id: formData.get("vapi_assistant_id") ?? undefined,
   });
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
