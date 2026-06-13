@@ -23,12 +23,12 @@ import Link from "next/link";
 export type StatAccent = "yellow" | "lime" | "cyan" | "violet" | "pink" | "orange" | "neutral";
 
 export const STAT_ACCENT: Record<StatAccent, { tint: string; solid: string }> = {
-  yellow: { tint: "bg-brut-yellow/20", solid: "bg-brut-yellow" },
-  lime: { tint: "bg-brut-lime/25", solid: "bg-brut-lime" },
-  cyan: { tint: "bg-brut-cyan/20", solid: "bg-brut-cyan" },
-  violet: { tint: "bg-brut-violet/20", solid: "bg-brut-violet" },
-  pink: { tint: "bg-brut-pink/20", solid: "bg-brut-pink" },
-  orange: { tint: "bg-brut-orange/20", solid: "bg-brut-orange" },
+  yellow: { tint: "bg-brut-yellow/40", solid: "bg-brut-yellow" },
+  lime: { tint: "bg-brut-lime/45", solid: "bg-brut-lime" },
+  cyan: { tint: "bg-brut-cyan/40", solid: "bg-brut-cyan" },
+  violet: { tint: "bg-brut-violet/40", solid: "bg-brut-violet" },
+  pink: { tint: "bg-brut-pink/35", solid: "bg-brut-pink" },
+  orange: { tint: "bg-brut-orange/40", solid: "bg-brut-orange" },
   neutral: { tint: "bg-canvas", solid: "bg-gray-300" },
 };
 

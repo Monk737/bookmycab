@@ -113,17 +113,17 @@ export function VoiceCall() {
       <div aria-hidden="true" className="overflow-hidden border-[3px] border-ink bg-canvas shadow-brut-xl">
         {/* Call header */}
         <div className="flex items-center gap-3 border-b-[3px] border-ink bg-ink px-5 py-4">
-          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center border-2 border-paper bg-brut-yellow">
+          <span className="relative flex h-12 w-12 shrink-0 items-center justify-center border-2 border-paper bg-brut-yellow">
             <MicIcon />
             {live && <span className="call-ping absolute inset-0 border-2 border-brut-lime" />}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="flex min-w-0 items-center gap-2">
+            <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
               <span className="truncate font-logo text-sm leading-none tracking-tight text-paper">
                 BookMyCab
                 <span className="ml-1 inline-block h-2 w-2 border border-paper bg-brut-yellow" />
               </span>
-              <span className="shrink-0 border-2 border-paper bg-brut-yellow px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-ink">
+              <span className="shrink-0 border-2 border-paper bg-brut-pink px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em] leading-none text-ink">
                 AI Voice Agent
               </span>
             </p>
@@ -232,7 +232,7 @@ function Waveform({ active, small = false, className = "" }: { active: boolean; 
 /** Headset-agent avatar (matches VoiceMarkLine) rendered in ink on the chip. */
 function MicIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#0a0a0a" strokeWidth="2.1" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
       <path d="M5 12a7 7 0 0 1 14 0" />
       <path d="M4 12.5h2.2v4H4zM17.8 12.5H20v4h-2.2z" fill="#0a0a0a" />
       <circle cx="12" cy="10.5" r="3.2" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import { useRealtimeChannel } from "@/hooks/use-realtime-channel";
 import { NotificationBell, type NotifItem, type NotifKind } from "./notification-bell";
 
@@ -29,6 +29,11 @@ export function TenantNotifications({
   initialItems?: NotifItem[];
 }) {
   const [items, setItems] = useState<NotifItem[]>(initialItems);
+  // The bell renders in both the mobile header and the desktop bar, so two
+  // instances mount at once. Supabase reuses a channel by topic name and throws
+  // if a second instance adds callbacks after the first subscribed, so each
+  // instance namespaces its channel topics with a unique id.
+  const uid = useId().replace(/:/g, "");
 
   const push = useCallback((it: Omit<NotifItem, "read">) => {
     setItems((prev) => {
@@ -41,7 +46,7 @@ export function TenantNotifications({
 
   // New booking.
   useRealtimeChannel(
-    { channelName: `notif-bookings-new-${tenantId}`, table: "bookings", event: "INSERT", filter },
+    { channelName: `notif-bookings-new-${tenantId}-${uid}`, table: "bookings", event: "INSERT", filter },
     useCallback((row: unknown) => {
       const r = (row ?? {}) as Record<string, unknown>;
       const route = [rowStr(r, ["pickup_text", "pickup_address", "pickup"]), rowStr(r, ["dropoff_text", "dropoff_address", "destination"])].filter(Boolean).join(" → ");
@@ -57,7 +62,7 @@ export function TenantNotifications({
 
   // Booking modified (status / details changed).
   useRealtimeChannel(
-    { channelName: `notif-bookings-upd-${tenantId}`, table: "bookings", event: "UPDATE", filter },
+    { channelName: `notif-bookings-upd-${tenantId}-${uid}`, table: "bookings", event: "UPDATE", filter },
     useCallback((row: unknown) => {
       const r = (row ?? {}) as Record<string, unknown>;
       const status = rowStr(r, ["status"]);
@@ -73,7 +78,7 @@ export function TenantNotifications({
 
   // New / transferred call.
   useRealtimeChannel(
-    { channelName: `notif-calls-new-${tenantId}`, table: "calls", event: "INSERT", filter },
+    { channelName: `notif-calls-new-${tenantId}-${uid}`, table: "calls", event: "INSERT", filter },
     useCallback((row: unknown) => {
       const r = (row ?? {}) as Record<string, unknown>;
       const outcome = (rowStr(r, ["outcome"]) ?? "").toLowerCase();

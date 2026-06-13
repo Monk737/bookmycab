@@ -70,9 +70,9 @@ export function CreditSplit({ block }: { block: VoiceStatBlock }) {
 /** Three compact figures for an aggregate or per-agent block. */
 export function MiniStats({ block }: { block: VoiceStatBlock }) {
   const items = [
-    { label: "Calls", value: block.totalCalls.toLocaleString("en-GB"), tint: "bg-brut-cyan/20", chip: "bg-brut-cyan" },
-    { label: "Booked", value: `${block.bookedPct}%`, tint: "bg-brut-lime/25", chip: "bg-brut-lime" },
-    { label: "Avg length", value: formatDuration(block.avgDurationS), tint: "bg-brut-violet/20", chip: "bg-brut-violet" },
+    { label: "Calls", value: block.totalCalls.toLocaleString("en-GB"), tint: "bg-brut-cyan/40", chip: "bg-brut-cyan" },
+    { label: "Booked", value: `${block.bookedPct}%`, tint: "bg-brut-lime/45", chip: "bg-brut-lime" },
+    { label: "Avg length", value: formatDuration(block.avgDurationS), tint: "bg-brut-violet/40", chip: "bg-brut-violet" },
   ];
   return (
     <div className="grid grid-cols-3 gap-[3px] border-2 border-ink bg-ink">
