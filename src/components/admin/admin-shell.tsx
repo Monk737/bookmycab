@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 
@@ -69,80 +70,171 @@ const DARK_FOCUS =
   "outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-paper";
 
 /**
- * Internal operational console shell. Persistent left brutalist ink sidebar with
- * a CYAN active block, the staff surface accent, deliberately distinct from the
- * tenant dashboard (yellow) and demo (pink). Nav grouped by job: Operate,
- * Tenants & Build, Commerce, Controls, Support. Staff-only.
+ * Internal operational console shell. Fixed full-height ink sidebar (only the
+ * main column scrolls) with a CYAN active block, the staff accent, distinct from
+ * the tenant dashboard (yellow). The desktop rail collapses to an icon strip via
+ * a persisted toggle; on mobile it becomes a hamburger drawer. Staff-only.
  */
 export function AdminShell({
   children,
   banner,
+  notifications,
 }: {
   children: ReactNode;
   banner?: ReactNode;
+  notifications?: ReactNode;
 }) {
   const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(window.localStorage.getItem("bmc-admin-collapsed") === "1");
+  }, []);
+  const toggleCollapsed = () => {
+    setCollapsed((v) => {
+      const next = !v;
+      window.localStorage.setItem("bmc-admin-collapsed", next ? "1" : "0");
+      return next;
+    });
+  };
+
+  const badge = (compact: boolean) => (
+    <span className="inline-flex items-center gap-1.5 font-logo text-sm leading-none tracking-tight text-paper">
+      {!compact && "BookMyCab"}
+      <span aria-hidden="true" className="inline-block h-2.5 w-2.5 border-2 border-paper bg-brut-cyan" />
+    </span>
+  );
+
+  const groups = (compact: boolean) => (
+    <div className="space-y-5">
+      {NAV_GROUPS.map((group) => (
+        <div key={group.title}>
+          {!compact && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">{group.title}</p>}
+          <ul className="space-y-1">
+            {group.items.map((item) => {
+              const active = isActive(pathname, item.href);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    title={compact ? item.label : undefined}
+                    onClick={() => setDrawerOpen(false)}
+                    className={`flex items-center gap-3 border-2 py-2 text-sm font-bold uppercase tracking-[0.04em] transition-colors duration-150 ${compact ? "justify-center px-2" : "px-3"} ${DARK_FOCUS} ${
+                      active
+                        ? "border-ink bg-brut-cyan text-ink shadow-brut-sm"
+                        : "border-transparent text-gray-400 hover:bg-gray-800 hover:text-paper"
+                    }`}
+                  >
+                    {item.icon}
+                    <span className={compact ? "sr-only" : ""}>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+
+  const signOutButton = (compact: boolean) => (
+    <form action={signOut}>
+      <button
+        type="submit"
+        title={compact ? "Sign out" : undefined}
+        className={`flex w-full cursor-pointer items-center gap-3 border-2 border-gray-700 py-2 text-left text-sm font-bold uppercase tracking-[0.04em] text-gray-400 transition-colors duration-150 hover:border-paper hover:bg-gray-800 hover:text-paper ${compact ? "justify-center px-2" : "px-3"} ${DARK_FOCUS}`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className="h-[17px] w-[17px] shrink-0" aria-hidden="true"><path d="M14 4h5v16h-5M11 8l-4 4 4 4M7 12h10" /></svg>
+        <span className={compact ? "sr-only" : ""}>Sign out</span>
+      </button>
+    </form>
+  );
+
+  const staffChip = (
+    <span className="mt-2.5 inline-flex items-center gap-1.5 border-2 border-ink bg-brut-cyan px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
+      <span aria-hidden="true" className="status-pulse h-1.5 w-1.5 bg-ink" />
+      FlowMo Staff
+    </span>
+  );
 
   return (
-    <div className="flex min-h-screen bg-canvas text-ink">
-      <aside className="flex w-60 shrink-0 flex-col border-r-[3px] border-ink bg-ink text-gray-300 print:hidden">
+    <div className="flex h-screen overflow-hidden bg-canvas text-ink print:block print:h-auto">
+      {/* Mobile top bar */}
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center justify-between border-b-[3px] border-ink bg-ink px-4 md:hidden print:hidden">
+        {badge(false)}
+        <div className="flex items-center gap-2">
+          {notifications}
+          <button
+            type="button"
+            aria-label={drawerOpen ? "Close menu" : "Open menu"}
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen((v) => !v)}
+            className="cursor-pointer border-[3px] border-paper bg-ink p-1.5 text-paper transition-colors duration-150"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="square" className="h-5 w-5" aria-hidden="true">
+              {drawerOpen ? <path d="M18 6 6 18M6 6l12 12" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* Mobile drawer overlay */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-20 bg-ink/50 duration-200 motion-safe:transition-opacity md:hidden" aria-hidden="true" onClick={() => setDrawerOpen(false)} />
+      )}
+
+      {/* Mobile drawer panel */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r-[3px] border-ink bg-ink text-gray-300 transition-transform duration-200 motion-reduce:transition-none md:hidden ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+        aria-label="Admin navigation drawer"
+      >
         <div className="border-b-[3px] border-gray-800 px-5 py-5">
-          <span className="inline-flex items-center gap-1.5 font-logo text-sm leading-none tracking-tight text-paper">
-            BookMyCab
-            <span aria-hidden="true" className="inline-block h-2.5 w-2.5 border-2 border-paper bg-brut-cyan" />
-          </span>
-          <span className="mt-2.5 inline-flex items-center gap-1.5 border-2 border-ink bg-brut-cyan px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-ink">
-            <span aria-hidden="true" className="status-pulse h-1.5 w-1.5 bg-ink" />
-            FlowMo Staff
-          </span>
+          {badge(false)}
+          {staffChip}
         </div>
+        <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">{groups(false)}</nav>
+        <div className="border-t-[3px] border-gray-800 px-3 py-4">{signOutButton(false)}</div>
+      </div>
 
-        <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="space-y-5">
-            {NAV_GROUPS.map((group) => (
-              <div key={group.title}>
-                <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">{group.title}</p>
-                <ul className="space-y-1">
-                  {group.items.map((item) => {
-                    const active = isActive(pathname, item.href);
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          aria-current={active ? "page" : undefined}
-                          className={`flex items-center gap-3 border-2 px-3 py-2 text-sm font-bold uppercase tracking-[0.04em] transition-colors duration-150 ${DARK_FOCUS} ${
-                            active
-                              ? "border-ink bg-brut-cyan text-ink shadow-brut-sm"
-                              : "border-transparent text-gray-400 hover:bg-gray-800 hover:text-paper"
-                          }`}
-                        >
-                          {item.icon}
-                          {item.label}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </nav>
-
-        <div className="border-t-[3px] border-gray-800 px-3 py-4">
-          <form action={signOut}>
-            <button
-              type="submit"
-              className={`w-full cursor-pointer border-2 border-gray-700 px-3 py-2 text-left text-sm font-bold uppercase tracking-[0.04em] text-gray-400 transition-colors duration-150 hover:border-paper hover:bg-gray-800 hover:text-paper ${DARK_FOCUS}`}
-            >
-              Sign out
+      {/* Desktop sidebar (fixed height; only its nav scrolls) */}
+      <aside className={`hidden shrink-0 flex-col border-r-[3px] border-ink bg-ink text-gray-300 transition-[width] duration-200 motion-reduce:transition-none md:flex print:hidden ${collapsed ? "w-16" : "w-60"}`}>
+        <div className={`flex items-start border-b-[3px] border-gray-800 py-5 ${collapsed ? "justify-center px-2" : "justify-between px-5"}`}>
+          {collapsed ? badge(true) : (
+            <div className="min-w-0">
+              {badge(false)}
+              <div>{staffChip}</div>
+            </div>
+          )}
+          {!collapsed && (
+            <button type="button" aria-label="Collapse sidebar" onClick={toggleCollapsed} className={`shrink-0 cursor-pointer border-2 border-gray-700 p-1 text-gray-300 transition-colors hover:border-paper hover:bg-gray-800 hover:text-paper ${DARK_FOCUS}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="square" className="h-4 w-4" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
             </button>
-          </form>
+          )}
         </div>
+        {collapsed && (
+          <div className="flex justify-center border-b-[3px] border-gray-800 py-2">
+            <button type="button" aria-label="Expand sidebar" onClick={toggleCollapsed} className={`cursor-pointer border-2 border-gray-700 p-1 text-gray-300 transition-colors hover:border-paper hover:bg-gray-800 hover:text-paper ${DARK_FOCUS}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="square" className="h-4 w-4" aria-hidden="true"><path d="M10 6l6 6-6 6" /></svg>
+            </button>
+          </div>
+        )}
+        <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">{groups(collapsed)}</nav>
+        <div className="border-t-[3px] border-gray-800 px-3 py-4">{signOutButton(collapsed)}</div>
       </aside>
 
-      <main className="min-w-0 flex-1 overflow-y-auto">
+      {/* Main content (the only vertical scroll container) */}
+      <main className="min-w-0 flex-1 overflow-y-auto pt-14 md:pt-0">
         {banner}
-        <div className="px-8 py-8">{children}</div>
+        {notifications && (
+          <div className="sticky top-0 z-10 hidden items-center justify-end gap-3 border-b-[3px] border-ink bg-paper px-8 py-2.5 md:flex">
+            {notifications}
+          </div>
+        )}
+        <div className="px-5 py-6 sm:px-8 sm:py-8">{children}</div>
       </main>
     </div>
   );

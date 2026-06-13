@@ -229,11 +229,15 @@ function Waveform({ active, small = false, className = "" }: { active: boolean; 
   );
 }
 
+/** Headset-agent avatar (matches VoiceMarkLine) rendered in ink on the chip. */
 function MicIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0a0a0a" strokeWidth="2.4" strokeLinecap="square" aria-hidden="true">
-      <rect x="9.5" y="3" width="5" height="9" rx="2.5" fill="#fff" />
-      <path d="M6.5 11a5.5 5.5 0 0 0 11 0M12 16.5V20M9 20h6" />
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
+      <path d="M5 12a7 7 0 0 1 14 0" />
+      <path d="M4 12.5h2.2v4H4zM17.8 12.5H20v4h-2.2z" fill="#0a0a0a" />
+      <circle cx="12" cy="10.5" r="3.2" />
+      <path d="M6 21a6 6 0 0 1 12 0" />
+      <path d="M18.5 16.5v.8a3 3 0 0 1-3 3H13" />
     </svg>
   );
 }

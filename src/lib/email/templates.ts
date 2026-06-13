@@ -6,7 +6,7 @@ import { formatPrice, type Currency } from "@/lib/marketing/pricing";
  * unit-testable and never depend on runtime config.
  *
  * Brand rule (enforced by tests): customer-facing copy must never leak internal
- * vocabulary (n8n, CabLab, "workflow", "execution"). Say "automation".
+ * engine vocabulary. Always say "automation" instead.
  */
 export interface EmailBody {
   subject: string;

@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useActionState, useId, useState } from "react";
 import {
   editContract,
   sendInvite,
   suspendTenant,
   reinstateTenant,
   markChurned,
+  forceDeleteTenant,
   type ActionState,
 } from "./actions";
 
@@ -280,6 +281,93 @@ export function LifecycleControls({
           >
             Mark churned
           </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Danger zone: permanently force-delete the tenant and ALL of its data. Two-step
+ * by design, the destructive form is hidden until "Force delete" is armed, and
+ * deletion only proceeds once the admin types the tenant's exact slug. Posts to
+ * `forceDeleteTenant`, which redirects to the tenant list on success.
+ */
+export function ForceDeleteTenant({
+  tenantId,
+  tenantName,
+  slug,
+}: {
+  tenantId: string;
+  tenantName: string;
+  slug: string;
+}) {
+  const [armed, setArmed] = useState(false);
+  const [state, formAction, pending] = useActionState(
+    forceDeleteTenant.bind(null, tenantId),
+    initialState,
+  );
+  const confirmId = useId();
+
+  return (
+    <div className="border-[3px] border-brut-red-deep bg-brut-red/5 p-5">
+      <h3 className="font-display text-sm font-extrabold uppercase tracking-tight text-brut-red-deep">
+        Danger zone, force delete
+      </h3>
+      <p className="mt-1 max-w-prose text-sm text-gray-700">
+        Permanently deletes <span className="font-semibold text-ink">{tenantName}</span> and every
+        record it owns, bookings, calls, conversations, ledgers, invoices and audit history. This
+        cannot be undone, and it works even when the tenant has live data.
+      </p>
+
+      {!armed ? (
+        <button
+          type="button"
+          onClick={() => setArmed(true)}
+          className="mt-4 cursor-pointer border-[3px] border-brut-red-deep bg-paper px-4 py-2 text-sm font-bold uppercase tracking-[0.04em] text-brut-red-deep outline-none transition-colors hover:bg-brut-red/10 focus-visible:ring-2 focus-visible:ring-brut-red-deep focus-visible:ring-offset-2"
+        >
+          Force delete this tenant
+        </button>
+      ) : (
+        <form action={formAction} noValidate className="mt-4 flex flex-col gap-3">
+          {state.formError && (
+            <p
+              role="alert"
+              aria-live="polite"
+              className="border border-brut-red-deep bg-brut-red/15 px-3 py-2 text-sm text-brut-red-deep"
+            >
+              {state.formError}
+            </p>
+          )}
+          <label htmlFor={confirmId} className="text-sm font-medium text-gray-700">
+            Type the slug{" "}
+            <span className="font-mono font-bold text-ink">{slug}</span> to confirm:
+          </label>
+          <input
+            id={confirmId}
+            name="confirm"
+            autoComplete="off"
+            placeholder={slug}
+            aria-invalid={state.fieldErrors.confirm ? true : undefined}
+            className={`${inputClass} max-w-sm ${state.fieldErrors.confirm ? "border-brut-red-deep" : ""}`}
+          />
+          <FieldError id={`${confirmId}-error`} error={state.fieldErrors.confirm?.[0]} />
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={pending}
+              className="cursor-pointer border-[3px] border-brut-red-deep bg-brut-red-deep px-4 py-2 text-sm font-bold uppercase tracking-[0.04em] text-paper outline-none transition-colors hover:opacity-90 focus-visible:ring-2 focus-visible:ring-brut-red-deep focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pending ? "Deleting…" : "Permanently delete"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setArmed(false)}
+              className="cursor-pointer px-3 py-2 text-sm font-medium text-gray-600 outline-none transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       )}
     </div>

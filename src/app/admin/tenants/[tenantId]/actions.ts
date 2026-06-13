@@ -2,6 +2,7 @@
 
 import "server-only";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
@@ -172,6 +173,61 @@ export async function reinstateTenant(tenantId: string): Promise<void> {
 /** Marks a tenant as churned (status → 'churned'). */
 export async function markChurned(tenantId: string): Promise<void> {
   await setStatus(tenantId, "churned", "tenant.churn");
+}
+
+/**
+ * Permanently force-deletes a tenant and ALL of its data, even when it has
+ * bookings, calls, ledgers, or audit history that a normal delete can't touch.
+ *
+ * Two-step safety: the caller must type the tenant's exact slug into `confirm`,
+ * mirroring the type-to-confirm UI, so a stray click can't wipe a live tenant.
+ * The heavy lifting (disabling append-only guards, clearing the NO ACTION audit
+ * rows, cascading the rest) lives in the force_delete_tenant SECURITY DEFINER
+ * RPC. A durable platform-level audit row (tenant_id null, so it survives the
+ * purge) records who deleted what.
+ */
+export async function forceDeleteTenant(
+  tenantId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const claims = await requireStaff();
+  const client = serviceClient();
+
+  const { data: t } = await client
+    .from("tenants")
+    .select("name, slug")
+    .eq("id", tenantId)
+    .maybeSingle();
+  if (!t) {
+    return { fieldErrors: {}, formError: "Tenant not found." };
+  }
+
+  const confirm = String(formData.get("confirm") ?? "").trim();
+  if (confirm !== t.slug) {
+    return {
+      fieldErrors: { confirm: [`Type the exact slug "${t.slug as string}" to confirm.`] },
+      formError: null,
+    };
+  }
+
+  const { error } = await client.rpc("force_delete_tenant", { p_tenant: tenantId });
+  if (error) {
+    console.error("forceDeleteTenant: rpc failed", { tenantId, error });
+    return { fieldErrors: {}, formError: "Could not delete the tenant. Please try again." };
+  }
+
+  // Platform-level audit (tenant_id null so it is not purged with the tenant).
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId: null,
+    action: "tenant.force_delete",
+    targetType: "tenant",
+    targetId: tenantId,
+    metadata: { name: t.name as string, slug: t.slug as string },
+  });
+
+  redirect("/admin/tenants");
 }
 
 const inviteSchema = z.object({

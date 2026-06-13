@@ -13,6 +13,7 @@ import {
   EditContractForm,
   InviteForm,
   LifecycleControls,
+  ForceDeleteTenant,
 } from "./tenant-detail-forms";
 import { EditOrgForm, MembersManager, AddAutomationForm,
   EngineWiringForm, DeleteAutomationButton,
@@ -602,6 +603,10 @@ export default async function TenantDetailPage({
           getRowKey={(a) => String(a.id)}
           emptyMessage="No audit entries for this tenant."
         />
+      </Section>
+
+      <Section title="Danger zone">
+        <ForceDeleteTenant tenantId={tenant.id} tenantName={tenant.name} slug={tenant.slug} />
       </Section>
     </div>
   );

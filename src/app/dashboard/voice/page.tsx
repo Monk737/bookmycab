@@ -4,14 +4,11 @@ import { getVoiceAnalytics, formatDuration } from "@/lib/dashboard/product-overv
 import { StatTile, StatGrid, Panel, StatusPill, UsageMeter, EmptyState } from "@/components/dashboard/ui";
 import { CallsTrend } from "@/components/dashboard/voice/calls-trend";
 import { OutcomeBars, CreditSplit, MiniStats } from "@/components/dashboard/voice/voice-blocks";
+import { VoiceMarkLine } from "@/components/marketing/product-marks";
 
 export const metadata = { title: "AI Voice · BookMyCab" };
 
-const VoiceIcon = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className="h-6 w-6">
-    <path d="M12 3v18M8 7v10M16 7v10M4 10v4M20 10v4" />
-  </svg>
-);
+const VoiceIcon = <VoiceMarkLine className="h-6 w-6" />;
 
 export default async function VoicePage() {
   const claims = await requireUser();
