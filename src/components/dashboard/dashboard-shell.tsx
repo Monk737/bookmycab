@@ -28,7 +28,7 @@ const ico = (path: ReactNode) => (
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/dashboard", group: "primary", icon: ico(<><path d="M4 13h7V4H4zM13 20h7v-9h-7zM13 4v3h7V4zM4 17v3h7v-3z" /></>) },
   { label: "Chat", href: "/dashboard/chat", group: "primary", icon: ico(<path d="M4 4h16v11H8l-4 4z" />) },
-  { label: "Voice", href: "/dashboard/voice", group: "primary", icon: <VoiceMarkLine className="h-[18px] w-[18px] shrink-0" /> },
+  { label: "Voice", href: "/dashboard/voice", group: "primary", icon: <VoiceMarkLine className="h-5 w-5 shrink-0" /> },
   { label: "Billing", href: "/dashboard/billing", group: "account", icon: ico(<><path d="M3 6h18v12H3z" /><path d="M3 10h18" /></>) },
   { label: "Team", href: "/dashboard/team", group: "account", icon: ico(<><path d="M3 20a5 5 0 0110 0M8 4a3 3 0 110 6 3 3 0 010-6Z" /><path d="M15 20a5 5 0 015-5M16 5a3 3 0 110 6" /></>) },
   { label: "Support", href: "/dashboard/support", group: "account", icon: ico(<><path d="M4 5h16v11H7l-3 3z" /><path d="M9 9h6M9 12h4" /></>) },

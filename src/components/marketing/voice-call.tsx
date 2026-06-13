@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { VoiceGlyph } from "@/components/marketing/product-marks";
 
 /**
  * Animated AI-voice booking call. Reads as a live phone call, not a chat:
@@ -113,8 +114,8 @@ export function VoiceCall() {
       <div aria-hidden="true" className="overflow-hidden border-[3px] border-ink bg-canvas shadow-brut-xl">
         {/* Call header */}
         <div className="flex items-center gap-3 border-b-[3px] border-ink bg-ink px-5 py-4">
-          <span className="relative flex h-12 w-12 shrink-0 items-center justify-center border-2 border-paper bg-brut-yellow">
-            <MicIcon />
+          <span className="relative flex h-12 w-12 shrink-0 items-center justify-center">
+            <VoiceGlyph className="h-12 w-12" />
             {live && <span className="call-ping absolute inset-0 border-2 border-brut-lime" />}
           </span>
           <div className="min-w-0 flex-1">
@@ -229,13 +230,3 @@ function Waveform({ active, small = false, className = "" }: { active: boolean; 
   );
 }
 
-/** Phone-call mark (matches VoiceMarkLine) rendered in ink on the chip. */
-function MicIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#0a0a0a" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M15.7 13.5a8.5 8.5 0 0 1-3.2-3.2l1.4-1.4a1.1 1.1 0 0 0 .2-1.2L12.6 4.2a1.1 1.1 0 0 0-1.2-.6l-2.8.5A1.3 1.3 0 0 0 7.6 5.7 13.6 13.6 0 0 0 18.3 16.4a1.3 1.3 0 0 0 1.4-1l.5-2.8a1.1 1.1 0 0 0-.6-1.2l-3.5-1.3a1.1 1.1 0 0 0-1.2.2z" />
-      <path d="M16.3 2.6a6.2 6.2 0 0 1 5 5.1" />
-      <path d="M15.4 6.4a2.7 2.7 0 0 1 2.2 2.4" />
-    </svg>
-  );
-}

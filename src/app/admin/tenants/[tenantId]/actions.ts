@@ -722,18 +722,18 @@ export async function createAutomation(
     }
   }
 
-  // When the engine workflow id is supplied at creation time the automation is
-  // already wired (cloned n8n workflow + Vapi assistant exist) — it goes
-  // straight to live. Otherwise it starts in the build queue as before.
-  const wired = Boolean(data.engine_workflow_id);
+  // A newly provisioned automation always enters the build queue at the
+  // "Building" stage, even when its engine workflow id is supplied up front.
+  // Going Live is a deliberate step taken from the Build Queue board (the
+  // "Go Live" action), which flips build_stage and runtime status atomically.
   const { data: created, error: autoErr } = await client
     .from("automations")
     .insert({
       tenant_id: tenantId,
       name: data.name,
       type: data.type,
-      status: wired ? "live" : "building",
-      build_stage: wired ? "Live" : "Requested",
+      status: "building",
+      build_stage: "Building",
       dispatch_adapter: data.dispatch_adapter ?? null,
       engine_workflow_id: data.engine_workflow_id ?? null,
     })
@@ -790,7 +790,7 @@ export async function createAutomation(
       tenantName: (tRow?.name as string | null) ?? "your organisation",
       automationName: data.name,
       automationType: data.type,
-      live: wired,
+      live: false,
       dashboardUrl: `${env.NEXT_PUBLIC_SITE_URL}/dashboard`,
     });
     await sendEmail({ to: contactEmail, subject: body.subject, html: body.html, text: body.text });

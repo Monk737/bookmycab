@@ -34,50 +34,73 @@ export const PRODUCTS: ProductMark[] = [
   },
 ];
 
-/* Shared voice-call paths (24x24 space): a phone handset + two voice waves. */
-const VOICE_HANDSET =
-  "M15.7 13.5a8.5 8.5 0 0 1-3.2-3.2l1.4-1.4a1.1 1.1 0 0 0 .2-1.2L12.6 4.2a1.1 1.1 0 0 0-1.2-.6l-2.8.5A1.3 1.3 0 0 0 7.6 5.7 13.6 13.6 0 0 0 18.3 16.4a1.3 1.3 0 0 0 1.4-1l.5-2.8a1.1 1.1 0 0 0-.6-1.2l-3.5-1.3a1.1 1.1 0 0 0-1.2.2z";
-const VOICE_WAVE_OUTER = "M16.3 2.6a6.2 6.2 0 0 1 5 5.1";
-const VOICE_WAVE_INNER = "M15.4 6.4a2.7 2.7 0 0 1 2.2 2.4";
+/* Shared geometry for the AI-voice mark (64x64 space): a right-facing head
+   profile, a neural-network "brain" node graph, and voice waves at the mouth. */
+const HEAD_PROFILE =
+  "M21 58 C18 49 15.5 41 15.5 32 C15.5 21 21 12.5 31 11.3 C39 10.4 45.5 13.6 47.5 20.5 L47.5 24 L55 30 L47.5 32.6 L50.2 37 L45 39 L45 45 L40 48 L33.5 48 L33.5 58";
+// Neural-net nodes (cx,cy) and the edges (index pairs) that mesh them.
+const BRAIN_NODES: Array<[number, number]> = [
+  [28, 19], [21, 25], [35, 24], [24.5, 32], [33, 32], [28, 26.5],
+];
+const BRAIN_EDGES: Array<[number, number]> = [
+  [0, 1], [0, 2], [0, 5], [1, 3], [1, 5], [2, 4], [2, 5], [3, 4], [3, 5], [4, 5], [1, 4], [2, 3],
+];
+const VOICE_WAVES = ["M55 32a8 8 0 0 1 0 11", "M59.5 29.5a13 13 0 0 1 0 16"];
+
+const CYAN = "#5fd9e8";
+const PINK = "#ec38a6";
+const PINK_SOFT = "#ff7ac0";
+
+/** Inner artwork (head + brain mesh + waves) drawn in the 64x64 space. */
+function VoiceArt({ mono = false }: { mono?: boolean }) {
+  const head = mono ? "currentColor" : CYAN;
+  const node = mono ? "currentColor" : PINK;
+  const wave = mono ? "currentColor" : CYAN;
+  return (
+    <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+      {/* head profile */}
+      <path d={HEAD_PROFILE} stroke={head} strokeWidth={3.4} />
+      {/* neural-net glow ring */}
+      {!mono && <circle cx="28" cy="26" r="11" fill={PINK_SOFT} opacity="0.22" />}
+      <circle cx="28" cy="26" r="11" stroke={node} strokeWidth={mono ? 2 : 2.6} />
+      {/* edges */}
+      {BRAIN_EDGES.map(([a, b], i) => (
+        <line key={i} x1={BRAIN_NODES[a][0]} y1={BRAIN_NODES[a][1]} x2={BRAIN_NODES[b][0]} y2={BRAIN_NODES[b][1]} stroke={node} strokeWidth={mono ? 1.4 : 1.8} opacity={mono ? 0.7 : 0.9} />
+      ))}
+      {/* nodes */}
+      {BRAIN_NODES.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r={i === 5 ? 2.4 : 1.9} fill={node} stroke="none" />
+      ))}
+      {/* voice waves */}
+      {VOICE_WAVES.map((d, i) => (
+        <path key={i} d={d} stroke={wave} strokeWidth={3.2} />
+      ))}
+    </g>
+  );
+}
 
 /**
- * Crafted brutalist phone-call mark on a taxi-yellow chip (the AI Voice icon).
- * A handset with voice waves, reads as a spoken booking call. Replaces the old
- * microphone/headset marks everywhere AI Voice is represented.
+ * AI Voice app-icon mark: a profile head with a neural-network brain and voice
+ * waves (cyan + magenta), framed as a brutalist app icon to sit beside the
+ * WhatsApp mark. Reads as "an AI that speaks". Replaces the old phone/headset.
  */
 export function VoiceGlyph({ className = "" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" className={className} role="img" aria-label="AI Voice agent">
-      <rect x="1.5" y="1.5" width="45" height="45" fill="#ffd400" stroke="#0a0a0a" strokeWidth="3" />
-      <g transform="translate(8.5 8.5) scale(1.3)" fill="none" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d={VOICE_HANDSET} fill="#ffffff" />
-        <path d={VOICE_WAVE_OUTER} />
-        <path d={VOICE_WAVE_INNER} />
-      </g>
+    <svg viewBox="0 0 64 64" className={className} role="img" aria-label="AI Voice agent">
+      <rect x="2" y="2" width="60" height="60" rx="2" fill="#ffffff" stroke="#0a0a0a" strokeWidth="3.5" />
+      <VoiceArt />
     </svg>
   );
 }
 
 /**
- * Line-weight phone-call mark (inherits currentColor). Used in nav rails,
- * section headers and anywhere a stroked AI Voice icon is wanted.
+ * Monochrome line version (inherits currentColor) for nav rails, section
+ * headers and small/ink contexts where the colour icon would be too busy.
  */
 export function VoiceMarkLine({ className = "" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      role="img"
-      aria-label="AI Voice agent"
-    >
-      <path d={VOICE_HANDSET} />
-      <path d={VOICE_WAVE_OUTER} />
-      <path d={VOICE_WAVE_INNER} />
+    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" className={className} role="img" aria-label="AI Voice agent">
+      <VoiceArt mono />
     </svg>
   );
 }

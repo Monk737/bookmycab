@@ -8,7 +8,7 @@ import { VoiceMarkLine } from "@/components/marketing/product-marks";
 
 export const metadata = { title: "AI Voice · BookMyCab" };
 
-const VoiceIcon = <VoiceMarkLine className="h-6 w-6" />;
+const VoiceIcon = <VoiceMarkLine className="h-9 w-9" />;
 
 export default async function VoicePage() {
   const claims = await requireUser();
