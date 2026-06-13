@@ -9,7 +9,7 @@ import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
 import { sendEmail } from "@/lib/email/resend";
-import { automationCreatedEmail } from "@/lib/email/templates";
+import { automationCreatedEmail, tenantWelcomeEmail } from "@/lib/email/templates";
 import { VOICE_PLAN_SPEC, VOICE_PRICE_GBP, type NewTierKey } from "@/lib/billing/pricing";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
@@ -372,12 +372,27 @@ export async function sendInvite(
     console.error("audit write failed for tenant.invite", { tenantId, email });
   }
 
-  // The invite email itself, the one with the "Set your password" link, is sent
-  // by Supabase Auth (inviteUserByEmail above) using the branded Invite-user
-  // template. We deliberately do NOT also send a Resend "welcome" email here:
-  // it would arrive with a "Sign in to your dashboard" button and compete with
-  // the set-password step. "Sign in to your dashboard" belongs on the
-  // automation-ready email instead (see createAutomation).
+  // Email logic depends on whether this is a brand-new account or an existing one:
+  //
+  //  - NEW account (inviteUserByEmail succeeded): Supabase Auth has already sent
+  //    the branded Invite-user email, which carries the "Set your password"
+  //    link. We send nothing else, so the set-password step isn't competed with.
+  //
+  //  - EXISTING account (`inviteError` was an email_exists 422): Supabase sends
+  //    NO email for an already-registered address, and the user already has a
+  //    password. So we send a branded "you've been added" note via Resend with a
+  //    "Sign in to your dashboard" button, otherwise they'd be linked silently
+  //    with no notice at all.
+  if (inviteError) {
+    const { data: t } = await client.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+    const body = tenantWelcomeEmail({
+      tenantName: (t?.name as string | null) ?? "your organisation",
+      role,
+      loginUrl: `${env.NEXT_PUBLIC_SITE_URL}/login`,
+      invitePending: false,
+    });
+    await sendEmail({ to: email, subject: body.subject, html: body.html, text: body.text });
+  }
 
   revalidatePath(`/admin/tenants/${tenantId}`);
   return { fieldErrors: {}, formError: null, ok: true };
