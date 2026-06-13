@@ -67,7 +67,9 @@ export default async function TenantsListPage() {
   // reduce to a max per tenant in memory.
   const { data: memberships } = await serviceClient
     .from("tenant_users")
-    .select("tenant_id, users(last_login_at)");
+    // tenant_users has two FKs to users (user_id, invited_by); the embed must
+    // name the member FK or PostgREST rejects it as ambiguous (HTTP 300).
+    .select("tenant_id, users!tenant_users_user_id_fkey(last_login_at)");
 
   const lastLoginByTenant = new Map<string, string>();
   for (const m of (memberships ?? []) as Array<{

@@ -15,7 +15,9 @@ export async function listMembers(tenantId: string, client?: SupabaseLike): Prom
   const supabase = client ?? (await createClient());
   const { data } = await supabase
     .from("tenant_users")
-    .select("role, automation_restrictions, user_id, users(email, full_name, last_login_at)")
+    // Two FKs point at users (user_id, invited_by); name the member FK or
+    // PostgREST rejects the embed as ambiguous (HTTP 300).
+    .select("role, automation_restrictions, user_id, users!tenant_users_user_id_fkey(email, full_name, last_login_at)")
     .eq("tenant_id", tenantId);
 
   return ((data ?? []) as Record<string, unknown>[]).map((r) => {

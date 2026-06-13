@@ -34,6 +34,20 @@ describe("createTenantSchema", () => {
     });
     expect(r.success).toBe(true);
   });
+  // formData.get() returns null for non-rendered fields. The schema rejects
+  // null (optional() only accepts undefined), so createTenant MUST coerce
+  // null → undefined before parsing or chat-only/voice-only submissions fail
+  // on a hidden field with no visible error.
+  it("rejects null for a hidden tier (why the action coerces null → undefined)", () => {
+    const withNull = createTenantSchema.safeParse({
+      ...base, commercial_model: "chat", chat_tier: "ignition", voice_tier: null,
+    });
+    expect(withNull.success).toBe(false);
+    const coerced = createTenantSchema.safeParse({
+      ...base, commercial_model: "chat", chat_tier: "ignition", voice_tier: undefined,
+    });
+    expect(coerced.success).toBe(true);
+  });
 });
 
 describe("buildProvisioningRows", () => {

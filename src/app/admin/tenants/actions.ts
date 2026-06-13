@@ -30,17 +30,22 @@ export async function createTenant(
 ): Promise<TenantFormState> {
   const claims = await requireStaff();
 
+  // formData.get() returns null for fields that were not rendered (e.g. the
+  // voice tier select on a chat-only submission); zod's .optional() accepts
+  // undefined but rejects null, so coerce here or hidden fields fail validation
+  // with errors the form can never display.
+  const field = (name: string) => formData.get(name) ?? undefined;
   const raw = {
-    name: formData.get("name"),
-    slug: formData.get("slug"),
-    country: formData.get("country"),
-    contact_email: formData.get("contact_email"),
-    dispatch_adapter: formData.get("dispatch_adapter"),
-    dispatch_company_id: formData.get("dispatch_company_id"),
-    commercial_model: formData.get("commercial_model"),
-    chat_tier: formData.get("chat_tier"),
-    voice_tier: formData.get("voice_tier"),
-    coupon_code: formData.get("coupon_code"),
+    name: field("name"),
+    slug: field("slug"),
+    country: field("country"),
+    contact_email: field("contact_email"),
+    dispatch_adapter: field("dispatch_adapter"),
+    dispatch_company_id: field("dispatch_company_id"),
+    commercial_model: field("commercial_model"),
+    chat_tier: field("chat_tier"),
+    voice_tier: field("voice_tier"),
+    coupon_code: field("coupon_code"),
   };
 
   const parsed = createTenantSchema.safeParse(raw);

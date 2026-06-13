@@ -207,7 +207,9 @@ export default async function TenantDetailPage({
       .order("created_at", { ascending: false }),
     serviceClient
       .from("tenant_users")
-      .select("user_id, role, accepted_at, users(email, last_login_at)")
+      // Two FKs point at users (user_id, invited_by); name the member FK or
+      // PostgREST rejects the embed as ambiguous (HTTP 300).
+      .select("user_id, role, accepted_at, users!tenant_users_user_id_fkey(email, last_login_at)")
       .eq("tenant_id", tenantId),
     serviceClient
       .from("channels")
