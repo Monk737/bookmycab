@@ -34,46 +34,42 @@ export const PRODUCTS: ProductMark[] = [
   },
 ];
 
-/* Shared geometry for the AI-voice-call mark (64x64 space): a phone handset
-   (the call), a voice waveform (the spoken booking) and a 4-point AI sparkle. */
+/* AI-voice mark (64x64 space): a standard phone handset with an "AI" text badge
+   pinned to the top-right corner. */
 const PHONE_HANDSET =
   "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z";
-const VOICE_BARS = "M40 30v8M46 24v20M52 28v12";
-// 4-point sparkle (the "AI" cue) centred at 50,13 r6.5.
-const AI_SPARKLE =
-  "M50 6.5C52.08 10.92 52.08 10.92 56.5 13C52.08 15.08 52.08 15.08 50 19.5C47.92 15.08 47.92 15.08 43.5 13C47.92 10.92 47.92 10.92 50 6.5Z";
-const PINK = "#ff7ac0";
+const BADGE_FONT = "Arial,Helvetica,sans-serif";
 
 /**
- * AI Voice app-icon mark on the taxi-yellow brutalist chip: a phone handset,
- * a voice waveform and an AI sparkle, reads unmistakably as a spoken booking
- * call handled by AI. Sits beside the WhatsApp mark with equal app-icon weight.
+ * AI Voice app-icon mark on the taxi-yellow brutalist chip: the standard phone
+ * handset with a pink "AI" badge attached top-right. Reads instantly as an
+ * AI-handled phone call. Sits beside the WhatsApp mark with app-icon weight.
  */
 export function VoiceGlyph({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} role="img" aria-label="AI Voice agent">
       <rect x="2" y="2" width="60" height="60" rx="2" fill="#ffd400" stroke="#0a0a0a" strokeWidth="3.5" />
-      <g transform="translate(2 16) scale(1.5)" fill="#ffffff" stroke="#0a0a0a" strokeWidth="2.1" strokeLinejoin="round">
+      <g transform="translate(0 18) scale(1.45)" fill="#ffffff" stroke="#0a0a0a" strokeWidth="2.1" strokeLinejoin="round">
         <path d={PHONE_HANDSET} />
       </g>
-      <path d={VOICE_BARS} fill="none" stroke="#0a0a0a" strokeWidth="3.6" strokeLinecap="round" />
-      <path d={AI_SPARKLE} fill={PINK} stroke="#0a0a0a" strokeWidth="2" strokeLinejoin="round" />
+      <rect x="33" y="4" width="27" height="19" rx="4" fill="#ff7ac0" stroke="#0a0a0a" strokeWidth="2.6" />
+      <text x="46.5" y="18.4" fontFamily={BADGE_FONT} fontWeight="900" fontSize="13.5" letterSpacing="0.5" fill="#0a0a0a" textAnchor="middle">AI</text>
     </svg>
   );
 }
 
 /**
  * Monochrome line version (inherits currentColor) for nav rails, section
- * headers and small/ink contexts. Same phone + waveform + sparkle composition.
+ * headers and small/ink contexts. Phone outline + "AI" badge outline.
  */
 export function VoiceMarkLine({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" className={className} role="img" aria-label="AI Voice agent">
-      <g transform="translate(2 16) scale(1.5)" strokeWidth="2.1" strokeLinejoin="round">
+      <g transform="translate(0 18) scale(1.45)" strokeWidth="2.1" strokeLinejoin="round">
         <path d={PHONE_HANDSET} />
       </g>
-      <path d={VOICE_BARS} strokeWidth="3.6" strokeLinecap="round" />
-      <path d={AI_SPARKLE} fill="currentColor" strokeWidth="0" />
+      <rect x="33" y="4" width="27" height="19" rx="4" strokeWidth="2.6" />
+      <text x="46.5" y="18.4" fontFamily={BADGE_FONT} fontWeight="900" fontSize="13.5" letterSpacing="0.5" fill="currentColor" stroke="none" textAnchor="middle">AI</text>
     </svg>
   );
 }
