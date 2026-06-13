@@ -124,9 +124,9 @@ export default function Home() {
                 The AI Voice Booking Agent
               </span>
               <h2 className="mt-5 text-balance font-display text-4xl font-extrabold uppercase leading-[0.98] tracking-[-0.03em] text-ink sm:text-5xl">
-                Put a dispatcher on the phones that{" "}
+                Always picks up.{" "}
                 <span className="box-decoration-clone bg-brut-yellow px-2 text-ink ring-2 ring-ink">
-                  never sleeps
+                  Never clocks off
                 </span>
                 .
               </h2>

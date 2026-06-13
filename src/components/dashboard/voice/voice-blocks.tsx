@@ -70,15 +70,18 @@ export function CreditSplit({ block }: { block: VoiceStatBlock }) {
 /** Three compact figures for an aggregate or per-agent block. */
 export function MiniStats({ block }: { block: VoiceStatBlock }) {
   const items = [
-    { label: "Calls", value: block.totalCalls.toLocaleString("en-GB") },
-    { label: "Booked", value: `${block.bookedPct}%` },
-    { label: "Avg length", value: formatDuration(block.avgDurationS) },
+    { label: "Calls", value: block.totalCalls.toLocaleString("en-GB"), tint: "bg-brut-cyan/20", chip: "bg-brut-cyan" },
+    { label: "Booked", value: `${block.bookedPct}%`, tint: "bg-brut-lime/25", chip: "bg-brut-lime" },
+    { label: "Avg length", value: formatDuration(block.avgDurationS), tint: "bg-brut-violet/20", chip: "bg-brut-violet" },
   ];
   return (
     <div className="grid grid-cols-3 gap-[3px] border-2 border-ink bg-ink">
       {items.map((it) => (
-        <div key={it.label} className="bg-paper px-3 py-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-gray-600">{it.label}</p>
+        <div key={it.label} className={`px-3 py-2.5 ${it.tint}`}>
+          <div className="flex items-center justify-between gap-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-gray-700">{it.label}</p>
+            <span className={`h-2 w-2 shrink-0 border border-ink ${it.chip}`} aria-hidden="true" />
+          </div>
           <p className="mt-0.5 font-mono text-lg font-bold tabular-nums leading-none text-ink">{it.value}</p>
         </div>
       ))}

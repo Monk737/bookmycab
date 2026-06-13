@@ -16,7 +16,7 @@ import {
   ForceDeleteTenant,
 } from "./tenant-detail-forms";
 import { EditOrgForm, MembersManager, AddAutomationForm,
-  EngineWiringForm, DeleteAutomationButton,
+  EngineWiringForm, DeleteAutomationButton, ForceDeleteAutomationButton,
 } from "./tenant-manage-forms";
 import { BillingPanel } from "./billing-panel";
 import { EntitlementsSection } from "./entitlements-section";
@@ -249,6 +249,19 @@ export default async function TenantDetailPage({
   const automations = (automationsData ?? []) as AutomationRow[];
   const voiceAgents = (voiceAgentsData ?? []) as VoiceAgentRow[];
 
+  // Which automations carry operational history? Those can't use the simple
+  // delete (it refuses, and the DB guards block it) and instead get the 2-step
+  // force delete. One query per table, scoped to the tenant, reduced to a set.
+  const [{ data: bWith }, { data: cWith }, { data: vWith }] = await Promise.all([
+    serviceClient.from("bookings").select("automation_id").eq("tenant_id", tenantId),
+    serviceClient.from("calls").select("automation_id").eq("tenant_id", tenantId),
+    serviceClient.from("conversations").select("automation_id").eq("tenant_id", tenantId),
+  ]);
+  const automationsWithData = new Set<string>();
+  for (const r of [...(bWith ?? []), ...(cWith ?? []), ...(vWith ?? [])] as Array<{ automation_id: string | null }>) {
+    if (r.automation_id) automationsWithData.add(r.automation_id);
+  }
+
   const members: MemberRow[] = (
     (membersData ?? []) as Array<{
       user_id: string;
@@ -349,9 +362,12 @@ export default async function TenantDetailPage({
       header: "",
       headerClassName: "text-right",
       cellClassName: "text-right",
-      render: (a) => (
-        <DeleteAutomationButton tenantId={tenantId} automationId={a.id} name={a.name} />
-      ),
+      render: (a) =>
+        automationsWithData.has(a.id) ? (
+          <ForceDeleteAutomationButton tenantId={tenantId} automationId={a.id} name={a.name} />
+        ) : (
+          <DeleteAutomationButton tenantId={tenantId} automationId={a.id} name={a.name} />
+        ),
     },
   ];
 

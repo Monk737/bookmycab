@@ -8,6 +8,7 @@ import {
   setMemberRole,
   removeMember,
   deleteAutomation,
+  forceDeleteAutomation,
   type ActionState,
 } from "./actions";
 
@@ -225,6 +226,68 @@ export function DeleteAutomationButton({
         Delete
       </button>
     </form>
+  );
+}
+
+/**
+ * Per-row FORCE delete for an automation that has data (bookings/calls/etc).
+ * Two-step: the first click arms the control, the second wipes the automation
+ * and all its history via forceDeleteAutomation. Used in place of the simple
+ * Delete only when the automation actually has records to destroy.
+ */
+export function ForceDeleteAutomationButton({
+  tenantId,
+  automationId,
+  name,
+}: {
+  tenantId: string;
+  automationId: string;
+  name: string;
+}) {
+  const [armed, setArmed] = useState(false);
+
+  if (!armed) {
+    return (
+      <button
+        type="button"
+        onClick={() => setArmed(true)}
+        title={`"${name}" has data; force delete wipes its history`}
+        className="cursor-pointer border-2 border-brut-red-deep bg-paper px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-brut-red-deep transition-colors hover:bg-brut-red/10"
+      >
+        Force delete
+      </button>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="text-[10px] font-bold uppercase tracking-[0.04em] text-brut-red-deep">Wipes all data:</span>
+      <form
+        action={async () => {
+          try {
+            await forceDeleteAutomation(tenantId, automationId);
+          } catch (err) {
+            alert(err instanceof Error ? err.message : "Failed to force-delete the automation.");
+            setArmed(false);
+          }
+        }}
+        className="inline"
+      >
+        <button
+          type="submit"
+          className="cursor-pointer border-2 border-brut-red-deep bg-brut-red-deep px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-paper transition-opacity hover:opacity-90"
+        >
+          Confirm wipe
+        </button>
+      </form>
+      <button
+        type="button"
+        onClick={() => setArmed(false)}
+        className="cursor-pointer px-1.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:text-ink"
+      >
+        Cancel
+      </button>
+    </span>
   );
 }
 

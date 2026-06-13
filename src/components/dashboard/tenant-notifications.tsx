@@ -18,11 +18,23 @@ function rowStr(row: Record<string, unknown>, keys: string[]): string | undefine
  * calls in the notification bell. Read-only and self-tearing-down (one channel
  * per stream, scoped to the tenant by an RLS-safe filter).
  */
-export function TenantNotifications({ tenantId, onDark = false }: { tenantId: string; onDark?: boolean }) {
-  const [items, setItems] = useState<NotifItem[]>([]);
+export function TenantNotifications({
+  tenantId,
+  onDark = false,
+  initialItems = [],
+}: {
+  tenantId: string;
+  onDark?: boolean;
+  /** Recent activity fetched server-side so the bell isn't empty on first load. */
+  initialItems?: NotifItem[];
+}) {
+  const [items, setItems] = useState<NotifItem[]>(initialItems);
 
   const push = useCallback((it: Omit<NotifItem, "read">) => {
-    setItems((prev) => [{ ...it, read: false }, ...prev].slice(0, 40));
+    setItems((prev) => {
+      if (prev.some((p) => p.id === it.id)) return prev; // de-dupe vs backfill
+      return [{ ...it, read: false }, ...prev].slice(0, 40);
+    });
   }, []);
 
   const filter = `tenant_id=eq.${tenantId}`;

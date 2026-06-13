@@ -858,3 +858,45 @@ export async function deleteAutomation(
 
   revalidatePath(`/admin/tenants/${tenantId}`);
 }
+
+/**
+ * Force-deletes an automation INCLUDING its history (bookings, calls,
+ * conversations, ledger entries). Use only when `deleteAutomation` refuses
+ * because data exists. The force_delete_automation RPC disables the append-only
+ * guards so the cascade can proceed. Two-step in the UI (arm, then confirm).
+ * Fully audited with the data it destroyed.
+ */
+export async function forceDeleteAutomation(
+  tenantId: string,
+  automationId: string,
+): Promise<void> {
+  const claims = await requireStaff();
+  const client = serviceClient();
+
+  const { data: auto } = await client
+    .from("automations")
+    .select("id, name, type")
+    .eq("id", automationId)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (!auto) {
+    throw new Error("Automation not found for this tenant.");
+  }
+
+  const { error } = await client.rpc("force_delete_automation", { p_automation: automationId });
+  if (error) {
+    console.error("forceDeleteAutomation: rpc failed", { automationId, error });
+    throw new Error("Failed to force-delete the automation. Please try again.");
+  }
+
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "automation.force_delete",
+    targetType: "automation",
+    targetId: automationId,
+    metadata: { name: auto.name as string, type: auto.type as string },
+  });
+
+  revalidatePath(`/admin/tenants/${tenantId}`);
+}

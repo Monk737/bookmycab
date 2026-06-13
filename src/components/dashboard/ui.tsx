@@ -9,31 +9,78 @@ import Link from "next/link";
    data stays readable (the product-register rule).
    -------------------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------------------
+   Stat accent system (shared by StatTile + admin StatCard).
+
+   Each stat gets a category colour: a soft tint wash on the card (soothing) plus
+   a saturated ink-framed chip + strip (lively). Tailwind only emits classes it
+   sees literally, so every tint/solid is written out here. When no accent is
+   given we hash the label to a stable colour so a grid still reads varied and
+   colourful without per-call-site wiring. All brut colours take dark ink text,
+   so the washes stay WCAG AA.
+   -------------------------------------------------------------------------- */
+
+export type StatAccent = "yellow" | "lime" | "cyan" | "violet" | "pink" | "orange" | "neutral";
+
+export const STAT_ACCENT: Record<StatAccent, { tint: string; solid: string }> = {
+  yellow: { tint: "bg-brut-yellow/20", solid: "bg-brut-yellow" },
+  lime: { tint: "bg-brut-lime/25", solid: "bg-brut-lime" },
+  cyan: { tint: "bg-brut-cyan/20", solid: "bg-brut-cyan" },
+  violet: { tint: "bg-brut-violet/20", solid: "bg-brut-violet" },
+  pink: { tint: "bg-brut-pink/20", solid: "bg-brut-pink" },
+  orange: { tint: "bg-brut-orange/20", solid: "bg-brut-orange" },
+  neutral: { tint: "bg-canvas", solid: "bg-gray-300" },
+};
+
+const HASH_PALETTE: StatAccent[] = ["cyan", "lime", "violet", "pink", "orange", "yellow"];
+
+function hashAccent(seed: string): StatAccent {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return HASH_PALETTE[h % HASH_PALETTE.length];
+}
+
+/**
+ * Resolve a stat colour. Accepts a colour name ("cyan"), the legacy bg-class
+ * form ("bg-brut-cyan", incl. the no-token "bg-brut-blue" alias → cyan), or
+ * nothing (hash the seed to a stable colour).
+ */
+export function resolveStatAccent(accent: string | undefined, seed: string): { tint: string; solid: string } {
+  if (!accent || accent === "bg-paper") return STAT_ACCENT[hashAccent(seed)];
+  const name = accent.replace("bg-brut-", "").replace("bg-", "");
+  const key = (name === "blue" ? "cyan" : name) as StatAccent;
+  return STAT_ACCENT[key] ?? STAT_ACCENT[hashAccent(seed)];
+}
+
 /** A single operational stat. Lives inside StatGrid's hairline ink bed. */
 export function StatTile({
   label,
   value,
   unit,
   sub,
-  accent = "bg-paper",
+  accent,
 }: {
   label: string;
   value: string | number;
   unit?: string;
   sub?: ReactNode;
-  /** Top-edge accent strip class (e.g. bg-brut-cyan) for a glanceable category. */
+  /** Category colour: a name ("cyan") or legacy bg-class. Omit to auto-colour. */
   accent?: string;
 }) {
+  const a = resolveStatAccent(accent, label);
   return (
     <div className="flex min-w-0 flex-col bg-paper">
-      <div className={`h-1.5 ${accent}`} aria-hidden="true" />
-      <div className="flex flex-1 flex-col px-4 py-4 sm:px-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-600">{label}</p>
-        <p className="mt-2 font-mono text-3xl font-bold tabular-nums leading-none text-ink">
+      <div className={`h-1.5 ${a.solid}`} aria-hidden="true" />
+      <div className={`flex flex-1 flex-col px-4 py-4 sm:px-5 ${a.tint}`}>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-700">{label}</p>
+          <span className={`h-3 w-3 shrink-0 border-2 border-ink ${a.solid}`} aria-hidden="true" />
+        </div>
+        <p className="mt-2.5 font-mono text-3xl font-bold tabular-nums leading-none text-ink">
           {value}
-          {unit ? <span className="ml-1 text-base font-semibold text-gray-500">{unit}</span> : null}
+          {unit ? <span className="ml-1 text-base font-semibold text-gray-600">{unit}</span> : null}
         </p>
-        {sub ? <div className="mt-2 text-xs font-medium text-gray-600">{sub}</div> : null}
+        {sub ? <div className="mt-2 text-xs font-medium text-gray-700">{sub}</div> : null}
       </div>
     </div>
   );
