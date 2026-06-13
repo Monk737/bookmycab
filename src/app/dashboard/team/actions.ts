@@ -54,7 +54,9 @@ export async function inviteMember(
 
   const client = serviceClient();
 
-  const { data: inviteData, error: inviteError } = await client.auth.admin.inviteUserByEmail(email);
+  const { data: inviteData, error: inviteError } = await client.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/accept-invite`,
+  });
   if (inviteError || !inviteData?.user?.id) {
     console.error("inviteMember: inviteUserByEmail failed", inviteError);
     return { ok: false, error: "Failed to send the invite. Please try again." };
