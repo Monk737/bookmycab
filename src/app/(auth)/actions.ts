@@ -181,121 +181,37 @@ const updatePasswordSchema = z
 // service-role client is confined to these two targeted updates only.
 // ---------------------------------------------------------------------------
 
-const acceptInviteSchema = z
-  .object({
-    // Empty string from an unfilled input becomes undefined so downstream
-    // `if (fullName)` guards are never tripped by a blank submission.
-    fullName: z.string().trim().transform((v) => v || undefined).optional(),
-    password: z.string().min(8, "Password must be at least 8 characters."),
-    confirmPassword: z.string().min(1, "Please confirm your password."),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
+/**
+ * Finalises an accepted invite. The password is set CLIENT-SIDE in the accept
+ * form, because the invite session arrives only in the URL hash (`#access_token`)
+ * which a server action cannot read, and updating server-side would target
+ * whatever cookie session exists (e.g. a logged-in admin). The browser then
+ * calls this with its access token; we authenticate with that token and mark
+ * acceptance (accepted_at + full_name) via the service role. Idempotent.
+ */
+export async function finalizeInviteAcceptance(
+  accessToken: string,
+  fullName?: string,
+): Promise<{ ok: boolean }> {
+  if (!accessToken) return { ok: false };
+  const authed = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
   });
+  const { data: { user } } = await authed.auth.getUser();
+  if (!user) return { ok: false };
 
-export async function acceptInvite(
-  _prevState: AuthState,
-  formData: FormData,
-): Promise<AuthState> {
-  const raw = {
-    fullName: formData.get("fullName") ?? undefined,
-    password: formData.get("password"),
-    confirmPassword: formData.get("confirmPassword"),
-  };
-
-  const parsed = acceptInviteSchema.safeParse(raw);
-  if (!parsed.success) {
-    return {
-      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
-      formError: null,
-    };
+  const service = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const trimmed = fullName?.trim();
+  if (trimmed) {
+    await service.from("users").update({ full_name: trimmed }).eq("id", user.id);
   }
-
-  const { fullName, password } = parsed.data;
-  const supabase = await createClient();
-
-  // Guard against accepting under the WRONG session. If the invite link is
-  // opened in a browser already signed in as someone else (e.g. a FlowMo admin),
-  // the cookie session is that other user, and updateUser would change THEIR
-  // password instead of the invitee's. A genuine invitee always has a pending
-  // (accepted_at IS NULL) tenant_users row; if the current session user has none,
-  // refuse and tell them to use a clean window.
-  const { data: { user: sessionUser } } = await supabase.auth.getUser();
-  if (!sessionUser) {
-    return {
-      fieldErrors: {},
-      formError: "Your invite session has expired. Please reopen the link from your email.",
-    };
-  }
-  const guardClient = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-  const { data: pendingMembership } = await guardClient
-    .from("tenant_users")
-    .select("user_id")
-    .eq("user_id", sessionUser.id)
-    .is("accepted_at", null)
-    .limit(1)
-    .maybeSingle();
-  if (!pendingMembership) {
-    return {
-      fieldErrors: {},
-      formError:
-        "You're already signed in as another account in this browser. Open the invite link in a private/incognito window so it sets up the new account, not your current one.",
-    };
-  }
-
-  // 1. Update the user's password (and display name if provided).
-  const updatePayload: Parameters<typeof supabase.auth.updateUser>[0] = { password };
-  if (fullName) {
-    updatePayload.data = { full_name: fullName };
-  }
-
-  const { data: updateData, error: updateError } = await supabase.auth.updateUser(updatePayload);
-
-  if (updateError || !updateData.user) {
-    return {
-      fieldErrors: {},
-      formError: "Failed to set up your account. Your invite link may have expired. Please contact your administrator.",
-    };
-  }
-
-  const userId = updateData.user.id;
-
-  // 2. Mark acceptance via the service-role client (see note above).
-  const serviceClient = createSupabaseJS(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.SUPABASE_SERVICE_ROLE_KEY,
-  );
-
-  if (fullName) {
-    const { error: nameError } = await serviceClient
-      .from("users")
-      .update({ full_name: fullName })
-      .eq("id", userId);
-
-    if (nameError) {
-      console.error("acceptInvite: failed to set full_name", nameError);
-    }
-  }
-
-  const { error: acceptError } = await serviceClient
+  await service
     .from("tenant_users")
     .update({ accepted_at: new Date().toISOString() })
-    .eq("user_id", userId)
+    .eq("user_id", user.id)
     .is("accepted_at", null);
-
-  if (acceptError) {
-    console.error("acceptInvite: failed to set accepted_at", acceptError);
-  }
-
-  // 3. Redirect to the appropriate dashboard.
-  const claims = await getCurrentClaims();
-  if (!claims) {
-    console.warn("acceptInvite: getCurrentClaims() returned null after successful acceptance, falling back to /dashboard.");
-  }
-  const target = claims ? redirectTargetFor(claims) : "/dashboard";
-
-  redirect(target);
+  return { ok: true };
 }
 
 export async function updatePassword(
