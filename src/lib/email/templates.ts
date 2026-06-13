@@ -79,9 +79,8 @@ function render(subject: string, s: Section): EmailBody {
   const html = `<!doctype html><html><body style="margin:0;padding:0;background:${CANVAS};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CANVAS};padding:24px 0;"><tr><td align="center">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:${PAPER};border:3px solid ${INK};">
-  <tr><td style="background:${INK};padding:16px 24px;">
-    <span style="font:800 20px/1 Arial,sans-serif;color:${PAPER};letter-spacing:-0.02em;">BookMyCab</span>
-    <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:${YELLOW};font:700 11px/1.4 Arial,sans-serif;color:${INK};text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+  <tr><td style="background:${INK};padding:18px 24px;">
+    <img src="https://bookmycab.io/email-logo.png" alt="BookMyCab" width="180" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
   </td></tr>
   <tr><td style="padding:28px 24px 8px;">
     <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,sans-serif;color:${INK};letter-spacing:-0.01em;">${esc(s.heading)}</h1>

@@ -3,9 +3,12 @@
 Paste these into **Supabase Dashboard → Authentication → Emails → [template]**.
 You **edit the built-in templates** (you can't add new ones). Each template has a
 **Subject** field and an HTML **body** — set both. They mirror the app's branded
-layout in `src/lib/email/templates.ts` (ink header, yellow "Automation" chip,
-bordered CTA, footer) and are email-client safe (table layout, inline CSS,
+layout in `src/lib/email/templates.ts` (black header with the white BookMyCab
+logo, bordered CTA, footer) and are email-client safe (table layout, inline CSS,
 bulletproof button, hidden preheader).
+
+The header logo loads from `https://bookmycab.io/email-logo.png` (committed at
+`public/email-logo.png`), so it works once the app is deployed.
 
 Supabase variables used: `{{ .ConfirmationURL }}` (the secure action link).
 Others available: `{{ .Email }}`, `{{ .SiteURL }}`, `{{ .Token }}`.
@@ -39,9 +42,8 @@ Set **Authentication → URL Configuration**:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
       <tr><td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
-          <tr><td style="background:#0a0a0a;padding:16px 24px;">
-            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
-            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          <tr><td style="background:#0a0a0a;padding:18px 24px;">
+            <img src="https://bookmycab.io/email-logo.png" alt="BookMyCab" width="180" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
           </td></tr>
           <tr><td style="padding:28px 24px 8px;">
             <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Welcome to BookMyCab</h1>
@@ -80,9 +82,8 @@ Set **Authentication → URL Configuration**:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
       <tr><td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
-          <tr><td style="background:#0a0a0a;padding:16px 24px;">
-            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
-            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          <tr><td style="background:#0a0a0a;padding:18px 24px;">
+            <img src="https://bookmycab.io/email-logo.png" alt="BookMyCab" width="180" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
           </td></tr>
           <tr><td style="padding:28px 24px 8px;">
             <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Reset your password</h1>
@@ -120,9 +121,8 @@ Set **Authentication → URL Configuration**:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
       <tr><td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
-          <tr><td style="background:#0a0a0a;padding:16px 24px;">
-            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
-            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          <tr><td style="background:#0a0a0a;padding:18px 24px;">
+            <img src="https://bookmycab.io/email-logo.png" alt="BookMyCab" width="180" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
           </td></tr>
           <tr><td style="padding:28px 24px 8px;">
             <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Sign in to BookMyCab</h1>
@@ -163,9 +163,8 @@ Set **Authentication → URL Configuration**:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
       <tr><td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
-          <tr><td style="background:#0a0a0a;padding:16px 24px;">
-            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
-            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          <tr><td style="background:#0a0a0a;padding:18px 24px;">
+            <img src="https://bookmycab.io/email-logo.png" alt="BookMyCab" width="180" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
           </td></tr>
           <tr><td style="padding:28px 24px 8px;">
             <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Confirm your email</h1>
@@ -207,9 +206,8 @@ Set **Authentication → URL Configuration**:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
       <tr><td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
-          <tr><td style="background:#0a0a0a;padding:16px 24px;">
-            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
-            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          <tr><td style="background:#0a0a0a;padding:18px 24px;">
+            <img src="https://bookmycab.io/email-logo.png" alt="BookMyCab" width="180" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
           </td></tr>
           <tr><td style="padding:28px 24px 8px;">
             <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Confirm it's you</h1>
@@ -252,9 +250,8 @@ Set **Authentication → URL Configuration**:
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
       <tr><td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
-          <tr><td style="background:#0a0a0a;padding:16px 24px;">
-            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
-            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          <tr><td style="background:#0a0a0a;padding:18px 24px;">
+            <img src="https://bookmycab.io/email-logo.png" alt="BookMyCab" width="180" style="display:block;border:0;outline:none;text-decoration:none;height:auto;" />
           </td></tr>
           <tr><td style="padding:28px 24px 8px;">
             <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Confirm your new email</h1>
