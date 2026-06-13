@@ -69,18 +69,14 @@ export function StatTile({
 }) {
   const a = resolveStatAccent(accent, label);
   return (
-    <div className="flex min-w-0 flex-col bg-paper">
-      <div className={`h-1.5 ${a.solid}`} aria-hidden="true" />
-      <div className={`flex flex-1 flex-col px-4 py-4 sm:px-5 ${a.tint}`}>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-700">{label}</p>
-          <span className={`h-3 w-3 shrink-0 border-2 border-ink ${a.solid}`} aria-hidden="true" />
-        </div>
+    <div className={`flex min-w-0 flex-col ${a.solid}`}>
+      <div className="flex flex-1 flex-col px-4 py-4 sm:px-5">
+        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink/70">{label}</p>
         <p className="mt-2.5 font-mono text-3xl font-bold tabular-nums leading-none text-ink">
           {value}
-          {unit ? <span className="ml-1 text-base font-semibold text-gray-600">{unit}</span> : null}
+          {unit ? <span className="ml-1 text-base font-semibold text-ink/60">{unit}</span> : null}
         </p>
-        {sub ? <div className="mt-2 text-xs font-medium text-gray-700">{sub}</div> : null}
+        {sub ? <div className="mt-2 text-xs font-semibold text-ink/70">{sub}</div> : null}
       </div>
     </div>
   );

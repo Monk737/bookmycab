@@ -126,7 +126,7 @@ export function NotificationBell({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] border-[3px] border-ink bg-paper text-ink shadow-brut-xl">
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-1.5rem)] border-[3px] border-ink bg-paper text-ink shadow-brut-xl">
           <div className="flex items-center justify-between border-b-[3px] border-ink bg-ink px-4 py-2.5">
             <span className="font-display text-xs font-extrabold uppercase tracking-[0.06em] text-paper">Notifications</span>
             {items.some((i) => !i.read) ? (

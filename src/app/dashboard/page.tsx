@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
-import { getOrgSummary, getKpiStrip } from "@/lib/dashboard/queries";
+import { getKpiStrip } from "@/lib/dashboard/queries";
 import { getProductOverview, tierLabel } from "@/lib/dashboard/product-overview";
 import { ChannelIcon } from "@/components/dashboard/channel-icon";
 import { StatTile, StatGrid, Panel, StatusPill, UsageMeter, EmptyState } from "@/components/dashboard/ui";
@@ -32,8 +32,7 @@ export default async function DashboardPage() {
     );
   }
 
-  const [org, kpi, overview] = await Promise.all([
-    getOrgSummary(claims.tenant_id),
+  const [kpi, overview] = await Promise.all([
     getKpiStrip(claims.tenant_id),
     getProductOverview(claims.tenant_id),
   ]);
@@ -45,10 +44,7 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">{org?.name ?? "Your organisation"}</p>
-          <h1 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Overview</h1>
-        </div>
+        <h1 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Overview</h1>
         <p className="text-xs font-medium text-gray-600">Calls this billing month · live to the minute</p>
       </header>
 

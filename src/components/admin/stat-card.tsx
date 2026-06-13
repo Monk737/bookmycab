@@ -22,17 +22,14 @@ export function StatCard({
 }) {
   const a = resolveStatAccent(accent, label);
   return (
-    <div className={`border-[3px] border-ink ${a.tint} px-4 py-3 shadow-brut-sm`}>
-      <div className="flex items-start justify-between gap-2">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-gray-700">
-          {label}
-        </p>
-        <span className={`mt-0.5 h-3 w-3 shrink-0 border-2 border-ink ${a.solid}`} aria-hidden="true" />
-      </div>
+    <div className={`border-[3px] border-ink ${a.solid} px-4 py-3 shadow-brut-sm`}>
+      <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-ink/70">
+        {label}
+      </p>
       <p className="mt-1.5 text-2xl font-extrabold tabular-nums tracking-tight text-ink">
         {value}
       </p>
-      {sub != null && <p className="mt-0.5 text-xs font-medium text-gray-700">{sub}</p>}
+      {sub != null && <p className="mt-0.5 text-xs font-semibold text-ink/70">{sub}</p>}
     </div>
   );
 }

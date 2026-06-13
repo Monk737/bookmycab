@@ -113,7 +113,7 @@ export default function Home() {
         <Container>
           <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] lg:gap-16">
             {/* Live call demo */}
-            <div className="order-2 lg:order-1">
+            <div className="order-2 flex justify-center lg:order-1 lg:block">
               <VoiceCall />
             </div>
 

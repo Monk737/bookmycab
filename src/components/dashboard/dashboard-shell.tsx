@@ -207,8 +207,8 @@ export function DashboardShell({ orgName, children, notifications }: { orgName: 
         <header className="flex h-14 shrink-0 items-center justify-between border-b-[3px] border-ink bg-paper px-4 md:hidden">
           {wordmark(false)}
           <div className="flex items-center gap-2">
+            <span className="max-w-[90px] truncate text-xs font-semibold text-gray-600">{orgName}</span>
             {notifications}
-            <span className="max-w-[100px] truncate text-xs font-semibold text-gray-600">{orgName}</span>
             <button
               type="button"
               aria-label={drawerOpen ? "Close menu" : "Open menu"}
