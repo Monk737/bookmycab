@@ -38,6 +38,15 @@ export interface BillingDeps {
     currency: Currency;
     invoiceUrl: string | null;
   }): Promise<void>;
+  /** Email the customer a receipt for a successful subscription payment.
+   *  Optional: best-effort, callers may omit it (e.g. test mocks). */
+  sendPaymentReceivedEmail?(info: {
+    customerEmail: string | null;
+    amountMajor: number;
+    currency: Currency;
+    periodLabel: string | null;
+    invoiceUrl: string | null;
+  }): Promise<void>;
   /** Grant voice top-up credits to `credit_ledger` for a completed credit
    *  top-up Checkout session. INSERT-ONLY + idempotent on
    *  `stripe_payment_intent_id` (the ledger is append-only). Best-effort coupon
@@ -97,7 +106,20 @@ export async function handleStripeEvent(
         await deps.markSetupFeePaid(invoice.id);
         return { action: "setup_fee.paid" };
       }
-      // Subscription cycle payment. For a NEW-MODEL voice subscription, open a
+      // Subscription cycle payment, send the customer a receipt (best-effort;
+      // dep is optional so legacy test mocks need not provide it).
+      const periodLabel =
+        invoice.period_start && invoice.period_end
+          ? `${new Date(invoice.period_start * 1000).toLocaleDateString("en-GB")} – ${new Date(invoice.period_end * 1000).toLocaleDateString("en-GB")}`
+          : null;
+      await deps.sendPaymentReceivedEmail?.({
+        customerEmail: invoice.customer_email ?? null,
+        amountMajor: fromMinor(invoice.amount_paid ?? 0),
+        currency: (invoice.currency ?? "gbp").toUpperCase() as Currency,
+        periodLabel,
+        invoiceUrl: invoice.hosted_invoice_url ?? null,
+      });
+      // For a NEW-MODEL voice subscription, open a
       // fresh voice-calls usage period (resets the shared monthly call pool).
       // resetVoiceCallPool returns false when this invoice's subscription isn't a
       // tracked voice subscription (legacy tenants / chat subs), in which case we

@@ -7,6 +7,8 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
+import { sendEmail } from "@/lib/email/resend";
+import { tenantWelcomeEmail, automationCreatedEmail } from "@/lib/email/templates";
 import { VOICE_PLAN_SPEC, VOICE_PRICE_GBP, type NewTierKey } from "@/lib/billing/pricing";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
@@ -313,6 +315,20 @@ export async function sendInvite(
   if (!audited) {
     console.error("audit write failed for tenant.invite", { tenantId, email });
   }
+
+  // Branded welcome email (best-effort; no-op when Resend is unconfigured). The
+  // secure set-password link is delivered separately by Supabase Auth, so this
+  // only confirms access and points to sign-in. `invitePending` is true on the
+  // fresh-invite path (a new auth user was created) and false when we re-linked
+  // an existing account.
+  const { data: t } = await client.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+  const welcome = tenantWelcomeEmail({
+    tenantName: (t?.name as string | null) ?? "your organisation",
+    role,
+    loginUrl: `${env.NEXT_PUBLIC_SITE_URL}/login`,
+    invitePending: !inviteError,
+  });
+  await sendEmail({ to: email, subject: welcome.subject, html: welcome.html, text: welcome.text });
 
   revalidatePath(`/admin/tenants/${tenantId}`);
   return { fieldErrors: {}, formError: null, ok: true };
@@ -709,6 +725,20 @@ export async function createAutomation(
     targetId: automationId,
     metadata: { name: data.name, type: data.type, dispatch_adapter: data.dispatch_adapter ?? null, engine_workflow_id: data.engine_workflow_id ?? null, vapi_assistant_id: data.vapi_assistant_id ?? null },
   });
+
+  // Notify the tenant's primary contact (best-effort; no-op without Resend).
+  const { data: tRow } = await client.from("tenants").select("name, contact_email").eq("id", tenantId).maybeSingle();
+  const contactEmail = (tRow?.contact_email as string | null) ?? null;
+  if (contactEmail) {
+    const body = automationCreatedEmail({
+      tenantName: (tRow?.name as string | null) ?? "your organisation",
+      automationName: data.name,
+      automationType: data.type,
+      live: wired,
+      dashboardUrl: `${env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+    });
+    await sendEmail({ to: contactEmail, subject: body.subject, html: body.html, text: body.text });
+  }
 
   revalidatePath(`/admin/tenants/${tenantId}`);
   return { fieldErrors: {}, formError: null, ok: true };

@@ -5,7 +5,7 @@ import type { BillingDeps } from "@/lib/billing/handle-event";
 import { periodBounds } from "@/lib/entitlements/meter";
 import { getStripe } from "@/lib/billing/stripe";
 import { sendEmail } from "@/lib/email/resend";
-import { paymentFailedEmail } from "@/lib/email/templates";
+import { paymentFailedEmail, paymentReceivedEmail } from "@/lib/email/templates";
 import type { Currency } from "@/lib/marketing/pricing";
 
 /** The narrow slice of the Supabase client the reset helper needs. Kept minimal
@@ -207,6 +207,20 @@ export function buildBillingDeps(): BillingDeps {
       const recipients = [env.RESEND_FROM_EMAIL];
       if (info.customerEmail) recipients.push(info.customerEmail);
       await sendEmail({ to: recipients, subject: body.subject, html: body.html, text: body.text });
+    },
+
+    async sendPaymentReceivedEmail(info) {
+      // Receipts go to the customer only (no ops copy); skip when Stripe gave us
+      // no email rather than mailing the from-address a receipt for nobody.
+      if (!info.customerEmail) return;
+      const body = paymentReceivedEmail({
+        tenantName: "your organisation",
+        amountMajor: info.amountMajor,
+        currency: info.currency,
+        periodLabel: info.periodLabel,
+        invoiceUrl: info.invoiceUrl,
+      });
+      await sendEmail({ to: info.customerEmail, subject: body.subject, html: body.html, text: body.text });
     },
   };
 }
