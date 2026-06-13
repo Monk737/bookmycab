@@ -6,6 +6,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
+import { inviteUserToTenant } from "@/lib/admin/invite-user";
 import { validateCoupon, redeemCoupon } from "@/lib/admin/coupons";
 import {
   createTenantSchema,
@@ -222,6 +223,29 @@ export async function createTenant(
   });
   if (!audited) {
     console.error("audit write failed for tenant.create", { tenantId });
+  }
+
+  // Onboard the owner: invite the contact email as Owner and email them their
+  // secure sign-in link (via Resend). Best-effort, a tenant is still usable if
+  // this fails, and staff can re-send from the tenant page. Audited as an invite.
+  const invite = await inviteUserToTenant({
+    client: serviceClient,
+    tenantId,
+    tenantName: data.name,
+    email: data.contact_email,
+    role: "Owner",
+  });
+  if (invite.ok && invite.userId) {
+    await writeAudit({
+      actorUserId: claims.sub,
+      tenantId,
+      action: "tenant.invite",
+      targetType: "user",
+      targetId: invite.userId,
+      metadata: { email: data.contact_email, role: "Owner", via: "tenant_create" },
+    });
+  } else {
+    console.error("createTenant: owner invite failed", { tenantId, error: invite.error });
   }
 
   redirect(`/admin/tenants/${tenantId}`);

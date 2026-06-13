@@ -15,17 +15,26 @@ describe("tenantWelcomeEmail", () => {
   const out = tenantWelcomeEmail({
     tenantName: "Speedy Cabs",
     role: "Owner",
-    loginUrl: "https://bookmycab.io/login",
-    invitePending: true,
+    actionUrl: "https://bookmycab.io/auth/v1/verify?token=abc&redirect_to=x",
+    newAccount: true,
   });
-  it("names the org and role, includes the login link", () => {
+  it("names the org and role, includes the secure action link", () => {
     expect(out.subject).toMatch(/Speedy Cabs/);
     expect(out.html).toMatch(/Owner/);
-    expect(out.html).toMatch(/https:\/\/bookmycab\.io\/login/);
-    expect(out.text).toMatch(/https:\/\/bookmycab\.io\/login/);
+    expect(out.html).toMatch(/auth\/v1\/verify\?token=abc/);
+    expect(out.text).toMatch(/auth\/v1\/verify\?token=abc/);
   });
-  it("mentions the separate password email when invite pending", () => {
+  it("prompts to set a password for a new account", () => {
     expect(out.text).toMatch(/set your password/i);
+  });
+  it("existing-account variant prompts to sign in", () => {
+    const ex = tenantWelcomeEmail({
+      tenantName: "Speedy Cabs",
+      role: "Admin",
+      actionUrl: "https://bookmycab.io/magic",
+      newAccount: false,
+    });
+    expect(ex.text).toMatch(/sign in/i);
   });
   it("stays on-brand", () => assertClean(out));
 });

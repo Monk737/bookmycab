@@ -116,33 +116,38 @@ function render(subject: string, s: Section): EmailBody {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Welcome / account-ready email sent when a user is added to a tenant. The
- * secure password-set link is delivered separately by the auth provider; this
- * email confirms the account and points to sign-in.
+ * Welcome / account-ready email sent when a user is added to a tenant. Carries
+ * the secure action link itself (a Supabase invite or magic-link URL), so this
+ * single email both welcomes the user and gets them signed in, no dependency on
+ * the auth provider's own SMTP. `newAccount` switches between "set your
+ * password" (first time) and "sign in" (already had an account).
  */
 export function tenantWelcomeEmail(args: {
   tenantName: string;
   role: string;
-  loginUrl: string;
-  /** True when a separate set-password email was just sent to this address. */
-  invitePending: boolean;
+  /** Secure set-password / sign-in link for the CTA. */
+  actionUrl: string;
+  /** True for a brand-new account (set a password); false for an existing user. */
+  newAccount: boolean;
 }): EmailBody {
-  const paragraphs = [
-    `Welcome to BookMyCab. Your ${args.role} access to ${args.tenantName} is ready.`,
-    args.invitePending
-      ? `We have sent a separate email with a secure link to set your password. Once that is done, you can sign in any time at the link below.`
-      : `You can sign in any time at the link below.`,
-    `From your dashboard you can watch bookings arrive in real time, review conversations and calls, and manage your automation settings.`,
-  ];
+  const paragraphs = args.newAccount
+    ? [
+        `Welcome to BookMyCab. Your ${args.role} access to ${args.tenantName} is ready.`,
+        `Click below to set your password and sign in. From your dashboard you can watch bookings arrive in real time, review conversations and calls, and manage your automation settings.`,
+      ]
+    : [
+        `You've been added to ${args.tenantName} on BookMyCab as ${args.role}.`,
+        `Click below to sign in to your dashboard.`,
+      ];
   return render(`Welcome to BookMyCab, ${args.tenantName}`, {
-    heading: `You're set up on BookMyCab`,
+    heading: args.newAccount ? `Set your password to get started` : `You've been added to ${args.tenantName}`,
     paragraphs,
     facts: [
       ["Organisation", args.tenantName],
       ["Your role", args.role],
     ],
-    cta: { label: "Sign in to your dashboard", url: args.loginUrl },
-    note: "If you weren't expecting this, you can safely ignore this email.",
+    cta: { label: args.newAccount ? "Set your password and sign in" : "Sign in to your dashboard", url: args.actionUrl },
+    note: "This secure link can be used once and expires soon. If you weren't expecting this, you can safely ignore this email.",
   });
 }
 
