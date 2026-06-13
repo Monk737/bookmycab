@@ -16,7 +16,7 @@ Set **Authentication → URL Configuration**:
 
 | Built-in template | Subject line | When it fires |
 |---|---|---|
-| Invite user | `Welcome to BookMyCab — set your password` | Admin adds a tenant user |
+| Invite user | `Welcome to BookMyCab! Your account is ready 🎉` | Admin adds a tenant user |
 | Reset password | `Reset your BookMyCab password` | User requests a password reset |
 | Magic link or OTP | `Your BookMyCab sign-in link` | Passwordless sign-in (if enabled) |
 | Confirm sign up | `Confirm your email to activate BookMyCab` | Self-signup (disabled today) |
@@ -25,7 +25,7 @@ Set **Authentication → URL Configuration**:
 
 ## 1. Invite user
 
-**Subject:** `Welcome to BookMyCab — set your password`
+**Subject:** `Welcome to BookMyCab! Your account is ready 🎉`
 
 ```html
 <!doctype html>
