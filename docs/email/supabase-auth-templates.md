@@ -20,6 +20,7 @@ Set **Authentication → URL Configuration**:
 | Reset password | `Reset your BookMyCab password` | User requests a password reset |
 | Magic link or OTP | `Your BookMyCab sign-in link` | Passwordless sign-in (if enabled) |
 | Confirm sign up | `Confirm your email to activate BookMyCab` | Self-signup (disabled today) |
+| Reauthentication | `Your BookMyCab verification code` | Identity check before a sensitive action |
 
 ---
 
@@ -177,6 +178,51 @@ Set **Authentication → URL Configuration**:
           </td></tr>
           <tr><td style="padding:20px 24px;border-top:2px solid #0a0a0a;">
             <p style="margin:0;font:400 12px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">BookMyCab by FlowMo AI LTD. Need help? Just reply to this email.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>
+```
+
+---
+
+## 5. Reauthentication
+
+**Subject:** `Your BookMyCab verification code`
+
+> Uses `{{ .Token }}` (a 6-digit one-time code), **not** a link. Supabase sends
+> this to verify identity before a sensitive operation; the user types the code
+> back into the app, so there is no button.
+
+```html
+<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#f6f6f4;-webkit-text-size-adjust:100%;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
+      Your BookMyCab verification code is {{ .Token }}.
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
+      <tr><td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
+          <tr><td style="background:#0a0a0a;padding:16px 24px;">
+            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
+            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          </td></tr>
+          <tr><td style="padding:28px 24px 8px;">
+            <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Confirm it's you</h1>
+            <p style="margin:0 0 14px;font:400 15px/1.65 Arial,Helvetica,sans-serif;color:#0a0a0a;">To keep your account secure, enter the code below to confirm this action in BookMyCab.</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:24px 0;"><tr>
+              <td align="center" style="background:#ffd400;border:3px solid #0a0a0a;padding:18px 24px;">
+                <span style="font:800 34px/1 'Courier New',Courier,monospace;color:#0a0a0a;letter-spacing:0.32em;">{{ .Token }}</span>
+              </td>
+            </tr></table>
+            <p style="margin:0 0 8px;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">This code expires in 1 hour and can be used once.</p>
+            <p style="margin:0 0 8px;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">If you didn't start this, you can ignore this email, and please consider changing your password.</p>
+          </td></tr>
+          <tr><td style="padding:20px 24px;border-top:2px solid #0a0a0a;">
+            <p style="margin:0;font:400 12px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">BookMyCab by FlowMo AI LTD. We'll never ask you to share this code with anyone. Need help? Just reply to this email.</p>
           </td></tr>
         </table>
       </td></tr>
