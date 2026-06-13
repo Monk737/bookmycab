@@ -28,18 +28,53 @@ export function AcceptForm() {
 
   useEffect(() => {
     const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "USER_UPDATED") {
-        setSessionState((s) => (s === "loading" ? "valid" : s));
-      } else if (event === "SIGNED_OUT") {
-        setSessionState((s) => (s === "loading" ? "invalid" : s));
+    let cancelled = false;
+
+    async function establish() {
+      // 1. Already have a session (e.g. link reopened after the hash was consumed)?
+      const existing = await supabase.auth.getSession();
+      if (existing.data.session) {
+        if (!cancelled) setSessionState("valid");
+        return;
       }
-    });
-    // Fallback in case the auth event fired before the listener attached.
-    supabase.auth.getSession().then(({ data }) => {
-      setSessionState((s) => (s === "loading" ? (data.session ? "valid" : "invalid") : s));
-    });
-    return () => subscription.unsubscribe();
+
+      // 2. The invite tokens arrive in the URL hash (implicit flow). Parse them
+      //    and set the session explicitly, rather than relying on the client's
+      //    auto-detection (which is unreliable under the PKCE default).
+      const hash = typeof window !== "undefined" ? window.location.hash.replace(/^#/, "") : "";
+      const params = new URLSearchParams(hash);
+
+      if (params.get("error_description") || params.get("error")) {
+        if (!cancelled) setSessionState("invalid");
+        return;
+      }
+
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+      if (accessToken && refreshToken) {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (!cancelled) {
+          if (!error && data.session) {
+            // Strip the tokens from the address bar once they're in the session.
+            window.history.replaceState(null, "", window.location.pathname);
+            setSessionState("valid");
+          } else {
+            setSessionState("invalid");
+          }
+        }
+        return;
+      }
+
+      if (!cancelled) setSessionState("invalid");
+    }
+
+    establish();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -67,6 +102,7 @@ export function AcceptForm() {
       ...(fullName ? { data: { full_name: fullName } } : {}),
     });
     if (error) {
+      console.error("accept-invite: updateUser failed", error);
       setSubmitting(false);
       setFormError("Could not set your password. Your invite link may have expired, please reopen it from your email.");
       return;
