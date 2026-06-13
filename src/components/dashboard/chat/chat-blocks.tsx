@@ -47,7 +47,7 @@ const HEALTH_FILL: Record<string, string> = {
 /** Channel health + volume: one row per connected channel. */
 export function ChannelHealthList({ channels }: { channels: ChannelStat[] }) {
   if (channels.length === 0) {
-    return <p className="text-sm text-gray-600">No channels connected yet. Your build team wires WhatsApp, Messenger, Instagram, Telegram or the web widget into this plan.</p>;
+    return <p className="text-sm text-gray-600">No channels connected yet. Your build team wires WhatsApp into this plan.</p>;
   }
   const max = Math.max(1, ...channels.map((c) => c.conversations));
   return (

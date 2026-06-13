@@ -29,7 +29,7 @@ export default async function ChatPage() {
         <EmptyState
           icon={ChatIcon}
           title="No chat bot yet"
-          body="This account runs AI Voice only. Add a Chat product to take bookings on WhatsApp, Messenger, Instagram, Telegram and your website widget. Your build team sets it up."
+          body="This account runs AI Voice only. Add a Chat product to take bookings on WhatsApp. Your build team sets it up."
           action={
             <Link href="/dashboard/support" className="brut-press inline-flex h-11 items-center border-[3px] border-ink bg-brut-yellow px-5 text-sm font-bold uppercase tracking-[0.04em] text-ink shadow-brut">
               Ask about Chat

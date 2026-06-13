@@ -96,7 +96,7 @@ export default async function DashboardPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="py-4 text-sm text-gray-600">No channels connected yet. Your build team wires WhatsApp, Messenger, Instagram, Telegram or the web widget into this plan.</p>
+                <p className="py-4 text-sm text-gray-600">No channels connected yet. Your build team wires WhatsApp into this plan.</p>
               )
             ) : (
               <p className="py-4 text-sm text-gray-600">This account has no Chat product. Talk to your build team to add multi-channel chat.</p>
