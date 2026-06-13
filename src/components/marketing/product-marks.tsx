@@ -49,7 +49,7 @@ export function VoiceGlyph({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} role="img" aria-label="AI Voice agent">
       <rect x="2" y="2" width="60" height="60" rx="2" fill="#ffd400" stroke="#0a0a0a" strokeWidth="3.5" />
-      <g transform="translate(0 18) scale(1.45)" fill="#ffffff" stroke="#0a0a0a" strokeWidth="2.1" strokeLinejoin="round">
+      <g transform="translate(9 21) scale(1.4)" fill="#ffffff" stroke="#0a0a0a" strokeWidth="2.1" strokeLinejoin="round">
         <path d={PHONE_HANDSET} />
       </g>
       <rect x="33" y="4" width="27" height="19" rx="4" fill="#ff7ac0" stroke="#0a0a0a" strokeWidth="2.6" />
@@ -65,7 +65,7 @@ export function VoiceGlyph({ className = "" }: { className?: string }) {
 export function VoiceMarkLine({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" className={className} role="img" aria-label="AI Voice agent">
-      <g transform="translate(0 18) scale(1.45)" strokeWidth="2.1" strokeLinejoin="round">
+      <g transform="translate(9 21) scale(1.4)" strokeWidth="2.1" strokeLinejoin="round">
         <path d={PHONE_HANDSET} />
       </g>
       <rect x="33" y="4" width="27" height="19" rx="4" strokeWidth="2.6" />
