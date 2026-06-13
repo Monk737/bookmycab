@@ -9,8 +9,7 @@ import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
 import { sendEmail } from "@/lib/email/resend";
-import { automationCreatedEmail } from "@/lib/email/templates";
-import { inviteUserToTenant } from "@/lib/admin/invite-user";
+import { tenantWelcomeEmail, automationCreatedEmail } from "@/lib/email/templates";
 import { VOICE_PLAN_SPEC, VOICE_PRICE_GBP, type NewTierKey } from "@/lib/billing/pricing";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
@@ -237,12 +236,21 @@ const inviteSchema = z.object({
 });
 
 /**
- * Invites a user to a tenant and emails them their secure sign-in link.
+ * Invites a user to a tenant.
  *
- * Delegates to `inviteUserToTenant`, which creates the auth user via
- * `generateLink` and delivers the login link through Resend (not Supabase SMTP),
- * upserts `public.users` + `public.tenant_users`, and handles existing accounts.
- * Acceptance is handled by the /accept-invite flow.
+ * Validates email + role, then uses the service-role Supabase Auth admin API to
+ * create the auth user and send the invite email (local dev → Mailpit). Upserts
+ * `public.users` and `public.tenant_users` so the membership exists before the
+ * Epic 4 /accept-invite flow runs (acceptance is NOT handled here).
+ *
+ * Existing-user handling: `inviteUserByEmail` errors when the email already has
+ * an auth account. Rather than fail, we look the user up by email and link them
+ * to this tenant via a tenant_users upsert, re-inviting an existing person just
+ * (re)attaches them to the tenant, which is the intent. Their existing invite is
+ * not re-sent in that path.
+ *
+ * TODO(resend): custom branded email templating comes later; Supabase's built-in
+ * invite email is acceptable for now.
  */
 export async function sendInvite(
   tenantId: string,
@@ -265,22 +273,90 @@ export async function sendInvite(
   const { email, role } = parsed.data;
   const client = serviceClient();
 
-  const { data: t } = await client.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+  // Create the auth user + send the invite email.
+  const { data: invited, error: inviteError } =
+    await client.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${env.NEXT_PUBLIC_SITE_URL}/accept-invite`,
+    });
 
-  const result = await inviteUserToTenant({
-    client,
-    tenantId,
-    tenantName: (t?.name as string | null) ?? "your organisation",
-    email,
-    role,
-  });
-  if (!result.ok) {
+  let userId = invited?.user?.id ?? null;
+
+  if (inviteError) {
+    // Only fall through to the existing-user path when the error genuinely means
+    // the email is already registered. The Supabase AuthError exposes `status`
+    // (HTTP) and `code` (machine code); an already-registered email is 422 /
+    // `email_exists`. Any other error (429 rate-limit, 503, network) is a hard
+    // failure, attaching some other user who shares this email would be wrong,
+    // and reporting success when no email was sent is worse. So short-circuit.
+    const msg = inviteError.message?.toLowerCase() ?? "";
+    const alreadyRegistered =
+      inviteError.status === 422 ||
+      inviteError.code === "email_exists" ||
+      msg.includes("already");
+
+    if (!alreadyRegistered) {
+      return {
+        fieldErrors: {},
+        formError: "Could not send the invite, please try again.",
+      };
+    }
+
+    // Existing-user path: find their id and link them to this tenant instead of
+    // failing. `public.users.id` mirrors the auth user id (FK to auth.users).
+    const { data: existing } = await client
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (!existing?.id) {
+      return {
+        fieldErrors: {},
+        formError:
+          "Could not invite this user. They may already have an account, check the email and try again.",
+      };
+    }
+    userId = existing.id as string;
+  }
+
+  if (!userId) {
+    // No error but also no user id, treat as a hard failure rather than
+    // proceeding with a null id.
     return {
       fieldErrors: {},
-      formError:
-        result.error === "membership_failed"
-          ? "The invite was created but linking the user to the tenant failed."
-          : "Could not send the invite, please try again.",
+      formError: "Could not send the invite, please try again.",
+    };
+  }
+
+  // Ensure a public.users row exists (the invite creates the auth user, but the
+  // public mirror row is owned by us). Upsert is idempotent on the PK.
+  const { error: userUpsertError } = await client
+    .from("users")
+    .upsert({ id: userId, email }, { onConflict: "id" });
+  if (userUpsertError) {
+    console.error("sendInvite: users upsert failed", userUpsertError);
+  }
+
+  // Link (or re-link) the user to this tenant with the chosen role.
+  const { error: membershipError } = await client.from("tenant_users").upsert(
+    {
+      tenant_id: tenantId,
+      user_id: userId,
+      role,
+      // invited_by FKs to public.users(id). A FlowMo staff auth user may have no
+      // public.users row (no handle_new_user trigger), so claims.sub could
+      // violate the FK (23503) and block the invite. The column is nullable;
+      // actor attribution lives in audit_log, which is the source of truth for
+      // who invited whom.
+      invited_by: null,
+      invited_at: new Date().toISOString(),
+    },
+    { onConflict: "tenant_id,user_id" },
+  );
+  if (membershipError) {
+    return {
+      fieldErrors: {},
+      formError: "The invite was created but linking the user to the tenant failed.",
     };
   }
 
@@ -289,12 +365,26 @@ export async function sendInvite(
     tenantId,
     action: "tenant.invite",
     targetType: "user",
-    targetId: result.userId,
+    targetId: userId,
     metadata: { email, role },
   });
   if (!audited) {
     console.error("audit write failed for tenant.invite", { tenantId, email });
   }
+
+  // Branded welcome email (best-effort; no-op when Resend is unconfigured). The
+  // secure set-password link is delivered separately by Supabase Auth, so this
+  // only confirms access and points to sign-in. `invitePending` is true on the
+  // fresh-invite path (a new auth user was created) and false when we re-linked
+  // an existing account.
+  const { data: t } = await client.from("tenants").select("name").eq("id", tenantId).maybeSingle();
+  const welcome = tenantWelcomeEmail({
+    tenantName: (t?.name as string | null) ?? "your organisation",
+    role,
+    loginUrl: `${env.NEXT_PUBLIC_SITE_URL}/login`,
+    invitePending: !inviteError,
+  });
+  await sendEmail({ to: email, subject: welcome.subject, html: welcome.html, text: welcome.text });
 
   revalidatePath(`/admin/tenants/${tenantId}`);
   return { fieldErrors: {}, formError: null, ok: true };
