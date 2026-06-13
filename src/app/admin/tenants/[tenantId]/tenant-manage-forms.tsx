@@ -192,7 +192,11 @@ const CHAT_TYPES = ["Booking", "Support", "Driver", "Custom"] as const;
 /** Manually provision an automation (Chat bot or Voice agent) for the tenant. */
 export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string; hasVoicePlan: boolean }) {
   const [state, formAction, pending] = useActionState(createAutomation.bind(null, tenantId), initialState);
-  const [type, setType] = useState<string>("Booking");
+  // Default to the tenant's provisioned product: a tenant with a voice plan
+  // almost always wants a Voice agent next (creating a chat "Booking"
+  // automation for a voice tenant yields an orphan with no agent/channel and
+  // hides the Engine wiring panel). Chat-only tenants default to Booking.
+  const [type, setType] = useState<string>(hasVoicePlan ? "Voice" : "Booking");
   const isVoice = type === "Voice";
   const nameId = useId();
   const typeId = useId();
