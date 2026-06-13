@@ -14,8 +14,11 @@ import { env } from "@/env";
  * the visitor to the contact page with a friendly explanation, NOT to a login
  * wall they have no account for.
  */
-export async function GET(request: Request): Promise<NextResponse> {
-  const unavailable = new URL("/contact?demo=unavailable", request.url);
+export async function GET(): Promise<NextResponse> {
+  // Redirects must be absolute. Behind the reverse proxy, request.url resolves
+  // to the container's internal listen address (0.0.0.0:3000), which a browser
+  // cannot follow — so base them on the configured public site URL instead.
+  const unavailable = new URL("/contact?demo=unavailable", env.NEXT_PUBLIC_SITE_URL);
 
   if (!env.DEMO_TENANT_ID) {
     console.warn("/demo: DEMO_TENANT_ID not configured");
@@ -33,5 +36,5 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.redirect(unavailable);
   }
 
-  return NextResponse.redirect(new URL("/dashboard", request.url));
+  return NextResponse.redirect(new URL("/dashboard", env.NEXT_PUBLIC_SITE_URL));
 }
