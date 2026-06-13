@@ -178,7 +178,7 @@ export function automationCreatedEmail(args: {
         ["Type", label],
         ["Status", args.live ? "Live" : "Building"],
       ],
-      cta: { label: "Open your dashboard", url: args.dashboardUrl },
+      cta: { label: "Sign in to your dashboard", url: args.dashboardUrl },
     },
   );
 }

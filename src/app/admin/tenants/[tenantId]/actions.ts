@@ -9,7 +9,7 @@ import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
 import { sendEmail } from "@/lib/email/resend";
-import { tenantWelcomeEmail, automationCreatedEmail } from "@/lib/email/templates";
+import { automationCreatedEmail } from "@/lib/email/templates";
 import { VOICE_PLAN_SPEC, VOICE_PRICE_GBP, type NewTierKey } from "@/lib/billing/pricing";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
@@ -372,19 +372,12 @@ export async function sendInvite(
     console.error("audit write failed for tenant.invite", { tenantId, email });
   }
 
-  // Branded welcome email (best-effort; no-op when Resend is unconfigured). The
-  // secure set-password link is delivered separately by Supabase Auth, so this
-  // only confirms access and points to sign-in. `invitePending` is true on the
-  // fresh-invite path (a new auth user was created) and false when we re-linked
-  // an existing account.
-  const { data: t } = await client.from("tenants").select("name").eq("id", tenantId).maybeSingle();
-  const welcome = tenantWelcomeEmail({
-    tenantName: (t?.name as string | null) ?? "your organisation",
-    role,
-    loginUrl: `${env.NEXT_PUBLIC_SITE_URL}/login`,
-    invitePending: !inviteError,
-  });
-  await sendEmail({ to: email, subject: welcome.subject, html: welcome.html, text: welcome.text });
+  // The invite email itself, the one with the "Set your password" link, is sent
+  // by Supabase Auth (inviteUserByEmail above) using the branded Invite-user
+  // template. We deliberately do NOT also send a Resend "welcome" email here:
+  // it would arrive with a "Sign in to your dashboard" button and compete with
+  // the set-password step. "Sign in to your dashboard" belongs on the
+  // automation-ready email instead (see createAutomation).
 
   revalidatePath(`/admin/tenants/${tenantId}`);
   return { fieldErrors: {}, formError: null, ok: true };
