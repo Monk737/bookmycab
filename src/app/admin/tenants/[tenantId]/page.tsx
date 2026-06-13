@@ -15,7 +15,7 @@ import {
   LifecycleControls,
 } from "./tenant-detail-forms";
 import { EditOrgForm, MembersManager, AddAutomationForm,
-  EngineWiringForm,
+  EngineWiringForm, DeleteAutomationButton,
 } from "./tenant-manage-forms";
 import { BillingPanel } from "./billing-panel";
 import { EntitlementsSection } from "./entitlements-section";
@@ -342,6 +342,15 @@ export default async function TenantDetailPage({
       key: "dispatch_adapter",
       header: "Dispatch",
       render: (a) => <span className="capitalize">{a.dispatch_adapter ?? "·"}</span>,
+    },
+    {
+      key: "actions",
+      header: "",
+      headerClassName: "text-right",
+      cellClassName: "text-right",
+      render: (a) => (
+        <DeleteAutomationButton tenantId={tenantId} automationId={a.id} name={a.name} />
+      ),
     },
   ];
 

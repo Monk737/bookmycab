@@ -713,3 +713,62 @@ export async function createAutomation(
   revalidatePath(`/admin/tenants/${tenantId}`);
   return { fieldErrors: {}, formError: null, ok: true };
 }
+
+/**
+ * Deletes an automation and its engine-side records (voice_agents, channels,
+ * config all cascade on the automation_id FK).
+ *
+ * Guarded against destroying operational history: most automation children
+ * cascade-delete, and bookings/conversations would vanish silently while
+ * append-only tables (calls, usage_events) would block the delete at the DB.
+ * So we refuse when the automation has any booking, call, or conversation
+ * history, an admin must stop a live automation rather than delete it. Removing
+ * an orphaned or never-used automation stays a one-click action. Fully audited.
+ */
+export async function deleteAutomation(
+  tenantId: string,
+  automationId: string,
+): Promise<void> {
+  const claims = await requireStaff();
+  const client = serviceClient();
+
+  const { data: auto } = await client
+    .from("automations")
+    .select("id, name, type")
+    .eq("id", automationId)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (!auto) {
+    throw new Error("Automation not found for this tenant.");
+  }
+
+  // Refuse to delete anything with operational history (would destroy records
+  // or fail against append-only child tables). Count is enough; HEAD requests.
+  const [{ count: bookingCount }, { count: callCount }, { count: convoCount }] =
+    await Promise.all([
+      client.from("bookings").select("id", { count: "exact", head: true }).eq("automation_id", automationId),
+      client.from("calls").select("id", { count: "exact", head: true }).eq("automation_id", automationId),
+      client.from("conversations").select("id", { count: "exact", head: true }).eq("automation_id", automationId),
+    ]);
+  if ((bookingCount ?? 0) > 0 || (callCount ?? 0) > 0 || (convoCount ?? 0) > 0) {
+    throw new Error(
+      "This automation has booking, call, or conversation history and cannot be deleted. Stop it instead to preserve the records.",
+    );
+  }
+
+  const { error } = await client.from("automations").delete().eq("id", automationId);
+  if (error) {
+    throw new Error("Failed to delete the automation. Please try again.");
+  }
+
+  await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "automation.delete",
+    targetType: "automation",
+    targetId: automationId,
+    metadata: { name: auto.name as string, type: auto.type as string },
+  });
+
+  revalidatePath(`/admin/tenants/${tenantId}`);
+}

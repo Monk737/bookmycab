@@ -7,6 +7,7 @@ import {
   updateAutomationWiring,
   setMemberRole,
   removeMember,
+  deleteAutomation,
   type ActionState,
 } from "./actions";
 
@@ -182,6 +183,48 @@ export function MembersManager({ tenantId, members }: { tenantId: string; member
         </tbody>
       </table>
     </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Per-row delete for an automation. The server action refuses automations with
+ * booking/call/conversation history, so this is safe for orphaned/never-used
+ * records; confirm() guards accidental clicks. Errors surface via alert().
+ */
+export function DeleteAutomationButton({
+  tenantId,
+  automationId,
+  name,
+}: {
+  tenantId: string;
+  automationId: string;
+  name: string;
+}) {
+  return (
+    <form
+      action={async () => {
+        try {
+          await deleteAutomation(tenantId, automationId);
+        } catch (err) {
+          alert(err instanceof Error ? err.message : "Failed to delete the automation.");
+        }
+      }}
+      className="inline"
+    >
+      <button
+        type="submit"
+        onClick={(e) => {
+          if (!confirm(`Delete the "${name}" automation? This removes its agent and channel wiring.`)) {
+            e.preventDefault();
+          }
+        }}
+        className="cursor-pointer border-2 border-ink bg-paper px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-brut-red-deep transition-colors hover:bg-brut-red/10"
+      >
+        Delete
+      </button>
+    </form>
   );
 }
 
