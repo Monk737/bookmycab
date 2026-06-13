@@ -52,12 +52,12 @@ export default async function VoicePage() {
 
       {/* Headline figures. */}
       <StatGrid cols="grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <StatTile label="Calls (30d)" value={v.aggregate.totalCalls.toLocaleString("en-GB")} accent="bg-brut-violet" />
-        <StatTile label="Booked rate" value={`${v.aggregate.bookedPct}%`} accent="bg-brut-lime" sub={`${v.aggregate.booked.toLocaleString("en-GB")} booked`} />
-        <StatTile label="Avg length" value={formatDuration(v.aggregate.avgDurationS)} accent="bg-brut-cyan" sub="per call" />
-        <StatTile label="Plan used" value={v.used.toLocaleString("en-GB")} accent="bg-brut-blue" sub="this month" />
-        <StatTile label="Plan remaining" value={v.remaining.toLocaleString("en-GB")} accent="bg-brut-yellow" sub={`of ${v.allowance.toLocaleString("en-GB")}`} />
-        <StatTile label="Credit balance" value={v.creditBalance.toLocaleString("en-GB")} accent="bg-brut-pink" sub="top-up calls" />
+        <StatTile label="Calls (30d)" value={v.aggregate.totalCalls.toLocaleString("en-GB")} />
+        <StatTile label="Booked rate" value={`${v.aggregate.bookedPct}%`} sub={`${v.aggregate.booked.toLocaleString("en-GB")} booked`} />
+        <StatTile label="Avg length" value={formatDuration(v.aggregate.avgDurationS)} sub="per call" />
+        <StatTile label="Plan used" value={v.used.toLocaleString("en-GB")} sub="this month" />
+        <StatTile label="Plan remaining" value={v.remaining.toLocaleString("en-GB")} sub={`of ${v.allowance.toLocaleString("en-GB")}`} />
+        <StatTile label="Credit balance" value={v.creditBalance.toLocaleString("en-GB")} sub="top-up calls" />
       </StatGrid>
 
       {/* Plan pool meter. */}

@@ -4,7 +4,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
-import { StatCard } from "@/components/admin/stat-card";
+import { StatCard, StatCardGrid } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { commercialModelLabel, type CommercialModel } from "@/lib/billing/pricing";
 import { formatPrice, type Currency } from "@/lib/marketing/pricing";
@@ -160,11 +160,11 @@ export default async function TenantsListPage() {
         </Link>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <StatCardGrid className="mt-6 grid-cols-2 sm:grid-cols-3">
         <StatCard label="Total tenants" value={counts.total} />
         <StatCard label="Active" value={counts.active} />
         <StatCard label="Onboarding" value={counts.onboarding} />
-      </div>
+      </StatCardGrid>
 
       {error && (
         <p

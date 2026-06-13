@@ -71,8 +71,8 @@ export function CreditSplit({ block }: { block: VoiceStatBlock }) {
 export function MiniStats({ block }: { block: VoiceStatBlock }) {
   const items = [
     { label: "Calls", value: block.totalCalls.toLocaleString("en-GB"), fill: "bg-brut-cyan" },
-    { label: "Booked", value: `${block.bookedPct}%`, fill: "bg-brut-lime" },
-    { label: "Avg length", value: formatDuration(block.avgDurationS), fill: "bg-brut-violet" },
+    { label: "Booked", value: `${block.bookedPct}%`, fill: "bg-brut-yellow" },
+    { label: "Avg length", value: formatDuration(block.avgDurationS), fill: "bg-brut-lime" },
   ];
   return (
     <div className="grid grid-cols-3 gap-[3px] border-2 border-ink bg-ink">

@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import type { ReactNode, ReactElement } from "react";
+import { Children, cloneElement, isValidElement } from "react";
 import Link from "next/link";
 
 /* ----------------------------------------------------------------------------
@@ -10,46 +11,46 @@ import Link from "next/link";
    -------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------------
-   Stat accent system (shared by StatTile + admin StatCard).
+   Stat colour system (shared by StatTile + admin StatCard).
 
-   Each stat gets a category colour: a soft tint wash on the card (soothing) plus
-   a saturated ink-framed chip + strip (lively). Tailwind only emits classes it
-   sees literally, so every tint/solid is written out here. When no accent is
-   given we hash the label to a stable colour so a grid still reads varied and
-   colourful without per-call-site wiring. All brut colours take dark ink text,
-   so the washes stay WCAG AA.
+   Solid fills from a strict 5-colour palette: black, white, taxi-yellow, lime
+   (#c6f24e), cyan (#5fd9e8). Cards are coloured by their position in the grid
+   via a fixed sequence, so the colours shuffle and no two neighbours ever share
+   a colour. Each colour pins its own text colours for WCAG AA (paper text on
+   ink, ink text on the lights).
    -------------------------------------------------------------------------- */
 
-export type StatAccent = "yellow" | "lime" | "cyan" | "violet" | "pink" | "orange" | "neutral";
+export type StatColor = "yellow" | "lime" | "cyan" | "ink" | "paper";
 
-export const STAT_ACCENT: Record<StatAccent, { tint: string; solid: string }> = {
-  yellow: { tint: "bg-brut-yellow/40", solid: "bg-brut-yellow" },
-  lime: { tint: "bg-brut-lime/45", solid: "bg-brut-lime" },
-  cyan: { tint: "bg-brut-cyan/40", solid: "bg-brut-cyan" },
-  violet: { tint: "bg-brut-violet/40", solid: "bg-brut-violet" },
-  pink: { tint: "bg-brut-pink/35", solid: "bg-brut-pink" },
-  orange: { tint: "bg-brut-orange/40", solid: "bg-brut-orange" },
-  neutral: { tint: "bg-canvas", solid: "bg-gray-300" },
-};
-
-const HASH_PALETTE: StatAccent[] = ["cyan", "lime", "violet", "pink", "orange", "yellow"];
-
-function hashAccent(seed: string): StatAccent {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return HASH_PALETTE[h % HASH_PALETTE.length];
+interface StatStyle {
+  bg: string;
+  label: string;
+  value: string;
+  sub: string;
 }
 
-/**
- * Resolve a stat colour. Accepts a colour name ("cyan"), the legacy bg-class
- * form ("bg-brut-cyan", incl. the no-token "bg-brut-blue" alias → cyan), or
- * nothing (hash the seed to a stable colour).
- */
-export function resolveStatAccent(accent: string | undefined, seed: string): { tint: string; solid: string } {
-  if (!accent || accent === "bg-paper") return STAT_ACCENT[hashAccent(seed)];
-  const name = accent.replace("bg-brut-", "").replace("bg-", "");
-  const key = (name === "blue" ? "cyan" : name) as StatAccent;
-  return STAT_ACCENT[key] ?? STAT_ACCENT[hashAccent(seed)];
+export const STAT_STYLE: Record<StatColor, StatStyle> = {
+  yellow: { bg: "bg-brut-yellow", label: "text-ink/70", value: "text-ink", sub: "text-ink/70" },
+  lime: { bg: "bg-brut-lime", label: "text-ink/70", value: "text-ink", sub: "text-ink/70" },
+  cyan: { bg: "bg-brut-cyan", label: "text-ink/70", value: "text-ink", sub: "text-ink/70" },
+  ink: { bg: "bg-ink", label: "text-paper/65", value: "text-paper", sub: "text-paper/65" },
+  paper: { bg: "bg-paper", label: "text-gray-600", value: "text-ink", sub: "text-gray-600" },
+};
+
+// Consecutive entries differ, so cycling by index never repeats a neighbour
+// across the common 2/3/4/6-column grids.
+const STAT_SEQUENCE: StatColor[] = ["yellow", "ink", "cyan", "paper", "lime"];
+
+function hashIndex(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+/** Pick a stat colour by grid index (preferred) or a stable label hash. */
+export function statColor(index: number | undefined, seed: string): StatStyle {
+  const i = index ?? hashIndex(seed);
+  return STAT_STYLE[STAT_SEQUENCE[i % STAT_SEQUENCE.length]];
 }
 
 /** A single operational stat. Lives inside StatGrid's hairline ink bed. */
@@ -58,34 +59,50 @@ export function StatTile({
   value,
   unit,
   sub,
-  accent,
+  index,
 }: {
   label: string;
   value: string | number;
   unit?: string;
   sub?: ReactNode;
-  /** Category colour: a name ("cyan") or legacy bg-class. Omit to auto-colour. */
-  accent?: string;
+  /** Grid position, injected by StatGrid, drives the shuffled solid colour. */
+  index?: number;
 }) {
-  const a = resolveStatAccent(accent, label);
+  const s = statColor(index, label);
   return (
-    <div className={`flex min-w-0 flex-col ${a.solid}`}>
+    <div className={`flex min-w-0 flex-col ${s.bg}`}>
       <div className="flex flex-1 flex-col px-4 py-4 sm:px-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-ink/70">{label}</p>
-        <p className="mt-2.5 font-mono text-3xl font-bold tabular-nums leading-none text-ink">
+        <p className={`text-[11px] font-bold uppercase tracking-[0.1em] ${s.label}`}>{label}</p>
+        <p className={`mt-2.5 font-mono text-3xl font-bold tabular-nums leading-none ${s.value}`}>
           {value}
-          {unit ? <span className="ml-1 text-base font-semibold text-ink/60">{unit}</span> : null}
+          {unit ? <span className={`ml-1 text-base font-semibold ${s.sub}`}>{unit}</span> : null}
         </p>
-        {sub ? <div className="mt-2 text-xs font-semibold text-ink/70">{sub}</div> : null}
+        {sub ? <div className={`mt-2 text-xs font-semibold ${s.sub}`}>{sub}</div> : null}
       </div>
     </div>
+  );
+}
+
+/**
+ * Injects a sequential `index` into each direct child so a row of StatTiles is
+ * coloured by position (shuffled, no repeated neighbour). Only valid elements
+ * advance the counter, so conditional `{cond && <StatTile/>}` children are safe.
+ */
+function withStatIndex(children: ReactNode): ReactNode {
+  let i = 0;
+  return Children.map(children, (child) =>
+    isValidElement(child)
+      ? cloneElement(child as ReactElement<{ index?: number }>, { index: i++ })
+      : child,
   );
 }
 
 /** Lays stat tiles on a hairline ink bed so the row reads as one framed object. */
 export function StatGrid({ children, cols = "sm:grid-cols-2 lg:grid-cols-3" }: { children: ReactNode; cols?: string }) {
   return (
-    <div className={`grid grid-cols-1 gap-[3px] border-[3px] border-ink bg-ink shadow-brut ${cols}`}>{children}</div>
+    <div className={`grid grid-cols-1 gap-[3px] border-[3px] border-ink bg-ink shadow-brut ${cols}`}>
+      {withStatIndex(children)}
+    </div>
   );
 }
 

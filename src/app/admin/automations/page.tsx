@@ -3,7 +3,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
-import { StatCard } from "@/components/admin/stat-card";
+import { StatCard, StatCardGrid } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { buildEngineDeeplink } from "@/lib/admin/engine-links";
 import { resolveEngineerEmails } from "@/lib/admin/resolve-engineers";
@@ -153,11 +153,11 @@ export default async function AutomationsRegistryPage({
         </p>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <StatCardGrid className="mt-6 grid-cols-2 sm:grid-cols-3">
         <StatCard label="Total" value={automations.length} />
         <StatCard label="Live" value={liveCount} />
         <StatCard label="Building" value={buildingCount} />
-      </div>
+      </StatCardGrid>
 
       <form
         method="get"

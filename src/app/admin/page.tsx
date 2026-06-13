@@ -3,7 +3,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
-import { StatCard } from "@/components/admin/stat-card";
+import { StatCard, StatCardGrid } from "@/components/admin/stat-card";
 import { commercialModelLabel, type CommercialModel } from "@/lib/billing/pricing";
 import {
   formatPrice,
@@ -278,7 +278,7 @@ export default async function AdminOverviewPage() {
       )}
 
       {/* Revenue + contract KPIs */}
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatCardGrid className="mt-6 grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="MRR"
           value={<MoneyByCurrency amounts={mrr} />}
@@ -295,9 +295,9 @@ export default async function AdminOverviewPage() {
           value={newMTD}
           sub={`MTD · ${newYTD} YTD`}
         />
-      </div>
+      </StatCardGrid>
 
-      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatCardGrid className="mt-3 grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Renewing in 30d"
           value={buckets[30]}
@@ -318,20 +318,20 @@ export default async function AdminOverviewPage() {
           value={<MoneyByCurrency amounts={pipeline.totalByCurrency} />}
           sub={`${pipeline.outstanding.length} outstanding`}
         />
-      </div>
+      </StatCardGrid>
 
       {/* Two-product platform — the new commercial model */}
       <section className="mt-8">
         <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
           Two-product platform
         </h2>
-        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCardGrid className="mt-3 grid-cols-2 lg:grid-cols-4">
           <StatCard label="Chat only" value={byModel.chat} sub="commercial_model = chat" />
           <StatCard label="Voice only" value={byModel.voice} sub="commercial_model = voice" />
           <StatCard label="Double decker" value={byModel.double_decker} sub="Chat + AI Voice" />
           <StatCard label="Legacy" value={byModel.legacy} sub="Pre-two-product tenants" />
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        </StatCardGrid>
+        <StatCardGrid className="mt-3 grid-cols-2 lg:grid-cols-4">
           <StatCard label="Voice agents live" value={voiceAgentsLive} sub="Live or in UAT" />
           <StatCard
             label="Voice calls (MTD)"
@@ -348,7 +348,7 @@ export default async function AdminOverviewPage() {
             value={liveAutomations}
             sub="All chat bots + voice agents"
           />
-        </div>
+        </StatCardGrid>
       </section>
 
       {/* Top tenants by MRR */}

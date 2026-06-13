@@ -3,7 +3,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
-import { StatCard } from "@/components/admin/stat-card";
+import { StatCard, StatCardGrid } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { AddCredentialForm } from "./add-credential-form";
 import { CredentialRowActions } from "./credential-row-actions";
@@ -183,11 +183,11 @@ export default async function CredentialsPage() {
         </p>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <StatCardGrid className="mt-6 grid-cols-2 sm:grid-cols-3">
         <StatCard label="Stored credentials" value={rows.length} />
         <StatCard label="Token expiring / expired" value={expiringCount} />
         <StatCard label="Channels" value={channels.length} />
-      </div>
+      </StatCardGrid>
 
       {error && (
         <p

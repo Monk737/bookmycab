@@ -50,12 +50,12 @@ export default async function DashboardPage() {
 
       {/* Operational stat band — six glanceable numbers on one ink bed. */}
       <StatGrid cols="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <StatTile label="Chat channels" value={overview.chat ? overview.chat.channels.length : 0} accent="bg-brut-cyan" sub={overview.chat ? `${chatLive} connected` : "Not provisioned"} />
-        <StatTile label="Voice agents" value={overview.voice ? overview.voice.agents.length : 0} accent="bg-brut-violet" sub={overview.voice ? `${voiceLive} live` : "Not provisioned"} />
-        <StatTile label="Phone numbers" value={overview.phoneNumbers.length} accent="bg-brut-blue" sub="In use across products" />
-        <StatTile label="Calls this month" value={overview.voice ? overview.voice.used.toLocaleString("en-GB") : "—"} accent="bg-brut-yellow" sub={overview.voice ? `of ${overview.voice.allowance.toLocaleString("en-GB")} included` : "No voice plan"} />
-        <StatTile label="Remaining calls" value={overview.voice ? overview.voice.remaining.toLocaleString("en-GB") : "—"} accent="bg-brut-lime" sub={overview.voice ? "Resets next billing month" : "No voice plan"} />
-        <StatTile label="Credit balance" value={overview.voice ? overview.voice.creditBalance.toLocaleString("en-GB") : "—"} accent="bg-brut-pink" sub={overview.voice ? "Top-up calls (carry over)" : "—"} />
+        <StatTile label="Chat channels" value={overview.chat ? overview.chat.channels.length : 0} sub={overview.chat ? `${chatLive} connected` : "Not provisioned"} />
+        <StatTile label="Voice agents" value={overview.voice ? overview.voice.agents.length : 0} sub={overview.voice ? `${voiceLive} live` : "Not provisioned"} />
+        <StatTile label="Phone numbers" value={overview.phoneNumbers.length} sub="In use across products" />
+        <StatTile label="Calls this month" value={overview.voice ? overview.voice.used.toLocaleString("en-GB") : "—"} sub={overview.voice ? `of ${overview.voice.allowance.toLocaleString("en-GB")} included` : "No voice plan"} />
+        <StatTile label="Remaining calls" value={overview.voice ? overview.voice.remaining.toLocaleString("en-GB") : "—"} sub={overview.voice ? "Resets next billing month" : "No voice plan"} />
+        <StatTile label="Credit balance" value={overview.voice ? overview.voice.creditBalance.toLocaleString("en-GB") : "—"} sub={overview.voice ? "Top-up calls (carry over)" : "—"} />
       </StatGrid>
 
       {noProducts ? (

@@ -56,12 +56,12 @@ export default async function ChatPage() {
 
       {/* Headline figures. */}
       <StatGrid cols="grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <StatTile label="Conversations" value={c.aggregate.totalConversations.toLocaleString("en-GB")} accent="bg-brut-cyan" sub="last 30 days" />
-        <StatTile label="Booked rate" value={`${c.aggregate.bookedPct}%`} accent="bg-brut-lime" sub={`${c.aggregate.booked.toLocaleString("en-GB")} booked`} />
-        <StatTile label="Bookings" value={c.aggregate.booked.toLocaleString("en-GB")} accent="bg-brut-yellow" sub="from chat" />
-        <StatTile label="Channels live" value={connected} accent="bg-brut-blue" sub={`of ${c.channels.length} connected`} />
-        <StatTile label="Busiest" value={busiest ? channelLabel(busiest.type) : "—"} accent="bg-brut-violet" sub={busiest ? `${busiest.conversations.toLocaleString("en-GB")} chats` : "No traffic yet"} />
-        <StatTile label="Plan" value={tierLabel(c.tier)} accent="bg-brut-pink" sub="WhatsApp + Voice Note" />
+        <StatTile label="Conversations" value={c.aggregate.totalConversations.toLocaleString("en-GB")} sub="last 30 days" />
+        <StatTile label="Booked rate" value={`${c.aggregate.bookedPct}%`} sub={`${c.aggregate.booked.toLocaleString("en-GB")} booked`} />
+        <StatTile label="Bookings" value={c.aggregate.booked.toLocaleString("en-GB")} sub="from chat" />
+        <StatTile label="Channels live" value={connected} sub={`of ${c.channels.length} connected`} />
+        <StatTile label="Busiest" value={busiest ? channelLabel(busiest.type) : "—"} sub={busiest ? `${busiest.conversations.toLocaleString("en-GB")} chats` : "No traffic yet"} />
+        <StatTile label="Plan" value={tierLabel(c.tier)} sub="WhatsApp + Voice Note" />
       </StatGrid>
 
       {/* Volume + outcomes. */}

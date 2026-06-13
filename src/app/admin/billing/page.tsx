@@ -4,7 +4,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { requireStaff } from "@/lib/admin/guard";
 import { DataTable, type Column } from "@/components/admin/data-table";
-import { StatCard } from "@/components/admin/stat-card";
+import { StatCard, StatCardGrid } from "@/components/admin/stat-card";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { commercialModelLabel, type CommercialModel } from "@/lib/billing/pricing";
 import {
@@ -255,7 +255,7 @@ export default async function BillingPage() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatCardGrid className="mt-6 grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="MRR"
           value={<MoneyByCurrency amounts={mrr} />}
@@ -272,7 +272,7 @@ export default async function BillingPage() {
           value={buckets[30]}
           sub={`${buckets[7]} within 7d · ${buckets[14]} within 14d`}
         />
-      </div>
+      </StatCardGrid>
 
       {loadError && (
         <p
@@ -309,7 +309,7 @@ export default async function BillingPage() {
         <h2 className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
           MRR by product
         </h2>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCardGrid className="mt-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
           {COMMERCIAL_MODELS.map((model) => (
             <StatCard
               key={model}
@@ -317,7 +317,7 @@ export default async function BillingPage() {
               value={<MoneyByCurrency amounts={byModel[model]} />}
             />
           ))}
-        </div>
+        </StatCardGrid>
       </section>
 
       {/* Setup-fee pipeline */}
