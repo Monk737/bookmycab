@@ -208,6 +208,66 @@ export function paymentReceivedEmail(args: {
   });
 }
 
+/**
+ * Voice plan running low: the monthly call pool is near its allowance. Calls
+ * continue (on plan, then on pay-as-you-go credit), this is an early heads-up.
+ */
+export function voiceUsageLowEmail(args: {
+  tenantName: string;
+  remaining: number;
+  allowance: number;
+  dashboardUrl: string;
+}): EmailBody {
+  return render(`Heads up: your BookMyCab call plan is running low`, {
+    heading: `Your call plan is running low`,
+    paragraphs: [
+      `Hi ${args.tenantName}, you've used most of this month's AI Voice call allowance.`,
+      `When the plan is used up, calls keep being answered on pay-as-you-go credit at £0.90 per call. You can top up in advance to stay ahead.`,
+    ],
+    facts: [
+      ["Calls remaining", `${args.remaining}`],
+      ["Monthly allowance", `${args.allowance}`],
+    ],
+    cta: { label: "Review usage and top up", url: args.dashboardUrl },
+  });
+}
+
+/**
+ * Voice plan exhausted. Two cases: `blocked` true means there is no credit left
+ * and new calls can't be answered (urgent); false means the monthly plan is
+ * used up but pay-as-you-go credit is still covering calls (informational).
+ */
+export function voicePlanExhaustedEmail(args: {
+  tenantName: string;
+  creditBalance: number;
+  blocked: boolean;
+  dashboardUrl: string;
+}): EmailBody {
+  if (args.blocked) {
+    return render(`Action needed: BookMyCab can't answer new calls`, {
+      heading: `Your calls are paused`,
+      paragraphs: [
+        `Hi ${args.tenantName}, your monthly AI Voice call plan is used up and there is no pay-as-you-go credit left, so new calls can't be answered right now.`,
+        `Add credit or upgrade your plan to resume answering calls immediately.`,
+      ],
+      facts: [
+        ["Plan status", "Used up"],
+        ["Credit balance", "0"],
+      ],
+      cta: { label: "Add call credit now", url: args.dashboardUrl },
+    });
+  }
+  return render(`Your BookMyCab monthly call plan is used up`, {
+    heading: `Monthly plan used up`,
+    paragraphs: [
+      `Hi ${args.tenantName}, you've used all of this month's AI Voice call allowance. Calls are still being answered using your pay-as-you-go credit.`,
+      `Your plan resets at the start of your next billing month. You can top up any time to avoid interruption.`,
+    ],
+    facts: [["Credit remaining", `${args.creditBalance} calls`]],
+    cta: { label: "Review usage and top up", url: args.dashboardUrl },
+  });
+}
+
 /** Failed subscription payment. Automation keeps running; action requested. */
 export function paymentFailedEmail(args: {
   tenantName: string;

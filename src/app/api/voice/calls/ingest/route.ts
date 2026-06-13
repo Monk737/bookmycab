@@ -4,6 +4,7 @@ import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { bearerMatches } from "@/lib/voice/ingest-auth";
 import { parseIngestBody } from "@/lib/voice/ingest-schema";
+import { maybeNotifyUsage } from "@/lib/voice/usage-notify";
 
 export const runtime = "nodejs";
 
@@ -47,5 +48,25 @@ export async function POST(req: Request) {
       { status: 500 },
     );
   }
+
+  // Usage notifications (running-low / plan-exhausted) — best-effort, and only
+  // for a freshly recorded call (never on idempotent retries). Failures here
+  // must not affect the 200 the voice provider needs.
+  const r = data as Record<string, unknown> | null;
+  if (r && r.duplicate === false) {
+    try {
+      await maybeNotifyUsage({
+        tenantId: d.tenant_id,
+        used: Number(r.used ?? 0),
+        allowance: Number(r.allowance ?? 0),
+        creditBalance: Number(r.credit_balance ?? 0),
+        creditSource: String(r.credit_source ?? "none"),
+        periodStart: String(r.period_start ?? ""),
+      });
+    } catch (e) {
+      console.error("usage notification failed", e);
+    }
+  }
+
   return NextResponse.json(data, { status: 200 });
 }
