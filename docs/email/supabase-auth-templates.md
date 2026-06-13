@@ -21,6 +21,7 @@ Set **Authentication → URL Configuration**:
 | Magic link or OTP | `Your BookMyCab sign-in link` | Passwordless sign-in (if enabled) |
 | Confirm sign up | `Confirm your email to activate BookMyCab` | Self-signup (disabled today) |
 | Reauthentication | `Your BookMyCab verification code` | Identity check before a sensitive action |
+| Change email address | `Confirm your new email address` | User changes their account email |
 
 ---
 
@@ -223,6 +224,54 @@ Set **Authentication → URL Configuration**:
           </td></tr>
           <tr><td style="padding:20px 24px;border-top:2px solid #0a0a0a;">
             <p style="margin:0;font:400 12px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">BookMyCab by FlowMo AI LTD. We'll never ask you to share this code with anyone. Need help? Just reply to this email.</p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>
+```
+
+---
+
+## 6. Change email address
+
+**Subject:** `Confirm your new email address`
+
+> Uses `{{ .ConfirmationURL }}` plus `{{ .Email }}` (current address) and
+> `{{ .NewEmail }}` (the new one). Supabase sends this to the **new** address to
+> confirm the change.
+
+```html
+<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#f6f6f4;-webkit-text-size-adjust:100%;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">
+      Confirm your new email address for BookMyCab.
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f4;padding:24px 12px;">
+      <tr><td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="width:560px;max-width:100%;background:#ffffff;border:3px solid #0a0a0a;">
+          <tr><td style="background:#0a0a0a;padding:16px 24px;">
+            <span style="font:800 20px/1 Arial,Helvetica,sans-serif;color:#ffffff;letter-spacing:-0.02em;">BookMyCab</span>
+            <span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#ffd400;font:700 11px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-transform:uppercase;letter-spacing:0.06em;">Automation</span>
+          </td></tr>
+          <tr><td style="padding:28px 24px 8px;">
+            <h1 style="margin:0 0 16px;font:800 22px/1.25 Arial,Helvetica,sans-serif;color:#0a0a0a;letter-spacing:-0.01em;">Confirm your new email</h1>
+            <p style="margin:0 0 14px;font:400 15px/1.65 Arial,Helvetica,sans-serif;color:#0a0a0a;">We received a request to change the email address on your BookMyCab account. Confirm the new address below to finish the update.</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border:2px solid #0a0a0a;border-collapse:collapse;">
+              <tr style="background:#ffffff;"><td style="padding:8px 12px;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#52525b;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #e4e4e7;">Current</td><td style="padding:8px 12px;font:600 14px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;border-bottom:1px solid #e4e4e7;text-align:right;">{{ .Email }}</td></tr>
+              <tr style="background:#f6f6f4;"><td style="padding:8px 12px;font:600 12px/1.4 Arial,Helvetica,sans-serif;color:#52525b;text-transform:uppercase;letter-spacing:0.04em;">New</td><td style="padding:8px 12px;font:600 14px/1.4 Arial,Helvetica,sans-serif;color:#0a0a0a;text-align:right;">{{ .NewEmail }}</td></tr>
+            </table>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;"><tr>
+              <td style="background:#ffd400;border:3px solid #0a0a0a;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:12px 28px;font:700 15px/1 Arial,Helvetica,sans-serif;color:#0a0a0a;text-decoration:none;letter-spacing:0.02em;">Confirm new email</a></td>
+            </tr></table>
+            <p style="margin:0 0 8px;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">This link expires in 24 hours and can be used once. If the button doesn't work, copy and paste this URL into your browser:</p>
+            <p style="margin:0 0 14px;font:400 12px/1.5 Arial,Helvetica,sans-serif;color:#52525b;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#0a0a0a;">{{ .ConfirmationURL }}</a></p>
+            <p style="margin:0 0 8px;font:400 13px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">If you didn't request this change, you can safely ignore this email and your address stays the same.</p>
+          </td></tr>
+          <tr><td style="padding:20px 24px;border-top:2px solid #0a0a0a;">
+            <p style="margin:0;font:400 12px/1.6 Arial,Helvetica,sans-serif;color:#52525b;">BookMyCab by FlowMo AI LTD. Need help? Just reply to this email.</p>
           </td></tr>
         </table>
       </td></tr>
