@@ -49,6 +49,58 @@ export async function listPendingChannels(): Promise<PendingChannelRow[]> {
   return (data ?? []) as PendingChannelRow[];
 }
 
+/** Channel row enriched with tenant + automation names for the review console. */
+export interface ReviewChannelRow extends PendingChannelRow {
+  tenant_name: string | null;
+  automation_name: string | null;
+  token_expires_at: string | null;
+}
+
+const REVIEW_SELECT =
+  "id, tenant_id, type, external_id, status, provisioning_status, is_self_serve, automation_id, created_at, token_expires_at, tenants(name), automations(name)";
+
+function flattenReview(rows: Record<string, unknown>[]): ReviewChannelRow[] {
+  return rows.map((r) => {
+    const t = Array.isArray(r.tenants) ? r.tenants[0] : r.tenants;
+    const a = Array.isArray(r.automations) ? r.automations[0] : r.automations;
+    return {
+      id: r.id as string,
+      tenant_id: r.tenant_id as string,
+      type: r.type as string,
+      external_id: (r.external_id as string | null) ?? null,
+      status: r.status as string,
+      provisioning_status: r.provisioning_status as string,
+      is_self_serve: Boolean(r.is_self_serve),
+      automation_id: r.automation_id as string,
+      created_at: r.created_at as string,
+      token_expires_at: (r.token_expires_at as string | null) ?? null,
+      tenant_name: ((t as { name?: string } | null)?.name as string | null) ?? null,
+      automation_name: ((a as { name?: string } | null)?.name as string | null) ?? null,
+    };
+  });
+}
+
+/** Pending channels with tenant + automation names attached. */
+export async function listPendingChannelsForReview(): Promise<ReviewChannelRow[]> {
+  const { data } = await svc()
+    .from("channels")
+    .select(REVIEW_SELECT)
+    .eq("provisioning_status", "pending_review")
+    .order("created_at");
+  return flattenReview((data ?? []) as Record<string, unknown>[]);
+}
+
+/** Recently actioned channels (approved or rejected) for an at-a-glance audit. */
+export async function listRecentlyReviewedChannels(limit = 8): Promise<ReviewChannelRow[]> {
+  const { data } = await svc()
+    .from("channels")
+    .select(REVIEW_SELECT)
+    .in("provisioning_status", ["approved", "rejected"])
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return flattenReview((data ?? []) as Record<string, unknown>[]);
+}
+
 /** Admin approve/reject: transitions a pending channel; approval also marks it active. */
 export async function setProvisioning(channelId: string, action: ProvisioningAction): Promise<{ ok: boolean; status?: ProvisioningStatus }> {
   const sb = svc();
