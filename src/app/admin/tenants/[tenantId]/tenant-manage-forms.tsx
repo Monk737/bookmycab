@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { useActionState, useId, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   editOrgProfile,
   createAutomation,
@@ -125,6 +126,22 @@ export type Member = {
 
 /** Per-member management: inline role change + remove (last-Owner protected server-side). */
 export function MembersManager({ tenantId, members }: { tenantId: string; members: Member[] }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+
+  // Run a member mutation that may throw (e.g. the last-Owner guard) and surface
+  // the message as an alert instead of letting it bubble to Next's error page.
+  const run = (fn: () => Promise<void>, fallback: string) =>
+    start(async () => {
+      try {
+        await fn();
+        router.refresh();
+      } catch (e) {
+        alert(e instanceof Error ? e.message : fallback);
+        router.refresh();
+      }
+    });
+
   if (members.length === 0) {
     return (
       <div className="border-[3px] border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center text-sm text-gray-600">
@@ -147,37 +164,42 @@ export function MembersManager({ tenantId, members }: { tenantId: string; member
             <tr key={m.user_id}>
               <td className="px-3 py-2 font-medium text-ink">{m.email}</td>
               <td className="px-3 py-2">
-                <form action={setMemberRole.bind(null, tenantId, m.user_id)} className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <span className={`h-2.5 w-2.5 shrink-0 border-2 border-ink ${ROLE_FILL[m.role] ?? "bg-gray-200"}`} aria-hidden="true" />
                   <select
-                    name="role"
-                    defaultValue={m.role}
+                    value={m.role}
+                    disabled={pending}
                     aria-label={`Role for ${m.email}`}
-                    onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                    className="cursor-pointer border-2 border-ink bg-paper px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-ink outline-none focus-visible:ring-2 focus-visible:ring-ink"
+                    onChange={(e) => {
+                      const role = e.target.value;
+                      const fd = new FormData();
+                      fd.set("role", role);
+                      run(() => setMemberRole(tenantId, m.user_id, fd), "Could not change the role.");
+                    }}
+                    className="cursor-pointer border-2 border-ink bg-paper px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-ink outline-none focus-visible:ring-2 focus-visible:ring-ink disabled:opacity-60"
                   >
                     <option value="Owner">Owner</option>
                     <option value="Admin">Admin</option>
                     <option value="Viewer">Viewer</option>
                   </select>
-                </form>
+                </div>
               </td>
               <td className="px-3 py-2 text-gray-600">{m.accepted_at ? "Yes" : <span className="text-brut-orange">Pending</span>}</td>
               <td className="px-3 py-2 tabular-nums text-gray-600">
                 {m.last_login_at ? new Date(m.last_login_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "·"}
               </td>
               <td className="px-3 py-2 text-right">
-                <form action={removeMember.bind(null, tenantId, m.user_id)} className="inline">
-                  <button
-                    type="submit"
-                    onClick={(e) => {
-                      if (!confirm(`Remove ${m.email} from this organisation?`)) e.preventDefault();
-                    }}
-                    className="cursor-pointer border-2 border-ink bg-paper px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-brut-red-deep transition-colors hover:bg-brut-red/10"
-                  >
-                    Remove
-                  </button>
-                </form>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    if (!confirm(`Remove ${m.email} from this organisation?`)) return;
+                    run(() => removeMember(tenantId, m.user_id), "Could not remove the member.");
+                  }}
+                  className="cursor-pointer border-2 border-ink bg-paper px-2 py-1 text-xs font-bold uppercase tracking-[0.04em] text-brut-red-deep transition-colors hover:bg-brut-red/10 disabled:opacity-60"
+                >
+                  Remove
+                </button>
               </td>
             </tr>
           ))}
