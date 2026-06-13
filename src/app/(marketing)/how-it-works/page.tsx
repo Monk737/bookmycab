@@ -166,11 +166,14 @@ export default function HowItWorksPage() {
         </Container>
       </Section>
 
-      {/* Onboarding journey, clean numbered list. */}
+      {/* Onboarding journey, a connected vertical timeline. */}
       <Section className="py-16 sm:py-24">
         <Container>
           <div className="max-w-2xl">
-            <h2 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
+            <span className="inline-block bg-brut-lime px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-ink">
+              The journey
+            </span>
+            <h2 className="mt-5 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
               How we get you there
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-600">
@@ -179,34 +182,44 @@ export default function HowItWorksPage() {
             </p>
           </div>
 
-          <Reveal as="ol" className="mt-12 divide-y-2 divide-ink border-t-[3px] border-ink">
-            {STEPS.map((step) => (
-              <li
-                key={step.n}
-                className="grid gap-2 py-7 sm:grid-cols-[5rem_1fr] sm:gap-8"
-              >
-                <span className="font-display text-3xl font-extrabold tabular-nums text-ink sm:text-4xl">
-                  {step.n}
-                </span>
-                <div>
-                  <h3 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink sm:text-2xl">
-                    {step.title}
-                  </h3>
-                  <p className="mt-2 max-w-2xl text-base leading-relaxed text-gray-600">
-                    {step.body}
-                  </p>
-                </div>
-              </li>
-            ))}
+          <Reveal as="ol" className="mt-12">
+            {STEPS.map((step, i) => {
+              const tone = ["bg-brut-yellow", "bg-brut-cyan", "bg-brut-lime"][i % 3];
+              const last = i === STEPS.length - 1;
+              return (
+                <li key={step.n} className="flex gap-5 sm:gap-7">
+                  {/* Number node + connecting rail */}
+                  <div className="flex flex-col items-center">
+                    <span
+                      className={`z-10 flex h-14 w-14 shrink-0 items-center justify-center border-[3px] border-ink font-display text-xl font-extrabold tabular-nums text-ink shadow-brut-sm ${tone}`}
+                    >
+                      {step.n}
+                    </span>
+                    {!last && <span aria-hidden="true" className="mt-1.5 w-[3px] flex-1 bg-ink" />}
+                  </div>
+                  <div className={`min-w-0 pt-2.5 ${last ? "pb-0" : "pb-9"}`}>
+                    <h3 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink sm:text-2xl">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 max-w-2xl text-base leading-relaxed text-gray-600">
+                      {step.body}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
           </Reveal>
         </Container>
       </Section>
 
-      {/* Booking modes, differentiated list. */}
+      {/* Booking modes, three differentiated cards. */}
       <Section className="bg-canvas py-16 sm:py-24">
         <Container>
           <div className="max-w-2xl">
-            <h2 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
+            <span className="inline-block bg-brut-yellow px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-ink">
+              Booking modes
+            </span>
+            <h2 className="mt-5 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
               Every booking mode, one conversation
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-gray-600">
@@ -214,24 +227,28 @@ export default function HowItWorksPage() {
               single natural conversation with your customer.
             </p>
           </div>
-          <dl className="mt-10 divide-y-2 divide-ink border-t-[3px] border-ink">
-            {BOOKING_MODES.map((mode) => (
-              <div
-                key={mode.title}
-                className="grid gap-2 py-7 sm:grid-cols-[14rem_1fr] sm:gap-10"
-              >
-                <dt className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">
-                  {mode.title}
-                </dt>
-                <dd className="max-w-2xl text-base leading-relaxed text-gray-600">
-                  {mode.body}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <Reveal className="mt-10 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-3">
+            {BOOKING_MODES.map((mode, i) => {
+              const tone = ["bg-brut-yellow", "bg-brut-cyan", "bg-brut-lime"][i % 3];
+              return (
+                <div key={mode.title} className="flex flex-col bg-paper p-7">
+                  <span className={`flex h-12 w-12 items-center justify-center border-[3px] border-ink text-ink shadow-brut-sm ${tone}`}>
+                    <BookingModeIcon mode={mode.title} />
+                  </span>
+                  <h3 className="mt-5 font-display text-xl font-extrabold uppercase tracking-tight text-ink">
+                    {mode.title}
+                  </h3>
+                  <p className="mt-2.5 text-base leading-relaxed text-gray-600">
+                    {mode.body}
+                  </p>
+                </div>
+              );
+            })}
+          </Reveal>
         </Container>
       </Section>
 
+      {/* Booking-mode icons rendered via BookingModeIcon below. */}
       {/* Closing CTA band, homepage parity. */}
       <Section className="pb-20 pt-4 sm:pb-28">
         <Container>
@@ -258,4 +275,18 @@ export default function HowItWorksPage() {
       </Section>
     </>
   );
+}
+
+/** Distinct line icon per booking mode: ASAP (speed), Scheduled (calendar), Airport (plane). */
+function BookingModeIcon({ mode }: { mode: string }) {
+  const cls = "h-6 w-6";
+  const props = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.25, strokeLinecap: "square" as const, strokeLinejoin: "miter" as const, className: cls, "aria-hidden": true };
+  if (mode === "ASAP") {
+    return <svg {...props}><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg>;
+  }
+  if (mode === "Scheduled") {
+    return <svg {...props}><path d="M4 6h16v15H4zM4 10h16M8 3v4M16 3v4M9 14h2v3" /></svg>;
+  }
+  // Airport pickup
+  return <svg {...props}><path d="M2 13l9-2 5-9 2 1-2 9 6 4v2l-7-2-3 5-2-1 1-5-5-1-1 2-2-1z" /></svg>;
 }

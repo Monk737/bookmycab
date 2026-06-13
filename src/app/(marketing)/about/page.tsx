@@ -146,28 +146,34 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      {/* Principles, numbered manifesto list. */}
+      {/* Principles, a 2-up grid of numbered cards. */}
       <Section className="py-14 sm:py-20">
         <Container>
-          <h2 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
+          <span className="inline-block bg-brut-lime px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-ink">
+            What we believe
+          </span>
+          <h2 className="mt-5 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
             How we work
           </h2>
-          <Reveal as="ol" className="mt-10 divide-y-2 divide-ink border-t-[3px] border-ink">
-            {PRINCIPLES.map((principle, i) => (
-              <li key={principle.title} className="grid gap-3 py-7 sm:grid-cols-[4rem_1fr] sm:gap-8">
-                <span className="font-display text-3xl font-extrabold tabular-nums text-ink sm:text-4xl">
-                  0{i + 1}
-                </span>
-                <div>
-                  <h3 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink sm:text-2xl">
+          <Reveal className="mt-10 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2">
+            {PRINCIPLES.map((principle, i) => {
+              const tone = ["bg-brut-yellow", "bg-brut-cyan", "bg-brut-lime", "bg-paper"][i % 4];
+              return (
+                <div key={principle.title} className="flex flex-col bg-paper p-7 sm:p-8">
+                  <span
+                    className={`flex h-12 w-12 items-center justify-center border-[3px] border-ink font-display text-lg font-extrabold tabular-nums text-ink shadow-brut-sm ${tone}`}
+                  >
+                    0{i + 1}
+                  </span>
+                  <h3 className="mt-5 font-display text-xl font-extrabold uppercase tracking-tight text-ink sm:text-2xl">
                     {principle.title}
                   </h3>
-                  <p className="mt-2 max-w-2xl text-base leading-relaxed text-gray-700">
+                  <p className="mt-2.5 text-base leading-relaxed text-gray-700">
                     {principle.body}
                   </p>
                 </div>
-              </li>
-            ))}
+              );
+            })}
           </Reveal>
         </Container>
       </Section>
@@ -192,14 +198,23 @@ export default function AboutPage() {
         </Container>
       </Section>
 
-      {/* What we won't do, punchy anti-promises. */}
+      {/* What we won't do, bold anti-promises on a dark panel. */}
       <Section className="border-t-[3px] border-ink bg-canvas py-14 sm:py-20">
         <Container>
           <div className="grid gap-10 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-16">
-            <h2 className="font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
-              Things we will never do
-            </h2>
-            <ul className="grid gap-[3px] self-start overflow-hidden border-[3px] border-ink bg-ink shadow-brut">
+            <div>
+              <span className="inline-block border-2 border-ink bg-brut-red px-2 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-ink">
+                Our line in the sand
+              </span>
+              <h2 className="mt-5 font-display text-3xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
+                Things we will never do
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-gray-700">
+                The shortcuts other vendors take, and the reasons firms get burned. We
+                don&apos;t.
+              </p>
+            </div>
+            <Reveal as="ul" className="grid gap-4 self-start sm:grid-cols-2">
               {[
                 "Sell you a half-finished bot and bill you to fix it",
                 "Take ownership of your customers or your numbers",
@@ -209,18 +224,18 @@ export default function AboutPage() {
               ].map((line) => (
                 <li
                   key={line}
-                  className="flex items-center gap-3 bg-paper px-5 py-4 text-base font-bold text-ink"
+                  className="brut-hover-lift flex items-start gap-4 border-[3px] border-ink bg-ink px-5 py-5 shadow-brut"
                 >
                   <span
                     aria-hidden="true"
-                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center border-2 border-ink bg-brut-red text-sm font-extrabold text-ink"
+                    className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center border-2 border-paper bg-brut-red text-lg font-extrabold text-ink"
                   >
                     ✕
                   </span>
-                  {line}
+                  <span className="text-base font-bold leading-snug text-paper">{line}</span>
                 </li>
               ))}
-            </ul>
+            </Reveal>
           </div>
         </Container>
       </Section>

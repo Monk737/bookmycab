@@ -229,15 +229,13 @@ function Waveform({ active, small = false, className = "" }: { active: boolean; 
   );
 }
 
-/** Headset-agent avatar (matches VoiceMarkLine) rendered in ink on the chip. */
+/** Phone-call mark (matches VoiceMarkLine) rendered in ink on the chip. */
 function MicIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#0a0a0a" strokeWidth="2.1" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true">
-      <path d="M5 12a7 7 0 0 1 14 0" />
-      <path d="M4 12.5h2.2v4H4zM17.8 12.5H20v4h-2.2z" fill="#0a0a0a" />
-      <circle cx="12" cy="10.5" r="3.2" />
-      <path d="M6 21a6 6 0 0 1 12 0" />
-      <path d="M18.5 16.5v.8a3 3 0 0 1-3 3H13" />
+    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#0a0a0a" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M15.7 13.5a8.5 8.5 0 0 1-3.2-3.2l1.4-1.4a1.1 1.1 0 0 0 .2-1.2L12.6 4.2a1.1 1.1 0 0 0-1.2-.6l-2.8.5A1.3 1.3 0 0 0 7.6 5.7 13.6 13.6 0 0 0 18.3 16.4a1.3 1.3 0 0 0 1.4-1l.5-2.8a1.1 1.1 0 0 0-.6-1.2l-3.5-1.3a1.1 1.1 0 0 0-1.2.2z" />
+      <path d="M16.3 2.6a6.2 6.2 0 0 1 5 5.1" />
+      <path d="M15.4 6.4a2.7 2.7 0 0 1 2.2 2.4" />
     </svg>
   );
 }
