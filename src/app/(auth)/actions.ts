@@ -215,6 +215,35 @@ export async function acceptInvite(
   const { fullName, password } = parsed.data;
   const supabase = await createClient();
 
+  // Guard against accepting under the WRONG session. If the invite link is
+  // opened in a browser already signed in as someone else (e.g. a FlowMo admin),
+  // the cookie session is that other user, and updateUser would change THEIR
+  // password instead of the invitee's. A genuine invitee always has a pending
+  // (accepted_at IS NULL) tenant_users row; if the current session user has none,
+  // refuse and tell them to use a clean window.
+  const { data: { user: sessionUser } } = await supabase.auth.getUser();
+  if (!sessionUser) {
+    return {
+      fieldErrors: {},
+      formError: "Your invite session has expired. Please reopen the link from your email.",
+    };
+  }
+  const guardClient = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const { data: pendingMembership } = await guardClient
+    .from("tenant_users")
+    .select("user_id")
+    .eq("user_id", sessionUser.id)
+    .is("accepted_at", null)
+    .limit(1)
+    .maybeSingle();
+  if (!pendingMembership) {
+    return {
+      fieldErrors: {},
+      formError:
+        "You're already signed in as another account in this browser. Open the invite link in a private/incognito window so it sets up the new account, not your current one.",
+    };
+  }
+
   // 1. Update the user's password (and display name if provided).
   const updatePayload: Parameters<typeof supabase.auth.updateUser>[0] = { password };
   if (fullName) {
