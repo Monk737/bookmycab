@@ -20,7 +20,7 @@ import Link from "next/link";
    ink, ink text on the lights).
    -------------------------------------------------------------------------- */
 
-export type StatColor = "yellow" | "lime" | "cyan" | "ink" | "paper";
+export type StatColor = "yellow" | "lime" | "cyan" | "blue" | "ink" | "paper";
 
 interface StatStyle {
   bg: string;
@@ -33,6 +33,7 @@ export const STAT_STYLE: Record<StatColor, StatStyle> = {
   yellow: { bg: "bg-brut-yellow", label: "text-ink/70", value: "text-ink", sub: "text-ink/70" },
   lime: { bg: "bg-brut-lime", label: "text-ink/70", value: "text-ink", sub: "text-ink/70" },
   cyan: { bg: "bg-brut-cyan", label: "text-ink/70", value: "text-ink", sub: "text-ink/70" },
+  blue: { bg: "bg-brut-blue", label: "text-paper/85", value: "text-paper", sub: "text-paper/85" },
   ink: { bg: "bg-ink", label: "text-paper/65", value: "text-paper", sub: "text-paper/65" },
   paper: { bg: "bg-paper", label: "text-gray-600", value: "text-ink", sub: "text-gray-600" },
 };
@@ -60,6 +61,7 @@ export function StatTile({
   unit,
   sub,
   index,
+  color,
 }: {
   label: string;
   value: string | number;
@@ -67,8 +69,10 @@ export function StatTile({
   sub?: ReactNode;
   /** Grid position, injected by StatGrid, drives the shuffled solid colour. */
   index?: number;
+  /** Explicit colour override (skips the shuffled-by-position colour). */
+  color?: StatColor;
 }) {
-  const s = statColor(index, label);
+  const s = color ? STAT_STYLE[color] : statColor(index, label);
   return (
     <div className={`flex min-w-0 flex-col ${s.bg}`}>
       <div className="flex flex-1 flex-col px-4 py-4 sm:px-5">

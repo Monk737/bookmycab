@@ -103,7 +103,7 @@ export default async function DashboardPage() {
                 <p className="py-4 text-sm text-gray-600">No channels connected yet. Your build team wires WhatsApp into this plan.</p>
               )
             ) : (
-              <p className="py-4 text-sm text-gray-600">This account has no Chat product. Talk to your build team to add multi-channel chat.</p>
+              <p className="py-4 text-sm text-gray-600">This account has no Chat product. Talk to your build team to add a WhatsApp chatbot.</p>
             )}
           </Panel>
 
@@ -163,9 +163,9 @@ export default async function DashboardPage() {
 
       {/* Today's activity — real figures from the live feed. */}
       <div className="mt-5 grid grid-cols-3 gap-[3px] border-[3px] border-ink bg-ink shadow-brut">
-        <StatTile label="Bookings today" value={kpi.bookingsToday} sub="Confirmed to dispatch" />
-        <StatTile label="Conversations today" value={kpi.conversationsToday} sub="Across all channels" />
-        <StatTile label="Live automations" value={kpi.liveAutomations} sub="Chat + voice, running now" />
+        <StatTile label="Bookings today" value={kpi.bookingsToday} sub="Confirmed to dispatch" color="ink" />
+        <StatTile label="Conversations today" value={kpi.conversationsToday} sub="Across all channels" color="yellow" />
+        <StatTile label="Live automations" value={kpi.liveAutomations} sub="Chat + voice, running now" color="blue" />
       </div>
     </div>
   );
