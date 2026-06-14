@@ -4,8 +4,10 @@ import { getVoiceAnalytics, formatDuration } from "@/lib/dashboard/product-overv
 import { StatTile, StatGrid, Panel, StatusPill, UsageMeter, EmptyState } from "@/components/dashboard/ui";
 import { CallsTrend } from "@/components/dashboard/voice/calls-trend";
 import { OutcomeBars, CreditSplit, MiniStats } from "@/components/dashboard/voice/voice-blocks";
-import { BookingsPanel } from "@/components/dashboard/voice/bookings-panel";
-import { getVoiceBookings } from "@/lib/voice/bookings";
+import { CallsLog } from "@/components/dashboard/voice/calls-log";
+import { BookingsLog } from "@/components/dashboard/voice/bookings-log";
+import { getVoiceCallLog } from "@/lib/voice/call-log";
+import { getVoiceBookingEvents } from "@/lib/voice/booking-events";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
 
 export const metadata = { title: "AI Voice · BookMyCab" };
@@ -39,7 +41,10 @@ export default async function VoicePage() {
     );
   }
 
-  const bookings = await getVoiceBookings(claims.tenant_id, 20);
+  const [callLog, bookingEvents] = await Promise.all([
+    getVoiceCallLog(claims.tenant_id, 90),
+    getVoiceBookingEvents(claims.tenant_id, 90),
+  ]);
   const hasCalls = v.aggregate.totalCalls > 0;
   const multiAgent = v.perAgent.length > 1;
 
@@ -101,49 +106,11 @@ export default async function VoicePage() {
         </div>
       </div>
 
-      {/* Recent calls — the Vapi end-of-call analysis, verbatim. */}
-      {v.recent.length > 0 && (
-        <div className="mt-5">
-          <Panel title="Recent calls">
-            <ul className="divide-y-2 divide-gray-100">
-              {v.recent.map((c) => (
-                <li key={c.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span className="font-mono text-xs tabular-nums text-gray-500">
-                      {new Date(c.startedAt).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-[0.04em] text-ink">{c.agentName}</span>
-                    {c.caller ? <span className="font-mono text-xs text-gray-500">{c.caller}</span> : null}
-                    <span className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${
-                      c.outcome === "booked" ? "bg-brut-lime" : c.outcome === "quoted" ? "bg-brut-cyan" : c.outcome === "no_credit" || c.outcome === "failed" ? "bg-brut-pink" : "bg-gray-100"
-                    }`}>
-                      {c.outcome.replace("_", " ")}
-                    </span>
-                    {c.durationS != null ? (
-                      <span className="font-mono text-xs tabular-nums text-gray-500">{formatDuration(c.durationS)}</span>
-                    ) : null}
-                    <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-gray-400">
-                      {c.creditSource === "plan" ? "plan call" : c.creditSource === "topup" ? "top-up credit" : "not charged"}
-                    </span>
-                    {c.success != null ? (
-                      <span className={`text-[10px] font-bold uppercase tracking-[0.06em] ${c.success ? "text-ink" : "text-brut-red-deep"}`}>
-                        {c.success ? "✓ goal met" : "✗ goal missed"}
-                      </span>
-                    ) : null}
-                  </div>
-                  {c.summary ? (
-                    <p className="max-w-3xl text-sm leading-relaxed text-gray-700">{c.summary}</p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </Panel>
-        </div>
-      )}
-
-      {/* Live booking ledger mirrored from Autocab. */}
-      <div className="mt-5">
-        <BookingsPanel rows={bookings} />
+      {/* Day-filtered logs: calls (left) + bookings (right) on desktop, stacked on mobile.
+          Each keeps its full history; the calendar picks a day and the list scrolls. */}
+      <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-2">
+        <CallsLog calls={callLog} />
+        <BookingsLog events={bookingEvents} />
       </div>
 
       {/* Per-agent split (only when more than one agent). */}
