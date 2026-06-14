@@ -4,6 +4,8 @@ import { getVoiceAnalytics, formatDuration } from "@/lib/dashboard/product-overv
 import { StatTile, StatGrid, Panel, StatusPill, UsageMeter, EmptyState } from "@/components/dashboard/ui";
 import { CallsTrend } from "@/components/dashboard/voice/calls-trend";
 import { OutcomeBars, CreditSplit, MiniStats } from "@/components/dashboard/voice/voice-blocks";
+import { BookingsPanel } from "@/components/dashboard/voice/bookings-panel";
+import { getVoiceBookings } from "@/lib/voice/bookings";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
 
 export const metadata = { title: "AI Voice · BookMyCab" };
@@ -37,6 +39,7 @@ export default async function VoicePage() {
     );
   }
 
+  const bookings = await getVoiceBookings(claims.tenant_id, 20);
   const hasCalls = v.aggregate.totalCalls > 0;
   const multiAgent = v.perAgent.length > 1;
 
@@ -137,6 +140,11 @@ export default async function VoicePage() {
           </Panel>
         </div>
       )}
+
+      {/* Live booking ledger mirrored from Autocab. */}
+      <div className="mt-5">
+        <BookingsPanel rows={bookings} />
+      </div>
 
       {/* Per-agent split (only when more than one agent). */}
       {multiAgent ? (
