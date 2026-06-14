@@ -44,7 +44,13 @@ export function CallsLog({ calls }: { calls: VoiceCallLogRow[] }) {
       items={calls}
       getKey={(c) => c.id}
       getDate={(c) => localDateKey(c.startedAt)}
+      getSearchText={(c) =>
+        [c.agentName, c.caller, c.outcome.replace("_", " "), c.creditSource, c.summary, fmtDateTime(c.startedAt)]
+          .filter(Boolean)
+          .join(" ")
+      }
       renderItem={CallRow}
+      searchPlaceholder="Search caller, outcome, summary…"
       emptyLabel="No calls on this day."
       noneLabel="No calls recorded yet. When your AI Voice agent answers a call, it lands here."
     />

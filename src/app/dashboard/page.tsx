@@ -1,17 +1,12 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { getKpiStrip } from "@/lib/dashboard/queries";
-import { getProductOverview, tierLabel } from "@/lib/dashboard/product-overview";
-import { ChannelIcon } from "@/components/dashboard/channel-icon";
-import { StatTile, StatGrid, Panel, StatusPill, UsageMeter, EmptyState } from "@/components/dashboard/ui";
+import { getProductOverview } from "@/lib/dashboard/product-overview";
+import { getTenantAutomations } from "@/lib/dashboard/automations";
+import { AutomationCard } from "@/components/dashboard/automation-card";
+import { StatTile, StatGrid, EmptyState } from "@/components/dashboard/ui";
 
-const CHANNEL_LABEL: Record<string, string> = {
-  whatsapp: "WhatsApp",
-  telegram: "Telegram",
-  messenger: "Messenger",
-  instagram: "Instagram",
-  widget: "Web widget",
-};
+const AUTOMATION_WINDOW_DAYS = 30;
 
 export default async function DashboardPage() {
   const claims = await requireUser();
@@ -32,14 +27,14 @@ export default async function DashboardPage() {
     );
   }
 
-  const [kpi, overview] = await Promise.all([
+  const [kpi, overview, automations] = await Promise.all([
     getKpiStrip(claims.tenant_id),
     getProductOverview(claims.tenant_id),
+    getTenantAutomations(claims.tenant_id, AUTOMATION_WINDOW_DAYS),
   ]);
 
   const chatLive = overview.chat ? overview.chat.channels.filter((c) => c.health !== "disconnected").length : 0;
   const voiceLive = overview.voice ? overview.voice.agents.filter((a) => a.status === "live" || a.status === "uat").length : 0;
-  const noProducts = !overview.chat && !overview.voice;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -58,7 +53,7 @@ export default async function DashboardPage() {
         <StatTile label="Credit balance" value={overview.voice ? overview.voice.creditBalance.toLocaleString("en-GB") : "—"} sub={overview.voice ? "Top-up calls (carry over)" : "—"} />
       </StatGrid>
 
-      {noProducts ? (
+      {automations.length === 0 ? (
         <div className="mt-6">
           <EmptyState
             icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className="h-6 w-6"><path d="M4 5h16v11H7l-3 3z" /></svg>}
@@ -72,74 +67,15 @@ export default async function DashboardPage() {
           />
         </div>
       ) : (
-        <div className="mt-6 grid gap-5 lg:grid-cols-2">
-          {/* Chat product */}
-          <Panel
-            title="Chat"
-            badge={overview.chat ? <span className="border-2 border-ink bg-brut-cyan px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">{tierLabel(overview.chat.tier)}</span> : null}
-            action={overview.chat ? { label: "Open", href: "/dashboard/chat" } : undefined}
-          >
-            {overview.chat ? (
-              overview.chat.channels.length > 0 ? (
-                <ul className="divide-y-2 divide-gray-100">
-                  {overview.chat.channels.map((c, i) => (
-                    <li key={`${c.type}-${i}`} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <ChannelIcon type={c.type} health={c.health} />
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-ink">{CHANNEL_LABEL[c.type] ?? c.type}</p>
-                          {c.handle ? <p className="truncate font-mono text-xs text-gray-500">{c.handle}</p> : null}
-                        </div>
-                      </div>
-                      <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.06em] text-gray-600">{c.health}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="py-4 text-sm text-gray-600">No channels connected yet. Your build team wires WhatsApp into this plan.</p>
-              )
-            ) : (
-              <p className="py-4 text-sm text-gray-600">This account has no Chat product. Talk to your build team to add multi-channel chat.</p>
-            )}
-          </Panel>
-
-          {/* Voice product */}
-          <Panel
-            title="AI Voice"
-            badge={overview.voice ? <span className="border-2 border-ink bg-brut-violet px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink">{tierLabel(overview.voice.tier)}</span> : null}
-            action={overview.voice ? { label: "Analytics", href: "/dashboard/voice" } : undefined}
-          >
-            {overview.voice ? (
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-1.5 flex items-baseline justify-between">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-600">Plan calls used</p>
-                    <p className="font-mono text-xs font-bold tabular-nums text-ink">
-                      {overview.voice.used.toLocaleString("en-GB")} / {overview.voice.allowance.toLocaleString("en-GB")}
-                    </p>
-                  </div>
-                  <UsageMeter used={overview.voice.used} total={overview.voice.allowance} />
-                </div>
-                {overview.voice.agents.length > 0 ? (
-                  <ul className="divide-y-2 divide-gray-100">
-                    {overview.voice.agents.map((a) => (
-                      <li key={a.id} className="flex items-center justify-between gap-3 py-3 first:pt-0">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-ink">{a.name}</p>
-                          {a.phone ? <p className="font-mono text-xs text-gray-500">{a.phone}</p> : null}
-                        </div>
-                        <StatusPill status={a.status} />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-600">No voice agents provisioned yet.</p>
-                )}
-              </div>
-            ) : (
-              <p className="py-4 text-sm text-gray-600">This account has no AI Voice product. Talk to your build team to add a voice agent.</p>
-            )}
-          </Panel>
+        <div className="mt-6">
+          <h2 className="mb-4 font-display text-xl font-extrabold uppercase tracking-tight text-ink">
+            {automations.length === 1 ? "Your automation" : "Your automations"}
+          </h2>
+          <div className={automations.length === 1 ? "grid gap-5" : "grid gap-5 lg:grid-cols-2"}>
+            {automations.map((a) => (
+              <AutomationCard key={a.id} a={a} windowDays={AUTOMATION_WINDOW_DAYS} />
+            ))}
+          </div>
         </div>
       )}
 

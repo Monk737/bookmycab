@@ -54,7 +54,13 @@ export function BookingsLog({ events }: { events: VoiceBookingEventRow[] }) {
       items={events}
       getKey={(b) => b.id}
       getDate={(b) => localDateKey(b.occurred_at)}
+      getSearchText={(b) =>
+        [b.booking_ref, ACTION_LABEL[b.action] ?? b.action, b.pickup, b.destination, b.passenger_name, b.vehicle_type, b.fare]
+          .filter(Boolean)
+          .join(" ")
+      }
       renderItem={BookingRow}
+      searchPlaceholder="Search ref, address, passenger…"
       emptyLabel="No booking activity on this day."
       noneLabel="No bookings yet. Each booking your agent confirms, modifies or cancels lands here."
     />
