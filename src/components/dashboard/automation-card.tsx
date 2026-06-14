@@ -18,14 +18,17 @@ function fmtDur(s: number): string {
   return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
 }
 
-function Stat({ value, label }: { value: string | number; label: string }) {
+function Stat({ value, label, color }: { value: string | number; label: string; color: string }) {
   return (
-    <div className="bg-paper px-3 py-3">
+    <div className={`px-3 py-3 ${color}`}>
       <p className="font-mono text-xl font-extrabold tabular-nums text-ink">{value}</p>
-      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.07em] text-gray-500">{label}</p>
+      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.07em] text-ink/70">{label}</p>
     </div>
   );
 }
+
+// Four vibrant tiles, no two adjacent the same.
+const STAT_COLORS = ["bg-brut-yellow", "bg-brut-lime", "bg-brut-cyan", "bg-brut-pink"];
 
 /**
  * One deployed automation (Chat or AI Voice), with its identity and the work it
@@ -74,17 +77,17 @@ export function AutomationCard({ a, windowDays }: { a: AutomationCardData; windo
           <div className="grid grid-cols-2 gap-[3px] border-[3px] border-ink bg-ink sm:grid-cols-4">
             {a.isVoice && a.voice ? (
               <>
-                <Stat value={a.voice.calls.toLocaleString("en-GB")} label="Calls" />
-                <Stat value={a.voice.booked.toLocaleString("en-GB")} label="Booked" />
-                <Stat value={`${a.voice.bookedPct}%`} label="Booked rate" />
-                <Stat value={a.voice.calls > 0 ? fmtDur(a.voice.avgDurationS) : "—"} label="Avg length" />
+                <Stat value={a.voice.calls.toLocaleString("en-GB")} label="Calls" color={STAT_COLORS[0]} />
+                <Stat value={a.voice.booked.toLocaleString("en-GB")} label="Booked" color={STAT_COLORS[1]} />
+                <Stat value={`${a.voice.bookedPct}%`} label="Booked rate" color={STAT_COLORS[2]} />
+                <Stat value={a.voice.calls > 0 ? fmtDur(a.voice.avgDurationS) : "—"} label="Avg length" color={STAT_COLORS[3]} />
               </>
             ) : a.chat ? (
               <>
-                <Stat value={a.chat.conversations.toLocaleString("en-GB")} label="Conversations" />
-                <Stat value={a.chat.bookings.toLocaleString("en-GB")} label="Bookings" />
-                <Stat value={`${a.chat.bookedPct}%`} label="Booked rate" />
-                <Stat value={a.channels.length} label="Channels" />
+                <Stat value={a.chat.conversations.toLocaleString("en-GB")} label="Conversations" color={STAT_COLORS[0]} />
+                <Stat value={a.chat.bookings.toLocaleString("en-GB")} label="Bookings" color={STAT_COLORS[1]} />
+                <Stat value={`${a.chat.bookedPct}%`} label="Booked rate" color={STAT_COLORS[2]} />
+                <Stat value={a.channels.length} label="Channels" color={STAT_COLORS[3]} />
               </>
             ) : null}
           </div>
