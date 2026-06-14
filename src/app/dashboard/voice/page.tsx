@@ -108,7 +108,7 @@ export default async function VoicePage() {
 
       {/* Day-filtered logs: calls (left) + bookings (right) on desktop, stacked on mobile.
           Each keeps its full history; the calendar picks a day and the list scrolls. */}
-      <div className="mt-5 grid items-stretch gap-5 lg:grid-cols-2">
+      <div className="mt-5 grid items-start gap-5 lg:grid-cols-2">
         <CallsLog calls={callLog} />
         <BookingsLog events={bookingEvents} />
       </div>

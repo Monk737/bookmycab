@@ -62,7 +62,7 @@ export function LogShell<T>({
   const hasAny = items.length > 0;
 
   return (
-    <section className="flex h-full flex-col border-[3px] border-ink bg-paper shadow-brut">
+    <section className="flex flex-col border-[3px] border-ink bg-paper shadow-brut">
       <header className="border-b-[3px] border-ink px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="min-w-0">
@@ -134,7 +134,7 @@ export function LogShell<T>({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4">
+      <div className="scrollbar-ink h-96 overflow-y-auto px-4">
         {filtered.length === 0 ? (
           <p className="py-8 text-center text-sm text-gray-600">
             {!hasAny ? noneLabel : searching ? `No matches for “${query.trim()}”.` : emptyLabel}

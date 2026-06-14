@@ -410,3 +410,19 @@ p {
   .voice-bar { transform: scaleY(0.7); }
   .live-glow { box-shadow: 6px 6px 0 0 var(--color-ink); }
 }
+
+/* Black scrollbar for the scrollable log panels (Recent calls / Bookings). */
+.scrollbar-ink {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink) transparent;
+}
+.scrollbar-ink::-webkit-scrollbar {
+  width: 10px;
+}
+.scrollbar-ink::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-ink::-webkit-scrollbar-thumb {
+  background-color: var(--color-ink);
+  border: 2px solid var(--color-paper);
+}
