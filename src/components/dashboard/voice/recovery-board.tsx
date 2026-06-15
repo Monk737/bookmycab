@@ -84,17 +84,19 @@ export function RecoveryBoard({
                   {it.status === "contacted" ? (
                     <span className="border-2 border-ink bg-brut-violet px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">contacted</span>
                   ) : null}
+                  {it.callerName ? <span className="text-xs font-bold text-ink">{it.callerName}</span> : null}
                   {it.caller ? (
                     <span className="font-mono text-xs text-gray-600">{it.caller}</span>
-                  ) : (
+                  ) : !it.callerName ? (
                     <span className="text-xs text-gray-400">number withheld</span>
-                  )}
+                  ) : null}
                   <span className="font-mono text-xs tabular-nums text-gray-500">{fmtWhen(it.startedAt)}</span>
                 </div>
                 <p className="mt-1 truncate text-sm text-gray-700">
                   {it.pickup ?? "—"} <span className="text-gray-400">&rarr;</span> {it.destination ?? "—"}
                   {it.vehicleType ? <span className="text-gray-500"> · {it.vehicleType}</span> : null}
                 </p>
+                {it.reason ? <p className="mt-0.5 text-xs text-gray-500">Reason: {it.reason}</p> : null}
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 {it.status !== "contacted" ? (

@@ -8,11 +8,13 @@ export interface RecoveryItem {
   callId: string;
   startedAt: string;
   caller: string | null;
+  callerName: string | null;
   pickup: string | null;
   destination: string | null;
   quotedFare: number | null;
   vehicleType: string | null;
   outcome: string;
+  reason: string | null;
   status: RecoveryStatus;
   note: string | null;
 }
@@ -107,7 +109,7 @@ export async function getVoiceIntelligence(
       .gte("started_at", sinceIso),
     supabase
       .from("voice_call_recovery")
-      .select("id, status, note, call_id, calls!inner(id, started_at, caller_number, pickup, destination, quoted_fare, vehicle_type, outcome)")
+      .select("id, status, note, call_id, calls!inner(id, started_at, caller_number, caller_name, pickup, destination, quoted_fare, vehicle_type, outcome, abandon_reason)")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false }),
   ]);
@@ -121,11 +123,12 @@ export async function getVoiceIntelligence(
     note: string | null;
     call_id: string;
     calls: {
-      id: string; started_at: string; caller_number: string | null; pickup: string | null;
-      destination: string | null; quoted_fare: number | null; vehicle_type: string | null; outcome: string;
+      id: string; started_at: string; caller_number: string | null; caller_name: string | null; pickup: string | null;
+      destination: string | null; quoted_fare: number | null; vehicle_type: string | null; outcome: string; abandon_reason: string | null;
     };
   };
   const recRows = (recoveryRes.data ?? []) as unknown as RecRow[];
+  const REASON_FALLBACK: Record<string, string> = { quoted: "Quoted, didn't book", abandoned: "Abandoned mid-call" };
   const items: RecoveryItem[] = recRows
     .filter((r) => r.status === "pending" || r.status === "contacted")
     .map((r) => ({
@@ -133,11 +136,13 @@ export async function getVoiceIntelligence(
       callId: r.call_id,
       startedAt: r.calls.started_at,
       caller: r.calls.caller_number,
+      callerName: r.calls.caller_name,
       pickup: r.calls.pickup,
       destination: r.calls.destination,
       quotedFare: r.calls.quoted_fare != null ? Number(r.calls.quoted_fare) : null,
       vehicleType: r.calls.vehicle_type,
       outcome: r.calls.outcome,
+      reason: r.calls.abandon_reason || REASON_FALLBACK[r.calls.outcome] || null,
       status: r.status,
       note: r.note,
     }))

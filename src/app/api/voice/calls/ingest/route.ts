@@ -47,6 +47,8 @@ export async function POST(req: Request) {
     p_booking_ref: d.booking_ref ?? null,
     p_airport_code: d.airport_code ?? null,
     p_sentiment: d.sentiment ?? null,
+    p_caller_name: d.caller_name ?? null,
+    p_abandon_reason: d.abandon_reason ?? null,
   });
   if (error) {
     console.error("record_voice_call failed", error);

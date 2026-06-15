@@ -33,6 +33,8 @@ export const ingestSchema = z.object({
   booking_ref: z.string().max(60).optional(),
   airport_code: z.string().max(8).optional(),
   sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
+  caller_name: z.string().max(120).optional(),
+  abandon_reason: z.string().max(200).optional(),
 });
 
 export function parseIngestBody(input: unknown) {
