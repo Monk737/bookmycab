@@ -42,6 +42,34 @@ services:
       - "traefik.http.routers.bookmycab-web.middlewares=bookmycab-redirect"
       - "traefik.http.middlewares.bookmycab-redirect.redirectscheme.scheme=https"
 
+  # Cron sidecar: retry sweep for durable call recordings. Every 5 minutes it
+  # POSTs the archive endpoint to copy any Vapi recordings the ingest after()
+  # hook missed (process restart, transient download/upload failure). Reaches the
+  # app over the shared docker network as `bookmycab:3000` — never the public
+  # internet — and authenticates with the same VOICE_INGEST_SECRET as ingest.
+  #
+  # Host-crontab equivalent (if you prefer cron on the VPS over a sidecar):
+  #   */5 * * * * curl -fsS --max-time 120 -X POST https://bookmycab.io/api/voice/recordings/archive -H "Authorization: Bearer $VOICE_INGEST_SECRET"
+  recording-archiver:
+    image: curlimages/curl:latest
+    container_name: bookmycab-recording-archiver
+    restart: unless-stopped
+    env_file: .env.production
+    depends_on:
+      - web
+    networks:
+      - traefik-proxy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          curl -fsS --max-time 120 -X POST http://bookmycab:3000/api/voice/recordings/archive \
+            -H "Authorization: Bearer $$VOICE_INGEST_SECRET" \
+            || echo "[recording-archiver] sweep failed at $(date -u +%FT%TZ)";
+          sleep 300;
+        done
+
 networks:
   traefik-proxy:
     external: true
