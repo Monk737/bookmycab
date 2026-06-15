@@ -2,8 +2,11 @@
 
 import "server-only";
 import { z } from "zod";
+import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/session";
+import { env } from "@/env";
+import { RECORDINGS_BUCKET } from "@/lib/voice/archive-recording";
 
 export interface CallTranscript {
   ok: boolean;
@@ -45,10 +48,28 @@ export async function getCallTranscript(callId: string): Promise<CallTranscript>
 
   if (error || !data) return { ...empty, error: "Call not found." };
 
+  // Prefer our durable archived copy (a short-lived signed URL) over the
+  // provider URL on the call row, which expires with the provider's retention.
+  // RLS above already proved this call belongs to the caller's tenant; the
+  // artifact read is RLS-scoped too, and signing the object is server-only.
+  let recordingUrl = data.recording_url ?? null;
+  const { data: artifact } = await supabase
+    .from("call_artifacts")
+    .select("status, storage_path")
+    .eq("call_id", parsed.data.callId)
+    .maybeSingle();
+  if (artifact?.status === "archived" && artifact.storage_path) {
+    const svc = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+    const { data: signed } = await svc.storage
+      .from(RECORDINGS_BUCKET)
+      .createSignedUrl(artifact.storage_path, 60 * 60);
+    if (signed?.signedUrl) recordingUrl = signed.signedUrl;
+  }
+
   return {
     ok: true,
     transcript: data.transcript ?? null,
-    recordingUrl: data.recording_url ?? null,
+    recordingUrl,
     startedAt: data.started_at ?? null,
     caller: data.caller_number ?? null,
     callerName: data.caller_name ?? null,

@@ -1,12 +1,16 @@
 import "server-only";
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { env } from "@/env";
 import { bearerMatches } from "@/lib/voice/ingest-auth";
 import { parseIngestBody } from "@/lib/voice/ingest-schema";
 import { maybeNotifyUsage } from "@/lib/voice/usage-notify";
+import { archiveRecording } from "@/lib/voice/archive-recording";
 
 export const runtime = "nodejs";
+// after() copies the recording into our Storage bucket once the response is
+// sent; give the invocation room to finish that download + upload.
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   if (!bearerMatches(req.headers.get("authorization"), env.VOICE_INGEST_SECRET)) {
@@ -77,6 +81,25 @@ export async function POST(req: Request) {
       });
     } catch (e) {
       console.error("usage notification failed", e);
+    }
+
+    // Durable recording: record a 'pending' artifact, then copy the audio into
+    // our own Storage bucket after the response is sent (Vercel keeps the
+    // function alive for after()). Any failure is captured on the row and
+    // retried by the archive sweep — it must never affect the 200 the provider
+    // needs, so the row write is best-effort too.
+    if (d.recording_url && r.call_id) {
+      const callId = String(r.call_id);
+      const sourceUrl = d.recording_url;
+      try {
+        await db.from("call_artifacts").upsert(
+          { call_id: callId, tenant_id: d.tenant_id, source_url: sourceUrl, status: "pending" },
+          { onConflict: "call_id" },
+        );
+        after(() => archiveRecording(callId, d.tenant_id, sourceUrl));
+      } catch (e) {
+        console.error("call_artifacts enqueue failed", e);
+      }
     }
   }
 
