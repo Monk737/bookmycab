@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import type { CycleWindow } from "@/lib/dashboard/billing-cycle";
 
 export interface HandleTrendPoint { date: string; avgS: number; calls: number; }
 export interface FailCluster { when: string; count: number; }
@@ -26,6 +27,7 @@ export interface ReviewCall {
   reasons: string[];
   severity: number;
   hasRecording: boolean;
+  synopsis: string | null;
 }
 
 export interface SentimentData {
@@ -50,6 +52,7 @@ export interface RecentCallMeta {
   outcome: string;
   durationS: number | null;
   hasRecording: boolean;
+  synopsis: string | null;
 }
 
 export interface VoiceQuality {
@@ -72,6 +75,7 @@ type Row = {
   sentiment: string | null;
   address_lookups: number | null;
   recording_url: string | null;
+  summary: string | null;
 };
 
 const LONG_CALL_S = 300; // 5 minutes
@@ -91,16 +95,36 @@ function reviewReasons(r: Row): { reasons: string[]; severity: number } {
 }
 
 /** AI-quality + self-improvement data for a tenant over the last `rangeDays`. */
-export async function getVoiceQuality(tenantId: string, rangeDays = 30): Promise<VoiceQuality> {
+export async function getVoiceQuality(tenantId: string, rangeDays = 30, cycle?: CycleWindow): Promise<VoiceQuality> {
   const supabase = await createClient();
   const sinceIso = new Date(Date.now() - rangeDays * 86_400_000).toISOString();
 
-  const { data } = await supabase
+  let query = supabase
     .from("calls")
-    .select("id, started_at, outcome, duration_s, success, caller_number, caller_name, sentiment, address_lookups, recording_url")
-    .eq("tenant_id", tenantId)
-    .gte("started_at", sinceIso)
-    .order("started_at", { ascending: false });
+    .select("id, started_at, outcome, duration_s, success, caller_number, caller_name, sentiment, address_lookups, recording_url, summary")
+    .eq("tenant_id", tenantId);
+  query = cycle
+    ? query.gte("started_at", cycle.startIso).lt("started_at", cycle.endIso)
+    : query.gte("started_at", sinceIso);
+
+  // Reviewed/dismissed calls drop out of the triage queue. Fetched in parallel;
+  // if the call_reviews table isn't present yet the error is swallowed and the
+  // queue simply shows everything (graceful until migration 0062 is applied).
+  const [callsRes, reviewsRes] = await Promise.all([
+    query.order("started_at", { ascending: false }),
+    supabase.from("call_reviews").select("call_id").eq("tenant_id", tenantId).in("status", ["reviewed", "dismissed"]),
+  ]);
+  const data = callsRes.data;
+  const actioned = new Set(((reviewsRes.data ?? []) as { call_id: string }[]).map((x) => x.call_id));
+
+  // Day buckets for the mini-trends: the selected cycle, or the trailing 14 days.
+  const dayKeys: string[] = [];
+  if (cycle) {
+    const startMs = new Date(`${cycle.periodStart}T00:00:00Z`).getTime();
+    for (let i = 0; i < cycle.days; i++) dayKeys.push(new Date(startMs + i * 86_400_000).toISOString().slice(0, 10));
+  } else {
+    for (let i = 13; i >= 0; i--) dayKeys.push(new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10));
+  }
 
   const rows = (data ?? []) as Row[];
   const total = rows.length;
@@ -113,9 +137,7 @@ export async function getVoiceQuality(tenantId: string, rangeDays = 30): Promise
   const avgHandleS = durRows.length ? Math.round(durRows.reduce((s, r) => s + (r.duration_s ?? 0), 0) / durRows.length) : 0;
 
   const trendMap = new Map<string, { sum: number; n: number; calls: number }>();
-  for (let i = 13; i >= 0; i--) {
-    trendMap.set(new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10), { sum: 0, n: 0, calls: 0 });
-  }
+  for (const k of dayKeys) trendMap.set(k, { sum: 0, n: 0, calls: 0 });
   for (const r of rows) {
     const cell = trendMap.get(dayKey(r.started_at));
     if (cell) { cell.calls += 1; if (typeof r.duration_s === "number") { cell.sum += r.duration_s; cell.n += 1; } }
@@ -152,28 +174,27 @@ export async function getVoiceQuality(tenantId: string, rangeDays = 30): Promise
     failClusters,
   };
 
-  // ---- Calls to review ----
+  // ---- Calls to review ---- (open items only; reviewed/dismissed drop out)
   const review: ReviewCall[] = rows
+    .filter((r) => !actioned.has(r.id))
     .map((r) => {
       const { reasons, severity } = reviewReasons(r);
       return reasons.length
         ? {
             id: r.id, startedAt: r.started_at, caller: r.caller_number, callerName: r.caller_name,
             outcome: r.outcome, durationS: r.duration_s, reasons, severity,
-            hasRecording: !!r.recording_url,
+            hasRecording: !!r.recording_url, synopsis: r.summary,
           }
         : null;
     })
     .filter((x): x is ReviewCall => x !== null)
     .sort((a, b) => b.severity - a.severity || (a.startedAt < b.startedAt ? 1 : -1))
-    .slice(0, 30);
+    .slice(0, 100);
 
   // ---- Sentiment ----
   const sCount = { positive: 0, neutral: 0, negative: 0 };
   const sTrend = new Map<string, { positive: number; neutral: number; negative: number }>();
-  for (let i = 13; i >= 0; i--) {
-    sTrend.set(new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10), { positive: 0, neutral: 0, negative: 0 });
-  }
+  for (const k of dayKeys) sTrend.set(k, { positive: 0, neutral: 0, negative: 0 });
   for (const r of rows) {
     if (r.sentiment === "positive" || r.sentiment === "neutral" || r.sentiment === "negative") {
       sCount[r.sentiment] += 1;
@@ -208,11 +229,11 @@ export async function getVoiceQuality(tenantId: string, rangeDays = 30): Promise
 
   const loyalty: LoyaltyData = { newCallers, returningCallers, repeat };
 
-  // ---- Recent (transcript access) ----
-  const recent: RecentCallMeta[] = rows.slice(0, 12).map((r) => ({
+  // ---- Recent (transcript access) — full window for the searchable log ----
+  const recent: RecentCallMeta[] = rows.slice(0, 300).map((r) => ({
     id: r.id, startedAt: r.started_at, caller: r.caller_number, callerName: r.caller_name,
-    outcome: r.outcome, durationS: r.duration_s, hasRecording: !!r.recording_url,
+    outcome: r.outcome, durationS: r.duration_s, hasRecording: !!r.recording_url, synopsis: r.summary,
   }));
 
-  return { rangeDays, performance, review, sentiment, loyalty, recent };
+  return { rangeDays: cycle ? cycle.days : rangeDays, performance, review, sentiment, loyalty, recent };
 }

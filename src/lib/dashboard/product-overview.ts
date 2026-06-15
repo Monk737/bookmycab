@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { periodBounds } from "@/lib/entitlements/meter";
 import { channelHealth } from "./queries";
+import type { CycleWindow } from "./billing-cycle";
 
 export type SupabaseLike = Awaited<ReturnType<typeof createClient>>;
 
@@ -65,9 +66,11 @@ export interface ProductOverview {
 export async function getProductOverview(
   tenantId: string,
   client?: SupabaseLike,
+  cycle?: CycleWindow,
 ): Promise<ProductOverview> {
   const supabase = client ?? (await createClient());
-  const { start } = periodBounds("month", new Date());
+  // Pool usage is read for the selected billing cycle's counter (current month by default).
+  const start = cycle?.periodStart ?? periodBounds("month", new Date()).start;
 
   const [tenant, chatSub, channels, voiceSub, voiceAgents, counter, balance] = await Promise.all([
     supabase.from("tenants").select("commercial_model, currency").eq("id", tenantId).maybeSingle(),
@@ -254,11 +257,18 @@ export function reduceCallStats(rows: CallRow[]): VoiceStatBlock {
 }
 
 /** Pure: bucket calls into a per-day trend across the window (fills gaps with 0). */
-export function reduceDayTrend(rows: CallRow[], rangeDays: number, now = new Date()): DayPoint[] {
+export function reduceDayTrend(rows: CallRow[], rangeDays: number, now = new Date(), startKey?: string): DayPoint[] {
   const byDay = new Map<string, { calls: number; booked: number }>();
-  for (let i = rangeDays - 1; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86_400_000).toISOString().slice(0, 10);
-    byDay.set(d, { calls: 0, booked: 0 });
+  if (startKey) {
+    // Window forward from a fixed start (a billing cycle's first day).
+    const start = new Date(`${startKey}T00:00:00Z`).getTime();
+    for (let i = 0; i < rangeDays; i++) {
+      byDay.set(new Date(start + i * 86_400_000).toISOString().slice(0, 10), { calls: 0, booked: 0 });
+    }
+  } else {
+    for (let i = rangeDays - 1; i >= 0; i--) {
+      byDay.set(new Date(now.getTime() - i * 86_400_000).toISOString().slice(0, 10), { calls: 0, booked: 0 });
+    }
   }
   for (const r of rows) {
     const d = r.started_at.slice(0, 10);
@@ -276,16 +286,20 @@ export async function getVoiceAnalytics(
   tenantId: string,
   rangeDays = 30,
   client?: SupabaseLike,
+  cycle?: CycleWindow,
 ): Promise<VoiceAnalytics> {
   const supabase = client ?? (await createClient());
-  const overview = await getProductOverview(tenantId, supabase);
+  const overview = await getProductOverview(tenantId, supabase, cycle);
   const since = new Date(Date.now() - (rangeDays - 1) * 86_400_000).toISOString().slice(0, 10);
 
-  const { data } = await supabase
+  let query = supabase
     .from("calls")
     .select("id, automation_id, outcome, duration_s, credit_source, started_at, caller_number, summary, success")
-    .eq("tenant_id", tenantId)
-    .gte("started_at", `${since}T00:00:00Z`);
+    .eq("tenant_id", tenantId);
+  query = cycle
+    ? query.gte("started_at", cycle.startIso).lt("started_at", cycle.endIso)
+    : query.gte("started_at", `${since}T00:00:00Z`);
+  const { data } = await query;
 
   const rows = ((data ?? []) as CallRow[]);
   const agents = overview.voice?.agents ?? [];
@@ -297,7 +311,7 @@ export async function getVoiceAnalytics(
 
   return {
     hasVoice: overview.voice != null,
-    rangeDays,
+    rangeDays: cycle ? cycle.days : rangeDays,
     allowance: overview.voice?.allowance ?? 0,
     used: overview.voice?.used ?? 0,
     remaining: overview.voice?.remaining ?? 0,
@@ -305,7 +319,7 @@ export async function getVoiceAnalytics(
     currency: overview.currency,
     aggregate: reduceCallStats(rows),
     perAgent,
-    trend: reduceDayTrend(rows, rangeDays),
+    trend: cycle ? reduceDayTrend(rows, cycle.days, undefined, cycle.periodStart) : reduceDayTrend(rows, rangeDays),
     recent: [...rows]
       .sort((a, b) => (a.started_at < b.started_at ? 1 : -1))
       .slice(0, 8)

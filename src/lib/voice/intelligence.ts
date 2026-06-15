@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import type { CycleWindow } from "@/lib/dashboard/billing-cycle";
 
 export type RecoveryStatus = "pending" | "contacted" | "recovered" | "dismissed";
 
@@ -97,16 +98,21 @@ const VEHICLE_LABEL: Record<string, string> = {
 export async function getVoiceIntelligence(
   tenantId: string,
   rangeDays = 30,
+  cycle?: CycleWindow,
 ): Promise<VoiceIntelligence> {
   const supabase = await createClient();
   const sinceIso = new Date(Date.now() - rangeDays * 86_400_000).toISOString();
 
+  let callsQuery = supabase
+    .from("calls")
+    .select("id, started_at, outcome, caller_number, pickup, destination, quoted_fare, vehicle_type, airport_code, booking_ref")
+    .eq("tenant_id", tenantId);
+  callsQuery = cycle
+    ? callsQuery.gte("started_at", cycle.startIso).lt("started_at", cycle.endIso)
+    : callsQuery.gte("started_at", sinceIso);
+
   const [callsRes, recoveryRes] = await Promise.all([
-    supabase
-      .from("calls")
-      .select("id, started_at, outcome, caller_number, pickup, destination, quoted_fare, vehicle_type, airport_code, booking_ref")
-      .eq("tenant_id", tenantId)
-      .gte("started_at", sinceIso),
+    callsQuery,
     supabase
       .from("voice_call_recovery")
       .select("id, status, note, call_id, calls!inner(id, started_at, caller_number, caller_name, pickup, destination, quoted_fare, vehicle_type, outcome, abandon_reason)")
@@ -207,10 +213,10 @@ export async function getVoiceIntelligence(
       vehicleMap.set(c.vehicle_type, (vehicleMap.get(c.vehicle_type) ?? 0) + 1);
     }
   }
+  // Full sorted list — the routes panel searches + scrolls over all of them.
   const top: RouteItem[] = [...routeMap.entries()]
     .map(([label, v]) => ({ label, count: v.count, revenue: Math.round(v.revenue) }))
-    .sort((a, b) => b.count - a.count || b.revenue - a.revenue)
-    .slice(0, 6);
+    .sort((a, b) => b.count - a.count || b.revenue - a.revenue);
   const airports: AirportItem[] = [...airportMap.entries()]
     .map(([code, count]) => ({ code, count }))
     .sort((a, b) => b.count - a.count);
@@ -219,7 +225,7 @@ export async function getVoiceIntelligence(
     .sort((a, b) => b.count - a.count);
 
   return {
-    rangeDays,
+    rangeDays: cycle ? cycle.days : rangeDays,
     recovery: {
       items,
       recoverable: Math.round(recoverable),

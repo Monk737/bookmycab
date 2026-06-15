@@ -4,36 +4,49 @@ import { getVoiceIntelligence } from "@/lib/voice/intelligence";
 import { RecoveryBoard } from "@/components/dashboard/voice/recovery-board";
 import { DemandHeatmap, BookingFunnel, RouteIntelligence } from "@/components/dashboard/voice/intelligence-panels";
 import { IntelligenceTabs } from "@/components/dashboard/voice/intelligence-tabs";
+import { CyclePicker } from "@/components/dashboard/cycle-picker";
+import { resolveCycle } from "@/lib/dashboard/billing-cycle";
 
-export const metadata = { title: "Booking intelligence · BookMyCab" };
+export const metadata = { title: "AI Voice Intelligence · BookMyCab" };
 
 const RANGE_DAYS = 30;
 
-export default async function VoiceIntelligencePage() {
+export default async function VoiceIntelligencePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cycle?: string }>;
+}) {
   const claims = await requireUser();
   if (!claims.tenant_id) {
     return <div className="p-8 text-sm text-gray-700">No organisation linked to your account.</div>;
   }
 
-  const data = await getVoiceIntelligence(claims.tenant_id, RANGE_DAYS);
+  const cycle = resolveCycle((await searchParams).cycle);
+  const cycleKey = cycle.isCurrent ? undefined : cycle.key;
+  const data = await getVoiceIntelligence(claims.tenant_id, RANGE_DAYS, cycle);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-6">
         <Link
-          href="/dashboard/voice"
+          href={`/dashboard/voice${cycleKey ? `?cycle=${cycleKey}` : ""}`}
           className="brut-focus text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500 hover:text-ink"
         >
           &larr; AI Voice
         </Link>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <h1 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
-            Booking intelligence
+            AI Voice Intelligence
           </h1>
-          <p className="text-xs font-medium text-gray-600">Last {RANGE_DAYS} days · {data.heatmap.total} calls</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-xs font-medium text-gray-600">
+              {cycle.isCurrent ? "Current cycle" : cycle.label} · {data.heatmap.total} calls
+            </p>
+            <CyclePicker active={cycle.key} />
+          </div>
         </div>
         <div className="mt-4">
-          <IntelligenceTabs active="bookings" />
+          <IntelligenceTabs active="bookings" cycleKey={cycleKey} />
         </div>
       </header>
 

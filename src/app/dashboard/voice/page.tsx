@@ -9,18 +9,25 @@ import { BookingsLog } from "@/components/dashboard/voice/bookings-log";
 import { getVoiceCallLog } from "@/lib/voice/call-log";
 import { getVoiceBookingEvents } from "@/lib/voice/booking-events";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
+import { CyclePicker } from "@/components/dashboard/cycle-picker";
+import { resolveCycle } from "@/lib/dashboard/billing-cycle";
 
 export const metadata = { title: "AI Voice · BookMyCab" };
 
 const VoiceIcon = <VoiceMarkLine className="h-9 w-9" />;
 
-export default async function VoicePage() {
+export default async function VoicePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cycle?: string }>;
+}) {
   const claims = await requireUser();
   if (!claims.tenant_id) {
     return <div className="p-8 text-sm text-gray-700">No organisation linked to your account.</div>;
   }
 
-  const v = await getVoiceAnalytics(claims.tenant_id, 30);
+  const cycle = resolveCycle((await searchParams).cycle);
+  const v = await getVoiceAnalytics(claims.tenant_id, 30, undefined, cycle);
 
   // No AI Voice product on this account.
   if (!v.hasVoice) {
@@ -56,12 +63,15 @@ export default async function VoicePage() {
           <h1 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Voice</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-xs font-medium text-gray-600">Last {v.rangeDays} days · {v.perAgent.length} agent{v.perAgent.length === 1 ? "" : "s"}</p>
+          <p className="text-xs font-medium text-gray-600">
+            {cycle.isCurrent ? "Current cycle" : cycle.label} · {v.perAgent.length} agent{v.perAgent.length === 1 ? "" : "s"}
+          </p>
+          <CyclePicker active={cycle.key} />
           <Link
-            href="/dashboard/voice/intelligence"
+            href={`/dashboard/voice/intelligence${cycle.isCurrent ? "" : `?cycle=${cycle.key}`}`}
             className="brut-press brut-focus inline-flex h-9 items-center border-[3px] border-ink bg-brut-yellow px-3.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink shadow-brut"
           >
-            Booking intelligence &rarr;
+            AI Voice Intelligence &rarr;
           </Link>
         </div>
       </header>

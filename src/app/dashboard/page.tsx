@@ -6,6 +6,8 @@ import { getTenantAutomations } from "@/lib/dashboard/automations";
 import { AutomationCard } from "@/components/dashboard/automation-card";
 import { ChannelIcon } from "@/components/dashboard/channel-icon";
 import { StatTile, StatGrid, Panel, StatusPill, UsageMeter, EmptyState } from "@/components/dashboard/ui";
+import { CyclePicker } from "@/components/dashboard/cycle-picker";
+import { resolveCycle } from "@/lib/dashboard/billing-cycle";
 
 const CHANNEL_LABEL: Record<string, string> = {
   whatsapp: "WhatsApp",
@@ -16,8 +18,13 @@ const CHANNEL_LABEL: Record<string, string> = {
 };
 const AUTOMATION_WINDOW_DAYS = 30;
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cycle?: string }>;
+}) {
   const claims = await requireUser();
+  const cycle = resolveCycle((await searchParams).cycle);
 
   if (!claims.tenant_id) {
     return (
@@ -37,7 +44,7 @@ export default async function DashboardPage() {
 
   const [kpi, overview, automations] = await Promise.all([
     getKpiStrip(claims.tenant_id),
-    getProductOverview(claims.tenant_id),
+    getProductOverview(claims.tenant_id, undefined, cycle),
     getTenantAutomations(claims.tenant_id, AUTOMATION_WINDOW_DAYS),
   ]);
 
@@ -48,8 +55,13 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <h1 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Overview</h1>
-        <p className="text-xs font-medium text-gray-600">Calls this billing month · live to the minute</p>
+        <div>
+          <h1 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Overview</h1>
+          <p className="mt-1 text-xs font-medium text-gray-600">
+            {cycle.isCurrent ? "Current billing cycle · live to the minute" : `Billing cycle · ${cycle.label}`}
+          </p>
+        </div>
+        <CyclePicker active={cycle.key} />
       </header>
 
       {/* Operational stat band — six glanceable numbers on one ink bed. */}

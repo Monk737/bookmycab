@@ -1,4 +1,5 @@
 import type { HeatCell, FunnelData, RouteItem, AirportItem, VehicleItem } from "@/lib/voice/intelligence";
+import { RouteList, AirportList } from "./route-search";
 
 /* ---------------------------------------------------------------- Demand heatmap */
 
@@ -137,9 +138,6 @@ export function BookingFunnel({ f }: { f: FunnelData }) {
 
 /* ------------------------------------------------- Routes / airports / vehicles */
 
-const AIRPORT_NAME: Record<string, string> = {
-  LHR: "Heathrow", LGW: "Gatwick", STN: "Stansted", LTN: "Luton", LCY: "London City",
-};
 const VEH_FILL = ["bg-brut-yellow", "bg-brut-lime", "bg-brut-cyan", "bg-brut-violet", "bg-brut-pink"];
 
 export function RouteIntelligence({
@@ -160,41 +158,10 @@ export function RouteIntelligence({
       </header>
       <div className="grid gap-[3px] bg-ink md:grid-cols-[1.4fr_1fr_1fr]">
         <div className="bg-paper p-5">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Top routes</p>
-          {top.length === 0 ? (
-            <p className="text-sm text-gray-500">No routes captured yet.</p>
-          ) : (
-            <ol className="space-y-2.5">
-              {top.map((r, i) => (
-                <li key={r.label} className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-bold tabular-nums text-gray-400">{i + 1}</span>
-                  <span className="min-w-0 flex-1 truncate text-sm text-ink">{r.label}</span>
-                  <span className="shrink-0 font-mono text-xs font-bold tabular-nums text-ink">
-                    {r.count}
-                    {r.revenue > 0 ? <span className="text-gray-500"> · £{r.revenue}</span> : null}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
+          <RouteList routes={top} />
         </div>
         <div className="bg-paper p-5">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Airport runs</p>
-          {airports.length === 0 ? (
-            <p className="text-sm text-gray-500">None yet.</p>
-          ) : (
-            <ul className="space-y-2.5">
-              {airports.map((a) => (
-                <li key={a.code} className="flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-2">
-                    <span className="border-2 border-ink bg-brut-cyan px-1.5 py-0.5 font-mono text-[10px] font-bold text-ink">{a.code}</span>
-                    <span className="text-sm text-ink">{AIRPORT_NAME[a.code] ?? a.code}</span>
-                  </span>
-                  <span className="font-mono text-sm font-bold tabular-nums text-ink">{a.count}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <AirportList airports={airports} />
         </div>
         <div className="bg-paper p-5">
           <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Vehicle mix</p>

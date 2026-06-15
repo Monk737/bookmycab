@@ -6,31 +6,45 @@ import { IntelligenceTabs } from "@/components/dashboard/voice/intelligence-tabs
 import { PerformanceKpis, HandleTrendPanel, OperationalHealth, SentimentPanel, LoyaltyPanel } from "@/components/dashboard/voice/quality-panels";
 import { CallsToReview, RecentCalls } from "@/components/dashboard/voice/quality-call-lists";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
+import { CyclePicker } from "@/components/dashboard/cycle-picker";
+import { resolveCycle } from "@/lib/dashboard/billing-cycle";
 
 export const metadata = { title: "Agent quality · BookMyCab" };
 
 const RANGE_DAYS = 30;
 
-export default async function VoiceQualityPage() {
+export default async function VoiceQualityPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cycle?: string }>;
+}) {
   const claims = await requireUser();
   if (!claims.tenant_id) {
     return <div className="p-8 text-sm text-gray-700">No organisation linked to your account.</div>;
   }
 
-  const data = await getVoiceQuality(claims.tenant_id, RANGE_DAYS);
+  const cycle = resolveCycle((await searchParams).cycle);
+  const cycleKey = cycle.isCurrent ? undefined : cycle.key;
+  const cycleLabel = cycle.isCurrent ? "this cycle" : cycle.label;
+  const data = await getVoiceQuality(claims.tenant_id, RANGE_DAYS, cycle);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-6">
-        <Link href="/dashboard/voice" className="brut-focus text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500 hover:text-ink">
+        <Link href={`/dashboard/voice${cycleKey ? `?cycle=${cycleKey}` : ""}`} className="brut-focus text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500 hover:text-ink">
           &larr; AI Voice
         </Link>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <h1 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Agent quality</h1>
-          <p className="text-xs font-medium text-gray-600">Last {RANGE_DAYS} days · {data.performance.totalCalls} calls</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-xs font-medium text-gray-600">
+              {cycle.isCurrent ? "Current cycle" : cycle.label} · {data.performance.totalCalls} calls
+            </p>
+            <CyclePicker active={cycle.key} />
+          </div>
         </div>
         <div className="mt-4">
-          <IntelligenceTabs active="quality" />
+          <IntelligenceTabs active="quality" cycleKey={cycleKey} />
         </div>
       </header>
 
@@ -51,14 +65,14 @@ export default async function VoiceQualityPage() {
             </div>
           </section>
 
-          <CallsToReview items={data.review} />
+          <CallsToReview items={data.review} windowLabel={cycleLabel} />
 
           <div className="grid items-start gap-5 lg:grid-cols-2">
             <SentimentPanel s={data.sentiment} />
             <LoyaltyPanel l={data.loyalty} />
           </div>
 
-          <RecentCalls items={data.recent} />
+          <RecentCalls items={data.recent} windowLabel={cycleLabel} />
         </div>
       )}
     </div>

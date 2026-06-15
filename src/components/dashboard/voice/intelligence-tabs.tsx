@@ -5,14 +5,16 @@ const TABS = [
   { key: "quality", label: "Agent quality", href: "/dashboard/voice/quality" },
 ] as const;
 
-/** Segmented nav shared by the two intelligence surfaces. */
-export function IntelligenceTabs({ active }: { active: "bookings" | "quality" }) {
+/** Segmented nav shared by the two intelligence surfaces. Preserves the selected
+ *  billing cycle across the tab switch. */
+export function IntelligenceTabs({ active, cycleKey }: { active: "bookings" | "quality"; cycleKey?: string }) {
+  const suffix = cycleKey ? `?cycle=${cycleKey}` : "";
   return (
     <nav className="inline-flex border-[3px] border-ink shadow-brut" aria-label="Intelligence views">
       {TABS.map((t, i) => (
         <Link
           key={t.key}
-          href={t.href}
+          href={`${t.href}${suffix}`}
           aria-current={active === t.key ? "page" : undefined}
           className={`brut-focus inline-flex h-10 items-center px-4 text-xs font-bold uppercase tracking-[0.06em] ${
             i > 0 ? "border-l-[3px] border-ink" : ""

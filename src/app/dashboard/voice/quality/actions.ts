@@ -1,6 +1,7 @@
 "use server";
 
 import "server-only";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
@@ -77,4 +78,54 @@ export async function getCallTranscript(callId: string): Promise<CallTranscript>
     durationS: data.duration_s ?? null,
     summary: data.summary ?? null,
   };
+}
+
+const reviewSchema = z.object({
+  callId: z.string().uuid(),
+  status: z.enum(["open", "reviewed", "dismissed"]),
+});
+
+export type ReviewActionState = { ok: boolean; error?: string };
+
+/**
+ * Triage a flagged call: mark it reviewed or dismissed so it leaves the
+ * "Calls to review" queue (or reopen it). Tenant-scoped — the call must belong to
+ * the caller's tenant. Service role (call_reviews has no write policy); audited by
+ * actioned_by / actioned_at.
+ */
+export async function updateCallReviewStatus(input: { callId: string; status: string }): Promise<ReviewActionState> {
+  const claims = await requireUser();
+  if (!claims.tenant_id) return { ok: false, error: "No organisation linked." };
+  if (claims.is_demo) return { ok: false, error: "Read-only in demo mode." };
+
+  const parsed = reviewSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid input." };
+
+  const svc = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  // Confirm the call is this tenant's before recording any triage state.
+  const { data: call } = await svc
+    .from("calls")
+    .select("id")
+    .eq("id", parsed.data.callId)
+    .eq("tenant_id", claims.tenant_id)
+    .maybeSingle();
+  if (!call) return { ok: false, error: "Call not found." };
+
+  const { error } = await svc.from("call_reviews").upsert(
+    {
+      call_id: parsed.data.callId,
+      tenant_id: claims.tenant_id,
+      status: parsed.data.status,
+      actioned_by: claims.sub,
+      actioned_at: new Date().toISOString(),
+    },
+    { onConflict: "call_id" },
+  );
+  if (error) {
+    console.error("updateCallReviewStatus failed", error);
+    return { ok: false, error: "Could not update the review." };
+  }
+
+  revalidatePath("/dashboard/voice/quality");
+  return { ok: true };
 }

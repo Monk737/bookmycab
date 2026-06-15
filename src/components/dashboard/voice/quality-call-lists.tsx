@@ -1,33 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { LogShell } from "./log-shell";
 import { TranscriptDrawer, type DrawerCall } from "./transcript-drawer";
+import { updateCallReviewStatus } from "@/app/dashboard/voice/quality/actions";
+import { fmtDateTime, formatDuration, localDateKey } from "@/lib/voice/format";
 import type { ReviewCall, RecentCallMeta } from "@/lib/voice/quality";
-
-/* ------------------------------------------------------------------- shared */
-
-function fmtWhen(iso: string) {
-  return new Date(iso).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-function fmtDur(s: number) {
-  return `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
-}
 
 const OUTCOME_BADGE: Record<string, string> = {
   booked: "bg-brut-lime", modified: "bg-brut-violet", cancelled: "bg-brut-pink",
   quoted: "bg-brut-cyan", abandoned: "bg-brut-orange", failed: "bg-brut-red", transferred: "bg-brut-blue",
 };
 
-/** One drawer instance per list; only one is ever open, so this stays simple. */
-function useCallDrawer() {
+function OutcomeBadge({ outcome }: { outcome: string }) {
+  return (
+    <span className={`shrink-0 border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${OUTCOME_BADGE[outcome] ?? "bg-gray-100"}`}>
+      {outcome}
+    </span>
+  );
+}
+
+function CallerLine({ caller, callerName }: { caller: string | null; callerName: string | null }) {
+  return (
+    <>
+      {callerName ? <span className="text-sm font-bold text-ink">{callerName}</span> : null}
+      {caller ? (
+        <span className="font-mono text-xs text-gray-600">{caller}</span>
+      ) : !callerName ? (
+        <span className="text-xs text-gray-400">number withheld</span>
+      ) : null}
+    </>
+  );
+}
+
+function RecBadge() {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 border-2 border-ink bg-brut-cyan px-1 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] text-ink">
+      <span className="h-1.5 w-1.5 rounded-full bg-ink" aria-hidden="true" />Rec
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------- Recent calls */
+
+/**
+ * Browse any call in the window. Richer cards (name, number, synopsis) so the
+ * operator can scan before opening the transcript + recording drawer.
+ */
+export function RecentCalls({ items, windowLabel }: { items: RecentCallMeta[]; windowLabel: string }) {
   const [active, setActive] = useState<DrawerCall | null>(null);
-  return { active, open: setActive, close: () => setActive(null) };
+  return (
+    <>
+      <LogShell
+        title="Recent calls"
+        items={items}
+        windowLabel={windowLabel}
+        getKey={(c) => c.id}
+        getDate={(c) => localDateKey(c.startedAt)}
+        getSearchText={(c) => [c.callerName, c.caller, c.outcome, c.synopsis, fmtDateTime(c.startedAt)].filter(Boolean).join(" ")}
+        searchPlaceholder="Search caller, outcome, synopsis…"
+        emptyLabel="No calls on this day."
+        noneLabel="No calls recorded yet. When your AI Voice agent answers a call, it lands here."
+        renderItem={(c) => (
+          <button
+            type="button"
+            onClick={() => setActive({ id: c.id, caller: c.caller, callerName: c.callerName, outcome: c.outcome, startedAt: c.startedAt })}
+            className="brut-focus block w-full rounded-none text-left transition-colors hover:bg-brut-yellow/15"
+          >
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <OutcomeBadge outcome={c.outcome} />
+              <CallerLine caller={c.caller} callerName={c.callerName} />
+              <span className="font-mono text-xs tabular-nums text-gray-500">{fmtDateTime(c.startedAt)}</span>
+              {c.durationS != null ? <span className="font-mono text-xs tabular-nums text-gray-500">· {formatDuration(c.durationS)}</span> : null}
+              {c.hasRecording ? <RecBadge /> : null}
+            </div>
+            {c.synopsis ? (
+              <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-gray-700">{c.synopsis}</p>
+            ) : (
+              <p className="mt-1 text-xs italic text-gray-400">No synopsis captured for this call.</p>
+            )}
+          </button>
+        )}
+      />
+      <TranscriptDrawer call={active} onClose={() => setActive(null)} />
+    </>
+  );
 }
 
 /* -------------------------------------------------------------- Review queue */
 
 // Reason -> fill. Each reason owns a colour, but the words carry the meaning so
-// the queue is readable for colour-blind operators (never colour alone).
+// the queue stays readable for colour-blind operators (never colour alone).
 const REASON_STYLE: Record<string, string> = {
   "System error": "bg-brut-red",
   "Caller abandoned": "bg-brut-orange",
@@ -36,112 +100,98 @@ const REASON_STYLE: Record<string, string> = {
   "Goal not met": "bg-brut-yellow",
 };
 
-/**
- * The self-improvement loop: calls the agent struggled with (failed, abandoned,
- * over-long, or stuck re-looking-up an address), each with the detected reason
- * and a one-tap jump into the transcript + recording.
- */
-export function CallsToReview({ items }: { items: ReviewCall[] }) {
-  const drawer = useCallDrawer();
+function SeverityTag({ severity }: { severity: number }) {
+  const s = severity >= 4 ? { label: "High", fill: "bg-brut-red" } : severity >= 2 ? { label: "Med", fill: "bg-brut-orange" } : { label: "Low", fill: "bg-brut-yellow" };
   return (
-    <section className="border-[3px] border-ink bg-paper shadow-brut">
-      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b-[3px] border-ink px-5 py-3.5">
-        <div className="flex items-center gap-2.5">
-          <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Calls to review</h2>
-          <span className="border-2 border-ink bg-brut-yellow px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-ink">{items.length}</span>
-        </div>
-        <p className="text-xs text-gray-600">Where the agent struggled. Listen, then tune the prompt.</p>
-      </header>
-
-      {items.length === 0 ? (
-        <p className="px-5 py-10 text-center text-sm text-gray-600">Nothing flagged. The agent handled every call in this window cleanly.</p>
-      ) : (
-        <ul className="divide-y-2 divide-gray-100">
-          {items.map((it) => (
-            <li key={it.id} className="flex flex-col gap-3 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                  <span className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${OUTCOME_BADGE[it.outcome] ?? "bg-gray-100"}`}>
-                    {it.outcome}
-                  </span>
-                  {it.callerName ? <span className="text-sm font-bold text-ink">{it.callerName}</span> : null}
-                  {it.caller ? (
-                    <span className="font-mono text-xs text-gray-600">{it.caller}</span>
-                  ) : !it.callerName ? (
-                    <span className="text-xs text-gray-400">number withheld</span>
-                  ) : null}
-                  <span className="font-mono text-xs tabular-nums text-gray-500">{fmtWhen(it.startedAt)}</span>
-                  {it.durationS != null ? <span className="font-mono text-xs tabular-nums text-gray-500">· {fmtDur(it.durationS)}</span> : null}
-                </div>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {it.reasons.map((r) => (
-                    <span key={r} className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink ${REASON_STYLE[r] ?? "bg-gray-100"}`}>
-                      {r}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => drawer.open({ id: it.id, caller: it.caller, callerName: it.callerName, outcome: it.outcome, startedAt: it.startedAt })}
-                className="brut-press brut-focus shrink-0 self-start border-2 border-ink bg-brut-yellow px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.04em] text-ink sm:self-auto"
-              >
-                Review &rarr;
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <TranscriptDrawer call={drawer.active} onClose={drawer.close} />
-    </section>
+    <span className={`shrink-0 border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${s.fill}`} title={`Severity ${severity}`}>
+      {s.label}
+    </span>
   );
 }
 
-/* -------------------------------------------------------------- Recent calls */
+/**
+ * Triage workflow: the calls the agent struggled with, most urgent first, with
+ * the detected reasons. The operator opens the transcript, then marks the call
+ * reviewed or dismisses it — either way it leaves the queue. This is the
+ * human-in-the-loop tuning step (nothing auto-edits the agent).
+ */
+export function CallsToReview({ items, windowLabel }: { items: ReviewCall[]; windowLabel: string }) {
+  const router = useRouter();
+  const [active, setActive] = useState<DrawerCall | null>(null);
+  const [pending, startTransition] = useTransition();
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-/** Any recent call, one row per line, opening its transcript + recording. */
-export function RecentCalls({ items }: { items: RecentCallMeta[] }) {
-  const drawer = useCallDrawer();
+  function act(callId: string, status: "reviewed" | "dismissed") {
+    setBusyId(callId);
+    startTransition(async () => {
+      await updateCallReviewStatus({ callId, status });
+      setBusyId(null);
+      router.refresh();
+    });
+  }
+
   return (
-    <section className="border-[3px] border-ink bg-paper shadow-brut">
-      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b-[3px] border-ink px-5 py-3.5">
-        <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Recent calls</h2>
-        <p className="text-xs text-gray-600">Open any call for its transcript &amp; recording.</p>
-      </header>
-
-      {items.length === 0 ? (
-        <p className="px-5 py-10 text-center text-sm text-gray-600">No calls recorded yet.</p>
-      ) : (
-        <ul className="divide-y-2 divide-gray-100">
-          {items.map((it) => (
-            <li key={it.id}>
-              <button
-                type="button"
-                onClick={() => drawer.open({ id: it.id, caller: it.caller, callerName: it.callerName, outcome: it.outcome, startedAt: it.startedAt })}
-                className="brut-focus flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-brut-yellow/20"
-              >
-                <span className={`shrink-0 border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${OUTCOME_BADGE[it.outcome] ?? "bg-gray-100"}`}>
-                  {it.outcome}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-ink">
-                  {it.callerName ? <span className="font-bold">{it.callerName} </span> : null}
-                  {it.caller ? <span className="font-mono text-xs text-gray-600">{it.caller}</span> : <span className="text-xs text-gray-400">number withheld</span>}
-                </span>
-                {it.hasRecording ? (
-                  <span className="inline-flex shrink-0 items-center gap-1 border-2 border-ink bg-brut-cyan px-1 py-0.5 text-[9px] font-bold uppercase tracking-[0.06em] text-ink">
-                    <span className="h-1.5 w-1.5 rounded-full bg-ink" aria-hidden="true" />Rec
-                  </span>
-                ) : null}
-                {it.durationS != null ? <span className="shrink-0 font-mono text-xs tabular-nums text-gray-500">{fmtDur(it.durationS)}</span> : null}
-                <span className="hidden shrink-0 font-mono text-xs tabular-nums text-gray-500 sm:inline">{fmtWhen(it.startedAt)}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <TranscriptDrawer call={drawer.active} onClose={drawer.close} />
-    </section>
+    <>
+      <LogShell
+        title="Calls to review"
+        items={items}
+        allByDefault
+        windowLabel={windowLabel}
+        badge={<span className="border-2 border-ink bg-brut-yellow px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-ink">{items.length}</span>}
+        sortAll={(a, b) => b.severity - a.severity || (a.startedAt < b.startedAt ? 1 : -1)}
+        getKey={(c) => c.id}
+        getDate={(c) => localDateKey(c.startedAt)}
+        getSearchText={(c) => [c.callerName, c.caller, c.outcome, c.reasons.join(" "), c.synopsis].filter(Boolean).join(" ")}
+        searchPlaceholder="Search reason, caller, synopsis…"
+        emptyLabel="Nothing flagged on this day."
+        noneLabel="Nothing flagged. The agent handled every call in this window cleanly."
+        renderItem={(c) => {
+          const busy = pending && busyId === c.id;
+          return (
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <SeverityTag severity={c.severity} />
+                <OutcomeBadge outcome={c.outcome} />
+                <CallerLine caller={c.caller} callerName={c.callerName} />
+                <span className="font-mono text-xs tabular-nums text-gray-500">{fmtDateTime(c.startedAt)}</span>
+                {c.durationS != null ? <span className="font-mono text-xs tabular-nums text-gray-500">· {formatDuration(c.durationS)}</span> : null}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {c.reasons.map((r) => (
+                  <span key={r} className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink ${REASON_STYLE[r] ?? "bg-gray-100"}`}>{r}</span>
+                ))}
+              </div>
+              {c.synopsis ? <p className="line-clamp-2 text-sm leading-relaxed text-gray-700">{c.synopsis}</p> : null}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setActive({ id: c.id, caller: c.caller, callerName: c.callerName, outcome: c.outcome, startedAt: c.startedAt })}
+                  className="brut-press brut-focus border-2 border-ink bg-brut-yellow px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.04em] text-ink"
+                >
+                  Review &rarr;
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => act(c.id, "reviewed")}
+                  className="brut-press brut-focus border-2 border-ink bg-brut-lime px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.04em] text-ink disabled:opacity-50"
+                >
+                  Mark reviewed
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => act(c.id, "dismissed")}
+                  className="brut-press brut-focus border-2 border-ink bg-paper px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.04em] text-gray-500 disabled:opacity-50"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          );
+        }}
+      />
+      <TranscriptDrawer call={active} onClose={() => setActive(null)} />
+    </>
   );
 }
