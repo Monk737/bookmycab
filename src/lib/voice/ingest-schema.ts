@@ -35,10 +35,15 @@ export const ingestSchema = z.object({
   sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
   caller_name: z.string().max(120).optional(),
   abandon_reason: z.string().max(200).optional(),
-  // Tier 2 quality: transcript, recording, and address-lookup count.
-  transcript: z.string().max(40000).optional(),
-  recording_url: z.string().url().max(2000).optional(),
-  address_lookups: z.number().int().nonnegative().optional(),
+  // Tier 2 quality: transcript, recording, and address-lookup count. Each field
+  // is fault-tolerant: a malformed or oversized value degrades to "not captured"
+  // (.catch(undefined)) rather than failing the whole body and dropping the call
+  // from analytics + billing. recording_url intentionally drops strict url()
+  // validation for the same reason — an odd provider URL must never cost us the
+  // call record; the worst case is an <audio> element that won't play.
+  transcript: z.string().max(100_000).optional().catch(undefined),
+  recording_url: z.string().max(2048).optional().catch(undefined),
+  address_lookups: z.number().int().nonnegative().optional().catch(undefined),
 });
 
 export function parseIngestBody(input: unknown) {
