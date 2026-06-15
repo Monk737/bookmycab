@@ -4,7 +4,8 @@ import { getVoiceQuality } from "@/lib/voice/quality";
 import { EmptyState } from "@/components/dashboard/ui";
 import { IntelligenceTabs } from "@/components/dashboard/voice/intelligence-tabs";
 import { PerformanceKpis, HandleTrendPanel, OperationalHealth, SentimentPanel, LoyaltyPanel } from "@/components/dashboard/voice/quality-panels";
-import { CallsToReview, RecentCalls } from "@/components/dashboard/voice/quality-call-lists";
+import { CallsToReview } from "@/components/dashboard/voice/quality-call-lists";
+import { CallInspector } from "@/components/dashboard/voice/call-inspector";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
 import { CyclePicker } from "@/components/dashboard/cycle-picker";
 import { resolveCycle } from "@/lib/dashboard/billing-cycle";
@@ -72,7 +73,7 @@ export default async function VoiceQualityPage({
             <LoyaltyPanel l={data.loyalty} />
           </div>
 
-          <RecentCalls items={data.recent} windowLabel={cycleLabel} />
+          <CallInspector items={data.recent} windowLabel={cycleLabel} />
         </div>
       )}
     </div>
