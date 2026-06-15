@@ -53,6 +53,10 @@ export interface RecentCallMeta {
   durationS: number | null;
   hasRecording: boolean;
   synopsis: string | null;
+  // Quality signals surfaced on the card (Agent quality page).
+  sentiment: string | null;
+  success: boolean | null;
+  addressLookups: number | null;
 }
 
 export interface VoiceQuality {
@@ -229,10 +233,11 @@ export async function getVoiceQuality(tenantId: string, rangeDays = 30, cycle?: 
 
   const loyalty: LoyaltyData = { newCallers, returningCallers, repeat };
 
-  // ---- Recent (transcript access) — full window for the searchable log ----
+  // ---- Recent (quality browse) — full window for the searchable log ----
   const recent: RecentCallMeta[] = rows.slice(0, 300).map((r) => ({
     id: r.id, startedAt: r.started_at, caller: r.caller_number, callerName: r.caller_name,
     outcome: r.outcome, durationS: r.duration_s, hasRecording: !!r.recording_url, synopsis: r.summary,
+    sentiment: r.sentiment, success: r.success, addressLookups: r.address_lookups,
   }));
 
   return { rangeDays: cycle ? cycle.days : rangeDays, performance, review, sentiment, loyalty, recent };

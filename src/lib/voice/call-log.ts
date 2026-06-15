@@ -5,12 +5,14 @@ export interface VoiceCallLogRow {
   id: string;
   agentName: string;
   caller: string | null;
+  callerName: string | null;
   startedAt: string;
   durationS: number | null;
   outcome: string;
   creditSource: string;
   summary: string | null;
   success: boolean | null;
+  hasRecording: boolean;
 }
 
 /**
@@ -29,7 +31,7 @@ export async function getVoiceCallLog(
     supabase
       .from("calls")
       .select(
-        "id, automation_id, caller_number, started_at, duration_s, outcome, credit_source, summary, success",
+        "id, automation_id, caller_number, caller_name, started_at, duration_s, outcome, credit_source, summary, success, recording_url",
       )
       .eq("tenant_id", tenantId)
       .gte("started_at", since)
@@ -52,23 +54,27 @@ export async function getVoiceCallLog(
     id: string;
     automation_id: string;
     caller_number: string | null;
+    caller_name: string | null;
     started_at: string;
     duration_s: number | null;
     outcome: string;
     credit_source: string;
     summary: string | null;
     success: boolean | null;
+    recording_url: string | null;
   };
 
   return ((calls ?? []) as Row[]).map((c) => ({
     id: c.id,
     agentName: nameByAutomation.get(c.automation_id) ?? "Voice agent",
     caller: c.caller_number ?? null,
+    callerName: c.caller_name ?? null,
     startedAt: c.started_at,
     durationS: c.duration_s ?? null,
     outcome: c.outcome,
     creditSource: c.credit_source,
     summary: c.summary ?? null,
     success: c.success ?? null,
+    hasRecording: !!c.recording_url,
   }));
 }

@@ -36,7 +36,7 @@ export default async function VoiceIntelligencePage({
         </Link>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <h1 className="font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
-            AI Voice Intelligence
+            Bookings
           </h1>
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-xs font-medium text-gray-600">
