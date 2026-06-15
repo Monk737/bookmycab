@@ -60,7 +60,7 @@ export default async function VoiceIntelligencePage({
 
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <DemandHeatmap cells={data.heatmap.cells} max={data.heatmap.max} peak={data.heatmap.peak} rangeDays={RANGE_DAYS} />
+            <DemandHeatmap cells={data.heatmap.cells} max={data.heatmap.max} peak={data.heatmap.peak} />
           </div>
           <BookingFunnel f={data.funnel} />
         </div>

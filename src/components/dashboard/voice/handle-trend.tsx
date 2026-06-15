@@ -30,7 +30,7 @@ function HandleTooltip({ active, payload, label }: { active?: boolean; payload?:
   );
 }
 
-/** Mean call length per day (14 days) as a hard-cornered ink trend line. */
+/** Mean call length per day across the cycle, as a hard-cornered ink trend line. */
 export function HandleTrend({ data }: { data: HandleTrendPoint[] }) {
   const pts: Pt[] = data.map((d) => ({ date: d.date, avgS: d.calls > 0 ? d.avgS : null, calls: d.calls }));
   if (!pts.some((p) => p.avgS != null)) {

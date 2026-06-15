@@ -37,8 +37,8 @@ export function HandleTrendPanel({ p }: { p: AgentPerformance }) {
     <Panel title="Avg handle time" className="lg:col-span-2">
       <HandleTrend data={p.handleTrend} />
       <p className="mt-3 max-w-prose text-xs text-gray-600">
-        Mean call length per day over the last 14 days. A steady climb usually means the agent is repeating itself, asking
-        for the same detail twice, or stuck re-confirming an address.
+        Mean call length per day across the selected cycle. A steady climb usually means the agent is repeating itself,
+        asking for the same detail twice, or stuck re-confirming an address.
       </p>
     </Panel>
   );
@@ -140,7 +140,7 @@ export function SentimentPanel({ s }: { s: SentimentData }) {
           </ul>
 
           <div>
-            <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Last 14 days</p>
+            <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Daily trend</p>
             <div className="flex h-16 items-end gap-[3px]">
               {s.trend.map((d) => {
                 const sum = d.positive + d.neutral + d.negative;

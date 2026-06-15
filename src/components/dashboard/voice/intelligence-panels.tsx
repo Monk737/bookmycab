@@ -27,12 +27,10 @@ export function DemandHeatmap({
   cells,
   max,
   peak,
-  rangeDays,
 }: {
   cells: HeatCell[];
   max: number;
   peak: { wd: number; hr: number; count: number } | null;
-  rangeDays: number;
 }) {
   const lookup = new Map(cells.map((c) => [`${c.wd}-${c.hr}`, c.count]));
   const hours = Array.from({ length: 24 }, (_, h) => h);
@@ -42,7 +40,7 @@ export function DemandHeatmap({
       <header className="flex flex-wrap items-center justify-between gap-2 border-b-[3px] border-ink px-5 py-3.5">
         <div>
           <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Demand heatmap</h2>
-          <p className="text-xs text-gray-600">When calls land · UK time · last {rangeDays} days</p>
+          <p className="text-xs text-gray-600">When calls land · UK time · this cycle</p>
         </div>
         {peak ? (
           <p className="border-2 border-ink bg-brut-yellow px-2.5 py-1 text-xs font-bold text-ink">
