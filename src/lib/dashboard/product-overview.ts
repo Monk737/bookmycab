@@ -17,7 +17,7 @@ export type SupabaseLike = Awaited<ReturnType<typeof createClient>>;
 
 export type ChannelType = "whatsapp" | "telegram" | "messenger" | "instagram" | "widget";
 export type CallOutcome =
-  | "booked" | "quoted" | "abandoned" | "transferred" | "failed" | "no_credit" | "unknown";
+  | "booked" | "modified" | "cancelled" | "quoted" | "abandoned" | "transferred" | "failed" | "no_credit" | "unknown";
 
 const TIER_LABEL: Record<string, string> = {
   ignition: "Ignition",
@@ -148,11 +148,13 @@ export async function getProductOverview(
    -------------------------------------------------------------------------- */
 
 export const CALL_OUTCOMES: CallOutcome[] = [
-  "booked", "quoted", "transferred", "abandoned", "failed", "no_credit", "unknown",
+  "booked", "modified", "cancelled", "quoted", "transferred", "abandoned", "failed", "no_credit", "unknown",
 ];
 
 const OUTCOME_LABEL: Record<CallOutcome, string> = {
   booked: "Booked",
+  modified: "Modified",
+  cancelled: "Cancelled",
   quoted: "Quoted",
   transferred: "Transferred",
   abandoned: "Abandoned",

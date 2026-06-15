@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const OUTCOMES = [
   "booked",
+  "modified",
+  "cancelled",
   "quoted",
   "abandoned",
   "transferred",

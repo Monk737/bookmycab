@@ -4,11 +4,13 @@ import { formatDuration } from "@/lib/dashboard/product-overview";
 /* Per-outcome flat fill. Colour pairs with the label + count, never alone. */
 const OUTCOME_FILL: Record<string, string> = {
   booked: "bg-brut-lime",
+  modified: "bg-brut-violet",
+  cancelled: "bg-brut-pink",
   quoted: "bg-brut-cyan",
   transferred: "bg-brut-blue",
   abandoned: "bg-brut-orange",
   failed: "bg-brut-red",
-  no_credit: "bg-brut-pink",
+  no_credit: "bg-brut-red-deep",
   unknown: "bg-gray-300",
 };
 

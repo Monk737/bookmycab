@@ -6,9 +6,11 @@ import type { VoiceCallLogRow } from "@/lib/voice/call-log";
 
 const OUTCOME_STYLE: Record<string, string> = {
   booked: "bg-brut-lime",
+  modified: "bg-brut-violet",
+  cancelled: "bg-brut-pink",
   quoted: "bg-brut-cyan",
-  failed: "bg-brut-pink",
-  no_credit: "bg-brut-pink",
+  failed: "bg-brut-red",
+  no_credit: "bg-brut-red",
 };
 
 function CallRow(c: VoiceCallLogRow) {
