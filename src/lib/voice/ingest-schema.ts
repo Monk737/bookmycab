@@ -24,6 +24,15 @@ export const ingestSchema = z.object({
   /** Vapi analysisPlan output, stored verbatim on the call row. */
   summary: z.string().max(4000).optional(),
   success: z.boolean().optional(),
+  // Tier 1 intelligence: route / fare / vehicle / airport, extracted by the
+  // engine from the call's tool calls (with structured-data fallbacks).
+  pickup: z.string().max(300).optional(),
+  destination: z.string().max(300).optional(),
+  quoted_fare: z.number().nonnegative().optional(),
+  vehicle_type: z.string().max(40).optional(),
+  booking_ref: z.string().max(60).optional(),
+  airport_code: z.string().max(8).optional(),
+  sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
 });
 
 export function parseIngestBody(input: unknown) {

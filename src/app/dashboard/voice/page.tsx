@@ -55,7 +55,15 @@ export default async function VoicePage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">AI Voice analytics</p>
           <h1 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Voice</h1>
         </div>
-        <p className="text-xs font-medium text-gray-600">Last {v.rangeDays} days · {v.perAgent.length} agent{v.perAgent.length === 1 ? "" : "s"}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-xs font-medium text-gray-600">Last {v.rangeDays} days · {v.perAgent.length} agent{v.perAgent.length === 1 ? "" : "s"}</p>
+          <Link
+            href="/dashboard/voice/intelligence"
+            className="brut-press brut-focus inline-flex h-9 items-center border-[3px] border-ink bg-brut-yellow px-3.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink shadow-brut"
+          >
+            Booking intelligence &rarr;
+          </Link>
+        </div>
       </header>
 
       {/* Headline figures. */}
