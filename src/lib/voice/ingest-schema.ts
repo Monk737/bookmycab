@@ -35,6 +35,10 @@ export const ingestSchema = z.object({
   sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
   caller_name: z.string().max(120).optional(),
   abandon_reason: z.string().max(200).optional(),
+  // Tier 2 quality: transcript, recording, and address-lookup count.
+  transcript: z.string().max(40000).optional(),
+  recording_url: z.string().url().max(2000).optional(),
+  address_lookups: z.number().int().nonnegative().optional(),
 });
 
 export function parseIngestBody(input: unknown) {
