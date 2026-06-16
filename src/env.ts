@@ -31,6 +31,11 @@ const schema = z.object({
   // (B5). Server-only; the voice provider posts call records with this token.
   VOICE_INGEST_SECRET: z.string().min(1),
 
+  // Gemini — server-only key for the weekly AI briefing (Tier 3). Optional:
+  // absent → the briefing generator no-ops and the panel shows its empty state.
+  GEMINI_API_KEY: z.string().optional(),
+  BRIEFING_MODEL: z.string().default("gemini-2.5-flash"),
+
   // Resend
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().email().default("hello@bookmycab.com"),
@@ -82,6 +87,8 @@ const rawSource: Record<string, string | undefined> = {
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_VAULT_KEY: process.env.SUPABASE_VAULT_KEY,
   VOICE_INGEST_SECRET: process.env.VOICE_INGEST_SECRET,
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  BRIEFING_MODEL: process.env.BRIEFING_MODEL,
   N8N_BASE_URL: process.env.N8N_BASE_URL,
   N8N_API_KEY: process.env.N8N_API_KEY,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
