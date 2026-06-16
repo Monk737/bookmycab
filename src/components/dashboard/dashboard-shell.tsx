@@ -93,11 +93,60 @@ export function DashboardShell({ orgName, children, notifications }: { orgName: 
     </ul>
   );
 
+  const briefingActive = isActive(pathname, "/dashboard/voice/briefing");
+  const briefingIcon = (
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" aria-hidden="true">
+      <path d="M12 2l2.4 7.1L22 12l-7.6 2.9L12 22l-2.4-7.1L2 12l7.6-2.9z" fill="currentColor" stroke="#0a0a0a" strokeWidth={1.5} strokeLinejoin="miter" />
+    </svg>
+  );
+
+  /* Featured AI Weekly Briefing entry: a brutalist nav button wearing a yellow
+     "Every Monday morning" ribbon clipped to its top edge. */
+  const briefingNav = (compact: boolean) =>
+    compact ? (
+      <Link
+        href="/dashboard/voice/briefing"
+        aria-current={briefingActive ? "page" : undefined}
+        title="AI Weekly Briefing · every Monday morning"
+        onClick={() => setDrawerOpen(false)}
+        className={`relative flex items-center justify-center border-2 px-2 py-2.5 ${DARK_FOCUS} ${
+          briefingActive ? "border-ink bg-brut-yellow text-ink shadow-brut-sm" : "border-brut-yellow text-brut-yellow hover:bg-gray-800"
+        }`}
+      >
+        {briefingIcon}
+        <span className="sr-only">AI Weekly Briefing</span>
+        <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 h-2 w-2 border border-ink bg-brut-yellow" />
+      </Link>
+    ) : (
+      <div className="relative pt-2.5">
+        <span
+          aria-hidden="true"
+          className="absolute -top-0.5 left-2 z-10 -rotate-1 border-2 border-ink bg-brut-yellow px-1.5 py-0.5 text-[8px] font-extrabold uppercase leading-none tracking-[0.06em] text-ink shadow-brut-sm"
+        >
+          Every Monday morning
+        </span>
+        <Link
+          href="/dashboard/voice/briefing"
+          aria-current={briefingActive ? "page" : undefined}
+          onClick={() => setDrawerOpen(false)}
+          className={`flex items-center gap-3 border-2 px-3 py-2.5 text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,color] duration-150 ${DARK_FOCUS} ${
+            briefingActive
+              ? "border-ink bg-brut-yellow text-ink shadow-brut-sm"
+              : "border-brut-yellow bg-gray-900 text-paper hover:bg-gray-800"
+          }`}
+        >
+          {briefingIcon}
+          <span>AI Weekly Briefing</span>
+        </Link>
+      </div>
+    );
+
   const navLinks = (compact: boolean) => (
     <div className="space-y-5">
       <div>
         {!compact && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">Products</p>}
         {renderItems(NAV_ITEMS.filter((i) => i.group === "primary"), compact)}
+        {briefingNav(compact)}
       </div>
       <div>
         {!compact && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">Account</p>}

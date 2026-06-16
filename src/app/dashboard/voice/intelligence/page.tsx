@@ -6,10 +6,6 @@ import { DemandHeatmap, BookingFunnel, RouteIntelligence } from "@/components/da
 import { IntelligenceTabs } from "@/components/dashboard/voice/intelligence-tabs";
 import { CyclePicker } from "@/components/dashboard/cycle-picker";
 import { resolveCycle } from "@/lib/dashboard/billing-cycle";
-import { WeeklyBriefing } from "@/components/dashboard/voice/weekly-briefing";
-import { AnomalyBanner } from "@/components/dashboard/voice/anomaly-banner";
-import { getLatestBriefing } from "@/lib/voice/briefing";
-import { getVoiceAnomalies } from "@/lib/voice/anomalies";
 
 export const metadata = { title: "AI Voice Intelligence · BookMyCab" };
 
@@ -27,12 +23,7 @@ export default async function VoiceIntelligencePage({
 
   const cycle = resolveCycle((await searchParams).cycle);
   const cycleKey = cycle.isCurrent ? undefined : cycle.key;
-  // Briefing + anomalies are live (this week vs last), independent of the cycle.
-  const [data, briefing, anomalies] = await Promise.all([
-    getVoiceIntelligence(claims.tenant_id, RANGE_DAYS, cycle),
-    getLatestBriefing(claims.tenant_id),
-    getVoiceAnomalies(claims.tenant_id),
-  ]);
+  const data = await getVoiceIntelligence(claims.tenant_id, RANGE_DAYS, cycle);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -60,10 +51,6 @@ export default async function VoiceIntelligencePage({
       </header>
 
       <div className="space-y-5">
-        <AnomalyBanner anomalies={anomalies} />
-
-        <WeeklyBriefing briefing={briefing} />
-
         <RecoveryBoard
           items={data.recovery.items}
           recoverable={data.recovery.recoverable}

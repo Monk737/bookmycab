@@ -232,25 +232,52 @@ export async function generateAllBriefings(): Promise<{ tenants: number; generat
 
 /* ------------------------------------------------------------------- read */
 
+type BriefingRow = {
+  headline: string;
+  narrative: string;
+  recommendation: string | null;
+  metrics: BriefingMetrics;
+  period_start: string;
+  period_end: string;
+  created_at: string;
+  model: string | null;
+};
+
+const toBriefing = (data: BriefingRow): Briefing => ({
+  headline: data.headline,
+  narrative: data.narrative,
+  recommendation: data.recommendation ?? null,
+  metrics: data.metrics,
+  periodStart: data.period_start,
+  periodEnd: data.period_end,
+  createdAt: data.created_at,
+  model: data.model ?? null,
+});
+
+const BRIEFING_COLS = "headline, narrative, recommendation, metrics, period_start, period_end, created_at, model";
+
 /** The most recent briefing for a tenant (RLS-scoped for dashboard display). */
 export async function getLatestBriefing(tenantId: string): Promise<Briefing | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("voice_briefings")
-    .select("headline, narrative, recommendation, metrics, period_start, period_end, created_at, model")
+    .select(BRIEFING_COLS)
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (!data) return null;
-  return {
-    headline: data.headline,
-    narrative: data.narrative,
-    recommendation: data.recommendation ?? null,
-    metrics: data.metrics as BriefingMetrics,
-    periodStart: data.period_start,
-    periodEnd: data.period_end,
-    createdAt: data.created_at,
-    model: data.model ?? null,
-  };
+  return toBriefing(data as BriefingRow);
+}
+
+/** Recent briefings for a tenant, newest first — powers the dedicated briefing page archive. */
+export async function getRecentBriefings(tenantId: string, limit = 8): Promise<Briefing[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("voice_briefings")
+    .select(BRIEFING_COLS)
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return ((data ?? []) as BriefingRow[]).map(toBriefing);
 }
