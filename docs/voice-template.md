@@ -117,6 +117,38 @@ subscription + credit top-ups; `invoice.paid` resets the monthly pool.
 - **Race-safe metering**: a per-tenant advisory lock serializes pool/credit
   consumption.
 
+## Weekly AI briefing (Tier 3)
+
+A separate n8n workflow generates the dashboard's weekly AI briefing — no Vapi or
+per-call wiring, just a scheduled hit on the app.
+
+```
+n8n "Weekly AI Briefing" (orfhcOB1MbB7DjPZ)
+  Schedule Trigger — every Monday 08:00
+        ▼
+  HTTP Request — POST {SITE}/api/voice/briefing/generate
+        │  Header auth credential "BookMyCab Ingest Bearer"
+        │    = Authorization: Bearer <VOICE_INGEST_SECRET>
+        ▼
+  generateAllBriefings(): per active tenant, compute the week's aggregates,
+    one Gemini call (structured JSON) → upsert voice_briefings (idempotent/week)
+        ▼
+  Bookings dashboard renders the latest briefing + anomaly banner
+```
+
+Setup checklist:
+
+1. **App env** — set `GEMINI_API_KEY` (and optionally `BRIEFING_MODEL`, default
+   `gemini-2.5-flash`). Without the key the generator no-ops and the panel shows
+   its empty state.
+2. **n8n credential** — create a *Header Auth* credential named **BookMyCab Ingest
+   Bearer**: header `Authorization`, value `Bearer <VOICE_INGEST_SECRET>` (the same
+   secret the call-ingest workflow uses). Link it on the HTTP Request node.
+3. The schedule is already published; it fires weekly once the credential is set.
+
+Anomaly alerts need no wiring — they are computed on read (this week vs last) and
+shown as a banner at the top of the Bookings page.
+
 ## Known deployment note
 
 `https://bookmycab.io` must be redeployed with the current `main`/branch build —
