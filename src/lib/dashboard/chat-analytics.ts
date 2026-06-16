@@ -47,6 +47,18 @@ interface ConvoRow {
   started_at: string;
   customer_handle: string | null;
   customer_name: string | null;
+  via_voice?: boolean | null;
+}
+
+export interface ChatBookingRow {
+  id: string;
+  ref: string | null;
+  who: string;
+  pickup: string | null;
+  destination: string | null;
+  fare: string | null;
+  status: string;
+  createdAt: string;
 }
 
 export interface ChatStatBlock {
@@ -82,9 +94,33 @@ export interface ChatAnalytics {
   rangeDays: number;
   tier: string | null;
   aggregate: ChatStatBlock;
+  /** Conversations in-window that involved a WhatsApp voice note (transcribed
+   *  audio message, NOT a phone call). Analytics dimension only. */
+  voiceNotes: number;
   channels: ChannelStat[];
   trend: DayPoint[];
   recent: RecentConversation[];
+  recentBookings: ChatBookingRow[];
+}
+
+/** Pull a human-readable address line out of a stored address jsonb value. */
+function addressLine(v: unknown): string | null {
+  if (v == null) return null;
+  if (typeof v === "string") return v || null;
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    const s = o.text ?? o.formatted ?? o.address ?? o.name;
+    return typeof s === "string" && s.trim() ? s : null;
+  }
+  return null;
+}
+
+function formatFare(fare: unknown, currency: unknown): string | null {
+  if (fare == null || fare === "") return null;
+  const n = typeof fare === "number" ? fare : Number(fare);
+  if (!Number.isFinite(n)) return null;
+  const sym = currency === "USD" ? "$" : currency === "EUR" ? "€" : "£";
+  return `${sym}${n.toFixed(2)}`;
 }
 
 function normaliseOutcome(o: string | null): ChatOutcome {
@@ -151,10 +187,10 @@ export async function getChatAnalytics(
   const overview = await getProductOverview(tenantId, supabase);
   const since = new Date(Date.now() - (rangeDays - 1) * 86_400_000).toISOString().slice(0, 10);
 
-  const [convosRes, channelsRes] = await Promise.all([
+  const [convosRes, channelsRes, bookingsRes] = await Promise.all([
     supabase
       .from("conversations")
-      .select("channel_id, outcome, started_at, customer_handle, customer_name")
+      .select("channel_id, outcome, started_at, customer_handle, customer_name, via_voice")
       .eq("tenant_id", tenantId)
       .gte("started_at", `${since}T00:00:00Z`)
       .order("started_at", { ascending: false }),
@@ -162,10 +198,30 @@ export async function getChatAnalytics(
       .from("channels")
       .select("id, type, status, token_expires_at, external_id")
       .eq("tenant_id", tenantId),
+    supabase
+      .from("bookings")
+      .select(
+        "id, dispatch_ref, passenger_name, customer_handle, pickup_address, destination_address, fare, currency, status, created_at",
+      )
+      .eq("tenant_id", tenantId)
+      .gte("created_at", `${since}T00:00:00Z`)
+      .order("created_at", { ascending: false })
+      .limit(8),
   ]);
 
   const rows = (convosRes.data ?? []) as ConvoRow[];
   const channelRows = (channelsRes.data ?? []) as Record<string, unknown>[];
+
+  const recentBookings: ChatBookingRow[] = ((bookingsRes.data ?? []) as Record<string, unknown>[]).map((b) => ({
+    id: b.id as string,
+    ref: (b.dispatch_ref as string) ?? null,
+    who: (b.passenger_name as string)?.trim() || (b.customer_handle as string) || "Unknown",
+    pickup: addressLine(b.pickup_address),
+    destination: addressLine(b.destination_address),
+    fare: formatFare(b.fare, b.currency),
+    status: (b.status as string) ?? "confirmed",
+    createdAt: b.created_at as string,
+  }));
 
   const typeById = new Map<string, ChannelType>();
   for (const c of channelRows) typeById.set(c.id as string, c.type as ChannelType);
@@ -193,8 +249,10 @@ export async function getChatAnalytics(
     rangeDays,
     tier: overview.chat?.tier ?? null,
     aggregate: reduceChatStats(rows),
+    voiceNotes: rows.reduce((n, r) => n + (r.via_voice ? 1 : 0), 0),
     channels,
     trend: reduceChatTrend(rows, rangeDays),
     recent,
+    recentBookings,
   };
 }

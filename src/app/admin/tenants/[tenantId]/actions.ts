@@ -563,6 +563,8 @@ const createAutomationSchema = z
     // Engine wiring (Voice): the tenant's cloned n8n workflow + Vapi assistant.
     engine_workflow_id: optionalText,
     vapi_assistant_id: optionalText,
+    // Engine wiring (Chat): the paired WhatsApp Voice-Note sub-workflow id.
+    voice_note_workflow_id: optionalText,
   })
   .superRefine((d, ctx) => {
     if (d.type === "Voice" && !d.phone_number) {
@@ -574,6 +576,7 @@ const wiringSchema = z.object({
   automation_id: z.string().uuid(),
   engine_workflow_id: optionalText,
   vapi_assistant_id: optionalText,
+  voice_note_workflow_id: optionalText,
 });
 
 /**
@@ -593,6 +596,7 @@ export async function updateAutomationWiring(
     automation_id: formData.get("automation_id"),
     engine_workflow_id: formData.get("engine_workflow_id") ?? undefined,
     vapi_assistant_id: formData.get("vapi_assistant_id") ?? undefined,
+    voice_note_workflow_id: formData.get("voice_note_workflow_id") ?? undefined,
   });
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
@@ -615,6 +619,7 @@ export async function updateAutomationWiring(
     .from("automations")
     .update({
       engine_workflow_id: data.engine_workflow_id ?? null,
+      voice_note_workflow_id: data.voice_note_workflow_id ?? null,
       ...(goLive ? { status: "live", build_stage: "Live" } : {}),
     })
     .eq("id", data.automation_id);
@@ -637,6 +642,7 @@ export async function updateAutomationWiring(
     metadata: {
       engine_workflow_id: data.engine_workflow_id ?? null,
       vapi_assistant_id: data.vapi_assistant_id ?? null,
+      voice_note_workflow_id: data.voice_note_workflow_id ?? null,
       went_live: goLive,
     },
   });
@@ -681,6 +687,7 @@ export async function createAutomation(
     voice_tier: formData.get("voice_tier") || undefined,
     engine_workflow_id: formData.get("engine_workflow_id") ?? undefined,
     vapi_assistant_id: formData.get("vapi_assistant_id") ?? undefined,
+    voice_note_workflow_id: formData.get("voice_note_workflow_id") ?? undefined,
   });
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
@@ -744,6 +751,7 @@ export async function createAutomation(
       build_stage: "Building",
       dispatch_adapter: data.dispatch_adapter ?? null,
       engine_workflow_id: data.engine_workflow_id ?? null,
+      voice_note_workflow_id: data.voice_note_workflow_id ?? null,
     })
     .select("id")
     .single();
@@ -787,7 +795,7 @@ export async function createAutomation(
     action: "tenant.create_automation",
     targetType: "automation",
     targetId: automationId,
-    metadata: { name: data.name, type: data.type, dispatch_adapter: data.dispatch_adapter ?? null, engine_workflow_id: data.engine_workflow_id ?? null, vapi_assistant_id: data.vapi_assistant_id ?? null },
+    metadata: { name: data.name, type: data.type, dispatch_adapter: data.dispatch_adapter ?? null, engine_workflow_id: data.engine_workflow_id ?? null, vapi_assistant_id: data.vapi_assistant_id ?? null, voice_note_workflow_id: data.voice_note_workflow_id ?? null },
   });
 
   // Notify the tenant's primary contact (best-effort; no-op without Resend).

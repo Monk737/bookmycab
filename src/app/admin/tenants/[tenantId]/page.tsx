@@ -80,6 +80,7 @@ type AutomationRow = {
   build_stage: string;
   dispatch_adapter: string | null;
   engine_workflow_id: string | null;
+  voice_note_workflow_id: string | null;
 };
 
 type VoiceAgentRow = {
@@ -203,7 +204,7 @@ export default async function TenantDetailPage({
   ] = await Promise.all([
     serviceClient
       .from("automations")
-      .select("id, name, type, status, build_stage, dispatch_adapter, engine_workflow_id")
+      .select("id, name, type, status, build_stage, dispatch_adapter, engine_workflow_id, voice_note_workflow_id")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false }),
     serviceClient
@@ -248,6 +249,9 @@ export default async function TenantDetailPage({
 
   const automations = (automationsData ?? []) as AutomationRow[];
   const voiceAgents = (voiceAgentsData ?? []) as VoiceAgentRow[];
+  // Chat automations (everything that isn't an AI Voice agent) get the chat
+  // engine-wiring panel: the WhatsApp Chat + Voice-Note twin mirrors into here.
+  const chatAutomations = automations.filter((a) => a.type !== "Voice");
 
   // Which automations carry operational history? Those can't use the simple
   // delete (it refuses, and the DB guards block it) and instead get the 2-step
@@ -577,10 +581,61 @@ export default async function TenantDetailPage({
                       automationId={agent.automation_id}
                       engineWorkflowId={auto?.engine_workflow_id ?? null}
                       vapiAssistantId={agent.vapi_assistant_id ?? null}
+                      variant="voice"
                     />
                   </div>
                 );
               })}
+            </div>
+          </div>
+        )}
+
+        {chatAutomations.length > 0 && (
+          <div className="mt-4 border-[3px] border-ink bg-paper p-5">
+            <h3 className="font-display text-sm font-extrabold uppercase tracking-tight text-ink">
+              Engine wiring — Chat (WhatsApp)
+            </h3>
+            <p className="mt-1 text-xs text-gray-500">
+              Paste these values into the <span className="font-mono">BMC Chat Config</span> node of the
+              tenant&rsquo;s cloned WhatsApp Chat workflow (the same values serve the paired Voice-Note twin).
+              Conversations and bookings — chat <em>and</em> voice note — then mirror into this tenant&rsquo;s
+              dashboard automatically. No phone numbers, no call credit: a voice note is a transcribed
+              WhatsApp message, not a call.
+            </p>
+            <div className="mt-4 flex flex-col gap-4">
+              {chatAutomations.map((auto) => (
+                <div key={auto.id} className="border-2 border-ink bg-canvas p-4">
+                  <p className="font-display text-sm font-extrabold uppercase tracking-tight text-ink">
+                    {auto.name}
+                    <span className="ml-2 font-mono text-xs font-medium normal-case text-gray-600">{auto.type}</span>
+                  </p>
+                  <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
+                    <div className="flex justify-between gap-3 sm:block">
+                      <dt className="font-medium text-gray-500">tenant_id</dt>
+                      <dd className="font-mono text-ink">{tenantId}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 sm:block">
+                      <dt className="font-medium text-gray-500">automation_id</dt>
+                      <dd className="font-mono text-ink">{auto.id}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 sm:block">
+                      <dt className="font-medium text-gray-500">conversations_url</dt>
+                      <dd className="font-mono text-ink">{env.NEXT_PUBLIC_SITE_URL}/api/chat/conversations</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 sm:block">
+                      <dt className="font-medium text-gray-500">bookings_url</dt>
+                      <dd className="font-mono text-ink">{env.NEXT_PUBLIC_SITE_URL}/api/chat/bookings</dd>
+                    </div>
+                  </dl>
+                  <EngineWiringForm
+                    tenantId={tenantId}
+                    automationId={auto.id}
+                    engineWorkflowId={auto.engine_workflow_id ?? null}
+                    voiceNoteWorkflowId={auto.voice_note_workflow_id ?? null}
+                    variant="chat"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         )}

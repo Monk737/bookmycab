@@ -87,12 +87,22 @@ describe("dashboard brand safety", () => {
 
 describe("no service-role key on tenant surfaces", () => {
   it("dashboard + api/orgs never reference the service-role key", () => {
-    // Allowlist: the Epic-7b team surface legitimately uses the service-role
-    // client server-side — `team/actions.ts` for Owner-gated invite/role/revoke,
-    // and `team/page.tsx` for the Owner-gated audit-log read (audit_log RLS denies
-    // tenant SELECT). Both are security-reviewed and never expose the key client-side.
+    // Allowlist: surfaces that legitimately use the service-role client
+    // server-side. Each is "use server"/server-only and never exposes the key:
+    //  - team/actions.ts        Owner-gated invite/role/revoke
+    //  - team/page.tsx          Owner-gated audit-log read (audit_log RLS denies tenant SELECT)
+    //  - voice/quality/actions.ts      server-only recording signing + quality writes
+    //  - voice/intelligence/actions.ts server-only recovery-status writes
+    //  - billing/autopay/route.ts      server-only autopay toggle (service-role write)
+    // All are security-reviewed and never ship the key to the client.
     const allow = new Set(
-      ["src/app/dashboard/team/actions.ts", "src/app/dashboard/team/page.tsx"].map((r) => p(r)),
+      [
+        "src/app/dashboard/team/actions.ts",
+        "src/app/dashboard/team/page.tsx",
+        "src/app/dashboard/voice/quality/actions.ts",
+        "src/app/dashboard/voice/intelligence/actions.ts",
+        "src/app/api/orgs/[orgId]/billing/autopay/route.ts",
+      ].map((r) => p(r)),
     );
     for (const d of ["src/app/dashboard", "src/components/dashboard", "src/lib/dashboard", "src/app/api/orgs"]) {
       for (const f of tsxFiles(p(d))) {

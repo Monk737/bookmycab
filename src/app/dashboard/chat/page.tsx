@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
-import { getChatAnalytics, channelLabel } from "@/lib/dashboard/chat-analytics";
+import { getChatAnalytics } from "@/lib/dashboard/chat-analytics";
 import { tierLabel } from "@/lib/dashboard/product-overview";
 import { StatTile, StatGrid, Panel, EmptyState } from "@/components/dashboard/ui";
 import { ConversationsTrend } from "@/components/dashboard/chat/conversations-trend";
-import { ChatOutcomeBars, ChannelHealthList, RecentConversations } from "@/components/dashboard/chat/chat-blocks";
+import { ChatOutcomeBars, ChannelHealthList, RecentConversations, RecentBookings } from "@/components/dashboard/chat/chat-blocks";
 
 export const metadata = { title: "Chat · BookMyCab" };
 
@@ -41,7 +41,6 @@ export default async function ChatPage() {
   }
 
   const connected = c.channels.filter((ch) => ch.health !== "disconnected").length;
-  const busiest = c.channels.find((ch) => ch.conversations > 0);
   const hasConvos = c.aggregate.totalConversations > 0;
 
   return (
@@ -54,13 +53,13 @@ export default async function ChatPage() {
         <p className="text-xs font-medium text-gray-600">Last {c.rangeDays} days · {c.channels.length} channel{c.channels.length === 1 ? "" : "s"}</p>
       </header>
 
-      {/* Headline figures. */}
+      {/* Headline figures — all sourced from the WhatsApp Chat + Voice Note workflow. */}
       <StatGrid cols="grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <StatTile label="Conversations" value={c.aggregate.totalConversations.toLocaleString("en-GB")} sub="last 30 days" />
+        <StatTile label="Conversations" value={c.aggregate.totalConversations.toLocaleString("en-GB")} sub={`last ${c.rangeDays} days`} />
         <StatTile label="Booked rate" value={`${c.aggregate.bookedPct}%`} sub={`${c.aggregate.booked.toLocaleString("en-GB")} booked`} />
         <StatTile label="Bookings" value={c.aggregate.booked.toLocaleString("en-GB")} sub="from chat" />
+        <StatTile label="Voice notes" value={c.voiceNotes.toLocaleString("en-GB")} sub="chats via audio" />
         <StatTile label="Channels live" value={connected} sub={`of ${c.channels.length} connected`} />
-        <StatTile label="Busiest" value={busiest ? channelLabel(busiest.type) : "—"} sub={busiest ? `${busiest.conversations.toLocaleString("en-GB")} chats` : "No traffic yet"} />
         <StatTile label="Plan" value={tierLabel(c.tier)} sub="WhatsApp + Voice Note" />
       </StatGrid>
 
@@ -81,13 +80,16 @@ export default async function ChatPage() {
         </Panel>
       </div>
 
-      {/* Channel health + recent activity. */}
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+      {/* Channel health + recent activity + booking feed. */}
+      <div className="mt-5 grid gap-5 lg:grid-cols-3">
         <Panel title="Channels">
           <ChannelHealthList channels={c.channels} />
         </Panel>
         <Panel title="Recent conversations">
           <RecentConversations items={c.recent} />
+        </Panel>
+        <Panel title="Recent bookings">
+          <RecentBookings items={c.recentBookings} />
         </Panel>
       </div>
     </div>

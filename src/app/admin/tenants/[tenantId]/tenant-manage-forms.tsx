@@ -335,6 +335,7 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
   const tierId = useId();
   const workflowId = useId();
   const assistantId = useId();
+  const voiceNoteId = useId();
   const fe = state.fieldErrors;
 
   return (
@@ -413,6 +414,16 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
               <label htmlFor={handleId} className="text-sm font-medium text-gray-700">Channel handle (optional)</label>
               <input id={handleId} name="channel_handle" placeholder="+44 7700 900100 / @handle" className={inputClass} />
             </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={workflowId} className="text-sm font-medium text-gray-700">Chat workflow ID (optional)</label>
+              <input id={workflowId} name="engine_workflow_id" placeholder="n8n WhatsApp Chat workflow id, e.g. bLWWbiAcchP6XCaS" className={inputClass} />
+              <p className="text-xs text-gray-500">The tenant&rsquo;s cloned WhatsApp Chat workflow. Save it in Engine wiring to take the bot live.</p>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={voiceNoteId} className="text-sm font-medium text-gray-700">Voice-Note workflow ID (optional)</label>
+              <input id={voiceNoteId} name="voice_note_workflow_id" placeholder="paired Voice-Note sub-workflow id, e.g. XlJFrnOXVyMOLqdY" className={inputClass} />
+              <p className="text-xs text-gray-500">The transcription twin the chat workflow calls for WhatsApp voice notes. Reference only.</p>
+            </div>
           </>
         )}
       </div>
@@ -428,8 +439,11 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
 /* -------------------------------------------------------------------------- */
 
 /**
- * Wire (or re-wire) an existing automation to its engine pair: the tenant's
- * cloned n8n workflow id and, for Voice agents, the Vapi assistant id. Rendered
+ * Wire (or re-wire) an existing automation to its engine pair. Two variants:
+ *  - voice: the cloned n8n workflow id + the Vapi assistant id.
+ *  - chat:  the cloned WhatsApp Chat workflow id + the paired Voice-Note
+ *           sub-workflow id (no Vapi — a voice note is not a phone call).
+ * Saving a workflow id on a still-building automation takes it live. Rendered
  * inside the "Engine wiring" panel on the tenant detail page.
  */
 export function EngineWiringForm({
@@ -437,16 +451,21 @@ export function EngineWiringForm({
   automationId,
   engineWorkflowId,
   vapiAssistantId,
+  voiceNoteWorkflowId,
+  variant = "voice",
 }: {
   tenantId: string;
   automationId: string;
   engineWorkflowId: string | null;
-  vapiAssistantId: string | null;
+  vapiAssistantId?: string | null;
+  voiceNoteWorkflowId?: string | null;
+  variant?: "voice" | "chat";
 }) {
   const [state, formAction, pending] = useActionState(updateAutomationWiring.bind(null, tenantId), initialState);
   const wfId = useId();
-  const vaId = useId();
+  const secondId = useId();
   const fe = state.fieldErrors;
+  const isChat = variant === "chat";
 
   return (
     <form action={formAction} noValidate className="mt-3 flex flex-col gap-3 border-t-2 border-gray-200 pt-3">
@@ -454,15 +473,25 @@ export function EngineWiringForm({
       <input type="hidden" name="automation_id" value={automationId} />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1">
-          <label htmlFor={wfId} className="text-xs font-medium text-gray-600">n8n workflow ID</label>
-          <input id={wfId} name="engine_workflow_id" defaultValue={engineWorkflowId ?? ""} placeholder="e.g. 0x5hOeCgWfr3N7pR" className={inputClass} />
+          <label htmlFor={wfId} className="text-xs font-medium text-gray-600">
+            {isChat ? "Chat workflow ID" : "n8n workflow ID"}
+          </label>
+          <input id={wfId} name="engine_workflow_id" defaultValue={engineWorkflowId ?? ""} placeholder={isChat ? "e.g. bLWWbiAcchP6XCaS" : "e.g. 0x5hOeCgWfr3N7pR"} className={inputClass} />
           <FieldError id={`${wfId}-error`} error={fe.engine_workflow_id?.[0]} />
         </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor={vaId} className="text-xs font-medium text-gray-600">Vapi assistant ID</label>
-          <input id={vaId} name="vapi_assistant_id" defaultValue={vapiAssistantId ?? ""} placeholder="e.g. 15c5709f-7585-4d39-…" className={inputClass} />
-          <FieldError id={`${vaId}-error`} error={fe.vapi_assistant_id?.[0]} />
-        </div>
+        {isChat ? (
+          <div className="flex flex-col gap-1">
+            <label htmlFor={secondId} className="text-xs font-medium text-gray-600">Voice-Note workflow ID</label>
+            <input id={secondId} name="voice_note_workflow_id" defaultValue={voiceNoteWorkflowId ?? ""} placeholder="e.g. XlJFrnOXVyMOLqdY" className={inputClass} />
+            <FieldError id={`${secondId}-error`} error={fe.voice_note_workflow_id?.[0]} />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1">
+            <label htmlFor={secondId} className="text-xs font-medium text-gray-600">Vapi assistant ID</label>
+            <input id={secondId} name="vapi_assistant_id" defaultValue={vapiAssistantId ?? ""} placeholder="e.g. 15c5709f-7585-4d39-…" className={inputClass} />
+            <FieldError id={`${secondId}-error`} error={fe.vapi_assistant_id?.[0]} />
+          </div>
+        )}
       </div>
       <div>
         <button type="submit" disabled={pending} className={primaryBtn}>
