@@ -1,0 +1,1 @@
+{"nodes": [{"id": "0063_voice_briefings_table", "label": "voice_briefings table (weekly AI briefing)", "file_type": "code", "source_file": "supabase/migrations/0063_voice_briefings.sql", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

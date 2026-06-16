@@ -17,8 +17,21 @@
       "input_tokens": 296460,
       "output_tokens": 0,
       "files": 88
+    },
+    {
+      "date": "2026-06-15T20:01:40.227907+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 804,
+      "mode": "update-code-only"
+    },
+    {
+      "date": "2026-06-16T12:53:40.629007+00:00",
+      "input_tokens": 131324,
+      "output_tokens": 56281,
+      "files": 36
     }
   ],
-  "total_input_tokens": 436400,
-  "total_output_tokens": 2800
+  "total_input_tokens": 567724,
+  "total_output_tokens": 59081
 }
