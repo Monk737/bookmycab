@@ -62,6 +62,7 @@ export async function POST(req: Request) {
     p_pickup_time_mode: d.pickup_time_mode ?? null,
     p_driver_note: d.driver_note ?? null,
     p_raw: (d.raw ?? null) as never,
+    p_summary: d.summary ?? null,
   });
   if (error) {
     console.error("record_chat_booking failed", error);

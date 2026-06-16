@@ -16,6 +16,7 @@ export const CHAT_OUTCOMES = [
   "abandoned",
   "managed",
   "cancelled",
+  "failed",
   "unknown",
 ] as const;
 
@@ -39,6 +40,9 @@ export const chatConversationSchema = z.object({
   /** True when this journey involved a WhatsApp voice note (analytics only). */
   via_voice: z.boolean().optional(),
   language: z.string().max(12).optional(),
+  /** The bot's own reply card text for this outcome, stored verbatim so the
+   *  dashboard drawer shows exactly what the customer saw. */
+  summary: z.string().max(8000).optional(),
 });
 
 export type ChatConversationBody = z.infer<typeof chatConversationSchema>;
@@ -89,6 +93,8 @@ export const chatBookingSchema = z.object({
   driver_note: z.string().max(2000).optional(),
   /** Full dispatch response, stored verbatim for audit. */
   raw: z.unknown().optional(),
+  /** The bot's own booking-card text, stored verbatim for the detail drawer. */
+  summary: z.string().max(8000).optional(),
 });
 
 export type ChatBookingBody = z.infer<typeof chatBookingSchema>;

@@ -111,6 +111,49 @@ Absent/blank → the ingest endpoints reject every request (never accept blindly
 
 ## Mirrored events
 
-`open` (unknown) · `quoted` · `booked` (+ booking row) · `cancelled` (+ booking
-row → cancelled) · `managed` (modify; + booking row → modified, applying the
-changed fields). All five outcomes plus the live bookings feed are covered.
+`open` (unknown) · `quoted` · `booked` (+ booking row) · `failed` (booking attempt
+AutoCab rejected) · `cancelled` (+ booking row → cancelled) · `managed` (modify;
++ booking row → modified, applying the changed fields).
+
+Each mirror also carries **`summary`** — the bot's own WhatsApp reply card text
+(`Parse_Booking._bookingMessage`, `Parse_Quote._quoteMessage`,
+`Build_Cancel_Reply.text`, `Build_Modify_Reply.text`) — stored verbatim on the
+conversation + booking so the dashboard detail drawer shows exactly what the
+customer saw. No separate AI node is needed: the card the bot already composed IS
+the summary.
+
+## Dashboard surfaces (all fed by the mirror)
+
+- `/dashboard/chat` — headline tiles, volume trend, outcome split, channel health,
+  and two **distinct searchable / date-filtered / scrollable logs**: Conversations
+  (interaction-centric) and Bookings (dispatch-centric). Click any row → a detail
+  drawer with the full booking card + the verbatim summary.
+- `/dashboard/chat/intelligence` — booking-centric insight (top routes + avg fare,
+  vehicle mix, busiest hours/weekdays, revenue, ASAP-vs-scheduled + lead time,
+  voice-note vs text conversion, repeat customers). No "agent quality".
+- `/dashboard/chat/briefing` — the Weekly AI Chat Briefing (below).
+
+## Weekly AI Chat Briefing
+
+A separate n8n workflow generates the dashboard's weekly briefing — no per-message
+wiring, just a scheduled hit on the app (mirrors the AI Voice briefing).
+
+```
+n8n "WhatsApp Chat — Weekly AI Briefing" (EE4QnrAIzSJ6N6J9)
+  Schedule Trigger — every Monday 08:00
+        ▼
+  BMC Briefing Config (Set)  — site_url + chat_ingest_secret (the only node to edit)
+        ▼
+  HTTP Request — POST {site}/api/chat/briefing/generate
+        │  Authorization: Bearer <CHAT_INGEST_SECRET>
+        ▼
+  generateAllChatBriefings(): per active tenant, compute the week's
+    conversation + booking aggregates, one Gemini call (structured JSON) →
+    upsert chat_briefings (idempotent per week)
+        ▼
+  /dashboard/chat/briefing renders the latest briefing + archive
+```
+
+Setup: app env needs `GEMINI_API_KEY` (shared with the voice briefing; absent → the
+generator no-ops and the panel shows its empty state). Open **BMC Briefing Config**,
+paste `site_url` + the deployment's `CHAT_INGEST_SECRET`, then activate the workflow.

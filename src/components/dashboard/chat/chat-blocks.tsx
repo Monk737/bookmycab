@@ -1,5 +1,5 @@
-import type { ChatStatBlock, ChannelStat, RecentConversation, ChatBookingRow } from "@/lib/dashboard/chat-analytics";
-import { chatOutcomeLabel, channelLabel } from "@/lib/dashboard/chat-analytics";
+import type { ChatStatBlock, ChannelStat } from "@/lib/dashboard/chat-analytics";
+import { channelLabel } from "@/lib/dashboard/chat-format";
 import { ChannelIcon } from "@/components/dashboard/channel-icon";
 
 /* Per-outcome flat fill. Colour always pairs with a label + count. */
@@ -9,6 +9,7 @@ const OUTCOME_FILL: Record<string, string> = {
   managed: "bg-brut-violet",
   abandoned: "bg-brut-orange",
   cancelled: "bg-brut-red",
+  failed: "bg-brut-orange",
   unknown: "bg-gray-300",
 };
 
@@ -81,84 +82,3 @@ export function ChannelHealthList({ channels }: { channels: ChannelStat[] }) {
   );
 }
 
-const REL_OUTCOME_FILL: Record<string, string> = OUTCOME_FILL;
-
-function timeAgo(iso: string, now = Date.now()): string {
-  const diff = Math.max(0, now - new Date(iso).getTime());
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
-const BOOKING_STATUS_FILL: Record<string, string> = {
-  confirmed: "bg-brut-lime",
-  dispatched: "bg-brut-cyan",
-  completed: "bg-brut-violet",
-  cancelled: "bg-brut-red",
-  no_show: "bg-brut-orange",
-};
-
-/** Most recent dispatch bookings the bot placed (chat + voice note). */
-export function RecentBookings({ items }: { items: ChatBookingRow[] }) {
-  if (items.length === 0) {
-    return (
-      <p className="text-sm text-gray-600">
-        No bookings yet. Every ride your WhatsApp bot confirms — typed or by voice note — lands here.
-      </p>
-    );
-  }
-  return (
-    <ul className="divide-y-2 divide-gray-100">
-      {items.map((b) => (
-        <li key={b.id} className="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
-          <div className="flex min-w-0 items-start gap-2.5">
-            <span className={`mt-1 h-3 w-3 shrink-0 border-2 border-ink ${BOOKING_STATUS_FILL[b.status] ?? "bg-gray-300"}`} aria-hidden="true" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-ink">
-                {b.who}
-                {b.ref ? <span className="ml-2 font-mono text-[11px] font-medium text-gray-500">#{b.ref}</span> : null}
-              </p>
-              {(b.pickup || b.destination) ? (
-                <p className="truncate text-[11px] font-medium text-gray-500">
-                  {b.pickup ?? "—"} → {b.destination ?? "—"}
-                </p>
-              ) : null}
-            </div>
-          </div>
-          <div className="shrink-0 text-right">
-            {b.fare ? <p className="font-mono text-sm font-bold tabular-nums text-ink">{b.fare}</p> : null}
-            <p className="text-[11px] font-bold uppercase tracking-[0.04em] text-gray-500">{b.status}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/** Most recent conversations as a compact feed. */
-export function RecentConversations({ items }: { items: RecentConversation[] }) {
-  if (items.length === 0) {
-    return <p className="text-sm text-gray-600">No conversations yet. They appear here the moment your bot starts a chat.</p>;
-  }
-  return (
-    <ul className="divide-y-2 divide-gray-100">
-      {items.map((c, i) => (
-        <li key={i} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <span className={`h-3 w-3 shrink-0 border-2 border-ink ${REL_OUTCOME_FILL[c.outcome] ?? "bg-gray-300"}`} aria-hidden="true" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-ink">{c.who}</p>
-              <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-gray-500">
-                {c.channel === "unknown" ? "—" : channelLabel(c.channel)} · {chatOutcomeLabel(c.outcome)}
-              </p>
-            </div>
-          </div>
-          <span className="shrink-0 font-mono text-xs tabular-nums text-gray-500">{timeAgo(c.startedAt)}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}

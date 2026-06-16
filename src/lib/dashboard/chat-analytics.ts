@@ -2,44 +2,19 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { getProductOverview, type ChannelType, type SupabaseLike } from "./product-overview";
 import { channelHealth } from "./queries";
+import { CHAT_OUTCOMES, OUTCOME_LABEL, channelLabel, type ChatOutcome } from "./chat-format";
 
 /* ----------------------------------------------------------------------------
    Chat product analytics — multi-channel booking bot.
 
    Reads the conversations + channels tables and shapes them for the Chat
-   surface: channel health, conversation volume + outcomes, per-channel split
-   and a recent-conversation feed. Pure reducers are unit-tested; the async
-   loader wires them to the live schema.
+   surface: channel health, conversation volume + outcomes and the per-channel
+   split. Pure reducers are unit-tested; the async loader wires them to the live
+   schema. Client-safe label helpers live in ./chat-format.
    -------------------------------------------------------------------------- */
 
-export type ChatOutcome = "booked" | "quoted" | "managed" | "abandoned" | "cancelled" | "unknown";
-
-export const CHAT_OUTCOMES: ChatOutcome[] = [
-  "booked", "quoted", "managed", "abandoned", "cancelled", "unknown",
-];
-
-const OUTCOME_LABEL: Record<ChatOutcome, string> = {
-  booked: "Booked",
-  quoted: "Quoted",
-  managed: "Managed",
-  abandoned: "Abandoned",
-  cancelled: "Cancelled",
-  unknown: "Unknown",
-};
-export function chatOutcomeLabel(o: string): string {
-  return OUTCOME_LABEL[o as ChatOutcome] ?? o;
-}
-
-const CHANNEL_LABEL: Record<string, string> = {
-  whatsapp: "WhatsApp",
-  telegram: "Telegram",
-  messenger: "Messenger",
-  instagram: "Instagram",
-  widget: "Web widget",
-};
-export function channelLabel(t: string): string {
-  return CHANNEL_LABEL[t] ?? t;
-}
+// Re-export the client-safe outcome enum + helpers for server-side consumers.
+export { CHAT_OUTCOMES, chatOutcomeLabel, channelLabel, type ChatOutcome } from "./chat-format";
 
 interface ConvoRow {
   channel_id: string | null;
@@ -48,17 +23,6 @@ interface ConvoRow {
   customer_handle: string | null;
   customer_name: string | null;
   via_voice?: boolean | null;
-}
-
-export interface ChatBookingRow {
-  id: string;
-  ref: string | null;
-  who: string;
-  pickup: string | null;
-  destination: string | null;
-  fare: string | null;
-  status: string;
-  createdAt: string;
 }
 
 export interface ChatStatBlock {
@@ -82,13 +46,6 @@ export interface DayPoint {
   booked: number;
 }
 
-export interface RecentConversation {
-  who: string;
-  channel: ChannelType | "unknown";
-  outcome: ChatOutcome;
-  startedAt: string;
-}
-
 export interface ChatAnalytics {
   hasChat: boolean;
   rangeDays: number;
@@ -99,28 +56,6 @@ export interface ChatAnalytics {
   voiceNotes: number;
   channels: ChannelStat[];
   trend: DayPoint[];
-  recent: RecentConversation[];
-  recentBookings: ChatBookingRow[];
-}
-
-/** Pull a human-readable address line out of a stored address jsonb value. */
-function addressLine(v: unknown): string | null {
-  if (v == null) return null;
-  if (typeof v === "string") return v || null;
-  if (typeof v === "object") {
-    const o = v as Record<string, unknown>;
-    const s = o.text ?? o.formatted ?? o.address ?? o.name;
-    return typeof s === "string" && s.trim() ? s : null;
-  }
-  return null;
-}
-
-function formatFare(fare: unknown, currency: unknown): string | null {
-  if (fare == null || fare === "") return null;
-  const n = typeof fare === "number" ? fare : Number(fare);
-  if (!Number.isFinite(n)) return null;
-  const sym = currency === "USD" ? "$" : currency === "EUR" ? "€" : "£";
-  return `${sym}${n.toFixed(2)}`;
 }
 
 function normaliseOutcome(o: string | null): ChatOutcome {
@@ -187,7 +122,7 @@ export async function getChatAnalytics(
   const overview = await getProductOverview(tenantId, supabase);
   const since = new Date(Date.now() - (rangeDays - 1) * 86_400_000).toISOString().slice(0, 10);
 
-  const [convosRes, channelsRes, bookingsRes] = await Promise.all([
+  const [convosRes, channelsRes] = await Promise.all([
     supabase
       .from("conversations")
       .select("channel_id, outcome, started_at, customer_handle, customer_name, via_voice")
@@ -198,30 +133,10 @@ export async function getChatAnalytics(
       .from("channels")
       .select("id, type, status, token_expires_at, external_id")
       .eq("tenant_id", tenantId),
-    supabase
-      .from("bookings")
-      .select(
-        "id, dispatch_ref, passenger_name, customer_handle, pickup_address, destination_address, fare, currency, status, created_at",
-      )
-      .eq("tenant_id", tenantId)
-      .gte("created_at", `${since}T00:00:00Z`)
-      .order("created_at", { ascending: false })
-      .limit(8),
   ]);
 
   const rows = (convosRes.data ?? []) as ConvoRow[];
   const channelRows = (channelsRes.data ?? []) as Record<string, unknown>[];
-
-  const recentBookings: ChatBookingRow[] = ((bookingsRes.data ?? []) as Record<string, unknown>[]).map((b) => ({
-    id: b.id as string,
-    ref: (b.dispatch_ref as string) ?? null,
-    who: (b.passenger_name as string)?.trim() || (b.customer_handle as string) || "Unknown",
-    pickup: addressLine(b.pickup_address),
-    destination: addressLine(b.destination_address),
-    fare: formatFare(b.fare, b.currency),
-    status: (b.status as string) ?? "confirmed",
-    createdAt: b.created_at as string,
-  }));
 
   const typeById = new Map<string, ChannelType>();
   for (const c of channelRows) typeById.set(c.id as string, c.type as ChannelType);
@@ -237,13 +152,6 @@ export async function getChatAnalytics(
   // Busiest channel first; disconnected sinks down within equal volume.
   channels.sort((a, b) => b.conversations - a.conversations);
 
-  const recent: RecentConversation[] = rows.slice(0, 8).map((r) => ({
-    who: r.customer_name?.trim() || r.customer_handle || "Unknown caller",
-    channel: (r.channel_id ? typeById.get(r.channel_id) : undefined) ?? "unknown",
-    outcome: normaliseOutcome(r.outcome),
-    startedAt: r.started_at,
-  }));
-
   return {
     hasChat: overview.chat != null,
     rangeDays,
@@ -252,7 +160,5 @@ export async function getChatAnalytics(
     voiceNotes: rows.reduce((n, r) => n + (r.via_voice ? 1 : 0), 0),
     channels,
     trend: reduceChatTrend(rows, rangeDays),
-    recent,
-    recentBookings,
   };
 }

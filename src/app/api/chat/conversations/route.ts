@@ -46,6 +46,7 @@ export async function POST(req: Request) {
     p_started_at: d.started_at ?? null,
     p_via_voice: d.via_voice ?? false,
     p_language: d.language ?? "en",
+    p_summary: d.summary ?? null,
   });
   if (error) {
     console.error("record_chat_conversation failed", error);
