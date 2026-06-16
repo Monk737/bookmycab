@@ -174,14 +174,17 @@ export async function generateBriefingForTenant(tenantId: string): Promise<{ ok:
   let parsed: { headline: string; narrative: string; recommendation: string };
   try {
     const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
+    // Flash / Flash-Lite can skip thinking for a fast, deterministic JSON; Pro
+    // always thinks, so leave its budget to the model and give output headroom.
+    const isFlash = env.BRIEFING_MODEL.includes("flash");
     const res = await ai.models.generateContent({
       model: env.BRIEFING_MODEL,
       contents: `This week's AI voice-agent data (JSON). Compare booked rate and volume to last week, and call out anything that cost bookings.\n\n${JSON.stringify(metrics)}`,
       config: {
         systemInstruction: SYSTEM,
-        maxOutputTokens: 1024,
-        // Plain summarisation — skip Gemini 2.5 thinking so the JSON isn't truncated.
-        thinkingConfig: { thinkingBudget: 0 },
+        // Pro keeps its thinking on (needs output headroom); Flash thinks off.
+        maxOutputTokens: isFlash ? 1024 : 4096,
+        ...(isFlash ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
         // Structured output: a JSON object matching OUTPUT_SCHEMA.
         responseMimeType: "application/json",
         responseSchema: OUTPUT_SCHEMA,
