@@ -63,26 +63,6 @@ export interface RecentCallMeta {
   reviewed: boolean;
 }
 
-/** One flagged-reason cluster with its window trend + change vs the prior window. */
-export interface FailureCluster {
-  reason: string;
-  count: number;
-  prevCount: number;
-  /** % change vs the prior equal-length window. null when there is no baseline. */
-  deltaPct: number | null;
-  /** Per-day occurrences across the window (for the sparkline). */
-  trend: { date: string; count: number }[];
-  /** Ids of the flagged calls in this cluster, newest first (for drill-down). */
-  callIds: string[];
-}
-
-export interface FailureSummary {
-  clusters: FailureCluster[];
-  totalFlagged: number;
-  /** How many clusters are rising vs the prior window (deltaPct > 0 or brand new). */
-  risingCount: number;
-}
-
 export interface VoiceQuality {
   rangeDays: number;
   performance: AgentPerformance;
@@ -90,7 +70,6 @@ export interface VoiceQuality {
   sentiment: SentimentData;
   loyalty: LoyaltyData;
   recent: RecentCallMeta[];
-  failures: FailureSummary;
 }
 
 type Row = {
@@ -111,8 +90,11 @@ const LONG_CALL_S = 300; // 5 minutes
 const RELOOKUP_THRESHOLD = 4; // lookup_address called this many+ times = address struggle
 const dayKey = (iso: string) => iso.slice(0, 10);
 
+/** The minimal call fields the flagging logic needs (shared with the detector). */
+export type FlagInput = Pick<Row, "outcome" | "duration_s" | "success" | "address_lookups">;
+
 /** Flags + severity for a struggled call. Empty array = not flagged. */
-function reviewReasons(r: Pick<Row, "outcome" | "duration_s" | "success" | "address_lookups">): { reasons: string[]; severity: number } {
+export function reviewReasons(r: FlagInput): { reasons: string[]; severity: number } {
   const reasons: string[] = [];
   let severity = 0;
   if (r.outcome === "failed") { reasons.push("System error"); severity += 4; }
@@ -136,27 +118,15 @@ export async function getVoiceQuality(tenantId: string, rangeDays = 30, cycle?: 
     ? query.gte("started_at", cycle.startIso).lt("started_at", cycle.endIso)
     : query.gte("started_at", sinceIso);
 
-  // Prior equal-length window — the baseline for "is this failure rising?".
-  const windowStartIso = cycle ? cycle.startIso : sinceIso;
-  const windowDays = cycle ? cycle.days : rangeDays;
-  const priorStartIso = new Date(Date.parse(windowStartIso) - windowDays * 86_400_000).toISOString();
-
   // Reviewed/dismissed calls drop out of the triage queue. Fetched in parallel;
   // if the call_reviews table isn't present yet the error is swallowed and the
   // queue simply shows everything (graceful until migration 0062 is applied).
-  const [callsRes, reviewsRes, priorRes] = await Promise.all([
+  const [callsRes, reviewsRes] = await Promise.all([
     query.order("started_at", { ascending: false }),
     supabase.from("call_reviews").select("call_id").eq("tenant_id", tenantId).in("status", ["reviewed", "dismissed"]),
-    supabase
-      .from("calls")
-      .select("outcome, duration_s, success, address_lookups")
-      .eq("tenant_id", tenantId)
-      .gte("started_at", priorStartIso)
-      .lt("started_at", windowStartIso),
   ]);
   const data = callsRes.data;
   const actioned = new Set(((reviewsRes.data ?? []) as { call_id: string }[]).map((x) => x.call_id));
-  const priorRows = (priorRes.data ?? []) as Pick<Row, "outcome" | "duration_s" | "success" | "address_lookups">[];
 
   // Day buckets for the mini-trends: the selected cycle, or the trailing 14 days.
   const dayKeys: string[] = [];
@@ -282,41 +252,5 @@ export async function getVoiceQuality(tenantId: string, rangeDays = 30, cycle?: 
     };
   });
 
-  // ---- Failure-reason clustering over time ----
-  // Per reason: count + per-day trend + the flagged call ids, vs the prior window.
-  const curByReason = new Map<string, { count: number; ids: string[]; byDay: Map<string, number> }>();
-  let totalFlagged = 0;
-  for (const r of rows) {
-    const { reasons } = reviewReasons(r);
-    if (reasons.length) totalFlagged += 1;
-    const dk = dayKey(r.started_at);
-    for (const reason of reasons) {
-      let e = curByReason.get(reason);
-      if (!e) { e = { count: 0, ids: [], byDay: new Map() }; curByReason.set(reason, e); }
-      e.count += 1;
-      e.ids.push(r.id);
-      e.byDay.set(dk, (e.byDay.get(dk) ?? 0) + 1);
-    }
-  }
-  const prevByReason = new Map<string, number>();
-  for (const r of priorRows) {
-    for (const reason of reviewReasons(r).reasons) prevByReason.set(reason, (prevByReason.get(reason) ?? 0) + 1);
-  }
-  const clusters: FailureCluster[] = [...curByReason.entries()]
-    .map(([reason, e]) => {
-      const prevCount = prevByReason.get(reason) ?? 0;
-      return {
-        reason,
-        count: e.count,
-        prevCount,
-        deltaPct: prevCount > 0 ? Math.round(((e.count - prevCount) / prevCount) * 100) : null,
-        trend: dayKeys.map((d) => ({ date: d, count: e.byDay.get(d) ?? 0 })),
-        callIds: e.ids,
-      };
-    })
-    .sort((a, b) => b.count - a.count);
-  const risingCount = clusters.filter((c) => (c.deltaPct ?? 0) > 0 || (c.deltaPct === null && c.count > 0)).length;
-  const failures: FailureSummary = { clusters, totalFlagged, risingCount };
-
-  return { rangeDays: cycle ? cycle.days : rangeDays, performance, review, sentiment, loyalty, recent, failures };
+  return { rangeDays: cycle ? cycle.days : rangeDays, performance, review, sentiment, loyalty, recent };
 }
