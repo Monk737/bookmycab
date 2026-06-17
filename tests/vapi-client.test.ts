@@ -1,7 +1,7 @@
 // tests/vapi-client.test.ts
 // The Vapi client merges a new system prompt into the assistant's existing
 // model.messages without dropping other roles/config, and PATCHes it back.
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from "vitest";
 
 // Provide a known Vapi config without depending on real env validation.
 // vi.mock is hoisted above the import below, so @/env resolves to this stub.
@@ -22,7 +22,7 @@ describe("vapi client", () => {
     expect(extractSystemPrompt({ id: "a1" })).toBe("");
   });
 
-  let fetchSpy: ReturnType<typeof vi.spyOn>;
+  let fetchSpy: MockInstance<typeof fetch>;
   beforeEach(() => { fetchSpy = vi.spyOn(globalThis, "fetch"); });
   afterEach(() => { fetchSpy.mockRestore(); });
 
