@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import {
   convert,
   formatPrice,
-  CHAT_SETUP_FEE_GBP,
+  CHAT_SUITE,
   type Currency,
 } from "@/lib/marketing/pricing";
 import { CurrencyToggle } from "@/components/marketing/currency-toggle";
@@ -23,10 +23,8 @@ const STAFF_RATE_GBP = 12;
 
 type Tier = { name: string; monthlyGbp: number };
 
-function tierFor(drivers: number): Tier {
-  if (drivers <= 50) return { name: "Ignition", monthlyGbp: 599 };
-  if (drivers <= 100) return { name: "In Motion", monthlyGbp: 999 };
-  return { name: "Full Throttle", monthlyGbp: 1299 };
+function planFor(): Tier {
+  return { name: CHAT_SUITE.name, monthlyGbp: CHAT_SUITE.priceGbp };
 }
 
 function compute(
@@ -42,12 +40,12 @@ function compute(
   const extraBookings = bookings * OUT_OF_HOURS_UPLIFT;
   const revenueUplift = extraBookings * avgFare;
 
-  const tier = tierFor(drivers);
+  const tier = planFor();
   const planMonthly = convert(tier.monthlyGbp, currency, rates);
   const monthlyValue = staffCostSaved + revenueUplift;
   const netMonthly = monthlyValue - planMonthly;
   const annualNet = netMonthly * 12;
-  const setup = convert(CHAT_SETUP_FEE_GBP, currency, rates);
+  const setup = convert(CHAT_SUITE.setupGbp, currency, rates);
   const dailyNet = netMonthly / 30;
   const paybackDays = dailyNet > 0 ? Math.ceil(setup / dailyNet) : null;
 

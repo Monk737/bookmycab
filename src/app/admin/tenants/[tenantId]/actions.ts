@@ -10,7 +10,7 @@ import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
 import { sendEmail } from "@/lib/email/resend";
 import { automationCreatedEmail, tenantWelcomeEmail } from "@/lib/email/templates";
-import { VOICE_PLAN_SPEC, VOICE_PRICE_GBP, type NewTierKey } from "@/lib/billing/pricing";
+import { VOICE_IGNITION_SPEC } from "@/lib/billing/pricing";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
 export type ActionState = {
@@ -24,7 +24,6 @@ const INVITE_ROLES = ["Owner", "Admin", "Viewer"] as const;
 const DISPATCH_ADAPTERS = ["autocab", "icabbi", "cordic"] as const;
 const AUTOMATION_TYPES = ["Booking", "Support", "Driver", "Custom", "Voice"] as const;
 const CHANNEL_TYPES = ["whatsapp", "telegram", "messenger", "instagram", "widget"] as const;
-const VOICE_TIERS = ["ignition", "in_motion", "full_throttle"] as const;
 
 function serviceClient() {
   return createSupabaseJS(
@@ -558,8 +557,6 @@ const createAutomationSchema = z
     phone_number: optionalText,
     channel_type: z.enum(CHANNEL_TYPES).optional(),
     channel_handle: optionalText,
-    // Only used when adding a Voice agent to a tenant with no voice plan yet.
-    voice_tier: z.enum(VOICE_TIERS).optional(),
     // Engine wiring (Voice): the tenant's cloned n8n workflow + Vapi assistant.
     engine_workflow_id: optionalText,
     vapi_assistant_id: optionalText,
@@ -684,7 +681,6 @@ export async function createAutomation(
     phone_number: formData.get("phone_number") ?? undefined,
     channel_type: formData.get("channel_type") || undefined,
     channel_handle: formData.get("channel_handle") ?? undefined,
-    voice_tier: formData.get("voice_tier") || undefined,
     engine_workflow_id: formData.get("engine_workflow_id") ?? undefined,
     vapi_assistant_id: formData.get("vapi_assistant_id") ?? undefined,
     voice_note_workflow_id: formData.get("voice_note_workflow_id") ?? undefined,
@@ -705,21 +701,16 @@ export async function createAutomation(
       .eq("tenant_id", tenantId)
       .maybeSingle();
     if (!existingVoice) {
-      if (!data.voice_tier) {
-        return {
-          fieldErrors: { voice_tier: ["Pick a voice plan tier (this tenant has no voice plan yet)."] },
-          formError: null,
-        };
-      }
-      const tier = data.voice_tier as NewTierKey;
-      const spec = VOICE_PLAN_SPEC[tier];
+      // Adding voice to a tenant with no voice plan provisions the base AI Voice
+      // Ignition plan (1,000 calls / 1 agent). Bespoke allowances are set via a
+      // Custom plan at tenant creation, not here.
       const { start, end } = currentMonthBounds();
       const { error: subErr } = await client.from("voice_subscriptions").insert({
         tenant_id: tenantId,
-        plan_tier: tier,
-        monthly_call_allowance: spec.callAllowance,
-        included_agents: spec.includedAgents,
-        monthly_price_gbp: VOICE_PRICE_GBP[tier],
+        plan_tier: "ignition",
+        monthly_call_allowance: VOICE_IGNITION_SPEC.callAllowance,
+        included_agents: VOICE_IGNITION_SPEC.includedAgents,
+        monthly_price_gbp: VOICE_IGNITION_SPEC.priceGbp,
         status: "active",
         current_period_start: start,
         current_period_end: end,

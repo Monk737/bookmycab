@@ -74,10 +74,9 @@ describe("TenantForm", () => {
     expect(screen.getByLabelText("Country")).toBeInTheDocument();
     expect(screen.getByLabelText("Primary contact email")).toBeInTheDocument();
     expect(screen.getByLabelText("Dispatch adapter")).toBeInTheDocument();
-    expect(screen.getByLabelText("Product")).toBeInTheDocument();
-    // Default product is Chat → chat tier renders; voice is hidden.
-    expect(screen.getByLabelText("Chat tier")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Voice tier")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Plan")).toBeInTheDocument();
+    // Default plan is a fixed plan (voice_ignition) → no custom fields shown.
+    expect(screen.queryByLabelText("Plan name")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /create tenant/i })).toBeInTheDocument();
   });
 
@@ -96,23 +95,20 @@ describe("TenantForm", () => {
     expect(slugInput.value).toBe("custom-slug");
   });
 
-  it("shows product-specific tier fields (chat / voice / double decker)", () => {
+  it("reveals granular custom-plan fields only when the Custom plan is selected", () => {
     render(<TenantForm />);
-    const product = screen.getByLabelText("Product");
+    const plan = screen.getByLabelText("Plan");
 
-    // Default Chat: chat tier present, voice tier absent.
-    expect(screen.getByLabelText("Chat tier")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Voice tier")).not.toBeInTheDocument();
+    // Fixed plans (voice_ignition default, whatsapp_suite): no custom fields.
+    expect(screen.queryByLabelText("Plan name")).not.toBeInTheDocument();
+    fireEvent.change(plan, { target: { value: "whatsapp_suite" } });
+    expect(screen.queryByLabelText("Plan name")).not.toBeInTheDocument();
 
-    // Voice: voice tier present, chat tier absent.
-    fireEvent.change(product, { target: { value: "voice" } });
-    expect(screen.getByLabelText("Voice tier")).toBeInTheDocument();
-    expect(screen.queryByLabelText("Chat tier")).not.toBeInTheDocument();
-
-    // Double Decker: both present.
-    fireEvent.change(product, { target: { value: "double_decker" } });
-    expect(screen.getByLabelText("Chat tier")).toBeInTheDocument();
-    expect(screen.getByLabelText("Voice tier")).toBeInTheDocument();
+    // Custom: granular fields appear (includes AI Voice by default).
+    fireEvent.change(plan, { target: { value: "custom" } });
+    expect(screen.getByLabelText("Plan name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Billing mode")).toBeInTheDocument();
+    expect(screen.getByLabelText("Plan / pack price (£)")).toBeInTheDocument();
   });
 
   it("renders field-level errors returned by the action", async () => {

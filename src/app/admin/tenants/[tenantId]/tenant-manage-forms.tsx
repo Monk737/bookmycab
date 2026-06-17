@@ -376,15 +376,11 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
               <FieldError id={`${phoneId}-error`} error={fe.phone_number?.[0]} />
             </div>
             {!hasVoicePlan && (
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor={tierId} className="text-sm font-medium text-gray-700">Voice plan tier</label>
-                <select id={tierId} name="voice_tier" defaultValue="ignition" className={inputClass}>
-                  <option value="ignition">Ignition — 1,500 calls / 1 agent</option>
-                  <option value="in_motion">In Motion — 2,250 calls / 2 agents</option>
-                  <option value="full_throttle">Full Throttle — 3,000 calls / 2 agents</option>
-                </select>
-                <FieldError id={`${tierId}-error`} error={fe.voice_tier?.[0]} />
-                <p className="text-xs text-gray-500">This tenant has no voice plan yet — adding an agent provisions one and unlocks the AI Voice dashboard.</p>
+              <div className="flex flex-col gap-1.5 border-[3px] border-ink bg-brut-yellow/10 px-4 py-3">
+                <p className="text-sm font-medium text-ink">Provisions the AI Voice Ignition plan</p>
+                <p className="text-xs text-gray-600">
+                  1,000 calls / 1 agent, £1,999/mo. This tenant has no voice plan yet — adding an agent provisions Ignition and unlocks the AI Voice dashboard. For a bespoke allowance, set up a Custom plan at tenant creation instead.
+                </p>
               </div>
             )}
             <div className="flex flex-col gap-1.5">
