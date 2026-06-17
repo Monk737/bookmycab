@@ -131,6 +131,7 @@ describe("handleStripeEvent", () => {
       tenantId: "t1",
       credits: 50,
       couponCode: undefined,
+      unitPriceMicros: undefined,
     });
     expect(res.action).toBe("topup_credits.granted");
   });
@@ -155,6 +156,7 @@ describe("handleStripeEvent", () => {
       tenantId: "t2",
       credits: 10,
       couponCode: "SAVE20",
+      unitPriceMicros: undefined,
     });
     expect(res.action).toBe("topup_credits.granted");
   });
@@ -196,6 +198,31 @@ describe("handleStripeEvent", () => {
     const res = await handleStripeEvent(ev, d);
     expect(d.setDefaultPaymentMethod).toHaveBeenCalledWith({ customerId: "cus_2", setupIntentId: "seti_2" });
     expect(res.action).toBe("autopay.enabled");
+  });
+
+  it("passes credit_unit_micros from session metadata as unitPriceMicros to grantTopupCredits", async () => {
+    const ev = {
+      id: "evt_topup_custom",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_custom",
+          payment_intent: "pi_custom",
+          metadata: { reason: "topup_purchase", tenant_id: "t3", credits: "20", credit_unit_micros: "750000" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.grantTopupCredits).toHaveBeenCalledWith({
+      sessionId: "cs_custom",
+      paymentIntentId: "pi_custom",
+      tenantId: "t3",
+      credits: 20,
+      couponCode: undefined,
+      unitPriceMicros: 750000,
+    });
+    expect(res.action).toBe("topup_credits.granted");
   });
 
   it("ignores a checkout.session.completed that is not a top-up purchase", async () => {
@@ -441,6 +468,33 @@ describe("grantTopupCredits (dep contract)", () => {
       unit_price_micros: 900000,
       currency: "GBP",
       stripe_payment_intent_id: "pi_1",
+    });
+  });
+
+  it("uses custom unitPriceMicros in the credit_ledger insert when provided", async () => {
+    const insert = vi.fn(() => ({ error: null }));
+    const ledgerMaybeSingle = vi.fn(async () => ({ data: null, error: null }));
+    const db = {
+      from: vi.fn((table: string) => {
+        if (table === "credit_ledger") {
+          return {
+            select: () => ({ eq: () => ({ maybeSingle: ledgerMaybeSingle }) }),
+            insert,
+          };
+        }
+        throw new Error(`unexpected table ${table}`);
+      }),
+    };
+    const { buildGrantTopupCredits } = await import("@/lib/billing/webhook-deps");
+    const grant = buildGrantTopupCredits(db as never);
+    await grant({ sessionId: "cs_2", paymentIntentId: "pi_2", tenantId: "t2", credits: 20, couponCode: undefined, unitPriceMicros: 750000 });
+    expect(insert).toHaveBeenCalledWith({
+      tenant_id: "t2",
+      delta: 20,
+      reason: "topup_purchase",
+      unit_price_micros: 750000,
+      currency: "GBP",
+      stripe_payment_intent_id: "pi_2",
     });
   });
 

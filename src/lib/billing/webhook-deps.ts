@@ -71,7 +71,7 @@ const TOPUP_UNIT_PRICE_MICROS = 900_000;
 export function buildGrantTopupCredits(
   db: SupabaseLike,
 ): BillingDeps["grantTopupCredits"] {
-  return async ({ sessionId, paymentIntentId, tenantId, credits, couponCode }) => {
+  return async ({ sessionId, paymentIntentId, tenantId, credits, couponCode, unitPriceMicros }) => {
     // Idempotency: the ledger is append-only, so we cannot upsert-on-conflict.
     // A SELECT on the payment-intent id catches a re-delivered webhook.
     const { data: existing, error: lookupErr } = await db
@@ -86,7 +86,7 @@ export function buildGrantTopupCredits(
       tenant_id: tenantId,
       delta: credits,
       reason: "topup_purchase",
-      unit_price_micros: TOPUP_UNIT_PRICE_MICROS,
+      unit_price_micros: unitPriceMicros ?? TOPUP_UNIT_PRICE_MICROS,
       currency: "GBP",
       stripe_payment_intent_id: paymentIntentId,
     });

@@ -1,8 +1,11 @@
 import type Stripe from "stripe";
 import { minorUnits } from "@/lib/billing/plan-price";
+import { CREDIT_UNIT_GBP } from "@/lib/billing/credit";
 
 /** Pure Stripe Checkout params for a one-time AI Voice credit top-up. The
- *  coupon (if any) discounts the GBP charged but never the credits granted. */
+ *  coupon (if any) discounts the GBP charged but never the credits granted.
+ *  When a tenant has a custom overage rate, pass `unitGbp` so the session
+ *  metadata carries `credit_unit_micros` for the webhook ledger insert. */
 export function buildCreditCheckoutParams(args: {
   customerId: string;
   tenantId: string;
@@ -12,7 +15,11 @@ export function buildCreditCheckoutParams(args: {
   credits: number;
   finalGbp: number;
   couponCode?: string;
+  /** Tenant's custom per-call overage rate (GBP). Defaults to base £0.90. */
+  unitGbp?: number;
 }): Stripe.Checkout.SessionCreateParams {
+  const unit = (args.unitGbp && args.unitGbp > 0) ? args.unitGbp : CREDIT_UNIT_GBP;
+  const creditUnitMicros = Math.round(unit * 1_000_000);
   return {
     mode: "payment",
     customer: args.customerId,
@@ -32,6 +39,7 @@ export function buildCreditCheckoutParams(args: {
       tenant_id: args.tenantId,
       credits: String(args.credits),
       reason: "topup_purchase",
+      credit_unit_micros: String(creditUnitMicros),
       ...(args.couponCode ? { coupon_code: args.couponCode } : {}),
     },
   };

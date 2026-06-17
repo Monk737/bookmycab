@@ -4,6 +4,7 @@ import {
   MIN_TOPUP_GBP,
   CREDIT_PACKS,
   creditsForGbp,
+  creditsForGbpAt,
   validateCustomTopup,
   resolveTopupAmount,
 } from "@/lib/billing/credit";
@@ -32,6 +33,16 @@ describe("validateCustomTopup", () => {
   it("rejects < £9 and non-finite", () => {
     expect(validateCustomTopup(5).ok).toBe(false);
     expect(validateCustomTopup(NaN).ok).toBe(false);
+  });
+});
+
+describe("creditsForGbpAt (custom overage)", () => {
+  it("uses the given unit price", () => {
+    expect(creditsForGbpAt(15, 0.75)).toBe(20);   // 15 / 0.75
+    expect(creditsForGbpAt(9, 0.9)).toBe(10);      // base rate
+  });
+  it("falls back to base rate for non-positive unit", () => {
+    expect(creditsForGbpAt(9, 0)).toBe(10);
   });
 });
 

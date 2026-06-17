@@ -23,6 +23,12 @@ export function creditsForGbp(gbp: number): number {
   return Math.floor(gbp / CREDIT_UNIT_GBP);
 }
 
+/** Whole credits a paid GBP amount buys at a given unit price (default base). */
+export function creditsForGbpAt(gbp: number, unitGbp: number = CREDIT_UNIT_GBP): number {
+  const unit = unitGbp > 0 ? unitGbp : CREDIT_UNIT_GBP;
+  return Math.floor(gbp / unit);
+}
+
 export type TopupResult =
   | { ok: true; credits: number }
   | { ok: false; error: string };
