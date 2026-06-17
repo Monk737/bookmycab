@@ -18,7 +18,7 @@ export interface ProductsSummary {
 }
 
 export interface BillingOverview {
-  commercialModel: "chat" | "voice" | "double_decker" | null;
+  commercialModel: "chat" | "voice" | "double_decker" | "custom" | null;
   /** New-model plan summary; null when the tenant has no chat/voice product yet. */
   products: ProductsSummary | null;
   currency: string | null;
@@ -41,12 +41,24 @@ export interface BillingOverview {
     currency: string | null;
     paidAt: string | null;
   } | null;
+  custom: {
+    planName: string;
+    billingMode: "recurring" | "one_time";
+    callAllowance: number;
+    includedAgents: number;
+    planPriceGbp: number;
+    extraCreditPriceGbp: number;
+    validityDays: number;
+    startsAt: string | null;
+    expiresAt: string | null;
+  } | null;
+  activationInvoiceUrl: string | null;
 }
 
 export async function getBillingOverview(tenantId: string, client?: SupabaseLike): Promise<BillingOverview> {
   const supabase = client ?? (await createClient());
 
-  const [tenantRes, subscriptionRes, setupFeeRes, chatSubRes, voiceSubRes] = await Promise.all([
+  const [tenantRes, subscriptionRes, setupFeeRes, chatSubRes, voiceSubRes, customRes] = await Promise.all([
     supabase
       .from("tenants")
       .select("currency, monthly_price, contract_start, contract_renewal, setup_fee_paid, stripe_customer_id, commercial_model")
@@ -61,7 +73,7 @@ export async function getBillingOverview(tenantId: string, client?: SupabaseLike
       .maybeSingle(),
     supabase
       .from("setup_fees")
-      .select("amount, currency, paid_at")
+      .select("amount, currency, paid_at, hosted_invoice_url")
       .eq("tenant_id", tenantId)
       .maybeSingle(),
     supabase
@@ -74,6 +86,9 @@ export async function getBillingOverview(tenantId: string, client?: SupabaseLike
       .select("plan_tier, monthly_price_gbp, monthly_call_allowance")
       .eq("tenant_id", tenantId)
       .maybeSingle(),
+    supabase.from("custom_plans")
+      .select("plan_name, billing_mode, monthly_call_allowance, included_agents, plan_price_gbp, extra_credit_price_gbp, validity_days, starts_at, expires_at")
+      .eq("tenant_id", tenantId).maybeSingle(),
   ]);
 
   const t = (tenantRes.data as Record<string, unknown> | null) ?? null;
@@ -81,6 +96,18 @@ export async function getBillingOverview(tenantId: string, client?: SupabaseLike
   const f = (setupFeeRes.data as Record<string, unknown> | null) ?? null;
   const chatSub = (chatSubRes.data as Record<string, unknown> | null) ?? null;
   const voiceSub = (voiceSubRes.data as Record<string, unknown> | null) ?? null;
+  const cp = (customRes.data as Record<string, unknown> | null) ?? null;
+  const custom = cp ? {
+    planName: String(cp.plan_name ?? ""),
+    billingMode: (cp.billing_mode as "recurring" | "one_time"),
+    callAllowance: Number(cp.monthly_call_allowance ?? 0),
+    includedAgents: Number(cp.included_agents ?? 0),
+    planPriceGbp: Number(cp.plan_price_gbp ?? 0),
+    extraCreditPriceGbp: Number(cp.extra_credit_price_gbp ?? 0),
+    validityDays: Number(cp.validity_days ?? 0),
+    startsAt: (cp.starts_at as string | null) ?? null,
+    expiresAt: (cp.expires_at as string | null) ?? null,
+  } : null;
 
   const chatPlan: ProductPlan | null = chatSub
     ? { tier: (chatSub.plan_tier as string | null) ?? null, monthlyGbp: Number(chatSub.monthly_price_gbp ?? 0) }
@@ -124,5 +151,7 @@ export async function getBillingOverview(tenantId: string, client?: SupabaseLike
           paidAt: (f.paid_at as string | null) ?? null,
         }
       : null,
+    custom,
+    activationInvoiceUrl: (f?.hosted_invoice_url as string | null) ?? null,
   };
 }
