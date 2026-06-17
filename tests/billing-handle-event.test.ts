@@ -69,7 +69,10 @@ describe("handleStripeEvent", () => {
     expect(res.action).toBe("setup_fee.paid");
   });
 
-  it("does not mark a setup fee for a subscription invoice.paid", async () => {
+  it("a plain subscription renewal invoice.paid does not grant a pack pool", async () => {
+    // A renewal invoice is not a tracked activation invoice, so markSetupFeePaid
+    // (the lookup) returns null → no pack-pool grant → falls through to the
+    // subscription receipt/reset path (reset returns false here → logged).
     const ev = {
       id: "evt_3",
       type: "invoice.paid",
@@ -84,10 +87,40 @@ describe("handleStripeEvent", () => {
         },
       },
     } as unknown as Stripe.Event;
-    const d = deps();
+    const d = deps({ markSetupFeePaid: vi.fn(async () => null) });
     const res = await handleStripeEvent(ev, d);
-    expect(d.markSetupFeePaid).not.toHaveBeenCalled();
+    expect(d.markSetupFeePaid).toHaveBeenCalledWith("in_2");
+    expect(d.grantCustomPackPool).not.toHaveBeenCalled();
     expect(res.action).toBe("logged");
+  });
+
+  it("marks the setup fee paid on a RECURRING activation invoice (subscription invoice) and still resets the pool", async () => {
+    // The recurring activation invoice carries a subscription pointer (setup fee
+    // folded into the first subscription invoice). markSetupFeePaid must still
+    // settle it, and the voice pool reset must still run.
+    const ev = {
+      id: "evt_act",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_act",
+          parent: {
+            type: "subscription_details",
+            quote_details: null,
+            subscription_details: { subscription: "sub_123" },
+          },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps({
+      markSetupFeePaid: vi.fn(async () => ({ tenantName: "Speedy Cabs", currency: "GBP" as const })),
+      grantCustomPackPool: vi.fn(async () => {}),
+      resetVoiceCallPool: vi.fn(async () => true),
+    });
+    const res = await handleStripeEvent(ev, d);
+    expect(d.markSetupFeePaid).toHaveBeenCalledWith("in_act");
+    expect(d.grantCustomPackPool).toHaveBeenCalledWith("in_act");
+    expect(res.action).toBe("voice_pool.reset");
   });
 
   it("emails on invoice.payment_failed but never suspends", async () => {
@@ -315,12 +348,14 @@ describe("handleStripeEvent", () => {
       },
     } as unknown as Stripe.Event;
     const resetVoiceCallPool = vi.fn(async () => true);
-    const d = deps({ resetVoiceCallPool });
+    // A voice renewal isn't a tracked activation invoice, so the markSetupFeePaid
+    // lookup returns null → no pack-pool grant → pool reset is the only effect.
+    const d = deps({ resetVoiceCallPool, markSetupFeePaid: vi.fn(async () => null) });
     const res = await handleStripeEvent(ev, d);
     expect(resetVoiceCallPool).toHaveBeenCalledWith({
       stripeSubscriptionId: "sub_voice",
     });
-    expect(d.markSetupFeePaid).not.toHaveBeenCalled();
+    expect(d.grantCustomPackPool).not.toHaveBeenCalled();
     expect(res.action).toBe("voice_pool.reset");
   });
 

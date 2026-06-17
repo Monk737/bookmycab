@@ -13,6 +13,7 @@ import {
   buildNewSetupInvoiceItemParams,
   buildProductSubscriptionParams,
   minorUnits,
+  fromMinor,
 } from "@/lib/billing/plan-price";
 import { subscriptionToMirror } from "@/lib/billing/event-map";
 import { planActivationCharges } from "@/lib/billing/activation-charges";
@@ -127,15 +128,20 @@ export async function issueActivationInvoice(tenantId: string): Promise<void> {
   const plan = planActivationCharges({ billingMode, setupGbp: fee?.amount ?? 0, chat, voice });
 
   let hostedInvoiceUrl = fee?.hosted_invoice_url ?? null;
+  let activationInvoiceId = fee?.stripe_invoice_id ?? null;
+  let chargedThisRunMinor = 0;
+  let createdInvoice = false;
 
   if (plan.mode === "recurring") {
-    // Fold the setup fee into the first subscription invoice as a pending item.
-    if (plan.setupGbp > 0 && fee && !fee.stripe_invoice_id) {
+    const productId = plan.subscriptions.length > 0 ? await getOrCreateProduct() : null;
+    // Fold the setup fee into the FIRST subscription invoice as a pending item —
+    // only when a subscription will actually be created to absorb it (otherwise
+    // the pending item would dangle onto some unrelated future invoice).
+    if (plan.setupGbp > 0 && fee && !activationInvoiceId && plan.subscriptions.length > 0) {
       await stripe.invoiceItems.create(
         buildNewSetupInvoiceItemParams({ customerId, setupGbp: plan.setupGbp, tenantId: id }),
       );
     }
-    const productId = plan.subscriptions.length > 0 ? await getOrCreateProduct() : null;
     for (const planned of plan.subscriptions) {
       const baseParams = buildProductSubscriptionParams({
         customerId,
@@ -160,7 +166,6 @@ export async function issueActivationInvoice(tenantId: string): Promise<void> {
         })
         .eq("tenant_id", id);
 
-      // Capture the first invoice's hosted URL (the one the setup fee folds in).
       const latest =
         typeof sub.latest_invoice === "string"
           ? await stripe.invoices.retrieve(sub.latest_invoice)
@@ -168,15 +173,21 @@ export async function issueActivationInvoice(tenantId: string): Promise<void> {
       if (latest?.id) {
         if (latest.status === "draft") await stripe.invoices.finalizeInvoice(latest.id);
         const finalised = await stripe.invoices.retrieve(latest.id);
-        hostedInvoiceUrl = finalised.hosted_invoice_url ?? hostedInvoiceUrl;
-        if (fee && !fee.stripe_invoice_id) {
-          await db().from("setup_fees").update({ stripe_invoice_id: latest.id }).eq("id", fee.id);
+        createdInvoice = true;
+        chargedThisRunMinor += finalised.total ?? 0;
+        // The FIRST invoice created carries the folded-in setup fee — that is the
+        // activation invoice the setup_fees row tracks + the customer pays. Never
+        // overwrite it with a later product's invoice (which lacks the setup fee).
+        if (!activationInvoiceId) {
+          activationInvoiceId = latest.id;
+          hostedInvoiceUrl = finalised.hosted_invoice_url ?? hostedInvoiceUrl;
+          if (fee) await db().from("setup_fees").update({ stripe_invoice_id: latest.id }).eq("id", fee.id);
         }
       }
     }
   } else {
     // One-time pack: a single invoice with pack + setup line items.
-    if (fee && !fee.stripe_invoice_id) {
+    if (fee && !activationInvoiceId) {
       for (const line of plan.oneTimeLines) {
         await stripe.invoiceItems.create({
           customer: customerId,
@@ -201,21 +212,25 @@ export async function issueActivationInvoice(tenantId: string): Promise<void> {
       if (!invoice.id) throw new Error("Stripe did not return an invoice id.");
       await stripe.invoices.finalizeInvoice(invoice.id);
       const finalised = await stripe.invoices.retrieve(invoice.id);
+      activationInvoiceId = invoice.id;
       hostedInvoiceUrl = finalised.hosted_invoice_url ?? hostedInvoiceUrl;
+      chargedThisRunMinor += finalised.total ?? 0;
+      createdInvoice = true;
       await db().from("setup_fees").update({ stripe_invoice_id: invoice.id }).eq("id", fee.id);
     }
   }
 
-  // Persist the hosted invoice URL + email the tenant the pay link.
-  if (hostedInvoiceUrl && fee) {
+  // Persist the hosted invoice URL + email the tenant the pay link — only when we
+  // actually created/finalized an invoice this run, so an idempotent re-run never
+  // re-emails (or emails a £0 amount). The amount is the true total of the
+  // invoice(s) raised this run, so it matches what the customer is shown.
+  if (createdInvoice && hostedInvoiceUrl && fee) {
     await db().from("setup_fees").update({ hosted_invoice_url: hostedInvoiceUrl }).eq("id", fee.id);
-    const amountMajor =
-      Number(chat?.monthly_price_gbp ?? 0) + Number(voice?.monthly_price_gbp ?? 0) + (plan.setupGbp ?? 0);
     if (t.contact_email) {
       const body = activationInvoiceEmail({
         tenantName: t.name,
         planLabel: commercialModelLabel(t.commercial_model),
-        amountMajor,
+        amountMajor: fromMinor(chargedThisRunMinor),
         currency: (t.currency ?? "GBP") as Currency,
         invoiceUrl: hostedInvoiceUrl,
       });

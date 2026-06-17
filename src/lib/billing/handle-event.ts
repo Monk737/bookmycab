@@ -109,9 +109,19 @@ export async function handleStripeEvent(
 
     case "invoice.paid": {
       const invoice = event.data.object as Stripe.Invoice;
-      if (classifyInvoice(invoice) === "setup" && invoice.id) {
-        await deps.markSetupFeePaid(invoice.id);
-        await deps.grantCustomPackPool(invoice.id);
+      // Settle a tracked activation invoice (setup fee + first period). This is a
+      // no-op (markSetupFeePaid returns null) when the invoice isn't a tracked
+      // setup/activation invoice, so it's safe to attempt for EVERY paid invoice.
+      // It MUST run before the subscription branch: the recurring activation
+      // invoice carries a subscription pointer (classifyInvoice → "subscription")
+      // because the setup fee is folded into the first subscription invoice, so
+      // gating on classifyInvoice === "setup" alone would never mark it paid.
+      const settled = invoice.id ? await deps.markSetupFeePaid(invoice.id) : null;
+      if (settled && invoice.id) await deps.grantCustomPackPool(invoice.id);
+
+      // A pure setup / one-time-pack invoice (no subscription pointer) is fully
+      // handled once the fee is settled.
+      if (classifyInvoice(invoice) === "setup") {
         return { action: "setup_fee.paid" };
       }
       // Subscription cycle payment, send the customer a receipt (best-effort;
