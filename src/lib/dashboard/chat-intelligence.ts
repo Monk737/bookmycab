@@ -57,7 +57,8 @@ export interface ChatIntelligence {
   totals: { conversations: number; booked: number; bookedPct: number; cancelled: number; failed: number };
   topRoutes: { label: string; count: number; avgFare: string | null }[];
   vehicleMix: { type: string; count: number; pct: number }[];
-  busiestHours: { hour: number; label: string; count: number }[];
+  /** All 24 hours in order (UK local), for the by-hour column chart. */
+  hourly: { hour: number; count: number }[];
   weekdays: { wd: string; count: number }[];
   revenue: { totalGbp: number; avgFareGbp: number; bookings: number };
   voiceSplit: { voiceShare: number; voiceBookedPct: number; textBookedPct: number; voiceCount: number };
@@ -66,13 +67,6 @@ export interface ChatIntelligence {
 }
 
 const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-function hourLabel(h: number): string {
-  const ap = h < 12 ? "am" : "pm";
-  const a = h % 12 === 0 ? 12 : h % 12;
-  const b = (h + 1) % 12 === 0 ? 12 : (h + 1) % 12;
-  return `${a}–${b}${ap}`;
-}
 
 /** UK-local weekday index + hour for an instant. */
 function londonCell(iso: string): { wd: number; hr: number } {
@@ -180,11 +174,7 @@ export async function getChatIntelligence(tenantId: string, win: IntelWindow): P
     hourAgg[hr] += 1;
     wdAgg[wd] += 1;
   }
-  const busiestHours = hourAgg
-    .map((count, hour) => ({ hour, label: hourLabel(hour), count }))
-    .filter((h) => h.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6);
+  const hourly = hourAgg.map((count, hour) => ({ hour, count }));
   const weekdays = wdAgg.map((count, i) => ({ wd: WD[i], count }));
 
   // Revenue.
@@ -247,7 +237,7 @@ export async function getChatIntelligence(tenantId: string, win: IntelWindow): P
     totals,
     topRoutes,
     vehicleMix,
-    busiestHours,
+    hourly,
     weekdays,
     revenue,
     voiceSplit,

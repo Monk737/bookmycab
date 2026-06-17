@@ -17,7 +17,6 @@ export function SearchableScroll<T>({
   emptyLabel,
   noneLabel,
   bodyHeight = "h-80",
-  accent,
 }: {
   title: string;
   items: T[];
@@ -28,7 +27,6 @@ export function SearchableScroll<T>({
   emptyLabel: string;
   noneLabel: string;
   bodyHeight?: string;
-  accent?: string;
 }) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
@@ -40,7 +38,7 @@ export function SearchableScroll<T>({
 
   return (
     <section className="flex flex-col border-[3px] border-ink bg-paper shadow-brut">
-      <header className={`border-b-[3px] border-ink px-4 py-3 ${accent ?? ""}`}>
+      <header className="border-b-[3px] border-ink px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <h3 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">{title}</h3>
           <span className="shrink-0 border-2 border-ink bg-paper px-1.5 font-mono text-[11px] font-bold tabular-nums text-ink">
