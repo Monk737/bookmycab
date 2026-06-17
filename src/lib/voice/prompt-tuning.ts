@@ -5,7 +5,7 @@ import { createClient as createSupabaseJS, type SupabaseClient } from "@supabase
 import { createClient } from "@/lib/supabase/server";
 import { env } from "@/env";
 import { reviewReasons, type FlagInput } from "@/lib/voice/quality";
-import { vapiConfigured, getSystemPrompt } from "@/lib/voice/vapi";
+import { vapiConfigured, getSystemPrompt, setSystemPrompt } from "@/lib/voice/vapi";
 
 const WINDOW_DAYS = 30;
 const MIN_COUNT = 3; // a cluster must have at least this many flagged calls to suggest
@@ -343,4 +343,231 @@ export async function getRequestedSuggestions(): Promise<PromptSuggestion[]> {
   const rows = (data ?? []) as unknown as SuggestionRow[];
   const ev = await hydrateEvidence(db, [...new Set(rows.flatMap((r) => r.evidence_call_ids))]);
   return rows.map((r) => toSuggestion(r, r.evidence_call_ids.map((id) => ev.get(id)).filter((x): x is EvidenceCall => !!x)));
+}
+
+/* ----------------------------------------------------- revisions (reads) */
+
+type RevisionRow = {
+  id: string; tenant_id: string; automation_id: string; vapi_assistant_id: string;
+  revision: number; old_prompt: string; new_prompt: string; reason: string | null;
+  rationale: string | null; kind: PromptRevision["kind"]; status: PromptRevision["status"];
+  baseline_flagged_rate: number | null; measured_flagged_rate: number | null;
+  measured_at: string | null; applied_at: string;
+  voice_agents?: { display_name: string } | null;
+  tenants?: { name: string } | null;
+};
+
+function toRevision(r: RevisionRow): PromptRevision {
+  return {
+    id: r.id, tenantId: r.tenant_id, automationId: r.automation_id, vapiAssistantId: r.vapi_assistant_id,
+    agentName: r.voice_agents?.display_name ?? "Voice agent",
+    revision: r.revision, oldPrompt: r.old_prompt, newPrompt: r.new_prompt, reason: r.reason,
+    rationale: r.rationale, kind: r.kind, status: r.status,
+    baselineFlaggedRate: r.baseline_flagged_rate, measuredFlaggedRate: r.measured_flagged_rate,
+    measuredAt: r.measured_at, appliedAt: r.applied_at, tenantName: r.tenants?.name,
+  };
+}
+
+const REVISION_COLS =
+  "id, tenant_id, automation_id, vapi_assistant_id, revision, old_prompt, new_prompt, reason, rationale, kind, status, baseline_flagged_rate, measured_flagged_rate, measured_at, applied_at, voice_agents(display_name)";
+
+/** Currently-live revisions across all assistants — the admin "active" list. Service role. */
+export async function getActiveRevisions(): Promise<PromptRevision[]> {
+  const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const { data } = await db
+    .from("prompt_revisions")
+    .select(`${REVISION_COLS}, tenants(name)`)
+    .eq("status", "active")
+    .order("applied_at", { ascending: false })
+    .limit(50);
+  return ((data ?? []) as unknown as RevisionRow[]).map(toRevision);
+}
+
+/* ------------------------------------------------ apply / rollback (Vapi) */
+
+const AUTO_ROLLBACK_DWELL_DAYS = 14; // wait this long after apply before measuring
+const AUTO_ROLLBACK_WORSE_RATIO = 1.25; // measured rate 25%+ worse than baseline → auto-rollback
+
+export type ApplyResult = { ok: boolean; error?: string; revisionId?: string };
+
+/** Next revision number for an assistant (service-role; low write rate). */
+async function nextRevision(db: SupabaseClient, assistantId: string): Promise<number> {
+  const { data } = await db
+    .from("prompt_revisions")
+    .select("revision")
+    .eq("vapi_assistant_id", assistantId)
+    .order("revision", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return ((data as { revision: number } | null)?.revision ?? 0) + 1;
+}
+
+/**
+ * Apply a requested suggestion: re-read the live prompt (source of truth for the
+ * "old" side), PATCH Vapi to the new prompt, write an `apply` revision (marking
+ * any prior active revision for that assistant superseded), and mark the
+ * suggestion applied. Service-role internals; the admin action wraps it with
+ * requireStaff + audit. `actorUserId` is the staff user id for the trail.
+ */
+export async function applySuggestion(suggestionId: string, actorUserId: string): Promise<ApplyResult> {
+  const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const { data: sug } = await db
+    .from("prompt_suggestions")
+    .select("id, tenant_id, automation_id, vapi_assistant_id, reason, rationale, new_prompt, baseline_flagged_rate, status")
+    .eq("id", suggestionId)
+    .maybeSingle();
+  if (!sug) return { ok: false, error: "Suggestion not found." };
+  if (sug.status !== "requested") return { ok: false, error: "Only requested suggestions can be applied." };
+  if (!sug.vapi_assistant_id) return { ok: false, error: "This agent has no Vapi assistant wired." };
+
+  // Live prompt is the true "old" side (the snapshot may have drifted).
+  let oldPrompt: string;
+  try {
+    oldPrompt = await getSystemPrompt(sug.vapi_assistant_id);
+  } catch (e) {
+    return { ok: false, error: `Could not read the live prompt: ${String((e as Error)?.message ?? e).slice(0, 160)}` };
+  }
+  // Vapi is the external source of truth, so we patch it before the DB writes.
+  // If a later DB write fails we return "saved to Vapi but failed to record the
+  // revision" so the admin can re-check rather than the two silently diverging.
+  try {
+    await setSystemPrompt(sug.vapi_assistant_id, sug.new_prompt);
+  } catch (e) {
+    return { ok: false, error: `Vapi update failed: ${String((e as Error)?.message ?? e).slice(0, 160)}` };
+  }
+
+  await db
+    .from("prompt_revisions")
+    .update({ status: "superseded" })
+    .eq("vapi_assistant_id", sug.vapi_assistant_id)
+    .eq("status", "active");
+
+  const revision = await nextRevision(db, sug.vapi_assistant_id);
+  const { data: rev, error: revErr } = await db
+    .from("prompt_revisions")
+    .insert({
+      tenant_id: sug.tenant_id,
+      automation_id: sug.automation_id,
+      vapi_assistant_id: sug.vapi_assistant_id,
+      revision,
+      old_prompt: oldPrompt,
+      new_prompt: sug.new_prompt,
+      reason: sug.reason,
+      rationale: sug.rationale,
+      source_suggestion_id: sug.id,
+      kind: "apply",
+      status: "active",
+      baseline_flagged_rate: sug.baseline_flagged_rate,
+      applied_by: actorUserId,
+    })
+    .select("id")
+    .single();
+  if (revErr || !rev) return { ok: false, error: "Saved to Vapi but failed to record the revision." };
+
+  await db
+    .from("prompt_suggestions")
+    .update({ status: "applied", resolved_by: actorUserId, resolved_at: new Date().toISOString(), revision_id: rev.id, updated_at: new Date().toISOString() })
+    .eq("id", sug.id);
+
+  return { ok: true, revisionId: rev.id };
+}
+
+/**
+ * Roll an active `apply` revision back to its previous prompt: PATCH Vapi to the
+ * revision's `old_prompt`, mark that revision `rolled_back`, and write a new
+ * `rollback` revision (active) pointing at it via parent_revision_id. When
+ * `actorUserId` is null the rollback was automatic (the measure sweep).
+ */
+export async function rollbackRevision(revisionId: string, actorUserId: string | null): Promise<ApplyResult> {
+  const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const { data: target } = await db
+    .from("prompt_revisions")
+    .select("id, tenant_id, automation_id, vapi_assistant_id, old_prompt, new_prompt, reason, status, baseline_flagged_rate")
+    .eq("id", revisionId)
+    .maybeSingle();
+  if (!target) return { ok: false, error: "Revision not found." };
+  if (target.status !== "active") return { ok: false, error: "Only the active revision can be rolled back." };
+
+  try {
+    await setSystemPrompt(target.vapi_assistant_id, target.old_prompt);
+  } catch (e) {
+    return { ok: false, error: `Vapi rollback failed: ${String((e as Error)?.message ?? e).slice(0, 160)}` };
+  }
+
+  await db.from("prompt_revisions").update({ status: "rolled_back" }).eq("id", target.id);
+  // Defensive: by invariant the target was the only active revision for this
+  // assistant, but supersede any stragglers so exactly one revision stays active.
+  await db
+    .from("prompt_revisions")
+    .update({ status: "superseded" })
+    .eq("vapi_assistant_id", target.vapi_assistant_id)
+    .eq("status", "active");
+
+  const revision = await nextRevision(db, target.vapi_assistant_id);
+  const { data: rev, error: revErr } = await db
+    .from("prompt_revisions")
+    .insert({
+      tenant_id: target.tenant_id,
+      automation_id: target.automation_id,
+      vapi_assistant_id: target.vapi_assistant_id,
+      revision,
+      old_prompt: target.new_prompt, // we were on new_prompt; restoring old_prompt
+      new_prompt: target.old_prompt,
+      reason: target.reason,
+      rationale: actorUserId ? "Manual rollback to the previous prompt." : "Auto-rollback: failure rate worsened after the change.",
+      kind: "rollback",
+      parent_revision_id: target.id,
+      status: "active",
+      baseline_flagged_rate: target.baseline_flagged_rate,
+      applied_by: actorUserId,
+    })
+    .select("id")
+    .single();
+  if (revErr || !rev) return { ok: false, error: "Rolled back in Vapi but failed to record the revision." };
+  return { ok: true, revisionId: rev.id };
+}
+
+/**
+ * Measure each active `apply` revision past its dwell window: compute the reason's
+ * post-apply flagged-rate and store it. If it worsened beyond the threshold,
+ * auto-roll-back. Returns counts for the cron summary. Best-effort.
+ */
+export async function measureRevisions(): Promise<{ measured: number; autoRolledBack: number }> {
+  const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  const dwellCutoff = new Date(Date.now() - AUTO_ROLLBACK_DWELL_DAYS * 86_400_000).toISOString();
+  const { data } = await db
+    .from("prompt_revisions")
+    .select("id, tenant_id, automation_id, reason, baseline_flagged_rate, applied_at")
+    .eq("status", "active")
+    .eq("kind", "apply")
+    .is("measured_at", null)
+    .lte("applied_at", dwellCutoff);
+  const rows = (data ?? []) as {
+    id: string; tenant_id: string; automation_id: string; reason: string | null;
+    baseline_flagged_rate: number | null; applied_at: string;
+  }[];
+
+  let measured = 0;
+  let autoRolledBack = 0;
+  for (const r of rows) {
+    if (!r.reason) continue;
+    const { data: callData } = await db
+      .from("calls")
+      .select("outcome, duration_s, success, address_lookups")
+      .eq("tenant_id", r.tenant_id)
+      .eq("automation_id", r.automation_id)
+      .gte("started_at", r.applied_at);
+    const calls = (callData ?? []) as FlagInput[];
+    if (calls.length === 0) continue;
+    const flagged = calls.filter((c) => reviewReasons(c).reasons.includes(r.reason as string)).length;
+    const rate = flagged / calls.length;
+    await db.from("prompt_revisions").update({ measured_flagged_rate: rate, measured_at: new Date().toISOString() }).eq("id", r.id);
+    measured++;
+    const baseline = r.baseline_flagged_rate ?? 0;
+    if (baseline > 0 && rate > baseline * AUTO_ROLLBACK_WORSE_RATIO) {
+      const res = await rollbackRevision(r.id, null);
+      if (res.ok) autoRolledBack++;
+    }
+  }
+  return { measured, autoRolledBack };
 }
