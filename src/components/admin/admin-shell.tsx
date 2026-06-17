@@ -50,6 +50,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Benchmarks", href: "/admin/benchmarks", icon: ico(<><path d="M12 14a4 4 0 100-8M12 6V2M5 21l4-5M19 21l-4-5" /></>) },
       { label: "Guardrails", href: "/admin/guardrails", icon: ico(<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />) },
       { label: "Rollouts", href: "/admin/rollouts", icon: ico(<><path d="M4 4v16M4 6h13l-2 3 2 3H4" /></>) },
+      { label: "Prompt tuning", href: "/admin/prompt-tuning", icon: ico(<><path d="M12 3v4M12 17v4M3 12h4M17 12h4" /><circle cx="12" cy="12" r="3" /></>) },
     ],
   },
   {
