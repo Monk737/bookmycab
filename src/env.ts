@@ -43,6 +43,12 @@ const schema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   BRIEFING_MODEL: z.string().default("gemini-2.5-flash"),
 
+  // Vapi — server-only key for reading/patching a Voice agent's system prompt
+  // when FlowMo staff apply a prompt-tuning revision. Optional: absent → the
+  // apply/rollback actions report "Vapi is not configured" instead of crashing.
+  VAPI_API_KEY: z.string().optional(),
+  VAPI_BASE_URL: z.string().url().default("https://api.vapi.ai"),
+
   // Resend
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().email().default("hello@bookmycab.com"),
@@ -97,6 +103,8 @@ const rawSource: Record<string, string | undefined> = {
   CHAT_INGEST_SECRET: process.env.CHAT_INGEST_SECRET,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   BRIEFING_MODEL: process.env.BRIEFING_MODEL,
+  VAPI_API_KEY: process.env.VAPI_API_KEY,
+  VAPI_BASE_URL: process.env.VAPI_BASE_URL,
   N8N_BASE_URL: process.env.N8N_BASE_URL,
   N8N_API_KEY: process.env.N8N_API_KEY,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
