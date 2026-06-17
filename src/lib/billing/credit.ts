@@ -1,9 +1,11 @@
 /**
- * AI Voice credit top-up pricing. App-managed prepaid model (see B1):
- * 1 credit = 1 call = £0.90. Stripe handles the purchase only; the webhook
- * grants the credits in metadata to credit_ledger.
+ * AI Voice credit top-up pricing. App-managed prepaid model:
+ * 1 credit = 1 call. The BASE pay-as-you-go rate is £2 per call. Custom-plan
+ * tenants override this with their own `custom_plans.extra_credit_price_gbp`
+ * (applied by the checkout route); this base never applies to them. Stripe
+ * handles the purchase only; the webhook grants the credits to credit_ledger.
  */
-export const CREDIT_UNIT_GBP = 0.9;
+export const CREDIT_UNIT_GBP = 2;
 export const MIN_TOPUP_GBP = 9;
 
 export interface CreditPack {
@@ -13,9 +15,9 @@ export interface CreditPack {
 }
 
 export const CREDIT_PACKS: CreditPack[] = [
-  { id: "pack_10", gbp: 9, credits: 10 },
-  { id: "pack_50", gbp: 45, credits: 50 },
-  { id: "pack_100", gbp: 90, credits: 100 },
+  { id: "pack_10", gbp: 20, credits: 10 },
+  { id: "pack_50", gbp: 100, credits: 50 },
+  { id: "pack_100", gbp: 200, credits: 100 },
 ];
 
 /** Whole credits a paid GBP amount buys (floor). */
