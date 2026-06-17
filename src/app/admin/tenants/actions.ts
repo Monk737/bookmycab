@@ -12,6 +12,7 @@ import {
   buildProvisioningRows,
   type TenantFormState,
 } from "./provisioning";
+import { issueActivationInvoice } from "./[tenantId]/billing-actions";
 
 /**
  * Provisions a new tenant on the new commercial model (Chat / Voice / Double
@@ -42,10 +43,20 @@ export async function createTenant(
     contact_email: field("contact_email"),
     dispatch_adapter: field("dispatch_adapter"),
     dispatch_company_id: field("dispatch_company_id"),
-    commercial_model: field("commercial_model"),
-    chat_tier: field("chat_tier"),
-    voice_tier: field("voice_tier"),
+    plan_type: field("plan_type"),
     coupon_code: field("coupon_code"),
+    custom_plan_name: field("custom_plan_name"),
+    custom_billing_mode: field("custom_billing_mode"),
+    custom_includes_chat: field("custom_includes_chat"),
+    custom_includes_voice: field("custom_includes_voice"),
+    custom_call_allowance: field("custom_call_allowance"),
+    custom_included_agents: field("custom_included_agents"),
+    custom_price_per_call_gbp: field("custom_price_per_call_gbp"),
+    custom_plan_price_gbp: field("custom_plan_price_gbp"),
+    custom_chat_monthly_gbp: field("custom_chat_monthly_gbp"),
+    custom_setup_fee_gbp: field("custom_setup_fee_gbp"),
+    custom_validity_days: field("custom_validity_days"),
+    custom_extra_credit_price_gbp: field("custom_extra_credit_price_gbp"),
   };
 
   const parsed = createTenantSchema.safeParse(raw);
@@ -173,6 +184,18 @@ export async function createTenant(
     }
   }
 
+  // Persist the custom-plan detail row when this is a custom plan.
+  if (rows.custom) {
+    const { error: customError } = await serviceClient.from("custom_plans").insert({
+      tenant_id: tenantId,
+      ...rows.custom,
+    });
+    if (customError) {
+      console.error("createTenant: failed to record custom plan", customError);
+      return failProvision("Could not record the custom plan. Please try again.");
+    }
+  }
+
   // Capture the one-time setup fee. A bypassed (100%-off) tenant has its setup
   // fee comped to 0 and marked paid; otherwise it is recorded unpaid.
   const { error: feeError } = await serviceClient.from("setup_fees").insert({
@@ -211,9 +234,8 @@ export async function createTenant(
     targetId: tenantId,
     metadata: {
       name: data.name,
-      commercial_model: data.commercial_model,
-      chat_tier: data.chat_tier ?? null,
-      voice_tier: data.voice_tier ?? null,
+      plan_type: data.plan_type,
+      commercial_model: rows.tenant.commercial_model,
       currency: "GBP",
       coupon_code: appliedCoupon?.code ?? null,
       discount_percent: discountPercent,
@@ -222,6 +244,18 @@ export async function createTenant(
   });
   if (!audited) {
     console.error("audit write failed for tenant.create", { tenantId });
+  }
+
+  // Issue the activation invoice (setup + first period) and email the tenant a
+  // pay link. Best-effort: a Stripe/email hiccup must not fail provisioning —
+  // staff can re-send from the tenant billing panel. A bypassed (100%-off)
+  // tenant is comped locally and skips this entirely.
+  if (!bypass) {
+    try {
+      await issueActivationInvoice(tenantId);
+    } catch (err) {
+      console.error("createTenant: activation invoice failed (tenant still created)", { tenantId, err });
+    }
   }
 
   redirect(`/admin/tenants/${tenantId}`);
