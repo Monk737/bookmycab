@@ -10,6 +10,7 @@ import {
 import { extractProviderMessageId, type Channel } from "@/lib/webhooks/message-id";
 import { resolveAutomation } from "@/lib/webhooks/resolver";
 import { loadChannelVerifySecret } from "@/lib/webhooks/resolver-loader";
+import { chatServiceAllowed } from "@/lib/billing/chat-gate";
 import { claimOnce } from "@/lib/redis/idempotency";
 import { fixedWindow } from "@/lib/redis/rate-limit";
 import { fireAndForgetForward } from "@/lib/webhooks/forward";
@@ -82,6 +83,12 @@ export async function POST(
   }
   if (automation.status === "stopped" || automation.status === "error") {
     return ack("stopped", NextResponse.json({ ok: true }, { status: 200 }));
+  }
+  // Chat billing gate: stop forwarding when the tenant's chat subscription has
+  // lapsed (paused/cancelled). Resumes automatically when Stripe flips it back
+  // to active on renewal. Swallow with 200 so the provider doesn't retry.
+  if (!chatServiceAllowed(automation.chatSubStatus)) {
+    return ack("inactive_subscription", NextResponse.json({ ok: true }, { status: 200 }));
   }
 
   // 3) Rate-limit per automation+channel (fixed window).

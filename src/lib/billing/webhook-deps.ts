@@ -6,6 +6,8 @@ import { periodBounds } from "@/lib/entitlements/meter";
 import { getStripe } from "@/lib/billing/stripe";
 import { sendEmail } from "@/lib/email/resend";
 import { paymentFailedEmail, paymentReceivedEmail } from "@/lib/email/templates";
+import { del } from "@/lib/redis/cache";
+import { automationCacheKey } from "@/lib/webhooks/resolver";
 import type { Currency } from "@/lib/marketing/pricing";
 
 /** The narrow slice of the Supabase client the reset helper needs. Kept minimal
@@ -158,6 +160,34 @@ export function buildBillingDeps(): BillingDeps {
         .update(out.update)
         .eq("stripe_subscription_id", out.stripe_subscription_id);
       if (error) throw new Error(`updateNewModelSubscription failed: ${error.message}`);
+
+      // A chat subscription status change drives the chat billing gate, which is
+      // read from the cached resolver record. Invalidate that cache for the
+      // tenant's chat automations so a lapse/renewal takes effect promptly
+      // instead of after the ≤5-min TTL. Best-effort: a Redis blip must not fail
+      // the webhook (the gate still corrects itself when the TTL expires).
+      if (out.table === "chat_subscriptions") {
+        try {
+          const { data: sub } = await db
+            .from("chat_subscriptions")
+            .select("tenant_id")
+            .eq("stripe_subscription_id", out.stripe_subscription_id)
+            .maybeSingle();
+          const tenantId = (sub as { tenant_id?: string } | null)?.tenant_id;
+          if (tenantId) {
+            const { data: autos } = await db
+              .from("automations")
+              .select("id")
+              .eq("tenant_id", tenantId)
+              .neq("type", "Voice");
+            await Promise.all(
+              ((autos ?? []) as Array<{ id: string }>).map((a) => del(automationCacheKey(a.id))),
+            );
+          }
+        } catch (err) {
+          console.error("updateNewModelSubscription: chat resolver-cache invalidation failed", err);
+        }
+      }
     },
 
     resetVoiceCallPool: buildResetVoiceCallPool(db),
