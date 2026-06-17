@@ -10,6 +10,7 @@ export type NotifKind =
   | "tenant_new"
   | "automation_new"
   | "payment_failed"
+  | "prompt_request"
   | "generic";
 
 export interface NotifItem {
@@ -30,6 +31,7 @@ const KIND_ACCENT: Record<NotifKind, string> = {
   tenant_new: "bg-brut-lime",
   automation_new: "bg-brut-cyan",
   payment_failed: "bg-brut-red",
+  prompt_request: "bg-brut-violet",
   generic: "bg-gray-300",
 };
 
@@ -49,6 +51,8 @@ function KindIcon({ kind }: { kind: NotifKind }) {
       return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className={common} aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M8 8h8v8H8z" /></svg>;
     case "payment_failed":
       return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className={common} aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h3" /></svg>;
+    case "prompt_request":
+      return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className={common} aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4" /><circle cx="12" cy="12" r="3" /></svg>;
     default:
       return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="square" className={common} aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></svg>;
   }
