@@ -61,6 +61,10 @@ export interface BillingDeps {
   /** Set the payment method captured by an autopay-setup Checkout session as the
    *  customer's default for invoices, so subscription renewals auto-charge. */
   setDefaultPaymentMethod(args: { customerId: string; setupIntentId: string }): Promise<void>;
+  /** For a paid one-time custom pack invoice, open the prepaid call pool for the
+   *  pack's validity window (idempotent). No-op when the tenant has no one-time
+   *  custom plan. */
+  grantCustomPackPool(stripeInvoiceId: string): Promise<void>;
 }
 
 export interface StripeEventResult {
@@ -104,6 +108,7 @@ export async function handleStripeEvent(
       const invoice = event.data.object as Stripe.Invoice;
       if (classifyInvoice(invoice) === "setup" && invoice.id) {
         await deps.markSetupFeePaid(invoice.id);
+        await deps.grantCustomPackPool(invoice.id);
         return { action: "setup_fee.paid" };
       }
       // Subscription cycle payment, send the customer a receipt (best-effort;

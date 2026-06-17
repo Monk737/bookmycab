@@ -11,6 +11,7 @@ function deps(over: Partial<BillingDeps> = {}): BillingDeps {
     sendPaymentFailedEmail: vi.fn(async () => {}),
     grantTopupCredits: vi.fn(async () => {}),
     setDefaultPaymentMethod: vi.fn(async () => {}),
+    grantCustomPackPool: vi.fn(async () => {}),
     ...over,
   };
 }
@@ -317,6 +318,36 @@ describe("handleStripeEvent", () => {
     const res = await handleStripeEvent(ev, d);
     expect(d.resetVoiceCallPool).toHaveBeenCalledOnce();
     expect(res.action).toBe("logged");
+  });
+
+  it("invoice.paid for a one-time activation pack marks the fee paid AND grants the pack pool", async () => {
+    const calls: string[] = [];
+    const d = deps({
+      markSetupFeePaid: async (id: string) => {
+        calls.push(`mark:${id}`);
+        return { tenantName: "X", currency: "GBP" as const };
+      },
+      grantCustomPackPool: async (id: string) => {
+        calls.push(`pool:${id}`);
+      },
+    });
+    const ev = {
+      id: "evt_pack1",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_pack1",
+          parent: null,
+          amount_paid: 200000,
+          currency: "gbp",
+          metadata: { kind: "activation_pack" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const res = await handleStripeEvent(ev, d);
+    expect(res.action).toBe("setup_fee.paid");
+    expect(calls).toContain("mark:in_pack1");
+    expect(calls).toContain("pool:in_pack1");
   });
 });
 

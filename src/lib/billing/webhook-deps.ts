@@ -209,6 +209,28 @@ export function buildBillingDeps(): BillingDeps {
       await sendEmail({ to: recipients, subject: body.subject, html: body.html, text: body.text });
     },
 
+    async grantCustomPackPool(stripeInvoiceId) {
+      // Find the tenant whose activation invoice this is.
+      const { data: fee } = await db
+        .from("setup_fees").select("tenant_id").eq("stripe_invoice_id", stripeInvoiceId).maybeSingle();
+      const tenantId = (fee as { tenant_id?: string } | null)?.tenant_id;
+      if (!tenantId) return;
+      const { data: plan } = await db
+        .from("custom_plans")
+        .select("billing_mode, monthly_call_allowance, starts_at, expires_at")
+        .eq("tenant_id", tenantId).maybeSingle();
+      const p = plan as { billing_mode: string; monthly_call_allowance: number; starts_at: string | null; expires_at: string | null } | null;
+      if (!p || p.billing_mode !== "one_time") return; // recurring handled by resetVoiceCallPool
+      const start = p.starts_at ?? new Date().toISOString().slice(0, 10);
+      const end = p.expires_at ?? start;
+      // INSERT-ONLY: a re-delivered invoice.paid is a no-op.
+      const { error } = await db.from("usage_counters").upsert(
+        { tenant_id: tenantId, feature_key: "voice_calls", period_start: start, period_end: end, used: 0, limit_amount: p.monthly_call_allowance },
+        { onConflict: "tenant_id,feature_key,period_start", ignoreDuplicates: true },
+      );
+      if (error) throw new Error(`grantCustomPackPool failed: ${error.message}`);
+    },
+
     async sendPaymentReceivedEmail(info) {
       // Receipts go to the customer only (no ops copy); skip when Stripe gave us
       // no email rather than mailing the from-address a receipt for nobody.
