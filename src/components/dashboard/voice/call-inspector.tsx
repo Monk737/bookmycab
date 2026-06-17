@@ -7,21 +7,17 @@ import { updateCallReviewStatus } from "@/app/dashboard/voice/quality/actions";
 import { formatDuration } from "@/lib/voice/format";
 import type { RecentCallMeta } from "@/lib/voice/quality";
 
-const OUTCOME_BADGE: Record<string, string> = {
-  booked: "bg-brut-lime", modified: "bg-brut-violet", cancelled: "bg-brut-pink",
-  quoted: "bg-brut-cyan", abandoned: "bg-brut-orange", failed: "bg-brut-red", transferred: "bg-brut-blue",
-};
-const SENTIMENT: Record<string, { label: string; fill: string }> = {
-  positive: { label: "Positive", fill: "bg-brut-lime" },
-  neutral: { label: "Neutral", fill: "bg-gray-200" },
-  negative: { label: "Negative", fill: "bg-brut-red" },
-};
-const REASON_STYLE: Record<string, string> = {
-  "System error": "bg-brut-red",
-  "Caller abandoned": "bg-brut-orange",
-  "Repeated address confusion": "bg-brut-violet",
-  "Unusually long": "bg-brut-cyan",
-  "Goal not met": "bg-brut-yellow",
+// Restrained palette: ink / paper / grey structure, taxi-yellow as the single UI
+// accent (header, current selection, primary action), and red reserved for
+// genuine problems. No per-outcome rainbow — the outcome word carries meaning.
+const NEGATIVE_OUTCOME = new Set(["failed", "abandoned", "no_credit"]);
+const outcomeFill = (outcome: string) => (NEGATIVE_OUTCOME.has(outcome) ? "bg-brut-red" : "bg-paper");
+const outcomeDot = (outcome: string) => (NEGATIVE_OUTCOME.has(outcome) ? "bg-brut-red" : "bg-ink");
+
+const SENTIMENT: Record<string, { label: string; dot: string }> = {
+  positive: { label: "Positive", dot: "bg-ink" },
+  neutral: { label: "Neutral", dot: "bg-gray-300" },
+  negative: { label: "Negative", dot: "bg-brut-red" },
 };
 const RELOOKUP_THRESHOLD = 4;
 
@@ -34,29 +30,31 @@ type FilterKey = "all" | "flagged" | "booked" | "missed" | "negative";
 
 function severityTag(severity: number) {
   if (severity >= 4) return { label: "High", fill: "bg-brut-red" };
-  if (severity >= 2) return { label: "Med", fill: "bg-brut-orange" };
-  return { label: "Low", fill: "bg-brut-yellow" };
+  if (severity >= 2) return { label: "Med", fill: "bg-gray-300" };
+  return { label: "Low", fill: "bg-gray-200" };
 }
 
-/* A flat ink-framed readout block in the detail panel. */
-function Signal({ label, value, fill, sub }: { label: string; value: string; fill: string; sub?: string }) {
+/* A flat ink-framed readout block in the detail panel. Stays on paper; a bad
+   signal is flagged by a red figure, not a coloured fill. */
+function Signal({ label, value, sub, bad }: { label: string; value: string; sub?: string; bad?: boolean }) {
   return (
-    <div className={`flex min-h-[4.5rem] flex-col justify-between px-3 py-2.5 ${fill}`}>
+    <div className="flex min-h-[4.5rem] flex-col justify-between bg-paper px-3 py-2.5">
       <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-ink/70">{label}</p>
       <div>
-        <p className="font-mono text-lg font-extrabold tabular-nums leading-none text-ink">{value}</p>
+        <p className={`font-mono text-lg font-extrabold tabular-nums leading-none ${bad ? "text-brut-red-deep" : "text-ink"}`}>{value}</p>
         {sub ? <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink/60">{sub}</p> : null}
       </div>
     </div>
   );
 }
 
-/* A single number in the inspector's summary strip. */
-function Stat({ label, value, fill }: { label: string; value: number; fill: string }) {
+/* A single number in the inspector's summary strip. Paper tile; a problem count
+   turns its figure red so attention tracks meaning, not decoration. */
+function Stat({ label, value, bad }: { label: string; value: number; bad?: boolean }) {
   return (
-    <div className={`px-3 py-2 ${fill}`}>
+    <div className="bg-paper px-3 py-2">
       <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-ink/60">{label}</p>
-      <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums leading-none text-ink">{value.toLocaleString("en-GB")}</p>
+      <p className={`mt-0.5 font-mono text-lg font-extrabold tabular-nums leading-none ${bad ? "text-brut-red-deep" : "text-ink"}`}>{value.toLocaleString("en-GB")}</p>
     </div>
   );
 }
@@ -80,7 +78,7 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
   return (
     <div className="flex h-full flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${OUTCOME_BADGE[call.outcome] ?? "bg-gray-100"}`}>
+        <span className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${outcomeFill(call.outcome)}`}>
           {call.outcome}
         </span>
         {flagged ? (
@@ -89,7 +87,7 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
           </span>
         ) : null}
         {call.reviewed ? (
-          <span className="border-2 border-ink bg-brut-lime px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">Reviewed</span>
+          <span className="border-2 border-ink bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">Reviewed</span>
         ) : null}
         <span className="text-base font-bold text-ink">{call.callerName ?? "Unknown caller"}</span>
         {call.caller ? <span className="font-mono text-xs text-gray-600">{call.caller}</span> : <span className="text-xs text-gray-400">number withheld</span>}
@@ -98,14 +96,14 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
 
       {/* Quality readout on a hairline ink bed. */}
       <div className="grid grid-cols-2 gap-[3px] border-2 border-ink bg-ink sm:grid-cols-4">
-        <Signal label="Sentiment" value={sent ? sent.label : "—"} fill={sent ? sent.fill : "bg-paper"} />
+        <Signal label="Sentiment" value={sent ? sent.label : "—"} bad={call.sentiment === "negative"} />
         <Signal
           label="Goal"
           value={call.success == null ? "—" : call.success ? "Met" : "Missed"}
-          fill={call.success == null ? "bg-paper" : call.success ? "bg-brut-lime" : "bg-brut-red"}
+          bad={call.success === false}
         />
-        <Signal label="Handle time" value={call.durationS != null ? formatDuration(call.durationS) : "—"} fill="bg-paper" />
-        <Signal label="Address looks" value={String(lookups)} fill={struggled ? "bg-brut-violet" : "bg-paper"} sub={struggled ? "Re-lookups" : undefined} />
+        <Signal label="Handle time" value={call.durationS != null ? formatDuration(call.durationS) : "—"} />
+        <Signal label="Address looks" value={String(lookups)} bad={struggled} sub={struggled ? "Re-lookups" : undefined} />
       </div>
 
       {flagged ? (
@@ -113,7 +111,7 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
           <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Why it&rsquo;s flagged</p>
           <div className="flex flex-wrap gap-1.5">
             {call.reasons.map((r) => (
-              <span key={r} className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink ${REASON_STYLE[r] ?? "bg-gray-100"}`}>{r}</span>
+              <span key={r} className="border-2 border-ink bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink">{r}</span>
             ))}
           </div>
         </div>
@@ -151,7 +149,7 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
               type="button"
               disabled={pending}
               onClick={() => action("reviewed")}
-              className="brut-press brut-focus inline-flex h-10 items-center border-2 border-ink bg-brut-lime px-3 text-[11px] font-bold uppercase tracking-[0.04em] text-ink disabled:opacity-50"
+              className="brut-press brut-focus inline-flex h-10 items-center border-2 border-ink bg-ink px-3 text-[11px] font-bold uppercase tracking-[0.04em] text-paper disabled:opacity-50"
             >
               Mark reviewed
             </button>
@@ -166,7 +164,7 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
           </>
         )}
         {call.hasRecording ? (
-          <span className="ml-auto inline-flex items-center gap-1.5 border-2 border-ink bg-brut-cyan px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">
+          <span className="ml-auto inline-flex items-center gap-1.5 border-2 border-ink bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">
             <span className="h-1.5 w-1.5 rounded-full bg-ink" aria-hidden="true" />Recording
           </span>
         ) : null}
@@ -260,11 +258,11 @@ export function CallInspector({
 
       {/* Summary strip. */}
       <div className="grid grid-cols-2 gap-[3px] border-b-[3px] border-ink bg-ink sm:grid-cols-5">
-        <Stat label="Calls" value={counts.total} fill="bg-paper" />
-        <Stat label="Flagged" value={counts.flagged} fill={counts.flagged > 0 ? "bg-brut-orange" : "bg-paper"} />
-        <Stat label="Booked" value={counts.booked} fill="bg-brut-lime" />
-        <Stat label="Missed goal" value={counts.missed} fill={counts.missed > 0 ? "bg-brut-red" : "bg-paper"} />
-        <Stat label="Negative" value={counts.negative} fill={counts.negative > 0 ? "bg-brut-red" : "bg-paper"} />
+        <Stat label="Calls" value={counts.total} />
+        <Stat label="Flagged" value={counts.flagged} bad={counts.flagged > 0} />
+        <Stat label="Booked" value={counts.booked} />
+        <Stat label="Missed goal" value={counts.missed} bad={counts.missed > 0} />
+        <Stat label="Negative" value={counts.negative} bad={counts.negative > 0} />
       </div>
 
       {/* Reason drill-down banner (from the failure clusters above). */}
@@ -340,18 +338,18 @@ export function CallInspector({
                         <span className="font-mono text-xs font-bold tabular-nums text-ink">{hhmm(c.startedAt)}</span>
                         <span className="flex items-center gap-1">
                           {flagged ? <span className={`border border-ink px-1 text-[9px] font-bold uppercase text-ink ${sev.fill}`} title={`Severity ${c.severity}`}>{sev.label}</span> : null}
-                          {c.reviewed ? <span className="border border-ink bg-brut-lime px-1 text-[9px] font-bold uppercase text-ink">✓</span> : null}
+                          {c.reviewed ? <span className="border border-ink bg-gray-200 px-1 text-[9px] font-bold uppercase text-ink">✓</span> : null}
                           <span className="font-mono text-[10px] tabular-nums text-gray-500">{dmon(c.startedAt)}</span>
                         </span>
                       </div>
                       <span className="truncate text-sm font-bold text-ink">{c.callerName ?? c.caller ?? "Unknown caller"}</span>
                       <div className="flex items-center gap-1.5">
-                        <span className={`h-2.5 w-2.5 border border-ink ${OUTCOME_BADGE[c.outcome] ?? "bg-gray-200"}`} aria-hidden="true" />
+                        <span className={`h-2.5 w-2.5 border border-ink ${outcomeDot(c.outcome)}`} aria-hidden="true" />
                         <span className="text-[10px] font-bold uppercase tracking-[0.05em] text-gray-600">{c.outcome}</span>
                         <span className="ml-auto flex items-center gap-1">
-                          {sent ? <span className={`h-2.5 w-2.5 border border-ink ${sent.fill}`} title={`Sentiment: ${sent.label}`} aria-hidden="true" /> : null}
+                          {sent ? <span className={`h-2.5 w-2.5 border border-ink ${sent.dot}`} title={`Sentiment: ${sent.label}`} aria-hidden="true" /> : null}
                           {c.success === true ? (
-                            <span className="h-2.5 w-2.5 border border-ink bg-brut-lime" title="Goal met" aria-hidden="true" />
+                            <span className="h-2.5 w-2.5 border border-ink bg-ink" title="Goal met" aria-hidden="true" />
                           ) : c.success === false ? (
                             <span className="h-2.5 w-2.5 border border-ink bg-brut-red" title="Goal missed" aria-hidden="true" />
                           ) : null}

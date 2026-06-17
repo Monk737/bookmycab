@@ -60,29 +60,17 @@ export default async function ChatIntelligencePage({
         />
       ) : (
         <>
-          {/* Performance — the window at a glance (palette shuffled by the grid). */}
+          {/* Performance — the window at a glance. Restrained: one ink anchor
+              (Conversations) + one taxi-yellow accent on the revenue headline;
+              every other tile stays paper, so the strip reads calm, not rainbow. */}
           <StatGrid cols="grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-            <StatTile label="Conversations" value={intel.totals.conversations.toLocaleString("en-GB")} sub="in window" />
-            <StatTile label="Booked" value={intel.totals.booked.toLocaleString("en-GB")} sub={`${intel.totals.bookedPct}% of chats`} />
-            <StatTile label="Revenue" value={`£${intel.revenue.totalGbp.toLocaleString("en-GB")}`} sub={`${intel.revenue.bookings} bookings`} />
-            <StatTile label="Avg fare" value={intel.revenue.avgFareGbp ? `£${intel.revenue.avgFareGbp.toFixed(2)}` : "—"} sub="per booking" />
-            <StatTile label="Cancelled" value={intel.totals.cancelled.toLocaleString("en-GB")} sub="bot cancels" />
-            <StatTile label="Failed" value={intel.totals.failed.toLocaleString("en-GB")} sub="booking attempts" />
+            <StatTile label="Conversations" value={intel.totals.conversations.toLocaleString("en-GB")} sub="in window" color="ink" />
+            <StatTile label="Booked" value={intel.totals.booked.toLocaleString("en-GB")} sub={`${intel.totals.bookedPct}% of chats`} color="paper" />
+            <StatTile label="Revenue" value={`£${intel.revenue.totalGbp.toLocaleString("en-GB")}`} sub={`${intel.revenue.bookings} bookings`} color="yellow" />
+            <StatTile label="Avg fare" value={intel.revenue.avgFareGbp ? `£${intel.revenue.avgFareGbp.toFixed(2)}` : "—"} sub="per booking" color="paper" />
+            <StatTile label="Cancelled" value={intel.totals.cancelled.toLocaleString("en-GB")} sub="bot cancels" color="paper" />
+            <StatTile label="Failed" value={intel.totals.failed.toLocaleString("en-GB")} sub="booking attempts" color="paper" />
           </StatGrid>
-
-          {/* Demand — routes lead, vehicle composition alongside. */}
-          <SectionHead title="Demand" sub="Where people travel and in what" />
-          <div className="grid items-start gap-5 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <TopRoutesList items={intel.topRoutes} rangeLabel={intel.rangeLabel} />
-            </div>
-            <Panel title="Vehicle mix">
-              <SegmentBar
-                rows={intel.vehicleMix.map((v) => ({ label: v.type, count: v.count, pct: v.pct }))}
-                emptyLabel="No vehicles captured yet."
-              />
-            </Panel>
-          </div>
 
           {/* When — one card, two column charts. */}
           <SectionHead title="When they book" sub="UK local time" />
@@ -131,6 +119,20 @@ export default async function ChatIntelligencePage({
             </Panel>
 
             <RepeatCustomersList items={intel.repeatCustomers} />
+          </div>
+
+          {/* Demand — routes lead, vehicle composition alongside. */}
+          <SectionHead title="Demand" sub="Where people travel and in what" />
+          <div className="grid items-start gap-5 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <TopRoutesList items={intel.topRoutes} rangeLabel={intel.rangeLabel} />
+            </div>
+            <Panel title="Vehicle mix">
+              <SegmentBar
+                rows={intel.vehicleMix.map((v) => ({ label: v.type, count: v.count, pct: v.pct }))}
+                emptyLabel="No vehicles captured yet."
+              />
+            </Panel>
           </div>
         </>
       )}
