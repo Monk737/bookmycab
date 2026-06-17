@@ -12,6 +12,7 @@ import { VoiceCall } from "@/components/marketing/voice-call";
 import { VoiceLiveCard } from "@/components/marketing/voice-live-card";
 import { MotionReel } from "@/components/marketing/motion-reel";
 import { ChannelLogos } from "@/components/marketing/channel-logos";
+import { CommandCentre } from "@/components/marketing/command-centre";
 import { Reveal } from "@/components/marketing/reveal";
 import { COMPANY } from "@/lib/marketing/nav";
 
@@ -267,6 +268,61 @@ export default function Home() {
           </div>
           <div className="mt-10">
             <DispatchBadges />
+          </div>
+        </Container>
+      </Section>
+
+      {/* The dashboard story — what the operator watches once the agent is live.
+          Selling copy on the left, a brutalist faux-dashboard on the right. */}
+      <Section className="border-t-[3px] border-ink py-16 sm:py-24">
+        <Container>
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,32rem)] lg:gap-16">
+            <div>
+              <span className="inline-flex items-center gap-2 border-2 border-ink bg-brut-cyan px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-ink">
+                Your command centre
+              </span>
+              <h2 className="mt-5 text-balance font-display text-3xl font-extrabold uppercase leading-[1] tracking-[-0.02em] text-ink sm:text-4xl">
+                You don&apos;t just trust it.{" "}
+                <span className="box-decoration-clone bg-brut-yellow px-2 text-ink ring-2 ring-ink">
+                  You watch it work
+                </span>
+                .
+              </h2>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-gray-700">
+                The agent answers and books. The dashboard puts all of it on one
+                screen, with no reports to pull and nothing for your controllers
+                to fill in. Open it between calls and see what booked, what
+                slipped, and the money it won back.
+              </p>
+
+              <ul className="mt-8 space-y-3.5">
+                {[
+                  ["Every call and chat, logged", "Transcribed, scored and saved against the customer. Filter to any day, search a name, open any job and read exactly what was said."],
+                  ["Booking intelligence", "The revenue behind the week, not just the count: fares booked, average fare and booked-rate, your busiest hours and days, top routes and airport runs, vehicle mix, and the repeat riders worth chasing."],
+                  ["Fares the agent won back", "It flags the calls that nearly slipped and chases them. You see the value recovered, in pounds, on the board."],
+                  ["Graded, and self-tuning", "Every call rated for caller mood and outcome. The ones worth a listen rise to the top, and the agent suggests its own script tweaks."],
+                  ["The Monday briefing", "A plain-English read of your week, written fresh every Monday: what changed, what cost you bookings, and one fix to try."],
+                ].map(([k, v]) => (
+                  <li key={k} className="flex gap-3.5">
+                    <span aria-hidden="true" className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center border-2 border-ink bg-brut-lime text-xs font-bold text-ink">
+                      ✓
+                    </span>
+                    <p className="text-base leading-relaxed text-gray-700">
+                      <span className="font-display font-extrabold uppercase tracking-tight text-ink">{k}.</span>{" "}
+                      {v}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-9">
+                <TryDashboardLink size="lg" label="See the live demo dashboard" />
+              </div>
+            </div>
+
+            <div className="lg:pl-4">
+              <CommandCentre />
+            </div>
           </div>
         </Container>
       </Section>

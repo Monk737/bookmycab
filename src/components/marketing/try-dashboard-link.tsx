@@ -4,6 +4,7 @@ type TryDashboardLinkProps = {
   size?: "md" | "lg";
   variant?: "secondary" | "ghost";
   className?: string;
+  label?: string;
 };
 
 /**
@@ -14,10 +15,11 @@ export function TryDashboardLink({
   size = "md",
   variant = "secondary",
   className = "",
+  label = "Try Demo Dashboard",
 }: TryDashboardLinkProps) {
   return (
     <Button href="/demo" variant={variant} size={size} className={className}>
-      Try Demo Dashboard
+      {label}
     </Button>
   );
 }

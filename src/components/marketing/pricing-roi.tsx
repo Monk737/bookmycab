@@ -10,14 +10,21 @@ import {
 import { CurrencyToggle } from "@/components/marketing/currency-toggle";
 
 /* ---------------------------------------------------------------------------
-   Industry-average assumptions. The model is driven by ONE honest lever, fleet
-   size, because the automation answers everything; there is no "how often does
-   it work" guess. Bigger fleet means more bookings, which means more dispatcher
-   time saved and more out-of-hours fares captured.
+   Industry-average assumptions. Two honest levers drive the model:
+
+   1. Fleet size  → WhatsApp Chat value. Every typed and voice-note booking the
+      bot handles is dispatcher time saved off the desk.
+   2. Missed calls / day → AI Voice value. The calls that ring out today (engaged
+      tone, after-hours, nobody free) get answered and booked instead of lost to
+      the firm down the road. The agent picks up everything, so the only honest
+      question is "how many calls slip through now?", not "how often does it work?".
    --------------------------------------------------------------------------- */
 const BOOKINGS_PER_DRIVER_MONTH = 240;
 const DISPATCH_MIN_SAVED_PER_BOOKING = 1.5;
-const OUT_OF_HOURS_UPLIFT = 0.05; // 5% of bookings recovered from out-of-hours / missed
+// Of the calls that ring out today, the share the AI Voice agent answers and
+// turns into a confirmed booking. It picks up every one; not every caller books.
+const VOICE_BOOK_RATE = 0.7;
+const DAYS_PER_MONTH = 30;
 // GBP base; converted to the selected currency via the live FX rate.
 const STAFF_RATE_GBP = 12;
 
@@ -30,19 +37,23 @@ function planFor(): Tier {
 function compute(
   drivers: number,
   avgFare: number,
+  missedCallsPerDay: number,
   currency: Currency,
   rates: Record<Currency, number>,
 ) {
+  // WhatsApp Chat side: dispatcher time the bot takes off the desk.
   const bookings = drivers * BOOKINGS_PER_DRIVER_MONTH;
   const hoursSaved = (bookings * DISPATCH_MIN_SAVED_PER_BOOKING) / 60;
   const staffRate = convert(STAFF_RATE_GBP, currency, rates);
   const staffCostSaved = hoursSaved * staffRate;
-  const extraBookings = bookings * OUT_OF_HOURS_UPLIFT;
-  const revenueUplift = extraBookings * avgFare;
+
+  // AI Voice side: missed calls answered and booked, times the fare.
+  const voiceBookings = missedCallsPerDay * VOICE_BOOK_RATE * DAYS_PER_MONTH;
+  const voiceRevenue = voiceBookings * avgFare;
 
   const tier = planFor();
   const planMonthly = convert(tier.monthlyGbp, currency, rates);
-  const monthlyValue = staffCostSaved + revenueUplift;
+  const monthlyValue = staffCostSaved + voiceRevenue;
   const netMonthly = monthlyValue - planMonthly;
   const annualNet = netMonthly * 12;
   const setup = convert(CHAT_SUITE.setupGbp, currency, rates);
@@ -52,8 +63,8 @@ function compute(
   return {
     hoursSaved: Math.round(hoursSaved),
     staffCostSaved: Math.round(staffCostSaved),
-    extraBookings: Math.round(extraBookings),
-    revenueUplift: Math.round(revenueUplift),
+    voiceBookings: Math.round(voiceBookings),
+    voiceRevenue: Math.round(voiceRevenue),
     tierName: tier.name,
     planMonthly,
     netMonthly: Math.round(netMonthly),
@@ -194,12 +205,14 @@ function DarkMetric({
 export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
   const fleetId = useId();
   const fareId = useId();
+  const missedId = useId();
 
   const [currency, setCurrency] = useState<Currency>("GBP");
   const [drivers, setDrivers] = useState(20);
   const [avgFare, setAvgFare] = useState(18);
+  const [missedCalls, setMissedCalls] = useState(6);
 
-  const r = compute(drivers, avgFare, currency, rates);
+  const r = compute(drivers, avgFare, missedCalls, currency, rates);
   const money = (n: number) => formatPrice(currency, Math.max(0, n));
 
   return (
@@ -218,7 +231,8 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
       </div>
 
       <div className="p-6 sm:p-8">
-        {/* Inputs */}
+        {/* Inputs: fleet (the Chat lever) on the left; fare and missed calls
+            (the AI Voice levers) stacked on the right. */}
         <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
           <FleetSlider
             id={fleetId}
@@ -226,28 +240,41 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
             onChange={setDrivers}
             caption={`${r.tierName} · ${money(r.planMonthly)}/mo`}
           />
-          <MiniSlider
-            id={fareId}
-            label="Average fare"
-            value={avgFare}
-            min={5}
-            max={80}
-            step={1}
-            onChange={setAvgFare}
-            format={(n) => money(n)}
-          />
+          <div className="grid gap-4">
+            <MiniSlider
+              id={fareId}
+              label="Average fare"
+              value={avgFare}
+              min={5}
+              max={80}
+              step={1}
+              onChange={setAvgFare}
+              format={(n) => money(n)}
+            />
+            <MiniSlider
+              id={missedId}
+              label="Calls missed / day"
+              value={missedCalls}
+              min={0}
+              max={60}
+              step={1}
+              onChange={setMissedCalls}
+              format={(n) => `${n}`}
+            />
+          </div>
         </div>
 
-        {/* Operational value, four light cards on an ink grid */}
+        {/* Where the value comes from: two cards for the WhatsApp Chat side
+            (dispatcher time) and two for the AI Voice side (missed calls booked). */}
         <div
           className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4"
           aria-live="polite"
           aria-atomic="true"
         >
-          <Metric label="Dispatcher hours saved" value={`${r.hoursSaved} hrs`} sub="per month" />
-          <Metric label="Staff cost saved" value={money(r.staffCostSaved)} sub="per month" />
-          <Metric label="Extra bookings captured" value={`${r.extraBookings}`} sub="out-of-hours & missed" />
-          <Metric label="Revenue uplift" value={money(r.revenueUplift)} sub="per month" />
+          <Metric label="Dispatcher hours saved" value={`${r.hoursSaved} hrs`} sub="WhatsApp Chat, per month" />
+          <Metric label="Staff cost saved" value={money(r.staffCostSaved)} sub="WhatsApp Chat, per month" />
+          <Metric label="AI Voice bookings won" value={`${r.voiceBookings}`} sub="missed calls booked / mo" />
+          <Metric label="AI Voice fare revenue" value={money(r.voiceRevenue)} sub="per month" />
         </div>
 
         {/* Bottom line, dark band */}
@@ -265,8 +292,9 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
         <p className="mt-5 text-xs leading-relaxed text-gray-500">
           Based on industry averages: {BOOKINGS_PER_DRIVER_MONTH} bookings per
           driver a month, {DISPATCH_MIN_SAVED_PER_BOOKING} min of dispatcher time
-          saved per booking, {money(convert(STAFF_RATE_GBP, currency, rates))}/hr staff rate, a 5%
-          out-of-hours uplift. An estimate, not a quote.
+          saved per booking, {money(convert(STAFF_RATE_GBP, currency, rates))}/hr staff rate, and the
+          AI Voice agent booking {Math.round(VOICE_BOOK_RATE * 100)}% of the calls that ring out
+          today across {DAYS_PER_MONTH} days. An estimate, not a quote.
         </p>
       </div>
     </div>

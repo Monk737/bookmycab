@@ -148,7 +148,7 @@ export function PricingSections({ rates }: { rates: Rates }) {
           </div>
 
           <div className="flex flex-col gap-4 bg-paper px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-            <p className="text-sm font-medium text-gray-700">Calls reset each month and don&apos;t carry over.</p>
+            <p className="text-sm font-medium text-gray-700">Busy week? When the monthly pool runs out, top-up credit takes over on its own, so the line never goes engaged.</p>
             <DiscoveryCta size="md" />
           </div>
         </div>

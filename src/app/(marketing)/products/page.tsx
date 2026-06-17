@@ -9,6 +9,7 @@ import { DispatchBadges } from "@/components/marketing/dispatch-badges";
 import { ChannelConvergence } from "@/components/marketing/channel-convergence";
 import { PRODUCTS, ProductIcon } from "@/components/marketing/product-marks";
 import { Reveal } from "@/components/marketing/reveal";
+import { CommandCentre } from "@/components/marketing/command-centre";
 
 export const metadata: Metadata = {
   title: "Products · BookMyCab",
@@ -148,6 +149,50 @@ export default function ProductsPage() {
               );
             })}
           </Reveal>
+        </Container>
+      </Section>
+
+      {/* One dashboard behind both products — the operator's view. */}
+      <Section className="border-t-[3px] border-ink bg-canvas py-16 sm:py-24">
+        <Container>
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-2 border-2 border-ink bg-brut-cyan px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-ink">
+              One dashboard, both products
+            </span>
+            <h2 className="mt-5 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">
+              Everything it does, on one screen
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-700">
+              Calls and WhatsApp report into the same dashboard, against the same
+              customers. No reports to pull, nothing for your team to fill in.
+              Open it between jobs and the week reads itself back to you.
+            </p>
+          </div>
+
+          <div className="mt-10 grid items-center gap-10 lg:grid-cols-[minmax(0,30rem)_1fr] lg:gap-14">
+            <CommandCentre />
+
+            <div>
+              <ul className="grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink shadow-brut">
+                {[
+                  ["Live activity", "Every call transcribed and every WhatsApp saved, both against one customer record. Search a name, filter to a day, open any job and read what was said."],
+                  ["Booking intelligence", "Know your demand cold: revenue and average fare, the busiest hours and days to staff for, top routes and airport runs, vehicle mix, voice-note against typed bookings, and the fares the agent chased back, in pounds."],
+                  ["Agent quality", "Every call graded for caller mood and outcome. The ones worth a listen surface on their own, and the agent suggests its own script tweaks."],
+                  ["The Monday briefing", "A plain-English read of your week, written fresh every Monday: what changed, what cost you bookings, and one fix to try."],
+                ].map(([k, v]) => (
+                  <li key={k} className="bg-paper p-5 sm:p-6">
+                    <p className="font-display text-base font-extrabold uppercase leading-tight tracking-tight text-ink">
+                      {k}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-700">{v}</p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-7">
+                <TryDashboardLink size="lg" label="See the live demo dashboard" />
+              </div>
+            </div>
+          </div>
         </Container>
       </Section>
 
