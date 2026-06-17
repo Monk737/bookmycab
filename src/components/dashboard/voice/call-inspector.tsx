@@ -189,7 +189,18 @@ const FILTERS: { key: FilterKey; label: string }[] = [
  * quality signals and flag reasons, action it (mark reviewed / dismiss) and open
  * the full transcript + recording. Replaces the separate review queue.
  */
-export function CallInspector({ items, windowLabel }: { items: RecentCallMeta[]; windowLabel: string }) {
+export function CallInspector({
+  items,
+  windowLabel,
+  reasonFilter,
+  onClearReason,
+}: {
+  items: RecentCallMeta[];
+  windowLabel: string;
+  /** When set (from the failure clusters above), narrow to calls with this flag. */
+  reasonFilter?: string | null;
+  onClearReason?: () => void;
+}) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [selectedId, setSelectedId] = useState<string | null>(items[0]?.id ?? null);
   const [query, setQuery] = useState("");
@@ -208,14 +219,19 @@ export function CallInspector({ items, windowLabel }: { items: RecentCallMeta[];
 
   const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
-    let list = items;
-    if (filter === "flagged") list = items.filter((c) => c.reasons.length > 0).slice().sort((a, b) => b.severity - a.severity || (a.startedAt < b.startedAt ? 1 : -1));
-    else if (filter === "booked") list = items.filter((c) => c.outcome === "booked");
-    else if (filter === "missed") list = items.filter((c) => c.success === false);
-    else if (filter === "negative") list = items.filter((c) => c.sentiment === "negative");
+    // A reason drill-down from the clusters takes precedence and sorts by severity.
+    let list = reasonFilter
+      ? items.filter((c) => c.reasons.includes(reasonFilter)).slice().sort((a, b) => b.severity - a.severity || (a.startedAt < b.startedAt ? 1 : -1))
+      : items;
+    if (!reasonFilter) {
+      if (filter === "flagged") list = items.filter((c) => c.reasons.length > 0).slice().sort((a, b) => b.severity - a.severity || (a.startedAt < b.startedAt ? 1 : -1));
+      else if (filter === "booked") list = items.filter((c) => c.outcome === "booked");
+      else if (filter === "missed") list = items.filter((c) => c.success === false);
+      else if (filter === "negative") list = items.filter((c) => c.sentiment === "negative");
+    }
     if (q) list = list.filter((c) => [c.callerName, c.caller, c.outcome, c.synopsis, c.sentiment, c.reasons.join(" ")].filter(Boolean).join(" ").toLowerCase().includes(q));
     return list;
-  }, [items, filter, q]);
+  }, [items, filter, q, reasonFilter]);
 
   const selected = filtered.find((c) => c.id === selectedId) ?? filtered[0] ?? null;
 
@@ -251,8 +267,24 @@ export function CallInspector({ items, windowLabel }: { items: RecentCallMeta[];
         <Stat label="Negative" value={counts.negative} fill={counts.negative > 0 ? "bg-brut-red" : "bg-paper"} />
       </div>
 
+      {/* Reason drill-down banner (from the failure clusters above). */}
+      {reasonFilter ? (
+        <div className="flex flex-wrap items-center gap-2 border-b-2 border-ink bg-brut-yellow px-4 py-2">
+          <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink">Flagged reason</span>
+          <span className="border-2 border-ink bg-paper px-2 py-0.5 text-xs font-bold text-ink">{reasonFilter}</span>
+          <span className="font-mono text-[11px] font-bold tabular-nums text-ink/70">{filtered.length} call{filtered.length === 1 ? "" : "s"}</span>
+          <button
+            type="button"
+            onClick={onClearReason}
+            className="brut-press brut-focus ml-auto inline-flex h-7 items-center border-2 border-ink bg-paper px-2 text-[11px] font-bold uppercase tracking-[0.04em] text-ink"
+          >
+            Clear &times;
+          </button>
+        </div>
+      ) : null}
+
       {/* Filter chips. */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b-2 border-gray-100 px-4 py-2.5">
+      <div className={`flex flex-wrap items-center gap-1.5 border-b-2 border-gray-100 px-4 py-2.5 ${reasonFilter ? "pointer-events-none opacity-40" : ""}`}>
         {FILTERS.map((f) => {
           const active = filter === f.key;
           const n = f.key === "all" ? counts.total : counts[f.key];

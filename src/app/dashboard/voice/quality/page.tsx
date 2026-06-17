@@ -4,7 +4,7 @@ import { getVoiceQuality } from "@/lib/voice/quality";
 import { EmptyState } from "@/components/dashboard/ui";
 import { IntelligenceTabs } from "@/components/dashboard/voice/intelligence-tabs";
 import { PerformanceKpis, HandleTrendPanel, OperationalHealth, SentimentPanel, LoyaltyPanel } from "@/components/dashboard/voice/quality-panels";
-import { CallInspector } from "@/components/dashboard/voice/call-inspector";
+import { AgentQualityBoard } from "@/components/dashboard/voice/agent-quality-board";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
 import { CyclePicker } from "@/components/dashboard/cycle-picker";
 import { resolveCycle } from "@/lib/dashboard/billing-cycle";
@@ -65,7 +65,7 @@ export default async function VoiceQualityPage({
             </div>
           </section>
 
-          <CallInspector items={data.recent} windowLabel={cycleLabel} />
+          <AgentQualityBoard failures={data.failures} recent={data.recent} windowLabel={cycleLabel} />
 
           <div className="grid items-start gap-5 lg:grid-cols-2">
             <SentimentPanel s={data.sentiment} />
