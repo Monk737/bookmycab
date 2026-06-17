@@ -8,6 +8,7 @@ import { periodBounds } from "@/lib/entitlements/meter";
 import { CreditTopup } from "@/components/dashboard/credit-topup";
 import { PortalButton } from "./portal-button";
 import { AutopayButton } from "./autopay-button";
+import { getOpenInvoices, getAutopayEnabled } from "@/lib/dashboard/open-invoices";
 import Link from "next/link";
 
 const TZ = "Europe/London";
@@ -67,6 +68,8 @@ export default async function BillingPage({
   const { credit, autopay } = await searchParams;
   const b = await getBillingOverview(claims.tenant_id);
   const voiceCredit = await getVoiceCreditPanel(claims.tenant_id);
+  const openInvoices = b.stripeCustomerId ? await getOpenInvoices(b.stripeCustomerId) : [];
+  const autopayOn = b.stripeCustomerId ? await getAutopayEnabled(b.stripeCustomerId) : false;
 
   type InvoiceRow = {
     id: string;
@@ -320,6 +323,30 @@ export default async function BillingPage({
         </p>
       </section>
 
+      {openInvoices.length > 0 && (
+        <section aria-labelledby="open-inv-heading" className="space-y-3">
+          <h2 id="open-inv-heading" className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Invoices to pay
+          </h2>
+          <div className="divide-y-2 divide-gray-100 border-[3px] border-ink bg-paper">
+            {openInvoices.map((inv) => (
+              <div key={inv.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="font-mono font-bold tabular-nums text-ink">{formatCurrency(inv.amountGbp, "GBP")}</p>
+                  <p className="text-xs text-gray-500">{inv.dueDate ? `Due ${inv.dueDate}` : "Due now"}</p>
+                </div>
+                {inv.hostedUrl && (
+                  <a href={inv.hostedUrl} target="_blank" rel="noopener noreferrer"
+                    className="border-2 border-ink bg-brut-yellow px-4 py-2 text-sm font-bold uppercase text-ink hover:bg-ink hover:text-paper">
+                    Pay now
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Actions */}
       <section
         aria-labelledby="actions-heading"
@@ -336,7 +363,11 @@ export default async function BillingPage({
           <PortalButton orgId={claims.tenant_id} />
         </div>
         <p className="text-sm text-gray-600">
-          <span className="font-medium text-ink">Set up autopay</span> to save a card for your prepaid monthly subscription, or use the portal to update an existing one.
+          {autopayOn ? (
+            <><span className="font-medium text-ink">Autopay is on.</span> Your monthly subscription auto-charges your saved card each cycle.</>
+          ) : (
+            <><span className="font-medium text-ink">Set up autopay</span> to auto-charge your monthly subscription, or pay each invoice above. Use the portal to manage your card.</>
+          )}
         </p>
         <p className="text-sm text-gray-600">
           Need to change your plan or add an automation?{" "}
