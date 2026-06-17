@@ -57,6 +57,10 @@ export interface RecentCallMeta {
   sentiment: string | null;
   success: boolean | null;
   addressLookups: number | null;
+  /** Triage flags + severity (empty = clean call), and whether it's been actioned. */
+  reasons: string[];
+  severity: number;
+  reviewed: boolean;
 }
 
 export interface VoiceQuality {
@@ -233,12 +237,17 @@ export async function getVoiceQuality(tenantId: string, rangeDays = 30, cycle?: 
 
   const loyalty: LoyaltyData = { newCallers, returningCallers, repeat };
 
-  // ---- Recent (quality browse) — full window for the searchable log ----
-  const recent: RecentCallMeta[] = rows.slice(0, 300).map((r) => ({
-    id: r.id, startedAt: r.started_at, caller: r.caller_number, callerName: r.caller_name,
-    outcome: r.outcome, durationS: r.duration_s, hasRecording: !!r.recording_url, synopsis: r.summary,
-    sentiment: r.sentiment, success: r.success, addressLookups: r.address_lookups,
-  }));
+  // ---- Recent (quality browse) — full window, each carrying its triage flags
+  // so the Call Inspector can filter to flagged calls and action them inline. ----
+  const recent: RecentCallMeta[] = rows.slice(0, 300).map((r) => {
+    const { reasons, severity } = reviewReasons(r);
+    return {
+      id: r.id, startedAt: r.started_at, caller: r.caller_number, callerName: r.caller_name,
+      outcome: r.outcome, durationS: r.duration_s, hasRecording: !!r.recording_url, synopsis: r.summary,
+      sentiment: r.sentiment, success: r.success, addressLookups: r.address_lookups,
+      reasons, severity, reviewed: actioned.has(r.id),
+    };
+  });
 
   return { rangeDays: cycle ? cycle.days : rangeDays, performance, review, sentiment, loyalty, recent };
 }

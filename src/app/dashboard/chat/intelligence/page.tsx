@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
 import { getChatIntelligence, resolveIntelWindow } from "@/lib/dashboard/chat-intelligence";
-import { StatTile, StatGrid, Panel, EmptyState } from "@/components/dashboard/ui";
+import { StatTile, StatGrid, EmptyState } from "@/components/dashboard/ui";
 import { IntelRangePicker } from "@/components/dashboard/chat/intel-range-picker";
-import { BarList } from "@/components/dashboard/chat/intel-bits";
+import { BarList, IntelCard, SectionRibbon } from "@/components/dashboard/chat/intel-bits";
 import { TopRoutesList, RepeatCustomersList } from "@/components/dashboard/chat/intel-lists";
 
 export const metadata = { title: "Chat Intelligence · BookMyCab" };
@@ -13,16 +13,6 @@ const ChatIcon = (
     <path d="M4 5h16v11H7l-3 3z" />
   </svg>
 );
-
-/** Section divider: a display heading on a hard rule, like the rest of the dashboard. */
-function SectionHead({ title, sub }: { title: string; sub?: string }) {
-  return (
-    <div className="mb-3 mt-8 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b-[3px] border-ink pb-2">
-      <h2 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">{title}</h2>
-      {sub ? <p className="text-xs font-medium text-gray-500">{sub}</p> : null}
-    </div>
-  );
-}
 
 export default async function ChatIntelligencePage({
   searchParams,
@@ -65,50 +55,52 @@ export default async function ChatIntelligencePage({
         <>
           {/* Performance — the window at a glance. */}
           <StatGrid cols="grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-            <StatTile label="Conversations" value={intel.totals.conversations.toLocaleString("en-GB")} sub="in window" />
-            <StatTile label="Booked" value={intel.totals.booked.toLocaleString("en-GB")} sub={`${intel.totals.bookedPct}% of chats`} />
-            <StatTile label="Revenue" value={`£${intel.revenue.totalGbp.toLocaleString("en-GB")}`} sub={`${intel.revenue.bookings} bookings`} />
-            <StatTile label="Avg fare" value={intel.revenue.avgFareGbp ? `£${intel.revenue.avgFareGbp.toFixed(2)}` : "—"} sub="per booking" />
-            <StatTile label="Cancelled" value={intel.totals.cancelled.toLocaleString("en-GB")} sub="bot cancels" />
-            <StatTile label="Failed" value={intel.totals.failed.toLocaleString("en-GB")} sub="booking attempts" />
+            <StatTile label="Conversations" value={intel.totals.conversations.toLocaleString("en-GB")} sub="in window" color="paper" />
+            <StatTile label="Booked" value={intel.totals.booked.toLocaleString("en-GB")} sub={`${intel.totals.bookedPct}% of chats`} color="lime" />
+            <StatTile label="Revenue" value={`£${intel.revenue.totalGbp.toLocaleString("en-GB")}`} sub={`${intel.revenue.bookings} bookings`} color="yellow" />
+            <StatTile label="Avg fare" value={intel.revenue.avgFareGbp ? `£${intel.revenue.avgFareGbp.toFixed(2)}` : "—"} sub="per booking" color="cyan" />
+            <StatTile label="Cancelled" value={intel.totals.cancelled.toLocaleString("en-GB")} sub="bot cancels" color="paper" />
+            <StatTile label="Failed" value={intel.totals.failed.toLocaleString("en-GB")} sub="booking attempts" color="ink" />
           </StatGrid>
 
-          {/* Where & what. */}
-          <SectionHead title="Where & what" sub="Demand by route and vehicle" />
-          <div className="grid items-start gap-5 lg:grid-cols-2">
-            <TopRoutesList items={intel.topRoutes} rangeLabel={intel.rangeLabel} />
-            <Panel title="Vehicle mix">
+          {/* Where & what — routes get the width; vehicle mix sits alongside. */}
+          <SectionRibbon title="Where & what" sub="Demand by route and vehicle" color="bg-brut-yellow" />
+          <div className="grid items-start gap-5 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <TopRoutesList items={intel.topRoutes} rangeLabel={intel.rangeLabel} />
+            </div>
+            <IntelCard title="Vehicle mix" accent="bg-brut-violet">
               <BarList
                 rows={intel.vehicleMix.map((v) => ({ key: v.type, label: v.type, value: `${v.count} · ${v.pct}%`, count: v.count }))}
                 fill="bg-brut-violet"
                 emptyLabel="No vehicles captured yet."
               />
-            </Panel>
+            </IntelCard>
           </div>
 
           {/* When. */}
-          <SectionHead title="When they book" sub="UK local time" />
+          <SectionRibbon title="When they book" sub="UK local time" color="bg-brut-lime" />
           <div className="grid gap-5 lg:grid-cols-2">
-            <Panel title="Busiest hours">
+            <IntelCard title="Busiest hours" accent="bg-brut-lime">
               <BarList
                 rows={intel.busiestHours.map((h) => ({ key: String(h.hour), label: h.label, value: `${h.count}`, count: h.count }))}
                 fill="bg-brut-lime"
                 emptyLabel="Not enough bookings yet."
               />
-            </Panel>
-            <Panel title="By weekday">
+            </IntelCard>
+            <IntelCard title="By weekday" accent="bg-brut-orange">
               <BarList
                 rows={intel.weekdays.map((d) => ({ key: d.wd, label: d.wd, value: `${d.count}`, count: d.count }))}
                 fill="bg-brut-orange"
                 emptyLabel="Not enough bookings yet."
               />
-            </Panel>
+            </IntelCard>
           </div>
 
           {/* Who & how. */}
-          <SectionHead title="Who & how" sub="Channel mix, timing and loyalty" />
+          <SectionRibbon title="Who & how" sub="Channel mix, timing and loyalty" color="bg-brut-pink" />
           <div className="grid items-start gap-5 lg:grid-cols-3">
-            <Panel title="Voice note vs text">
+            <IntelCard title="Voice note vs text" accent="bg-brut-cyan">
               <div className="space-y-3">
                 <div className="border-2 border-ink p-3">
                   <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Voice-note share</p>
@@ -126,9 +118,9 @@ export default async function ChatIntelligencePage({
                   </div>
                 </div>
               </div>
-            </Panel>
+            </IntelCard>
 
-            <Panel title="Booking timing">
+            <IntelCard title="Booking timing" accent="bg-brut-yellow">
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-[3px] border-2 border-ink bg-ink">
                   <div className="bg-paper px-3 py-2">
@@ -148,7 +140,7 @@ export default async function ChatIntelligencePage({
                   <p className="text-xs text-gray-600">booked ahead of pickup</p>
                 </div>
               </div>
-            </Panel>
+            </IntelCard>
 
             <RepeatCustomersList items={intel.repeatCustomers} />
           </div>

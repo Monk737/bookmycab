@@ -37,12 +37,12 @@ const voiceMark = <VoiceMarkLine className="h-5 w-5 shrink-0" />;
 const chartIcon = ico(<path d="M3 20h18M6 20v-5M11 20V8M16 20v-10" />);
 const sparkIcon = ico(<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />);
 
-/* Section labels for the grouped rail. */
-const GROUPS: { key: NavGroup; label: string }[] = [
-  { key: "main", label: "Main" },
-  { key: "intelligence", label: "Intelligence" },
-  { key: "briefing", label: "AI Weekly Briefing" },
-  { key: "account", label: "Account" },
+/* Section labels for the grouped rail — each a distinct ribbon colour. */
+const GROUPS: { key: NavGroup; label: string; color: string }[] = [
+  { key: "main", label: "Main", color: "bg-brut-yellow" },
+  { key: "intelligence", label: "Intelligence", color: "bg-brut-cyan" },
+  { key: "briefing", label: "AI Weekly Briefing", color: "bg-brut-lime" },
+  { key: "account", label: "Account", color: "bg-brut-violet" },
 ];
 
 const NAV_ITEMS: NavItem[] = [
@@ -135,7 +135,11 @@ export function DashboardShell({ orgName, children, notifications }: { orgName: 
             {compact ? (
               i > 0 ? <div aria-hidden="true" className="mx-2 mb-2 border-t-2 border-gray-800" /> : null
             ) : (
-              <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">{g.label}</p>
+              <div className="px-2 pb-2.5">
+                <span className={`inline-block -rotate-1 border-2 border-ink ${g.color} px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.1em] text-ink shadow-brut-sm`}>
+                  {g.label}
+                </span>
+              </div>
             )}
             {renderItems(items, compact)}
           </div>

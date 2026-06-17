@@ -20,6 +20,7 @@ export function TopRoutesList({ items, rangeLabel }: { items: RouteRow[]; rangeL
   return (
     <SearchableScroll
       title="Top routes"
+      accent="bg-brut-cyan"
       items={items}
       getKey={(r) => r.label}
       getSearchText={(r) => r.label}
@@ -39,6 +40,7 @@ export function RepeatCustomersList({ items }: { items: CustomerRow[] }) {
   return (
     <SearchableScroll
       title="Repeat customers"
+      accent="bg-brut-pink"
       items={items}
       getKey={(c) => c.handle}
       getSearchText={(c) => c.handle}

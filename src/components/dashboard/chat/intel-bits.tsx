@@ -1,5 +1,44 @@
 /** Pure presentational bits for Chat Intelligence — safe in server and client trees. */
 
+import type { ReactNode } from "react";
+
+/** A brutalist card with a flat colour header bar — the Intelligence card frame. */
+export function IntelCard({
+  title,
+  accent,
+  badge,
+  children,
+  className = "",
+}: {
+  title: string;
+  accent: string;
+  badge?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`flex flex-col border-[3px] border-ink bg-paper shadow-brut ${className}`}>
+      <header className={`flex items-center justify-between gap-3 border-b-[3px] border-ink px-4 py-2.5 ${accent}`}>
+        <h3 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">{title}</h3>
+        {badge}
+      </header>
+      <div className="p-4 sm:p-5">{children}</div>
+    </section>
+  );
+}
+
+/** A bold colour ribbon used as a section divider. */
+export function SectionRibbon({ title, sub, color }: { title: string; sub?: string; color: string }) {
+  return (
+    <div className="mb-4 mt-9 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      <span className={`inline-block -rotate-1 border-[3px] border-ink ${color} px-3 py-1 font-display text-sm font-extrabold uppercase tracking-[0.08em] text-ink shadow-brut-sm`}>
+        {title}
+      </span>
+      {sub ? <span className="text-xs font-medium text-gray-500">{sub}</span> : null}
+    </div>
+  );
+}
+
 /** A horizontal proportion bar with a label and a value. */
 export function Bar({ label, value, count, max, fill }: { label: string; value: string; count: number; max: number; fill: string }) {
   return (

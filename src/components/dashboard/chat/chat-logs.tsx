@@ -69,6 +69,7 @@ export function ConversationsLog({ items }: { items: ChatConversationLogRow[] })
     <>
       <LogShell
         title="Conversations"
+        accent="bg-brut-cyan"
         items={items}
         getKey={(c) => c.id}
         getDate={(c) => localDateKey(c.startedAt)}
@@ -125,6 +126,7 @@ export function BookingsLog({ items }: { items: ChatBookingLogRow[] }) {
     <>
       <LogShell
         title="Bookings"
+        accent="bg-brut-lime"
         items={items}
         getKey={(b) => b.id}
         getDate={(b) => localDateKey(b.createdAt)}

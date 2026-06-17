@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProductOverview, type ChannelType, type SupabaseLike } from "./product-overview";
 import { channelHealth } from "./queries";
 import { CHAT_OUTCOMES, OUTCOME_LABEL, channelLabel, type ChatOutcome } from "./chat-format";
+import type { CycleWindow } from "./billing-cycle";
 
 /* ----------------------------------------------------------------------------
    Chat product analytics — multi-channel booking bot.
@@ -81,12 +82,21 @@ export function reduceChatStats(rows: ConvoRow[]): ChatStatBlock {
   };
 }
 
-/** Pure: per-day conversation volume + booked across the window (gaps filled). */
-export function reduceChatTrend(rows: ConvoRow[], rangeDays: number, now = new Date()): DayPoint[] {
+/** Pure: per-day conversation volume + booked across the window (gaps filled).
+ *  When `startKey` (YYYY-MM-DD) is given, the window runs forward from it (a
+ *  billing cycle); otherwise it trails back `rangeDays` from `now`. */
+export function reduceChatTrend(rows: ConvoRow[], rangeDays: number, now = new Date(), startKey?: string): DayPoint[] {
   const byDay = new Map<string, { conversations: number; booked: number }>();
-  for (let i = rangeDays - 1; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86_400_000).toISOString().slice(0, 10);
-    byDay.set(d, { conversations: 0, booked: 0 });
+  if (startKey) {
+    const start = new Date(`${startKey}T00:00:00Z`).getTime();
+    for (let i = 0; i < rangeDays; i++) {
+      byDay.set(new Date(start + i * 86_400_000).toISOString().slice(0, 10), { conversations: 0, booked: 0 });
+    }
+  } else {
+    for (let i = rangeDays - 1; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 86_400_000).toISOString().slice(0, 10);
+      byDay.set(d, { conversations: 0, booked: 0 });
+    }
   }
   for (const r of rows) {
     const cell = byDay.get(r.started_at.slice(0, 10));
@@ -117,18 +127,22 @@ export async function getChatAnalytics(
   tenantId: string,
   rangeDays = 30,
   client?: SupabaseLike,
+  cycle?: CycleWindow,
 ): Promise<ChatAnalytics> {
   const supabase = client ?? (await createClient());
-  const overview = await getProductOverview(tenantId, supabase);
+  const overview = await getProductOverview(tenantId, supabase, cycle);
   const since = new Date(Date.now() - (rangeDays - 1) * 86_400_000).toISOString().slice(0, 10);
 
+  let convosQuery = supabase
+    .from("conversations")
+    .select("channel_id, outcome, started_at, customer_handle, customer_name, via_voice")
+    .eq("tenant_id", tenantId);
+  convosQuery = cycle
+    ? convosQuery.gte("started_at", cycle.startIso).lt("started_at", cycle.endIso)
+    : convosQuery.gte("started_at", `${since}T00:00:00Z`);
+
   const [convosRes, channelsRes] = await Promise.all([
-    supabase
-      .from("conversations")
-      .select("channel_id, outcome, started_at, customer_handle, customer_name, via_voice")
-      .eq("tenant_id", tenantId)
-      .gte("started_at", `${since}T00:00:00Z`)
-      .order("started_at", { ascending: false }),
+    convosQuery.order("started_at", { ascending: false }),
     supabase
       .from("channels")
       .select("id, type, status, token_expires_at, external_id")
@@ -154,11 +168,11 @@ export async function getChatAnalytics(
 
   return {
     hasChat: overview.chat != null,
-    rangeDays,
+    rangeDays: cycle ? cycle.days : rangeDays,
     tier: overview.chat?.tier ?? null,
     aggregate: reduceChatStats(rows),
     voiceNotes: rows.reduce((n, r) => n + (r.via_voice ? 1 : 0), 0),
     channels,
-    trend: reduceChatTrend(rows, rangeDays),
+    trend: cycle ? reduceChatTrend(rows, cycle.days, undefined, cycle.periodStart) : reduceChatTrend(rows, rangeDays),
   };
 }

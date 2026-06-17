@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { TranscriptDrawer, type DrawerCall } from "./transcript-drawer";
+import { updateCallReviewStatus } from "@/app/dashboard/voice/quality/actions";
 import { formatDuration } from "@/lib/voice/format";
 import type { RecentCallMeta } from "@/lib/voice/quality";
 
@@ -14,12 +16,27 @@ const SENTIMENT: Record<string, { label: string; fill: string }> = {
   neutral: { label: "Neutral", fill: "bg-gray-200" },
   negative: { label: "Negative", fill: "bg-brut-red" },
 };
+const REASON_STYLE: Record<string, string> = {
+  "System error": "bg-brut-red",
+  "Caller abandoned": "bg-brut-orange",
+  "Repeated address confusion": "bg-brut-violet",
+  "Unusually long": "bg-brut-cyan",
+  "Goal not met": "bg-brut-yellow",
+};
 const RELOOKUP_THRESHOLD = 4;
 
 const hhmm = (iso: string) => new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 const dmon = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 const longWhen = (iso: string) =>
   new Date(iso).toLocaleString("en-GB", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
+type FilterKey = "all" | "flagged" | "booked" | "missed" | "negative";
+
+function severityTag(severity: number) {
+  if (severity >= 4) return { label: "High", fill: "bg-brut-red" };
+  if (severity >= 2) return { label: "Med", fill: "bg-brut-orange" };
+  return { label: "Low", fill: "bg-brut-yellow" };
+}
 
 /* A flat ink-framed readout block in the detail panel. */
 function Signal({ label, value, fill, sub }: { label: string; value: string; fill: string; sub?: string }) {
@@ -34,23 +51,48 @@ function Signal({ label, value, fill, sub }: { label: string; value: string; fil
   );
 }
 
-/* The right-hand inspector for one selected call. */
+/* A single number in the inspector's summary strip. */
+function Stat({ label, value, fill }: { label: string; value: number; fill: string }) {
+  return (
+    <div className={`px-3 py-2 ${fill}`}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-ink/60">{label}</p>
+      <p className="mt-0.5 font-mono text-lg font-extrabold tabular-nums leading-none text-ink">{value.toLocaleString("en-GB")}</p>
+    </div>
+  );
+}
+
+/* The right-hand inspector for one selected call, with inline review actions. */
 function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
   const sent = call.sentiment ? SENTIMENT[call.sentiment] : null;
   const lookups = call.addressLookups ?? 0;
   const struggled = lookups >= RELOOKUP_THRESHOLD;
+  const flagged = call.reasons.length > 0;
+  const sev = severityTag(call.severity);
+
+  const action = (status: "reviewed" | "dismissed") =>
+    start(async () => {
+      await updateCallReviewStatus({ callId: call.id, status });
+      router.refresh();
+    });
+
   return (
     <div className="flex h-full flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${OUTCOME_BADGE[call.outcome] ?? "bg-gray-100"}`}>
           {call.outcome}
         </span>
+        {flagged ? (
+          <span className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink ${sev.fill}`} title={`Severity ${call.severity}`}>
+            {sev.label} priority
+          </span>
+        ) : null}
+        {call.reviewed ? (
+          <span className="border-2 border-ink bg-brut-lime px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">Reviewed</span>
+        ) : null}
         <span className="text-base font-bold text-ink">{call.callerName ?? "Unknown caller"}</span>
-        {call.caller ? (
-          <span className="font-mono text-xs text-gray-600">{call.caller}</span>
-        ) : (
-          <span className="text-xs text-gray-400">number withheld</span>
-        )}
+        {call.caller ? <span className="font-mono text-xs text-gray-600">{call.caller}</span> : <span className="text-xs text-gray-400">number withheld</span>}
         <span className="font-mono text-xs tabular-nums text-gray-500">{longWhen(call.startedAt)}</span>
       </div>
 
@@ -66,6 +108,17 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
         <Signal label="Address looks" value={String(lookups)} fill={struggled ? "bg-brut-violet" : "bg-paper"} sub={struggled ? "Re-lookups" : undefined} />
       </div>
 
+      {flagged ? (
+        <div>
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Why it&rsquo;s flagged</p>
+          <div className="flex flex-wrap gap-1.5">
+            {call.reasons.map((r) => (
+              <span key={r} className={`border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink ${REASON_STYLE[r] ?? "bg-gray-100"}`}>{r}</span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex-1">
         <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500">Synopsis</p>
         {call.synopsis ? (
@@ -75,7 +128,7 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-wrap items-center gap-2.5 border-t-2 border-gray-100 pt-3">
         <button
           type="button"
           onClick={onOpen}
@@ -83,46 +136,93 @@ function Detail({ call, onOpen }: { call: RecentCallMeta; onOpen: () => void }) 
         >
           Open transcript + recording
         </button>
+        {call.reviewed ? (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => action("dismissed")}
+            className="brut-press brut-focus inline-flex h-10 items-center border-2 border-ink bg-paper px-3 text-[11px] font-bold uppercase tracking-[0.04em] text-gray-500 disabled:opacity-50"
+          >
+            Reopen
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => action("reviewed")}
+              className="brut-press brut-focus inline-flex h-10 items-center border-2 border-ink bg-brut-lime px-3 text-[11px] font-bold uppercase tracking-[0.04em] text-ink disabled:opacity-50"
+            >
+              Mark reviewed
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => action("dismissed")}
+              className="brut-press brut-focus inline-flex h-10 items-center border-2 border-ink bg-paper px-3 text-[11px] font-bold uppercase tracking-[0.04em] text-gray-500 disabled:opacity-50"
+            >
+              Dismiss
+            </button>
+          </>
+        )}
         {call.hasRecording ? (
-          <span className="inline-flex items-center gap-1.5 border-2 border-ink bg-brut-cyan px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">
+          <span className="ml-auto inline-flex items-center gap-1.5 border-2 border-ink bg-brut-cyan px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">
             <span className="h-1.5 w-1.5 rounded-full bg-ink" aria-hidden="true" />Recording
           </span>
-        ) : (
-          <span className="text-[11px] font-medium text-gray-400">No recording captured</span>
-        )}
+        ) : null}
       </div>
     </div>
   );
 }
 
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "flagged", label: "Flagged" },
+  { key: "booked", label: "Booked" },
+  { key: "missed", label: "Missed goal" },
+  { key: "negative", label: "Negative" },
+];
+
 /**
- * Call Inspector — the quality browse: pick a call from the rail and read its
- * intelligence in the detail panel (sentiment, goal met/missed, handle time,
- * address re-lookups, synopsis), then open the full transcript + recording. The
- * deliberate counterpart to the "Calls to review" triage queue above it.
+ * Call Inspector — the one place to browse, triage and grade calls. Filter to
+ * flagged / booked / missed-goal / negative, search the window, read each call's
+ * quality signals and flag reasons, action it (mark reviewed / dismiss) and open
+ * the full transcript + recording. Replaces the separate review queue.
  */
 export function CallInspector({ items, windowLabel }: { items: RecentCallMeta[]; windowLabel: string }) {
+  const [filter, setFilter] = useState<FilterKey>("all");
   const [selectedId, setSelectedId] = useState<string | null>(items[0]?.id ?? null);
   const [query, setQuery] = useState("");
   const [drawer, setDrawer] = useState<DrawerCall | null>(null);
 
-  const q = query.trim().toLowerCase();
-  const filtered = useMemo(
-    () =>
-      q
-        ? items.filter((c) =>
-            [c.callerName, c.caller, c.outcome, c.synopsis, c.sentiment].filter(Boolean).join(" ").toLowerCase().includes(q),
-          )
-        : items,
-    [items, q],
+  const counts = useMemo(
+    () => ({
+      total: items.length,
+      flagged: items.filter((c) => c.reasons.length > 0).length,
+      booked: items.filter((c) => c.outcome === "booked").length,
+      missed: items.filter((c) => c.success === false).length,
+      negative: items.filter((c) => c.sentiment === "negative").length,
+    }),
+    [items],
   );
-  // Selection always resolves within the visible (filtered) list.
+
+  const q = query.trim().toLowerCase();
+  const filtered = useMemo(() => {
+    let list = items;
+    if (filter === "flagged") list = items.filter((c) => c.reasons.length > 0).slice().sort((a, b) => b.severity - a.severity || (a.startedAt < b.startedAt ? 1 : -1));
+    else if (filter === "booked") list = items.filter((c) => c.outcome === "booked");
+    else if (filter === "missed") list = items.filter((c) => c.success === false);
+    else if (filter === "negative") list = items.filter((c) => c.sentiment === "negative");
+    if (q) list = list.filter((c) => [c.callerName, c.caller, c.outcome, c.synopsis, c.sentiment, c.reasons.join(" ")].filter(Boolean).join(" ").toLowerCase().includes(q));
+    return list;
+  }, [items, filter, q]);
+
   const selected = filtered.find((c) => c.id === selectedId) ?? filtered[0] ?? null;
 
   if (items.length === 0) {
     return (
       <section className="border-[3px] border-ink bg-paper shadow-brut">
-        <header className="border-b-[3px] border-ink px-5 py-3.5">
+        <header className="border-b-[3px] border-ink bg-brut-yellow px-5 py-3.5">
           <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Call Inspector</h2>
         </header>
         <p className="px-5 py-12 text-center text-sm text-gray-600">No calls to inspect in {windowLabel}.</p>
@@ -132,13 +232,43 @@ export function CallInspector({ items, windowLabel }: { items: RecentCallMeta[];
 
   return (
     <section className="border-[3px] border-ink bg-paper shadow-brut">
-      <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b-[3px] border-ink px-5 py-3.5">
-        <div className="flex items-center gap-2.5">
-          <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Call Inspector</h2>
-          <span className="border-2 border-ink bg-brut-cyan px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-ink">{items.length}</span>
+      <header className="border-b-[3px] border-ink bg-brut-yellow px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Call Inspector</h2>
+            <span className="border-2 border-ink bg-paper px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-ink">{items.length}</span>
+          </div>
+          <p className="text-xs font-semibold text-ink/70">Browse, triage and grade every call, then open the transcript.</p>
         </div>
-        <p className="text-xs text-gray-600">Pick a call to read its quality signals, then open the transcript.</p>
       </header>
+
+      {/* Summary strip. */}
+      <div className="grid grid-cols-2 gap-[3px] border-b-[3px] border-ink bg-ink sm:grid-cols-5">
+        <Stat label="Calls" value={counts.total} fill="bg-paper" />
+        <Stat label="Flagged" value={counts.flagged} fill={counts.flagged > 0 ? "bg-brut-orange" : "bg-paper"} />
+        <Stat label="Booked" value={counts.booked} fill="bg-brut-lime" />
+        <Stat label="Missed goal" value={counts.missed} fill={counts.missed > 0 ? "bg-brut-red" : "bg-paper"} />
+        <Stat label="Negative" value={counts.negative} fill={counts.negative > 0 ? "bg-brut-red" : "bg-paper"} />
+      </div>
+
+      {/* Filter chips. */}
+      <div className="flex flex-wrap items-center gap-1.5 border-b-2 border-gray-100 px-4 py-2.5">
+        {FILTERS.map((f) => {
+          const active = filter === f.key;
+          const n = f.key === "all" ? counts.total : counts[f.key];
+          return (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              className={`brut-press brut-focus inline-flex h-8 items-center gap-1.5 border-2 border-ink px-2.5 text-[11px] font-bold uppercase tracking-[0.04em] text-ink ${active ? "bg-ink text-paper" : "bg-paper hover:bg-brut-yellow"}`}
+            >
+              <span>{f.label}</span>
+              <span className={`font-mono tabular-nums ${active ? "text-paper/70" : "text-gray-500"}`}>{n}</span>
+            </button>
+          );
+        })}
+      </div>
 
       <div className="flex flex-col lg:h-[34rem] lg:flex-row">
         {/* Rail */}
@@ -159,11 +289,13 @@ export function CallInspector({ items, windowLabel }: { items: RecentCallMeta[];
           </div>
           <ul className="scrollbar-ink max-h-[18rem] flex-1 overflow-y-auto lg:max-h-none">
             {filtered.length === 0 ? (
-              <li className="px-3 py-8 text-center text-sm text-gray-500">No calls match “{query.trim()}”.</li>
+              <li className="px-3 py-8 text-center text-sm text-gray-500">No calls match.</li>
             ) : (
               filtered.map((c) => {
                 const isSel = selected?.id === c.id;
                 const sent = c.sentiment ? SENTIMENT[c.sentiment] : null;
+                const flagged = c.reasons.length > 0;
+                const sev = severityTag(c.severity);
                 return (
                   <li key={c.id}>
                     <button
@@ -174,7 +306,11 @@ export function CallInspector({ items, windowLabel }: { items: RecentCallMeta[];
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-mono text-xs font-bold tabular-nums text-ink">{hhmm(c.startedAt)}</span>
-                        <span className="font-mono text-[10px] tabular-nums text-gray-500">{dmon(c.startedAt)}</span>
+                        <span className="flex items-center gap-1">
+                          {flagged ? <span className={`border border-ink px-1 text-[9px] font-bold uppercase text-ink ${sev.fill}`} title={`Severity ${c.severity}`}>{sev.label}</span> : null}
+                          {c.reviewed ? <span className="border border-ink bg-brut-lime px-1 text-[9px] font-bold uppercase text-ink">✓</span> : null}
+                          <span className="font-mono text-[10px] tabular-nums text-gray-500">{dmon(c.startedAt)}</span>
+                        </span>
                       </div>
                       <span className="truncate text-sm font-bold text-ink">{c.callerName ?? c.caller ?? "Unknown caller"}</span>
                       <div className="flex items-center gap-1.5">

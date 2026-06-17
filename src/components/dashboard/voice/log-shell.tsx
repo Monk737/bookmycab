@@ -29,6 +29,7 @@ export function LogShell<T>({
   windowLabel = "last 90 days",
   sortAll,
   badge,
+  accent,
 }: {
   title: string;
   items: T[];
@@ -49,6 +50,8 @@ export function LogShell<T>({
   sortAll?: (a: T, b: T) => number;
   /** Optional header chip rendered next to the title (e.g. a count). */
   badge?: ReactNode;
+  /** Optional brutalist colour for the header bed (e.g. "bg-brut-cyan"). */
+  accent?: string;
 }) {
   // "" means the All view (only reachable when allByDefault).
   const [day, setDay] = useState<string>(allByDefault ? "" : todayKey());
@@ -88,7 +91,7 @@ export function LogShell<T>({
 
   return (
     <section className="flex flex-col border-[3px] border-ink bg-paper shadow-brut">
-      <header className="border-b-[3px] border-ink px-4 py-3">
+      <header className={`border-b-[3px] border-ink px-4 py-3 ${accent ?? ""}`}>
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2.5">
             <div className="min-w-0">

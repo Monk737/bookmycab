@@ -7,6 +7,8 @@ import { StatTile, StatGrid, Panel, EmptyState } from "@/components/dashboard/ui
 import { ConversationsTrend } from "@/components/dashboard/chat/conversations-trend";
 import { ChatOutcomeBars, ChannelHealthList } from "@/components/dashboard/chat/chat-blocks";
 import { ConversationsLog, BookingsLog } from "@/components/dashboard/chat/chat-logs";
+import { CyclePicker } from "@/components/dashboard/cycle-picker";
+import { resolveCycle } from "@/lib/dashboard/billing-cycle";
 
 export const metadata = { title: "Chat · BookMyCab" };
 
@@ -16,13 +18,18 @@ const ChatIcon = (
   </svg>
 );
 
-export default async function ChatPage() {
+export default async function ChatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cycle?: string }>;
+}) {
   const claims = await requireUser();
   if (!claims.tenant_id) {
     return <div className="p-8 text-sm text-gray-700">No organisation linked to your account.</div>;
   }
 
-  const c = await getChatAnalytics(claims.tenant_id, 30);
+  const cycle = resolveCycle((await searchParams).cycle);
+  const c = await getChatAnalytics(claims.tenant_id, 30, undefined, cycle);
 
   if (!c.hasChat) {
     return (
@@ -57,7 +64,12 @@ export default async function ChatPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">Chat analytics</p>
           <h1 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Chat</h1>
         </div>
-        <p className="text-xs font-medium text-gray-600">Last {c.rangeDays} days · {c.channels.length} channel{c.channels.length === 1 ? "" : "s"}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-xs font-medium text-gray-600">
+            {cycle.isCurrent ? "Current cycle" : cycle.label} · {c.channels.length} channel{c.channels.length === 1 ? "" : "s"}
+          </p>
+          <CyclePicker active={cycle.key} />
+        </div>
       </header>
 
       {/* Headline figures — all sourced from the WhatsApp Chat + Voice Note workflow. */}
