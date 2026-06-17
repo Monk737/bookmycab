@@ -221,7 +221,7 @@ export function voiceUsageLowEmail(args: {
     heading: `Your call plan is running low`,
     paragraphs: [
       `Hi ${args.tenantName}, you've used most of this month's AI Voice call allowance.`,
-      `When the plan is used up, calls keep being answered on pay-as-you-go credit at £0.90 per call. You can top up in advance to stay ahead.`,
+      `When the plan is used up, calls keep being answered on your pay-as-you-go credit. You can top up in advance to stay ahead.`,
     ],
     facts: [
       ["Calls remaining", `${args.remaining}`],

@@ -500,7 +500,7 @@ describe("grantTopupCredits (dep contract)", () => {
       tenant_id: "t1",
       delta: 50,
       reason: "topup_purchase",
-      unit_price_micros: 900000,
+      unit_price_micros: 2000000,
       currency: "GBP",
       stripe_payment_intent_id: "pi_1",
     });

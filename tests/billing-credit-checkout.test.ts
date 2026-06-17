@@ -21,9 +21,13 @@ describe("buildCreditCheckoutParams", () => {
     expect(p.metadata).toMatchObject({ credits: "50", coupon_code: "SAVE20" }); // still 50 credits
   });
 
-  it("sets credit_unit_micros to 900000 at the base rate when no unitGbp provided", () => {
-    const p = buildCreditCheckoutParams({ ...base, gbp: 9, credits: 10, finalGbp: 9 });
-    expect(p.metadata).toMatchObject({ credit_unit_micros: "900000" });
+  it("base tenant (no custom plan) prices ad-hoc top-ups at £2/credit", async () => {
+    // custom_plans lookup → { data: null } (base rate).
+    // POST { customGbp: 20 } → 10 credits (20 / £2) and credit_unit_micros "2000000".
+    const p = buildCreditCheckoutParams({ ...base, gbp: 20, credits: 10, finalGbp: 20 });
+    expect(p.metadata).toMatchObject({ credits: "10", credit_unit_micros: "2000000" });
+    const li = p.line_items![0] as { price_data?: { unit_amount?: number } };
+    expect(li.price_data?.unit_amount).toBe(2000); // £20 charged
   });
 
   it("custom-rate tenant: credits computed at 0.75/call and credit_unit_micros = 750000", () => {

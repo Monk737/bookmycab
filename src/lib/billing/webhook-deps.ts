@@ -57,8 +57,9 @@ export function buildResetVoiceCallPool(
   };
 }
 
-/** Unit price of a single voice top-up credit, in micros (£0.90 → 900,000). */
-const TOPUP_UNIT_PRICE_MICROS = 900_000;
+/** Unit price of a single voice top-up credit, in micros (base £2 → 2,000,000).
+ *  Custom-plan top-ups pass their own price via session metadata. */
+const TOPUP_UNIT_PRICE_MICROS = 2_000_000;
 
 /**
  * Build the credit top-up grant operation against a Supabase-like client. On a
