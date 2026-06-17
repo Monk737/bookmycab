@@ -101,6 +101,7 @@ export default async function BillingPage({
     chat: "Chat",
     voice: "AI Voice",
     double_decker: "Double Decker",
+    custom: "Custom plan",
   };
 
   return (
@@ -126,6 +127,17 @@ export default async function BillingPage({
         <p className="border-[3px] border-ink bg-paper p-4 text-sm font-medium text-ink shadow-brut-sm">
           Payment setup cancelled. No card was saved.
         </p>
+      )}
+
+      {b.activationInvoiceUrl && !b.setupFee?.paidAt && (
+        <a
+          href={b.activationInvoiceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block border-[3px] border-ink bg-brut-yellow p-4 text-sm font-bold text-ink shadow-brut-sm hover:bg-ink hover:text-paper"
+        >
+          Your activation invoice is ready — click to pay and go live →
+        </a>
       )}
 
       {voiceCredit && (
@@ -182,6 +194,18 @@ export default async function BillingPage({
                       <td className="px-3 py-2 text-gray-700">{tierLabel(b.products.voice.tier)}</td>
                       <td className="px-3 py-2 text-gray-600">{b.products.voice.allowance.toLocaleString("en-GB")} calls / month</td>
                       <td className="px-3 py-2 text-right font-mono font-bold tabular-nums text-ink">{formatCurrency(b.products.voice.monthlyGbp, "GBP")}</td>
+                    </tr>
+                  )}
+                  {b.custom && (
+                    <tr>
+                      <td className="px-3 py-2 font-bold text-ink">Custom</td>
+                      <td className="px-3 py-2 text-gray-700">{b.custom.planName}</td>
+                      <td className="px-3 py-2 text-gray-600">
+                        {b.custom.callAllowance.toLocaleString("en-GB")} calls
+                        {b.custom.billingMode === "one_time" ? ` · valid ${b.custom.validityDays} days` : " / period"} ·
+                        overage £{b.custom.extraCreditPriceGbp.toFixed(2)}/call
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono font-bold tabular-nums text-ink">{formatCurrency(b.custom.planPriceGbp, "GBP")}</td>
                     </tr>
                   )}
                   <tr className="bg-gray-50">
