@@ -6,6 +6,7 @@ import {
   editOrgProfile,
   createAutomation,
   updateAutomationWiring,
+  updateCustomPlan,
   setMemberRole,
   removeMember,
   deleteAutomation,
@@ -492,6 +493,70 @@ export function EngineWiringForm({
       <div>
         <button type="submit" disabled={pending} className={primaryBtn}>
           {pending ? "Saving…" : "Save wiring"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+/** Edit the economic fields of an existing CUSTOM plan (admin only). */
+export function EditCustomPlanForm({
+  tenantId,
+  plan,
+}: {
+  tenantId: string;
+  plan: {
+    plan_name: string;
+    monthly_call_allowance: number;
+    included_agents: number;
+    plan_price_gbp: number;
+    extra_credit_price_gbp: number;
+    validity_days: number;
+  };
+}) {
+  const [state, formAction, pending] = useActionState(updateCustomPlan.bind(null, tenantId), initialState);
+  const fe = state.fieldErrors;
+
+  return (
+    <form action={formAction} noValidate className="flex flex-col gap-4">
+      <Notice state={state} okText="Custom plan updated. The new extra-credit price applies to the next top-up." />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Plan name</label>
+          <input name="plan_name" defaultValue={plan.plan_name} className={inputClass} />
+          <FieldError id="plan_name-error" error={fe.plan_name?.[0]} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Number of calls (per period)</label>
+          <input name="monthly_call_allowance" type="number" min="0" defaultValue={plan.monthly_call_allowance} className={inputClass} />
+          <FieldError id="monthly_call_allowance-error" error={fe.monthly_call_allowance?.[0]} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Number of agents</label>
+          <input name="included_agents" type="number" min="0" defaultValue={plan.included_agents} className={inputClass} />
+          <FieldError id="included_agents-error" error={fe.included_agents?.[0]} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Plan / pack price (£)</label>
+          <input name="plan_price_gbp" type="number" step="0.01" min="0" defaultValue={plan.plan_price_gbp} className={inputClass} />
+          <FieldError id="plan_price_gbp-error" error={fe.plan_price_gbp?.[0]} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Per-call extra credit (£, overage)</label>
+          <input name="extra_credit_price_gbp" type="number" step="0.01" min="0" defaultValue={plan.extra_credit_price_gbp} className={inputClass} />
+          <FieldError id="extra_credit_price_gbp-error" error={fe.extra_credit_price_gbp?.[0]} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-gray-700">Pack validity (days)</label>
+          <input name="validity_days" type="number" min="1" defaultValue={plan.validity_days} className={inputClass} />
+          <FieldError id="validity_days-error" error={fe.validity_days?.[0]} />
+        </div>
+      </div>
+      <div>
+        <button type="submit" disabled={pending} className={primaryBtn}>
+          {pending ? "Saving…" : "Save custom plan"}
         </button>
       </div>
     </form>

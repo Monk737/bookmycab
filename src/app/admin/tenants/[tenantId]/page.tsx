@@ -17,6 +17,7 @@ import {
 } from "./tenant-detail-forms";
 import { EditOrgForm, MembersManager, AddAutomationForm,
   EngineWiringForm, DeleteAutomationButton, ForceDeleteAutomationButton,
+  EditCustomPlanForm,
 } from "./tenant-manage-forms";
 import { BillingPanel } from "./billing-panel";
 import { EntitlementsSection } from "./entitlements-section";
@@ -201,6 +202,7 @@ export default async function TenantDetailPage({
     { data: auditData },
     { data: voiceSubData },
     { data: voiceAgentsData },
+    { data: customPlanData },
   ] = await Promise.all([
     serviceClient
       .from("automations")
@@ -243,6 +245,11 @@ export default async function TenantDetailPage({
       .select("automation_id, display_name, phone_number, vapi_assistant_id")
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: true }),
+    serviceClient
+      .from("custom_plans")
+      .select("plan_name, monthly_call_allowance, included_agents, plan_price_gbp, extra_credit_price_gbp, validity_days")
+      .eq("tenant_id", tenantId)
+      .maybeSingle(),
   ]);
 
   const hasVoicePlan = Boolean(voiceSubData);
@@ -511,6 +518,24 @@ export default async function TenantDetailPage({
           }
         />
       </Section>
+
+      {customPlanData && (
+        <Section title="Custom plan">
+          <div className="border-[3px] border-ink bg-paper p-5">
+            <EditCustomPlanForm
+              tenantId={tenant.id}
+              plan={{
+                plan_name: String((customPlanData as Record<string, unknown>).plan_name ?? ""),
+                monthly_call_allowance: Number((customPlanData as Record<string, unknown>).monthly_call_allowance ?? 0),
+                included_agents: Number((customPlanData as Record<string, unknown>).included_agents ?? 0),
+                plan_price_gbp: Number((customPlanData as Record<string, unknown>).plan_price_gbp ?? 0),
+                extra_credit_price_gbp: Number((customPlanData as Record<string, unknown>).extra_credit_price_gbp ?? 0),
+                validity_days: Number((customPlanData as Record<string, unknown>).validity_days ?? 0),
+              }}
+            />
+          </div>
+        </Section>
+      )}
 
       <Section title="Edit contract">
         <div className="border-[3px] border-ink bg-paper p-5">
