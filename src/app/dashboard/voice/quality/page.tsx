@@ -5,6 +5,8 @@ import { EmptyState } from "@/components/dashboard/ui";
 import { IntelligenceTabs } from "@/components/dashboard/voice/intelligence-tabs";
 import { PerformanceKpis, HandleTrendPanel, OperationalHealth, SentimentPanel, LoyaltyPanel } from "@/components/dashboard/voice/quality-panels";
 import { CallInspector } from "@/components/dashboard/voice/call-inspector";
+import { PromptTuningPanel } from "@/components/dashboard/voice/prompt-tuning-panel";
+import { getPromptSuggestions } from "@/lib/voice/prompt-tuning";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
 import { CyclePicker } from "@/components/dashboard/cycle-picker";
 import { resolveCycle } from "@/lib/dashboard/billing-cycle";
@@ -27,6 +29,7 @@ export default async function VoiceQualityPage({
   const cycleKey = cycle.isCurrent ? undefined : cycle.key;
   const cycleLabel = cycle.isCurrent ? "this cycle" : cycle.label;
   const data = await getVoiceQuality(claims.tenant_id, RANGE_DAYS, cycle);
+  const suggestions = await getPromptSuggestions(claims.tenant_id);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -66,6 +69,8 @@ export default async function VoiceQualityPage({
           </section>
 
           <CallInspector items={data.recent} windowLabel={cycleLabel} />
+
+          <PromptTuningPanel suggestions={suggestions} />
 
           <div className="grid items-start gap-5 lg:grid-cols-2">
             <SentimentPanel s={data.sentiment} />
