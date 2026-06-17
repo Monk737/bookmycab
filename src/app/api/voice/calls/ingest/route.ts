@@ -83,6 +83,24 @@ export async function POST(req: Request) {
       console.error("usage notification failed", e);
     }
 
+    // Credit-exhaustion hard pause (no grace): when this call left the tenant
+    // with no plan headroom AND no credit, deactivate voice until a top-up or
+    // renewal. The authorize gate already refuses further calls; this also turns
+    // the n8n workflow off. Runs after the response so it never delays the 200.
+    const exhausted =
+      r.outcome === "no_credit" ||
+      (Number(r.credit_balance ?? 0) <= 0 && Number(r.used ?? 0) >= Number(r.allowance ?? 0));
+    if (exhausted) {
+      after(async () => {
+        try {
+          const { pauseTenantProduct } = await import("@/lib/engine/billing-pause");
+          await pauseTenantProduct(d.tenant_id, "voice");
+        } catch (e) {
+          console.error("voice ingest: credit-exhaustion pause failed", e);
+        }
+      });
+    }
+
     // Durable recording: record a 'pending' artifact, then copy the audio into
     // our own Storage bucket after the response is sent (Vercel keeps the
     // function alive for after()). Any failure is captured on the row and

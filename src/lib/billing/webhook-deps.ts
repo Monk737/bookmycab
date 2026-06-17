@@ -6,8 +6,7 @@ import { periodBounds } from "@/lib/entitlements/meter";
 import { getStripe } from "@/lib/billing/stripe";
 import { sendEmail } from "@/lib/email/resend";
 import { paymentFailedEmail, paymentReceivedEmail } from "@/lib/email/templates";
-import { del } from "@/lib/redis/cache";
-import { automationCacheKey } from "@/lib/webhooks/resolver";
+import { pauseTenantProduct, resumeTenantProduct, type BillingProduct } from "@/lib/engine/billing-pause";
 import type { Currency } from "@/lib/marketing/pricing";
 
 /** The narrow slice of the Supabase client the reset helper needs. Kept minimal
@@ -101,6 +100,14 @@ export function buildGrantTopupCredits(
       throw new Error(`grantTopupCredits insert failed: ${insertErr.message}`);
     }
 
+    // A paid top-up clears a credit-exhaustion pause: bring voice back online.
+    // Best-effort — the credits are already granted, so never fail the webhook.
+    try {
+      await resumeTenantProduct(tenantId, "voice");
+    } catch (err) {
+      console.error("grantTopupCredits: voice resume failed", err);
+    }
+
     // Best-effort coupon redemption: a failure here must not fail the webhook
     // (the credits are already granted), so log and move on.
     if (couponCode) {
@@ -161,32 +168,25 @@ export function buildBillingDeps(): BillingDeps {
         .eq("stripe_subscription_id", out.stripe_subscription_id);
       if (error) throw new Error(`updateNewModelSubscription failed: ${error.message}`);
 
-      // A chat subscription status change drives the chat billing gate, which is
-      // read from the cached resolver record. Invalidate that cache for the
-      // tenant's chat automations so a lapse/renewal takes effect promptly
-      // instead of after the ≤5-min TTL. Best-effort: a Redis blip must not fail
-      // the webhook (the gate still corrects itself when the TTL expires).
-      if (out.table === "chat_subscriptions") {
-        try {
-          const { data: sub } = await db
-            .from("chat_subscriptions")
-            .select("tenant_id")
-            .eq("stripe_subscription_id", out.stripe_subscription_id)
-            .maybeSingle();
-          const tenantId = (sub as { tenant_id?: string } | null)?.tenant_id;
-          if (tenantId) {
-            const { data: autos } = await db
-              .from("automations")
-              .select("id")
-              .eq("tenant_id", tenantId)
-              .neq("type", "Voice");
-            await Promise.all(
-              ((autos ?? []) as Array<{ id: string }>).map((a) => del(automationCacheKey(a.id))),
-            );
-          }
-        } catch (err) {
-          console.error("updateNewModelSubscription: chat resolver-cache invalidation failed", err);
+      // Drive the hard pause/resume off the mirrored status. A subscription no
+      // longer active (paused/cancelled — incl. past_due via the status map, no
+      // grace) pauses that product's automations (deactivates n8n + busts the
+      // resolver cache so the gate stops immediately); a return to active resumes
+      // the ones this flow paused. Best-effort: never fail the webhook.
+      try {
+        const product: BillingProduct = out.table === "chat_subscriptions" ? "chat" : "voice";
+        const { data: sub } = await db
+          .from(out.table)
+          .select("tenant_id")
+          .eq("stripe_subscription_id", out.stripe_subscription_id)
+          .maybeSingle();
+        const tenantId = (sub as { tenant_id?: string } | null)?.tenant_id;
+        if (tenantId) {
+          if (out.update.status === "active") await resumeTenantProduct(tenantId, product);
+          else await pauseTenantProduct(tenantId, product);
         }
+      } catch (err) {
+        console.error("updateNewModelSubscription: pause/resume failed", err);
       }
     },
 
