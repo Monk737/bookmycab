@@ -103,9 +103,11 @@ type NewModelSubUpdate = {
   };
 };
 
+// No grace: a failed/late renewal (past_due) or an unpaid sub pauses service
+// immediately — only an explicitly active/trialing sub serves.
 const STRIPE_STATUS_MAP: Record<string, "active" | "paused" | "cancelled"> = {
-  active: "active", trialing: "active", past_due: "active",
-  paused: "paused", unpaid: "paused",
+  active: "active", trialing: "active",
+  past_due: "paused", paused: "paused", unpaid: "paused",
   canceled: "cancelled", incomplete_expired: "cancelled",
 };
 

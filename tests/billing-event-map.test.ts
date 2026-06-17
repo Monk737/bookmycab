@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { subscriptionToMirror, classifyInvoice } from "@/lib/billing/event-map";
+import { subscriptionToMirror, classifyInvoice, mapNewModelSubscription } from "@/lib/billing/event-map";
 import type Stripe from "stripe";
 
 function fakeSubscription(over: Partial<Stripe.Subscription> = {}): Stripe.Subscription {
@@ -63,5 +63,26 @@ describe("classifyInvoice", () => {
       },
     } as unknown as Stripe.Invoice;
     expect(classifyInvoice(inv)).toBe("subscription");
+  });
+});
+
+describe("mapNewModelSubscription status mapping (no grace)", () => {
+  const sub = (status: string) =>
+    ({
+      id: "sub_1",
+      status,
+      metadata: { tenant_id: "t1", product: "voice" },
+      items: { data: [{ current_period_start: 1_700_000_000, current_period_end: 1_702_592_000 }] },
+    }) as unknown as Stripe.Subscription;
+
+  it("active → active", () => {
+    expect(mapNewModelSubscription(sub("active"))!.update.status).toBe("active");
+  });
+  it("past_due / unpaid → paused (no grace — service stops on a failed renewal)", () => {
+    expect(mapNewModelSubscription(sub("past_due"))!.update.status).toBe("paused");
+    expect(mapNewModelSubscription(sub("unpaid"))!.update.status).toBe("paused");
+  });
+  it("canceled → cancelled", () => {
+    expect(mapNewModelSubscription(sub("canceled"))!.update.status).toBe("cancelled");
   });
 });
