@@ -64,6 +64,9 @@ export interface BillingDeps {
   /** Set the payment method captured by an autopay-setup Checkout session as the
    *  customer's default for invoices, so subscription renewals auto-charge. */
   setDefaultPaymentMethod(args: { customerId: string; setupIntentId: string }): Promise<void>;
+  /** After autopay setup, switch the customer's BookMyCab subscriptions to
+   *  `charge_automatically` so renewals auto-charge the saved default card. */
+  enableAutopayRenewals(args: { customerId: string }): Promise<void>;
   /** For a paid one-time custom pack invoice, open the prepaid call pool for the
    *  pack's validity window (idempotent). No-op when the tenant has no one-time
    *  custom plan. */
@@ -177,6 +180,7 @@ export async function handleStripeEvent(
         const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
         if (!setupIntentId || !customerId) return { action: "skipped" };
         await deps.setDefaultPaymentMethod({ customerId, setupIntentId });
+        await deps.enableAutopayRenewals({ customerId });
         return { action: "autopay.enabled" };
       }
 

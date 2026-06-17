@@ -11,6 +11,7 @@ function deps(over: Partial<BillingDeps> = {}): BillingDeps {
     sendPaymentFailedEmail: vi.fn(async () => {}),
     grantTopupCredits: vi.fn(async () => {}),
     setDefaultPaymentMethod: vi.fn(async () => {}),
+    enableAutopayRenewals: vi.fn(async () => {}),
     grantCustomPackPool: vi.fn(async () => {}),
     ...over,
   };
@@ -230,6 +231,29 @@ describe("handleStripeEvent", () => {
     const d = deps();
     const res = await handleStripeEvent(ev, d);
     expect(d.setDefaultPaymentMethod).toHaveBeenCalledWith({ customerId: "cus_2", setupIntentId: "seti_2" });
+    expect(res.action).toBe("autopay.enabled");
+  });
+
+  it("autopay setup sets the default PM AND enables auto-charge on renewals", async () => {
+    const ev = {
+      id: "evt_autopay2",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_autopay2",
+          metadata: { reason: "autopay_setup", tenant_id: "tnt-1" },
+          setup_intent: "si_1",
+          customer: "cus_1",
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps({
+      setDefaultPaymentMethod: vi.fn(async () => {}),
+      enableAutopayRenewals: vi.fn(async () => {}),
+    });
+    const res = await handleStripeEvent(ev, d);
+    expect(d.setDefaultPaymentMethod).toHaveBeenCalledWith({ customerId: "cus_1", setupIntentId: "si_1" });
+    expect(d.enableAutopayRenewals).toHaveBeenCalledWith({ customerId: "cus_1" });
     expect(res.action).toBe("autopay.enabled");
   });
 

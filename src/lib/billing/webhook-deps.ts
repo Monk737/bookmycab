@@ -232,6 +232,19 @@ export function buildBillingDeps(): BillingDeps {
       if (error) throw new Error(`grantCustomPackPool failed: ${error.message}`);
     },
 
+    async enableAutopayRenewals({ customerId }) {
+      const stripe = getStripe();
+      const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 100 });
+      for (const sub of subs.data) {
+        // Only our product subscriptions; skip non-BookMyCab subs + any already
+        // auto-charging.
+        const product = sub.metadata?.product;
+        if (product !== "chat" && product !== "voice") continue;
+        if (sub.collection_method === "charge_automatically") continue;
+        await stripe.subscriptions.update(sub.id, { collection_method: "charge_automatically" });
+      }
+    },
+
     async sendPaymentReceivedEmail(info) {
       // Receipts go to the customer only (no ops copy); skip when Stripe gave us
       // no email rather than mailing the from-address a receipt for nobody.
