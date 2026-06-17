@@ -1,27 +1,14 @@
 import { requireStaff } from "@/lib/admin/guard";
 import { listPlans, listFeatures, listPlanFeatures } from "@/lib/admin/entitlements";
 import {
-  CHAT_PRICE_GBP,
-  VOICE_PRICE_GBP,
-  VOICE_PLAN_SPEC,
-  BUNDLE_CHAT_DISCOUNT_GBP,
-  bundleChatPriceGbp,
-  NEW_CHAT_SETUP_GBP,
-  NEW_VOICE_SETUP_GBP,
-  NEW_BUNDLE_SETUP_GBP,
-  type NewTierKey,
+  CHAT_SUITE_PRICE_GBP,
+  CHAT_SUITE_SETUP_GBP,
+  VOICE_IGNITION_SPEC,
 } from "@/lib/billing/pricing";
 import { CREDIT_UNIT_GBP, MIN_TOPUP_GBP } from "@/lib/billing/credit";
 import { togglePlanFeature } from "./actions";
 
 export const metadata = { title: "Plans, Admin" };
-
-const TIERS: NewTierKey[] = ["ignition", "in_motion", "full_throttle"];
-const TIER_LABEL: Record<NewTierKey, string> = {
-  ignition: "Ignition",
-  in_motion: "In Motion",
-  full_throttle: "Full Throttle",
-};
 
 /** GBP whole-pound formatter; `null` renders as a quoted dash. */
 function gbp(n: number | null): string {
@@ -74,89 +61,46 @@ export default async function PlansPage() {
       <div className="mb-6">
         <h1 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">Plans &amp; pricing</h1>
         <p className="mt-1 text-sm text-gray-600">
-          The two-product commercial catalogue (GBP, rolling monthly). These are the list prices
-          provisioning charges; coupons discount them at tenant creation.
+          Three offerings (GBP, rolling monthly or one-time pack). Custom plans are configured per tenant on the New Tenant form.
         </p>
       </div>
 
       <div className="flex flex-col gap-6">
-        {/* Chat */}
-        <CatalogCard accent="bg-brut-cyan" title="Chat — WhatsApp Chat + Voice Note">
+        {/* 1. WhatsApp Booking Suite */}
+        <CatalogCard accent="bg-brut-cyan" title="WhatsApp Booking Suite — Chatbot + Voice Note">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr><Th>Tier</Th><Th>Fleet</Th><Th right>Monthly</Th><Th right>Setup (one-time)</Th></tr>
-            </thead>
+            <thead className="bg-gray-50"><tr><Th>Plan</Th><Th right>Monthly</Th><Th right>Setup (one-time)</Th></tr></thead>
             <tbody className="divide-y-2 divide-gray-100">
-              {TIERS.map((t) => (
-                <tr key={t}>
-                  <Td strong>{TIER_LABEL[t]}</Td>
-                  <Td>{t === "ignition" ? "Up to 50" : t === "in_motion" ? "51–100" : "101+"}</Td>
-                  <Td right>{gbp(CHAT_PRICE_GBP[t])}</Td>
-                  <Td right>{gbp(NEW_CHAT_SETUP_GBP)}</Td>
-                </tr>
-              ))}
+              <tr><Td strong>One simple price</Td><Td right>{gbp(CHAT_SUITE_PRICE_GBP)}</Td><Td right>{gbp(CHAT_SUITE_SETUP_GBP)}</Td></tr>
             </tbody>
           </table>
           <p className="border-t-2 border-gray-100 px-3 py-2 text-xs text-gray-500">
-            One WhatsApp chatbot with voice-note handling, priced by fleet size. Full Throttle includes an optional 2nd WhatsApp chatbot.
+            One WhatsApp chatbot with voice-note handling. Rolling monthly, GBP.
           </p>
         </CatalogCard>
 
-        {/* Voice */}
-        <CatalogCard accent="bg-brut-violet" title="AI Voice — phone booking agent">
+        {/* 2. AI Voice — Ignition + Full Throttle */}
+        <CatalogCard accent="bg-brut-violet" title="AI Voice Booking">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <Th>Tier</Th><Th right>Monthly</Th><Th right>Calls / mo</Th><Th right>Agents</Th>
-                <Th right>Setup 1 agent</Th><Th right>Setup 2 agents</Th>
-              </tr>
-            </thead>
+            <thead className="bg-gray-50"><tr><Th>Plan</Th><Th right>Monthly</Th><Th right>Calls / mo</Th><Th right>Agents</Th><Th right>Setup</Th></tr></thead>
             <tbody className="divide-y-2 divide-gray-100">
-              {TIERS.map((t) => (
-                <tr key={t}>
-                  <Td strong>{TIER_LABEL[t]}</Td>
-                  <Td right>{gbp(VOICE_PRICE_GBP[t])}</Td>
-                  <Td right>{VOICE_PLAN_SPEC[t].callAllowance.toLocaleString("en-GB")}</Td>
-                  <Td right>{VOICE_PLAN_SPEC[t].includedAgents}</Td>
-                  <Td right>{gbp(NEW_VOICE_SETUP_GBP.oneAgent)}</Td>
-                  <Td right>{gbp(NEW_VOICE_SETUP_GBP.twoAgents)}</Td>
-                </tr>
-              ))}
+              <tr><Td strong>Ignition</Td><Td right>{gbp(VOICE_IGNITION_SPEC.priceGbp)}</Td><Td right>{VOICE_IGNITION_SPEC.callAllowance.toLocaleString("en-GB")}</Td><Td right>{VOICE_IGNITION_SPEC.includedAgents}</Td><Td right>{gbp(VOICE_IGNITION_SPEC.setupGbp)}</Td></tr>
+              <tr><Td strong>Full Throttle</Td><Td right>Custom</Td><Td right>Custom</Td><Td right>Custom</Td><Td right>Custom</Td></tr>
             </tbody>
           </table>
           <p className="border-t-2 border-gray-100 px-3 py-2 text-xs text-gray-500">
-            Plan calls reset each billing month (no carry-over). Extra calls draw from prepaid credit at{" "}
-            <span className="font-mono font-bold text-ink">£{CREDIT_UNIT_GBP.toFixed(2)}</span>/call,
-            minimum top-up <span className="font-mono font-bold text-ink">£{MIN_TOPUP_GBP}</span>. Second agent add-on:{" "}
-            <span className="font-mono font-bold text-ink">{gbp(NEW_VOICE_SETUP_GBP.secondAgentAddOn)}</span> setup.
+            Ignition plan calls reset each month (no carry-over); extra calls draw from prepaid credit at{" "}
+            <span className="font-mono font-bold text-ink">£{CREDIT_UNIT_GBP.toFixed(2)}</span>/call (min top-up{" "}
+            <span className="font-mono font-bold text-ink">£{MIN_TOPUP_GBP}</span>). Full Throttle is configured per tenant on the New Tenant form.
           </p>
         </CatalogCard>
 
-        {/* Double Decker — Mix & Match */}
-        <CatalogCard accent="bg-brut-yellow" title="Double Decker — Mix & Match (any Voice tier + any Chat tier)">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <Th>Chat tier</Th><Th right>Chat list</Th><Th right>Bundle discount</Th>
-                <Th right>Bundle chat price</Th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-2 divide-gray-100">
-              {TIERS.map((t) => (
-                <tr key={t}>
-                  <Td strong>{TIER_LABEL[t]}</Td>
-                  <Td right>{gbp(CHAT_PRICE_GBP[t])}</Td>
-                  <Td right>− {gbp(BUNDLE_CHAT_DISCOUNT_GBP[t])}</Td>
-                  <Td right strong>{gbp(bundleChatPriceGbp(t))}</Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="border-t-2 border-gray-100 px-3 py-2 text-xs text-gray-500">
-            The chosen AI Voice tier keeps its full price; the chat tier is discounted by the amount above.
-            Bundle total = voice monthly + bundle chat price. Billed as two Stripe subscriptions (voice + discounted chat). Setup:{" "}
-            <span className="font-mono font-bold text-ink">{gbp(NEW_BUNDLE_SETUP_GBP.oneVoiceAgent)}</span> (1 chat + 1 voice) /{" "}
-            <span className="font-mono font-bold text-ink">{gbp(NEW_BUNDLE_SETUP_GBP.twoVoiceAgents)}</span> (1 chat + 2 voice).
+        {/* 3. Custom (Full Throttle) */}
+        <CatalogCard accent="bg-brut-yellow" title="Custom (Full Throttle) — configured per tenant">
+          <p className="px-3 py-3 text-sm text-gray-700">
+            After a discovery call, set everything on the New Tenant form under <span className="font-bold">Commercial model → Custom</span>:
+            plan name, number of calls, price per call, number of agents, setup fee, pack validity, and per-call extra-credit (overage) pricing.
+            Recurring or one-time prepaid pack. The tenant is emailed a Stripe invoice (setup + first period) to pay before Go-Live.
           </p>
         </CatalogCard>
 
