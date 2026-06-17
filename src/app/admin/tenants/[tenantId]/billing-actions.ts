@@ -1,6 +1,7 @@
 "use server";
 
 import "server-only";
+import type Stripe from "stripe";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient as createSupabaseJS } from "@supabase/supabase-js";
@@ -11,9 +12,13 @@ import { getStripe } from "@/lib/billing/stripe";
 import {
   buildNewSetupInvoiceItemParams,
   buildProductSubscriptionParams,
+  minorUnits,
 } from "@/lib/billing/plan-price";
 import { subscriptionToMirror } from "@/lib/billing/event-map";
-import { planNewModelCharges } from "@/lib/billing/new-model-charges";
+import { planActivationCharges } from "@/lib/billing/activation-charges";
+import { commercialModelLabel } from "@/lib/billing/pricing";
+import { sendEmail } from "@/lib/email/resend";
+import { activationInvoiceEmail } from "@/lib/email/templates";
 import { toStripeCountry } from "@/lib/billing/country";
 import { unixToIso } from "@/lib/billing/dates";
 import type { Currency } from "@/lib/marketing/pricing";
@@ -77,16 +82,18 @@ type NewModelSubRow = {
 };
 
 /**
- * Start billing for a NEW-MODEL tenant (commercial_model set): one GBP setup
- * invoice + one rolling-monthly GBP subscription per product (chat + voice).
+ * Issue the activation invoice (setup fee + first period) for a NEW-model
+ * tenant and email the tenant the Stripe hosted-invoice pay link.
  *
- * Idempotent: a product with an existing `stripe_subscription_id` is skipped by
- * `planNewModelCharges`, and the setup invoice is only created when none is
- * recorded yet. Re-running creates only the missing pieces. Legacy tenants
- * (`commercial_model` null) are handled by the legacy actions above; this
- * no-ops for them and for tenants already past onboarding.
+ * Recurring: create one subscription per product with the setup fee folded into
+ * the FIRST invoice (a pending invoice item is pulled onto the first
+ * subscription invoice), collection_method=send_invoice so the first invoice is
+ * payable by link. One-time pack: a single invoice with the pack + setup as line
+ * items. Idempotent: products with a stripe_subscription_id are skipped; a
+ * setup_fees row that already carries a stripe_invoice_id is not re-invoiced.
+ * Bypassed / non-onboarding tenants no-op (comped locally / handled elsewhere).
  */
-export async function startNewModelBilling(tenantId: string): Promise<void> {
+export async function issueActivationInvoice(tenantId: string): Promise<void> {
   const claims = await requireStaff();
   const id = idSchema.parse(tenantId);
 
@@ -98,115 +105,134 @@ export async function startNewModelBilling(tenantId: string): Promise<void> {
     .eq("id", id)
     .single();
   if (tenantErr || !tenant) throw new Error("Tenant not found.");
-
-  const t = tenant as TenantBillingRow & {
-    commercial_model: string | null;
-    status: string;
-  };
-
-  // Only applies to new-model tenants still in onboarding. A bypassed tenant is
-  // comped locally (no Stripe), and a legacy tenant uses the legacy actions.
+  const t = tenant as TenantBillingRow & { commercial_model: string | null; status: string };
   if (!t.commercial_model || t.status !== "onboarding" || t.billing_bypass) return;
 
-  const [{ data: chatRow }, { data: voiceRow }, { data: setupFee }] = await Promise.all([
-    db()
-      .from("chat_subscriptions")
-      .select("monthly_price_gbp, stripe_subscription_id")
-      .eq("tenant_id", id)
-      .maybeSingle(),
-    db()
-      .from("voice_subscriptions")
-      .select("monthly_price_gbp, stripe_subscription_id")
-      .eq("tenant_id", id)
-      .maybeSingle(),
-    db()
-      .from("setup_fees")
-      .select("id, amount, stripe_invoice_id")
-      .eq("tenant_id", id)
-      .maybeSingle(),
-  ]);
+  const [{ data: chatRow }, { data: voiceRow }, { data: setupFee }, { data: customRow }] =
+    await Promise.all([
+      db().from("chat_subscriptions").select("monthly_price_gbp, stripe_subscription_id").eq("tenant_id", id).maybeSingle(),
+      db().from("voice_subscriptions").select("monthly_price_gbp, stripe_subscription_id").eq("tenant_id", id).maybeSingle(),
+      db().from("setup_fees").select("id, amount, stripe_invoice_id, hosted_invoice_url").eq("tenant_id", id).maybeSingle(),
+      db().from("custom_plans").select("billing_mode").eq("tenant_id", id).maybeSingle(),
+    ]);
 
   const chat = (chatRow as NewModelSubRow | null) ?? null;
   const voice = (voiceRow as NewModelSubRow | null) ?? null;
-  const fee = setupFee as { id: string; amount: number; stripe_invoice_id: string | null } | null;
+  const fee = setupFee as { id: string; amount: number; stripe_invoice_id: string | null; hosted_invoice_url: string | null } | null;
+  const billingMode = ((customRow as { billing_mode?: string } | null)?.billing_mode ?? "recurring") as "recurring" | "one_time";
 
   const customerId = await getOrCreateStripeCustomer(t);
   const stripe = getStripe();
 
-  const plan = planNewModelCharges({
-    tenant: { id: t.id, commercial_model: t.commercial_model, stripe_customer_id: customerId },
-    chat,
-    voice,
-    setupGbp: fee?.amount ?? 0,
-  });
+  const plan = planActivationCharges({ billingMode, setupGbp: fee?.amount ?? 0, chat, voice });
 
-  // One-time setup invoice — only when there is a fee to charge and none has
-  // been invoiced yet (idempotent re-run guard).
-  if (plan.setup.setupGbp > 0 && fee && !fee.stripe_invoice_id) {
-    await stripe.invoiceItems.create(
-      buildNewSetupInvoiceItemParams({
-        customerId,
-        setupGbp: plan.setup.setupGbp,
-        tenantId: id,
-      }),
-    );
-    const invoice = await stripe.invoices.create({
-      customer: customerId,
-      collection_method: "send_invoice",
-      days_until_due: 7,
-      automatic_tax: { enabled: true },
-      metadata: { tenant_id: id, kind: "setup_fee" },
-    });
-    if (!invoice.id) throw new Error("Stripe did not return an invoice id.");
-    await stripe.invoices.finalizeInvoice(invoice.id);
-    await db().from("setup_fees").update({ stripe_invoice_id: invoice.id }).eq("id", fee.id);
-  }
+  let hostedInvoiceUrl = fee?.hosted_invoice_url ?? null;
 
-  // One rolling-monthly subscription per planned product.
-  const productId = plan.subscriptions.length > 0 ? await getOrCreateProduct() : null;
-  for (const planned of plan.subscriptions) {
-    const sub = await stripe.subscriptions.create(
-      buildProductSubscriptionParams({
+  if (plan.mode === "recurring") {
+    // Fold the setup fee into the first subscription invoice as a pending item.
+    if (plan.setupGbp > 0 && fee && !fee.stripe_invoice_id) {
+      await stripe.invoiceItems.create(
+        buildNewSetupInvoiceItemParams({ customerId, setupGbp: plan.setupGbp, tenantId: id }),
+      );
+    }
+    const productId = plan.subscriptions.length > 0 ? await getOrCreateProduct() : null;
+    for (const planned of plan.subscriptions) {
+      const baseParams = buildProductSubscriptionParams({
         customerId,
         productId: productId as string,
         product: planned.product,
         monthlyGbp: planned.monthlyGbp,
         tenantId: id,
-      }),
-    );
-    // Stripe Basil moved current_period_* onto the subscription item; read from
-    // the first item exactly as `subscriptionToMirror` does. The webhook will
-    // also reconcile these via `mapNewModelSubscription`.
-    const item = sub.items?.data?.[0];
-    const table = planned.product === "chat" ? "chat_subscriptions" : "voice_subscriptions";
-    await db()
-      .from(table)
-      .update({
-        stripe_subscription_id: sub.id,
-        current_period_start: unixToIso(item?.current_period_start ?? null),
-        current_period_end: unixToIso(item?.current_period_end ?? null),
-      })
-      .eq("tenant_id", id);
+      });
+      const sub = await stripe.subscriptions.create({
+        ...baseParams,
+        collection_method: "send_invoice",
+        days_until_due: 7,
+      });
+      const item = sub.items?.data?.[0];
+      const table = planned.product === "chat" ? "chat_subscriptions" : "voice_subscriptions";
+      await db()
+        .from(table)
+        .update({
+          stripe_subscription_id: sub.id,
+          current_period_start: unixToIso(item?.current_period_start ?? null),
+          current_period_end: unixToIso(item?.current_period_end ?? null),
+        })
+        .eq("tenant_id", id);
+
+      // Capture the first invoice's hosted URL (the one the setup fee folds in).
+      const latest =
+        typeof sub.latest_invoice === "string"
+          ? await stripe.invoices.retrieve(sub.latest_invoice)
+          : (sub.latest_invoice as Stripe.Invoice | null);
+      if (latest?.id) {
+        if (latest.status === "draft") await stripe.invoices.finalizeInvoice(latest.id);
+        const finalised = await stripe.invoices.retrieve(latest.id);
+        hostedInvoiceUrl = finalised.hosted_invoice_url ?? hostedInvoiceUrl;
+        if (fee && !fee.stripe_invoice_id) {
+          await db().from("setup_fees").update({ stripe_invoice_id: latest.id }).eq("id", fee.id);
+        }
+      }
+    }
+  } else {
+    // One-time pack: a single invoice with pack + setup line items.
+    if (fee && !fee.stripe_invoice_id) {
+      for (const line of plan.oneTimeLines) {
+        await stripe.invoiceItems.create({
+          customer: customerId,
+          amount: minorUnits(line.amountGbp),
+          currency: "gbp",
+          description: line.label,
+          metadata: { tenant_id: id },
+        });
+      }
+      if (plan.setupGbp > 0) {
+        await stripe.invoiceItems.create(
+          buildNewSetupInvoiceItemParams({ customerId, setupGbp: plan.setupGbp, tenantId: id }),
+        );
+      }
+      const invoice = await stripe.invoices.create({
+        customer: customerId,
+        collection_method: "send_invoice",
+        days_until_due: 7,
+        automatic_tax: { enabled: true },
+        metadata: { tenant_id: id, kind: "activation_pack" },
+      });
+      if (!invoice.id) throw new Error("Stripe did not return an invoice id.");
+      await stripe.invoices.finalizeInvoice(invoice.id);
+      const finalised = await stripe.invoices.retrieve(invoice.id);
+      hostedInvoiceUrl = finalised.hosted_invoice_url ?? hostedInvoiceUrl;
+      await db().from("setup_fees").update({ stripe_invoice_id: invoice.id }).eq("id", fee.id);
+    }
   }
 
-  // Keep tenants.monthly_price (the MRR source of truth) in sync with the sum of
-  // the per-product subscription prices when billing goes live.
-  const combinedMonthly =
-    Number(chat?.monthly_price_gbp ?? 0) + Number(voice?.monthly_price_gbp ?? 0);
-  await db()
-    .from("tenants")
-    .update({ status: "active", monthly_price: combinedMonthly })
-    .eq("id", id);
+  // Persist the hosted invoice URL + email the tenant the pay link.
+  if (hostedInvoiceUrl && fee) {
+    await db().from("setup_fees").update({ hosted_invoice_url: hostedInvoiceUrl }).eq("id", fee.id);
+    const amountMajor =
+      Number(chat?.monthly_price_gbp ?? 0) + Number(voice?.monthly_price_gbp ?? 0) + (plan.setupGbp ?? 0);
+    if (t.contact_email) {
+      const body = activationInvoiceEmail({
+        tenantName: t.name,
+        planLabel: commercialModelLabel(t.commercial_model),
+        amountMajor,
+        currency: (t.currency ?? "GBP") as Currency,
+        invoiceUrl: hostedInvoiceUrl,
+      });
+      await sendEmail({ to: t.contact_email, subject: body.subject, html: body.html, text: body.text });
+    }
+  }
 
   await writeAudit({
     actorUserId: claims.sub,
     tenantId: id,
-    action: "tenant.billing_start",
+    action: "tenant.activation_invoice",
     targetType: "tenant",
     targetId: id,
     metadata: {
-      setup_invoiced: plan.setup.setupGbp > 0 && !!fee && !fee.stripe_invoice_id,
-      subscriptions_created: plan.subscriptions.map((s) => s.product),
+      mode: plan.mode,
+      subscriptions: plan.subscriptions.map((s) => s.product),
+      invoiced: !!hostedInvoiceUrl,
     },
   });
 

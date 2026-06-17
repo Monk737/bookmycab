@@ -225,7 +225,7 @@ export default async function TenantDetailPage({
       .eq("tenant_id", tenantId),
     serviceClient
       .from("setup_fees")
-      .select("id, amount, currency, paid_at")
+      .select("id, amount, currency, paid_at, hosted_invoice_url")
       .eq("tenant_id", tenantId),
     serviceClient
       .from("audit_log")
@@ -505,6 +505,10 @@ export default async function TenantDetailPage({
           tenantId={tenant.id}
           commercialModel={tenant.commercial_model}
           status={tenant.status}
+          invoiceUrl={
+            (feesData as Array<{ hosted_invoice_url?: string | null }> | null)?.[0]
+              ?.hosted_invoice_url ?? null
+          }
         />
       </Section>
 
