@@ -85,9 +85,9 @@ export async function declinePromptSuggestion(input: { suggestionId: string }): 
     .from("prompt_suggestions")
     .select("tenant_id, automation_id")
     .eq("id", parsed.data.suggestionId)
-    .eq("status", "requested")
+    .in("status", ["draft", "requested"])
     .maybeSingle();
-  if (!sug) return { ok: false, error: "Request not found." };
+  if (!sug) return { ok: false, error: "Suggestion not found." };
 
   const { error } = await db
     .from("prompt_suggestions")

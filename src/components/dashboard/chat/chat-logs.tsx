@@ -40,11 +40,15 @@ function digest(summary: string | null): string | null {
 
 function ConversationBody(c: ChatConversationLogRow) {
   const d = digest(c.summary);
+  // `who` is name-or-handle; only show the number separately when a name exists,
+  // so we never print the handle twice.
+  const number = c.name && c.handle ? c.handle : null;
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
         <span className={`h-3 w-3 shrink-0 border-2 border-ink ${OUTCOME_FILL[c.outcome] ?? "bg-gray-300"}`} aria-hidden="true" />
         <span className="text-sm font-bold text-ink">{c.who}</span>
+        {number ? <span className="font-mono text-[11px] tabular-nums text-gray-500">{number}</span> : null}
         <span className="border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">
           {chatOutcomeLabel(c.outcome)}
         </span>
@@ -57,7 +61,11 @@ function ConversationBody(c: ChatConversationLogRow) {
         {c.bookingRef ? <span className="font-mono text-[11px] font-bold text-ink">#{c.bookingRef}</span> : null}
         <span className="ml-auto font-mono text-[11px] tabular-nums text-gray-500">{fmtDateTime(c.startedAt)}</span>
       </div>
-      {d ? <p className="truncate text-sm text-gray-600">{d}</p> : null}
+      {d ? (
+        <p className="truncate text-sm text-gray-600">{d}</p>
+      ) : (
+        <p className="text-sm text-gray-400">No transcript summary — open to view the conversation.</p>
+      )}
     </div>
   );
 }

@@ -263,11 +263,20 @@ export async function detectPromptSuggestions(tenantId: string): Promise<{ draft
   return { drafted, skipped };
 }
 
-/** Detect across every tenant with a wired Voice agent (cron entrypoint). */
-export async function detectAllPromptSuggestions(): Promise<{ tenants: number; drafted: number }> {
+/**
+ * Detect across every tenant with a wired Voice agent (cron entrypoint). Pass a
+ * `tenantId` to scope the sweep to a single tenant (per-tenant cloned cron);
+ * omit it to sweep all tenants (single platform cron).
+ */
+export async function detectAllPromptSuggestions(tenantId?: string): Promise<{ tenants: number; drafted: number }> {
   const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-  const { data } = await db.from("voice_agents").select("tenant_id").not("vapi_assistant_id", "is", null);
-  const tenantIds = [...new Set(((data ?? []) as { tenant_id: string }[]).map((r) => r.tenant_id))];
+  let tenantIds: string[];
+  if (tenantId) {
+    tenantIds = [tenantId];
+  } else {
+    const { data } = await db.from("voice_agents").select("tenant_id").not("vapi_assistant_id", "is", null);
+    tenantIds = [...new Set(((data ?? []) as { tenant_id: string }[]).map((r) => r.tenant_id))];
+  }
   let drafted = 0;
   for (const id of tenantIds) drafted += (await detectPromptSuggestions(id)).drafted;
   return { tenants: tenantIds.length, drafted };
@@ -332,14 +341,20 @@ export async function getPromptSuggestions(tenantId: string): Promise<PromptSugg
   return rows.map((r) => toSuggestion(r, r.evidence_call_ids.map((id) => ev.get(id)).filter((x): x is EvidenceCall => !!x)));
 }
 
-/** Every requested suggestion across all tenants — the admin inbox. Service role. */
-export async function getRequestedSuggestions(): Promise<PromptSuggestion[]> {
+/**
+ * The admin inbox across all tenants — both auto-detected `draft` suggestions
+ * (surfaced by the daily cron so staff can refine proactively) and tenant-raised
+ * `requested` ones. Tenant-raised sort first (oldest waiting at the top), then
+ * fresh auto-detected drafts. Service role.
+ */
+export async function getAdminInboxSuggestions(): Promise<PromptSuggestion[]> {
   const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
   const { data } = await db
     .from("prompt_suggestions")
     .select(`${SUGGESTION_COLS}, tenants(name)`)
-    .eq("status", "requested")
-    .order("requested_at", { ascending: true });
+    .in("status", ["draft", "requested"])
+    .order("requested_at", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: false });
   const rows = (data ?? []) as unknown as SuggestionRow[];
   const ev = await hydrateEvidence(db, [...new Set(rows.flatMap((r) => r.evidence_call_ids))]);
   return rows.map((r) => toSuggestion(r, r.evidence_call_ids.map((id) => ev.get(id)).filter((x): x is EvidenceCall => !!x)));
@@ -417,7 +432,11 @@ export async function applySuggestion(suggestionId: string, actorUserId: string)
     .eq("id", suggestionId)
     .maybeSingle();
   if (!sug) return { ok: false, error: "Suggestion not found." };
-  if (sug.status !== "requested") return { ok: false, error: "Only requested suggestions can be applied." };
+  // Admin can apply a tenant-raised `requested` one or an auto-detected `draft`
+  // directly (auto-surface). Already-applied/dismissed/superseded are no-ops.
+  if (sug.status !== "requested" && sug.status !== "draft") {
+    return { ok: false, error: "Only open suggestions can be applied." };
+  }
   if (!sug.vapi_assistant_id) return { ok: false, error: "This agent has no Vapi assistant wired." };
 
   // Live prompt is the true "old" side (the snapshot may have drifted).
@@ -532,16 +551,18 @@ export async function rollbackRevision(revisionId: string, actorUserId: string |
  * post-apply flagged-rate and store it. If it worsened beyond the threshold,
  * auto-roll-back. Returns counts for the cron summary. Best-effort.
  */
-export async function measureRevisions(): Promise<{ measured: number; autoRolledBack: number }> {
+export async function measureRevisions(tenantId?: string): Promise<{ measured: number; autoRolledBack: number }> {
   const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
   const dwellCutoff = new Date(Date.now() - AUTO_ROLLBACK_DWELL_DAYS * 86_400_000).toISOString();
-  const { data } = await db
+  let q = db
     .from("prompt_revisions")
     .select("id, tenant_id, automation_id, reason, baseline_flagged_rate, applied_at")
     .eq("status", "active")
     .eq("kind", "apply")
     .is("measured_at", null)
     .lte("applied_at", dwellCutoff);
+  if (tenantId) q = q.eq("tenant_id", tenantId);
+  const { data } = await q;
   const rows = (data ?? []) as {
     id: string; tenant_id: string; automation_id: string; reason: string | null;
     baseline_flagged_rate: number | null; applied_at: string;

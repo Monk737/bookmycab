@@ -46,7 +46,14 @@ function RequestCard({ s }: { s: PromptSuggestion }) {
         <span className="border-2 border-ink bg-brut-violet px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink">{s.reason}</span>
         <span className="font-mono text-xs font-bold tabular-nums text-ink/70">{s.reasonCount} calls</span>
         <DeltaChip deltaPct={s.reasonDeltaPct} />
-        <span className="ml-auto font-mono text-[11px] tabular-nums text-gray-500">Raised {when(s.requestedAt)}</span>
+        {s.status === "requested" ? (
+          <span className="border-2 border-ink bg-brut-cyan px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink">Tenant-raised</span>
+        ) : (
+          <span className="border-2 border-ink bg-brut-lime px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.05em] text-ink">Auto-detected</span>
+        )}
+        <span className="ml-auto font-mono text-[11px] tabular-nums text-gray-500">
+          {s.status === "requested" ? `Raised ${when(s.requestedAt)}` : `Detected ${when(s.createdAt)}`}
+        </span>
       </div>
 
       <div className="space-y-3 px-4 py-3">
@@ -143,11 +150,11 @@ export function PromptRequestBoard({ requests, revisions }: { requests: PromptSu
     <div className="space-y-8">
       <section className="border-[3px] border-ink bg-paper shadow-brut">
         <header className="flex items-center justify-between border-b-[3px] border-ink bg-brut-violet px-5 py-3.5">
-          <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Requests awaiting approval</h2>
+          <h2 className="font-display text-base font-extrabold uppercase tracking-tight text-ink">Suggestions awaiting approval</h2>
           <span className="border-2 border-ink bg-paper px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-ink">{requests.length}</span>
         </header>
         {requests.length === 0 ? (
-          <p className="px-5 py-12 text-center text-sm text-gray-600">No prompt-tuning requests from tenants right now.</p>
+          <p className="px-5 py-12 text-center text-sm text-gray-600">No open prompt-tuning suggestions right now — the daily sweep auto-detects them and tenants can raise their own.</p>
         ) : (
           <ul className="space-y-4 p-4">{requests.map((s) => <RequestCard key={s.id} s={s} />)}</ul>
         )}
