@@ -286,3 +286,30 @@ export function paymentFailedEmail(args: {
       : { note: "Please contact your BookMyCab account manager to resolve this." }),
   });
 }
+
+/**
+ * Activation invoice: the first invoice (setup + first period) a tenant must
+ * pay before their automation goes live. CTA → the Stripe hosted invoice.
+ */
+export function activationInvoiceEmail(args: {
+  tenantName: string;
+  planLabel: string;
+  amountMajor: number;
+  currency: Currency;
+  invoiceUrl: string;
+}): EmailBody {
+  const amount = formatPrice(args.currency, args.amountMajor);
+  return render(`Your BookMyCab invoice is ready, ${args.tenantName} (${amount})`, {
+    heading: `Your BookMyCab invoice is ready`,
+    paragraphs: [
+      `Thanks for choosing BookMyCab, ${args.tenantName}. Your ${args.planLabel} plan is set up and ready.`,
+      `To activate your automation, please settle the invoice below. As soon as it's paid, our team takes your automation live, you don't need to do anything else.`,
+    ],
+    facts: [
+      ["Plan", args.planLabel],
+      ["Amount due", amount],
+    ],
+    cta: { label: "Pay your invoice", url: args.invoiceUrl },
+    note: "This is a one-time setup plus your first billing period. Future invoices follow your normal cycle.",
+  });
+}
