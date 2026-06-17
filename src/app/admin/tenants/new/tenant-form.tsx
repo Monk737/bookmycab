@@ -6,10 +6,10 @@ import { createTenant } from "../actions";
 import { type TenantFormState } from "../provisioning";
 import { slugify } from "@/lib/admin/plan-bands";
 import {
-  resolveNewModelPricing,
-  type CommercialModel,
-  type NewTierKey,
+  resolveBasePlanPricing,
+  type PlanType,
 } from "@/lib/billing/pricing";
+import { resolveCustomPlan } from "@/lib/billing/custom-plan";
 import { formatPrice } from "@/lib/marketing/pricing";
 import { COUNTRIES } from "@/lib/billing/country";
 
@@ -19,16 +19,10 @@ const DISPATCH_ADAPTERS = [
   { value: "cordic", label: "Cordic" },
 ] as const;
 
-const COMMERCIAL_MODELS: { value: CommercialModel; label: string }[] = [
-  { value: "chat", label: "Chat" },
-  { value: "voice", label: "Voice" },
-  { value: "double_decker", label: "Double Decker" },
-];
-
-const TIERS: { value: NewTierKey; label: string }[] = [
-  { value: "ignition", label: "Ignition" },
-  { value: "in_motion", label: "In Motion" },
-  { value: "full_throttle", label: "Full Throttle" },
+const PLAN_TYPES: { value: PlanType; label: string }[] = [
+  { value: "whatsapp_suite", label: "WhatsApp Booking Suite — £499/mo" },
+  { value: "voice_ignition", label: "AI Voice — Ignition (1,000 calls, £1,999/mo)" },
+  { value: "custom", label: "Custom (Full Throttle)" },
 ];
 
 const initialState: TenantFormState = { fieldErrors: {}, formError: null };
@@ -127,11 +121,10 @@ function SelectField({
 }
 
 /**
- * Tenant provisioning form (new commercial model). The slug auto-derives from
- * the org name until edited. The commercial-model selection (model + tiers +
- * channel mode) drives a live, read-only GBP price summary via
- * `resolveNewModelPricing`. Currency is always GBP. Chat-only Full Throttle is
- * quoted (no list price), so it exposes an editable monthly-price override.
+ * Tenant provisioning form. The slug auto-derives from the org name until
+ * edited. The plan_type selection drives a live, read-only GBP price summary.
+ * For custom plans, a detailed configuration panel is shown inline.
+ * Currency is always GBP.
  */
 export function TenantForm() {
   const [state, formAction, pending] = useActionState(createTenant, initialState);
@@ -143,8 +136,6 @@ export function TenantForm() {
   const adapterId = useId();
   const companyId = useId();
   const modelId = useId();
-  const chatTierId = useId();
-  const voiceTierId = useId();
   const couponId = useId();
 
   const [name, setName] = useState("");
@@ -153,9 +144,43 @@ export function TenantForm() {
   const [country, setCountry] = useState<string>("GB");
   const [dispatchAdapter, setDispatchAdapter] = useState<string>("autocab");
 
-  const [commercialModel, setCommercialModel] = useState<CommercialModel>("chat");
-  const [chatTier, setChatTier] = useState<NewTierKey>("ignition");
-  const [voiceTier, setVoiceTier] = useState<NewTierKey>("ignition");
+  const [planType, setPlanType] = useState<PlanType>("voice_ignition");
+  const [customPlanName, setCustomPlanName] = useState("");
+  // Custom-plan fields (controlled so the live summary updates).
+  const [billingMode, setBillingMode] = useState<"recurring" | "one_time">("recurring");
+  const [includesChat, setIncludesChat] = useState(false);
+  const [includesVoice, setIncludesVoice] = useState(true);
+  const [callAllowance, setCallAllowance] = useState("5000");
+  const [includedAgents, setIncludedAgents] = useState("2");
+  const [planPrice, setPlanPrice] = useState("4500");
+  const [chatMonthly, setChatMonthly] = useState("499");
+  const [setupFee, setSetupFee] = useState("1500");
+  const [validityDays, setValidityDays] = useState("30");
+  const [pricePerCall, setPricePerCall] = useState("0.90");
+  const [extraCredit, setExtraCredit] = useState("0.75");
+
+  const base = planType === "custom" ? null : resolveBasePlanPricing(planType);
+  const custom =
+    planType === "custom"
+      ? resolveCustomPlan({
+          planName: "preview", billingMode,
+          includesChat, includesVoice,
+          callAllowance: Number(callAllowance || 0),
+          includedAgents: Number(includedAgents || 0),
+          planPriceGbp: Number(planPrice || 0),
+          chatMonthlyGbp: includesChat ? Number(chatMonthly || 0) : null,
+          setupFeeGbp: Number(setupFee || 0),
+          validityDays: Number(validityDays || 30),
+          extraCreditPriceGbp: Number(extraCredit || 0),
+          pricePerCallGbp: Number(pricePerCall || 0),
+        })
+      : null;
+  const summaryChat = base ? base.chatGbp : custom?.chatGbp ?? null;
+  const summaryVoice = base ? base.voiceGbp : custom?.voiceGbp ?? null;
+  const summarySetup = base ? base.setupGbp : custom?.setupGbp ?? 0;
+  const summaryFirst = base
+    ? (summaryChat ?? 0) + (summaryVoice ?? 0) + base.setupGbp
+    : (custom?.firstPeriodGbp ?? 0) + (custom?.setupGbp ?? 0);
 
   function handleName(v: string) {
     setName(v);
@@ -163,16 +188,6 @@ export function TenantForm() {
   }
 
   const fe = state.fieldErrors;
-
-  const hasChat = commercialModel === "chat" || commercialModel === "double_decker";
-  const hasVoice = commercialModel === "voice" || commercialModel === "double_decker";
-
-  // Live price preview from the current selection. Pure + dependency-free.
-  const resolved = resolveNewModelPricing({
-    model: commercialModel,
-    chatTier: hasChat ? chatTier : null,
-    voiceTier: hasVoice ? voiceTier : null,
-  });
 
   return (
     <form action={formAction} noValidate className="flex flex-col gap-5">
@@ -261,99 +276,91 @@ export function TenantForm() {
         />
       </div>
 
-      {/* Commercial model + tiers. Tier/channel selects render conditionally on
-          the chosen model; pricing is previewed live below. */}
       <fieldset className="flex flex-col gap-5 border-[3px] border-ink bg-paper p-4">
-        <legend className="px-1 text-sm font-medium text-gray-700">
-          Commercial model
-        </legend>
+        <legend className="px-1 text-sm font-medium text-gray-700">Commercial model</legend>
 
         <SelectField
           id={modelId}
-          name="commercial_model"
-          label="Product"
-          value={commercialModel}
-          onChange={(v) => setCommercialModel(v as CommercialModel)}
-          error={fe.commercial_model?.[0]}
+          name="plan_type"
+          label="Plan"
+          value={planType}
+          onChange={(v) => setPlanType(v as PlanType)}
+          error={fe.plan_type?.[0]}
         >
-          {COMMERCIAL_MODELS.map((m) => (
-            <option key={m.value} value={m.value}>
-              {m.label}
-            </option>
+          {PLAN_TYPES.map((p) => (
+            <option key={p.value} value={p.value}>{p.label}</option>
           ))}
         </SelectField>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          {hasChat && (
-            <>
-              <SelectField
-                id={chatTierId}
-                name="chat_tier"
-                label="Chat tier"
-                value={chatTier}
-                onChange={(v) => setChatTier(v as NewTierKey)}
-                error={fe.chat_tier?.[0]}
-              >
-                {TIERS.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
+        {planType === "custom" && (
+          <div className="flex flex-col gap-5 border-[3px] border-ink bg-brut-yellow/10 p-4">
+            <p className="font-display text-sm font-extrabold uppercase tracking-tight text-ink">
+              Custom Full Throttle pack
+            </p>
+
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Field id={`${modelId}-cpn`} name="custom_plan_name" label="Plan name"
+                value={customPlanName} onChange={(e) => setCustomPlanName(e.target.value)}
+                placeholder="Airport Pack" error={fe.custom_plan_name?.[0]} />
+              <SelectField id={`${modelId}-cbm`} name="custom_billing_mode" label="Billing mode"
+                value={billingMode} onChange={(v) => setBillingMode(v as "recurring" | "one_time")}
+                error={fe.custom_billing_mode?.[0]}>
+                <option value="recurring">Recurring (renews every validity period)</option>
+                <option value="one_time">One-time prepaid pack</option>
               </SelectField>
-            </>
-          )}
+            </div>
 
-          {hasVoice && (
-            <SelectField
-              id={voiceTierId}
-              name="voice_tier"
-              label="Voice tier"
-              value={voiceTier}
-              onChange={(v) => setVoiceTier(v as NewTierKey)}
-              error={fe.voice_tier?.[0]}
-            >
-              {TIERS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </SelectField>
-          )}
-        </div>
+            <div className="flex flex-wrap gap-5">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="custom_includes_voice" checked={includesVoice}
+                  onChange={(e) => setIncludesVoice(e.target.checked)} className="h-4 w-4 border-2 border-ink" />
+                Include AI Voice
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <input type="checkbox" name="custom_includes_chat" checked={includesChat}
+                  onChange={(e) => setIncludesChat(e.target.checked)} className="h-4 w-4 border-2 border-ink" />
+                Include WhatsApp Suite
+              </label>
+            </div>
+            {fe.custom_includes_voice?.[0] && (
+              <p role="alert" className="text-xs text-brut-red-deep">{fe.custom_includes_voice[0]}</p>
+            )}
 
-        {/* Live, read-only price summary computed from the selection. */}
+            {includesVoice && (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <Field id={`${modelId}-ca`} name="custom_call_allowance" label="Number of calls (per period)"
+                  type="number" min="0" value={callAllowance} onChange={(e) => setCallAllowance(e.target.value)} />
+                <Field id={`${modelId}-ag`} name="custom_included_agents" label="Number of agents"
+                  type="number" min="0" value={includedAgents} onChange={(e) => setIncludedAgents(e.target.value)} />
+                <Field id={`${modelId}-ppc`} name="custom_price_per_call_gbp" label="Price per call (£, in-pack)"
+                  type="number" step="0.01" min="0" value={pricePerCall} onChange={(e) => setPricePerCall(e.target.value)} />
+                <Field id={`${modelId}-pp`} name="custom_plan_price_gbp" label="Plan / pack price (£)"
+                  type="number" step="0.01" min="0" value={planPrice} onChange={(e) => setPlanPrice(e.target.value)}
+                  error={fe.custom_plan_price_gbp?.[0]} />
+                <Field id={`${modelId}-xc`} name="custom_extra_credit_price_gbp" label="Per-call extra credit (£, overage)"
+                  type="number" step="0.01" min="0" value={extraCredit} onChange={(e) => setExtraCredit(e.target.value)} />
+                <Field id={`${modelId}-vd`} name="custom_validity_days" label="Pack validity (days from start)"
+                  type="number" min="1" value={validityDays} onChange={(e) => setValidityDays(e.target.value)}
+                  error={fe.custom_validity_days?.[0]} />
+              </div>
+            )}
+            {includesChat && (
+              <Field id={`${modelId}-cm`} name="custom_chat_monthly_gbp" label="WhatsApp Suite monthly (£)"
+                type="number" step="0.01" min="0" value={chatMonthly} onChange={(e) => setChatMonthly(e.target.value)}
+                error={fe.custom_chat_monthly_gbp?.[0]} />
+            )}
+            <Field id={`${modelId}-sf`} name="custom_setup_fee_gbp" label="Setup fee (£, one-time)"
+              type="number" step="0.01" min="0" value={setupFee} onChange={(e) => setSetupFee(e.target.value)} />
+          </div>
+        )}
+
         <div className="flex flex-col gap-1.5 border-[3px] border-ink bg-brut-lime/10 px-4 py-3 text-sm">
           <p className="font-medium text-gray-700">Price summary</p>
-          {hasChat && (
-            <p className="text-ink">
-              Chat:{" "}
-              <span className="font-semibold">
-                {resolved.chatGbp === null
-                  ? "—"
-                  : `${formatPrice("GBP", resolved.chatGbp)}/mo`}
-              </span>
-              {commercialModel === "double_decker" && resolved.chatGbp !== null ? (
-                <span className="ml-1 text-xs text-gray-500">(bundle discount applied)</span>
-              ) : null}
-            </p>
-          )}
-          {hasVoice && (
-            <p className="text-ink">
-              Voice:{" "}
-              <span className="font-semibold">
-                {resolved.voiceGbp === null
-                  ? "—"
-                  : `${formatPrice("GBP", resolved.voiceGbp)}/mo`}
-              </span>
-            </p>
-          )}
-          <p className="text-ink">
-            Setup (one-time):{" "}
-            <span className="font-semibold">
-              {formatPrice("GBP", resolved.setupGbp)}
-            </span>
-          </p>
-          <p className="text-xs text-gray-500">All prices billed monthly in GBP.</p>
+          {summaryChat !== null && <p className="text-ink">WhatsApp Suite: <span className="font-semibold">{formatPrice("GBP", summaryChat)}/mo</span></p>}
+          {summaryVoice !== null && <p className="text-ink">AI Voice: <span className="font-semibold">{formatPrice("GBP", summaryVoice)}/mo</span></p>}
+          <p className="text-ink">Setup (one-time): <span className="font-semibold">{formatPrice("GBP", summarySetup)}</span></p>
+          <p className="text-ink">First invoice (setup + first period): <span className="font-semibold">{formatPrice("GBP", summaryFirst)}</span></p>
+          <p className="text-xs text-gray-500">Prices in GBP. The tenant is emailed this invoice to pay.</p>
         </div>
       </fieldset>
 
