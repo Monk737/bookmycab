@@ -1,55 +1,54 @@
 import { describe, it, expect } from "vitest";
 import {
-  VOICE_PLAN_SPEC,
-  setupFeeGbp,
-  resolveNewModelPricing,
+  CHAT_SUITE_PRICE_GBP,
+  CHAT_SUITE_SETUP_GBP,
+  VOICE_IGNITION_SPEC,
+  DEFAULT_EXTRA_CALL_PRICE_GBP,
+  resolveBasePlanPricing,
+  commercialModelLabel,
+  type PlanType,
 } from "@/lib/billing/pricing";
 
-describe("VOICE_PLAN_SPEC", () => {
-  it("maps tier → allowance + included agents", () => {
-    expect(VOICE_PLAN_SPEC.ignition).toEqual({ callAllowance: 1500, includedAgents: 1 });
-    expect(VOICE_PLAN_SPEC.in_motion).toEqual({ callAllowance: 2250, includedAgents: 2 });
-    expect(VOICE_PLAN_SPEC.full_throttle).toEqual({ callAllowance: 3000, includedAgents: 2 });
+describe("fixed base-plan constants", () => {
+  it("chat suite £499 + £999 setup", () => {
+    expect(CHAT_SUITE_PRICE_GBP).toBe(499);
+    expect(CHAT_SUITE_SETUP_GBP).toBe(999);
+  });
+  it("voice ignition: 1000 calls, £1999, £999 setup, 1 agent", () => {
+    expect(VOICE_IGNITION_SPEC).toEqual({
+      callAllowance: 1000,
+      priceGbp: 1999,
+      setupGbp: 999,
+      includedAgents: 1,
+    });
+  });
+  it("default overage is £0.90", () => {
+    expect(DEFAULT_EXTRA_CALL_PRICE_GBP).toBe(0.9);
   });
 });
 
-describe("setupFeeGbp", () => {
-  it("chat = 1000", () => {
-    expect(setupFeeGbp("chat", 0)).toBe(1000);
+describe("resolveBasePlanPricing", () => {
+  it("whatsapp_suite → chat only", () => {
+    expect(resolveBasePlanPricing("whatsapp_suite")).toEqual({
+      chatGbp: 499, voiceGbp: null, voiceAllowance: null, voiceAgents: null, setupGbp: 999,
+    });
   });
-  it("voice = 1000 (1 agent) / 1500 (2 agents)", () => {
-    expect(setupFeeGbp("voice", 1)).toBe(1000);
-    expect(setupFeeGbp("voice", 2)).toBe(1500);
+  it("voice_ignition → voice only", () => {
+    expect(resolveBasePlanPricing("voice_ignition")).toEqual({
+      chatGbp: null, voiceGbp: 1999, voiceAllowance: 1000, voiceAgents: 1, setupGbp: 999,
+    });
   });
-  it("double_decker = 1500 (1 voice agent) / 2000 (2 voice agents)", () => {
-    expect(setupFeeGbp("double_decker", 1)).toBe(1500);
-    expect(setupFeeGbp("double_decker", 2)).toBe(2000);
+  it("custom → null (resolved by custom-plan module)", () => {
+    expect(resolveBasePlanPricing("custom" as PlanType)).toBeNull();
   });
 });
 
-describe("resolveNewModelPricing", () => {
-  it("chat-only: chat price set, voice null, setup 1000", () => {
-    const r = resolveNewModelPricing({
-      model: "chat", chatTier: "in_motion", voiceTier: null,
-    });
-    expect(r).toEqual({ chatGbp: 999, voiceGbp: null, voiceAllowance: null, voiceAgents: null, setupGbp: 1000 });
-  });
-  it("voice-only: voice price + allowance/agents, chat null, setup by agents", () => {
-    const r = resolveNewModelPricing({
-      model: "voice", chatTier: null, voiceTier: "in_motion",
-    });
-    expect(r).toEqual({ chatGbp: null, voiceGbp: 1799, voiceAllowance: 2250, voiceAgents: 2, setupGbp: 1500 });
-  });
-  it("double_decker: voice full price + discounted chat + bundle setup", () => {
-    const r = resolveNewModelPricing({
-      model: "double_decker", chatTier: "in_motion", voiceTier: "in_motion",
-    });
-    expect(r).toEqual({ chatGbp: 799, voiceGbp: 1799, voiceAllowance: 2250, voiceAgents: 2, setupGbp: 2000 });
-  });
-  it("full_throttle chat is now priced (£1299)", () => {
-    const r = resolveNewModelPricing({
-      model: "chat", chatTier: "full_throttle", voiceTier: null,
-    });
-    expect(r.chatGbp).toBe(1299);
+describe("commercialModelLabel", () => {
+  it("labels chat / voice / custom and legacy double_decker", () => {
+    expect(commercialModelLabel("chat")).toBe("WhatsApp Booking Suite");
+    expect(commercialModelLabel("voice")).toBe("AI Voice Booking");
+    expect(commercialModelLabel("custom")).toBe("Custom plan");
+    expect(commercialModelLabel("double_decker")).toBe("Double Decker (Chat + Voice)");
+    expect(commercialModelLabel(null)).toBe("—");
   });
 });
