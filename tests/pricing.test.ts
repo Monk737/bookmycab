@@ -23,8 +23,8 @@ describe("fixed plan constants", () => {
     expect(VOICE_IGNITION.setupGbp).toBe(999);
     expect(VOICE_IGNITION.name).toBe("Ignition");
   });
-  it("base extra-call credit is £0.90", () => {
-    expect(EXTRA_CALL_PRICE_GBP).toBe(0.9);
+  it("base extra-call credit is £2", () => {
+    expect(EXTRA_CALL_PRICE_GBP).toBe(2);
   });
 });
 

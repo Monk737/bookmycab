@@ -22,8 +22,8 @@ describe("fixed base-plan constants", () => {
       includedAgents: 1,
     });
   });
-  it("default overage is £0.90", () => {
-    expect(DEFAULT_EXTRA_CALL_PRICE_GBP).toBe(0.9);
+  it("default overage is £2", () => {
+    expect(DEFAULT_EXTRA_CALL_PRICE_GBP).toBe(2);
   });
 });
 

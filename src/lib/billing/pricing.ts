@@ -48,7 +48,7 @@ export const VOICE_IGNITION_SPEC = {
 } as const;
 
 /** Default pay-as-you-go overage when a custom plan does not set its own. */
-export const DEFAULT_EXTRA_CALL_PRICE_GBP = 0.9;
+export const DEFAULT_EXTRA_CALL_PRICE_GBP = 2;
 
 export interface ResolvedBasePlanPricing {
   chatGbp: number | null;

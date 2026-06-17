@@ -42,8 +42,8 @@ export const VOICE_IGNITION = {
   setupGbp: 999,
 } as const;
 
-/** Pay-as-you-go base voice credit, GBP per call (custom plans override this). */
-export const EXTRA_CALL_PRICE_GBP = 0.9;
+/** Pay-as-you-go base voice credit, £2 per call (custom plans override this). */
+export const EXTRA_CALL_PRICE_GBP = 2;
 
 /* ----------------------------------------------------------------------------
    FORMAT / CONVERT HELPERS
