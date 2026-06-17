@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/session";
-import { getChatIntelligence } from "@/lib/dashboard/chat-intelligence";
+import { getChatIntelligence, resolveIntelWindow } from "@/lib/dashboard/chat-intelligence";
 import { StatTile, StatGrid, Panel, EmptyState } from "@/components/dashboard/ui";
+import { IntelRangePicker } from "@/components/dashboard/chat/intel-range-picker";
+import { BarList } from "@/components/dashboard/chat/intel-bits";
+import { TopRoutesList, RepeatCustomersList } from "@/components/dashboard/chat/intel-lists";
 
 export const metadata = { title: "Chat Intelligence · BookMyCab" };
 
@@ -11,28 +14,28 @@ const ChatIcon = (
   </svg>
 );
 
-/** Horizontal proportion bar row: label · bar · value. */
-function BarRow({ label, value, count, max, fill = "bg-ink" }: { label: string; value: string; count: number; max: number; fill?: string }) {
+/** Section divider: a display heading on a hard rule, like the rest of the dashboard. */
+function SectionHead({ title, sub }: { title: string; sub?: string }) {
   return (
-    <li className="grid grid-cols-[1fr_auto] items-center gap-3 py-2 first:pt-0">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-bold text-ink">{label}</p>
-        <span className="mt-1 block h-2.5 border-2 border-ink bg-paper">
-          <span className={`block h-full ${fill}`} style={{ width: `${Math.max(4, (count / max) * 100)}%` }} />
-        </span>
-      </div>
-      <span className="shrink-0 text-right font-mono text-xs font-bold tabular-nums text-ink">{value}</span>
-    </li>
+    <div className="mb-3 mt-8 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b-[3px] border-ink pb-2">
+      <h2 className="font-display text-xl font-extrabold uppercase tracking-tight text-ink">{title}</h2>
+      {sub ? <p className="text-xs font-medium text-gray-500">{sub}</p> : null}
+    </div>
   );
 }
 
-export default async function ChatIntelligencePage() {
+export default async function ChatIntelligencePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ days?: string; from?: string; to?: string }>;
+}) {
   const claims = await requireUser();
   if (!claims.tenant_id) {
     return <div className="p-8 text-sm text-gray-700">No organisation linked to your account.</div>;
   }
 
-  const intel = await getChatIntelligence(claims.tenant_id, 30);
+  const win = resolveIntelWindow(await searchParams);
+  const intel = await getChatIntelligence(claims.tenant_id, win);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -40,113 +43,71 @@ export default async function ChatIntelligencePage() {
         <Link href="/dashboard/chat" className="brut-focus text-[11px] font-bold uppercase tracking-[0.12em] text-gray-500 hover:text-ink">
           &larr; Chat
         </Link>
-        <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">WhatsApp booking intelligence</p>
             <h1 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Chat Intelligence</h1>
           </div>
-          <p className="text-xs font-medium text-gray-600">Last {intel.rangeDays} days</p>
+          <div className="flex flex-col items-start gap-1.5 sm:items-end">
+            <IntelRangePicker preset={win.preset} from={win.from} to={win.to} />
+            <p className="font-mono text-[11px] font-medium tabular-nums text-gray-500">{intel.rangeLabel}</p>
+          </div>
         </div>
       </header>
 
       {!intel.hasData ? (
         <EmptyState
           icon={ChatIcon}
-          title="No booking data yet"
-          body="Once your WhatsApp bot starts taking bookings, route, vehicle, timing and revenue intelligence appears here."
+          title="No booking data in this window"
+          body="Once your WhatsApp bot takes bookings in the selected range, route, vehicle, timing and revenue intelligence appears here. Try a wider date range."
         />
       ) : (
         <>
-          {/* Headline booking figures. */}
+          {/* Performance — the window at a glance. */}
           <StatGrid cols="grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-            <StatTile label="Conversations" value={intel.totals.conversations.toLocaleString("en-GB")} sub={`${intel.rangeDays}d`} />
+            <StatTile label="Conversations" value={intel.totals.conversations.toLocaleString("en-GB")} sub="in window" />
             <StatTile label="Booked" value={intel.totals.booked.toLocaleString("en-GB")} sub={`${intel.totals.bookedPct}% of chats`} />
             <StatTile label="Revenue" value={`£${intel.revenue.totalGbp.toLocaleString("en-GB")}`} sub={`${intel.revenue.bookings} bookings`} />
             <StatTile label="Avg fare" value={intel.revenue.avgFareGbp ? `£${intel.revenue.avgFareGbp.toFixed(2)}` : "—"} sub="per booking" />
-            <StatTile label="Cancelled" value={intel.totals.cancelled.toLocaleString("en-GB")} sub="in window" />
+            <StatTile label="Cancelled" value={intel.totals.cancelled.toLocaleString("en-GB")} sub="bot cancels" />
             <StatTile label="Failed" value={intel.totals.failed.toLocaleString("en-GB")} sub="booking attempts" />
           </StatGrid>
 
-          <div className="mt-5 grid gap-5 lg:grid-cols-2">
-            {/* Top routes. */}
-            <Panel title="Top routes">
-              {intel.topRoutes.length === 0 ? (
-                <p className="text-sm text-gray-600">No routes captured yet.</p>
-              ) : (
-                <ul>
-                  {intel.topRoutes.map((r) => (
-                    <BarRow
-                      key={r.label}
-                      label={r.label}
-                      value={`${r.count}${r.avgFare ? ` · ${r.avgFare}` : ""}`}
-                      count={r.count}
-                      max={Math.max(1, ...intel.topRoutes.map((x) => x.count))}
-                      fill="bg-brut-cyan"
-                    />
-                  ))}
-                </ul>
-              )}
-            </Panel>
-
-            {/* Vehicle mix. */}
+          {/* Where & what. */}
+          <SectionHead title="Where & what" sub="Demand by route and vehicle" />
+          <div className="grid items-start gap-5 lg:grid-cols-2">
+            <TopRoutesList items={intel.topRoutes} rangeLabel={intel.rangeLabel} />
             <Panel title="Vehicle mix">
-              {intel.vehicleMix.length === 0 ? (
-                <p className="text-sm text-gray-600">No vehicles captured yet.</p>
-              ) : (
-                <ul>
-                  {intel.vehicleMix.map((v) => (
-                    <BarRow
-                      key={v.type}
-                      label={v.type}
-                      value={`${v.count} · ${v.pct}%`}
-                      count={v.count}
-                      max={Math.max(1, ...intel.vehicleMix.map((x) => x.count))}
-                      fill="bg-brut-violet"
-                    />
-                  ))}
-                </ul>
-              )}
-            </Panel>
-
-            {/* Busiest booking hours. */}
-            <Panel title="Busiest hours (UK)">
-              {intel.busiestHours.length === 0 ? (
-                <p className="text-sm text-gray-600">Not enough bookings yet.</p>
-              ) : (
-                <ul>
-                  {intel.busiestHours.map((h) => (
-                    <BarRow
-                      key={h.hour}
-                      label={h.label}
-                      value={`${h.count}`}
-                      count={h.count}
-                      max={Math.max(1, ...intel.busiestHours.map((x) => x.count))}
-                      fill="bg-brut-lime"
-                    />
-                  ))}
-                </ul>
-              )}
-            </Panel>
-
-            {/* Weekday spread. */}
-            <Panel title="By weekday">
-              <ul>
-                {intel.weekdays.map((d) => (
-                  <BarRow
-                    key={d.wd}
-                    label={d.wd}
-                    value={`${d.count}`}
-                    count={d.count}
-                    max={Math.max(1, ...intel.weekdays.map((x) => x.count))}
-                    fill="bg-brut-orange"
-                  />
-                ))}
-              </ul>
+              <BarList
+                rows={intel.vehicleMix.map((v) => ({ key: v.type, label: v.type, value: `${v.count} · ${v.pct}%`, count: v.count }))}
+                fill="bg-brut-violet"
+                emptyLabel="No vehicles captured yet."
+              />
             </Panel>
           </div>
 
-          {/* Voice vs text, timing, repeat customers. */}
-          <div className="mt-5 grid gap-5 lg:grid-cols-3">
+          {/* When. */}
+          <SectionHead title="When they book" sub="UK local time" />
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Panel title="Busiest hours">
+              <BarList
+                rows={intel.busiestHours.map((h) => ({ key: String(h.hour), label: h.label, value: `${h.count}`, count: h.count }))}
+                fill="bg-brut-lime"
+                emptyLabel="Not enough bookings yet."
+              />
+            </Panel>
+            <Panel title="By weekday">
+              <BarList
+                rows={intel.weekdays.map((d) => ({ key: d.wd, label: d.wd, value: `${d.count}`, count: d.count }))}
+                fill="bg-brut-orange"
+                emptyLabel="Not enough bookings yet."
+              />
+            </Panel>
+          </div>
+
+          {/* Who & how. */}
+          <SectionHead title="Who & how" sub="Channel mix, timing and loyalty" />
+          <div className="grid items-start gap-5 lg:grid-cols-3">
             <Panel title="Voice note vs text">
               <div className="space-y-3">
                 <div className="border-2 border-ink p-3">
@@ -189,22 +150,7 @@ export default async function ChatIntelligencePage() {
               </div>
             </Panel>
 
-            <Panel title="Repeat customers">
-              {intel.repeatCustomers.length === 0 ? (
-                <p className="text-sm text-gray-600">No repeat bookers in this window yet.</p>
-              ) : (
-                <ul className="divide-y-2 divide-gray-100">
-                  {intel.repeatCustomers.map((c) => (
-                    <li key={c.handle} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
-                      <span className="truncate font-mono text-sm text-ink">{c.handle}</span>
-                      <span className="shrink-0 border-2 border-ink bg-brut-yellow px-2 py-0.5 font-mono text-xs font-bold text-ink">
-                        {c.bookings} bookings
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Panel>
+            <RepeatCustomersList items={intel.repeatCustomers} />
           </div>
         </>
       )}

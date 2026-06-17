@@ -9,8 +9,50 @@ import { createClient } from "@/lib/supabase/server";
    computed from the mirrored conversations + bookings the chat workflow wrote.
    -------------------------------------------------------------------------- */
 
+/** Resolved analysis window for the intelligence page. */
+export interface IntelWindow {
+  sinceIso: string;
+  untilIso: string;
+  days: number;
+  label: string;
+  /** Echoed for the range picker's active state. */
+  preset: "7" | "30" | "90" | "custom";
+  from: string | null;
+  to: string | null;
+}
+
+const PRESETS = new Set(["7", "30", "90"]);
+const ymd = (d: Date) => d.toISOString().slice(0, 10);
+
+/** Resolve ?days / ?from&?to search params into an analysis window. Defaults to
+ *  the last 30 days; a valid from+to pair (YYYY-MM-DD) makes a custom range. */
+export function resolveIntelWindow(params: { days?: string; from?: string; to?: string }): IntelWindow {
+  const dre = /^\d{4}-\d{2}-\d{2}$/;
+  const { from, to } = params;
+  if (from && to && dre.test(from) && dre.test(to) && from <= to) {
+    const sinceIso = `${from}T00:00:00.000Z`;
+    const untilIso = `${to}T23:59:59.999Z`;
+    const days = Math.max(1, Math.round((Date.parse(untilIso) - Date.parse(sinceIso)) / 86_400_000));
+    const fmt = (s: string) => new Date(`${s}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+    return { sinceIso, untilIso, days, label: `${fmt(from)} – ${fmt(to)}`, preset: "custom", from, to };
+  }
+  const days = params.days && PRESETS.has(params.days) ? Number(params.days) : 30;
+  const until = new Date();
+  const since = new Date(until.getTime() - days * 86_400_000);
+  return {
+    sinceIso: since.toISOString(),
+    untilIso: until.toISOString(),
+    days,
+    label: `Last ${days} days`,
+    preset: String(days) as "7" | "30" | "90",
+    from: ymd(since),
+    to: ymd(until),
+  };
+}
+
 export interface ChatIntelligence {
   rangeDays: number;
+  rangeLabel: string;
   hasData: boolean;
   totals: { conversations: number; booked: number; bookedPct: number; cancelled: number; failed: number };
   topRoutes: { label: string; count: number; avgFare: string | null }[];
@@ -72,16 +114,15 @@ const num = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-export async function getChatIntelligence(tenantId: string, days = 30): Promise<ChatIntelligence> {
+export async function getChatIntelligence(tenantId: string, win: IntelWindow): Promise<ChatIntelligence> {
   const supabase = await createClient();
-  const since = new Date(Date.now() - days * 86_400_000).toISOString();
 
   const [{ data: convData }, { data: bookData }] = await Promise.all([
     supabase.from("conversations").select("outcome, via_voice, customer_handle")
-      .eq("tenant_id", tenantId).gte("started_at", since),
+      .eq("tenant_id", tenantId).gte("started_at", win.sinceIso).lte("started_at", win.untilIso),
     supabase.from("bookings")
       .select("status, fare, vehicle_type, pickup_address, destination_address, created_at, pickup_at_utc, pickup_time_mode, customer_handle")
-      .eq("tenant_id", tenantId).gte("created_at", since),
+      .eq("tenant_id", tenantId).gte("created_at", win.sinceIso).lte("created_at", win.untilIso),
   ]);
 
   const convos = (convData ?? []) as ConvRow[];
@@ -113,7 +154,7 @@ export async function getChatIntelligence(tenantId: string, days = 30): Promise<
   }
   const topRoutes = [...routeAgg.entries()]
     .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 8)
+    .slice(0, 50)
     .map(([label, v]) => ({
       label,
       count: v.count,
@@ -179,7 +220,7 @@ export async function getChatIntelligence(tenantId: string, days = 30): Promise<
   const repeatCustomers = [...custAgg.entries()]
     .filter(([, n]) => n > 1)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+    .slice(0, 50)
     .map(([handle, bookings]) => ({ handle, bookings }));
 
   // Timing: ASAP vs scheduled, and average lead time for scheduled bookings.
@@ -200,7 +241,8 @@ export async function getChatIntelligence(tenantId: string, days = 30): Promise<
   };
 
   return {
-    rangeDays: days,
+    rangeDays: win.days,
+    rangeLabel: win.label,
     hasData: convos.length > 0 || bookings.length > 0,
     totals,
     topRoutes,

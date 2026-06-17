@@ -57,21 +57,7 @@ export default async function ChatPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gray-500">Chat analytics</p>
           <h1 className="mt-1 font-display text-3xl font-extrabold uppercase tracking-[-0.02em] text-ink sm:text-4xl">Chat</h1>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="text-xs font-medium text-gray-600">Last {c.rangeDays} days · {c.channels.length} channel{c.channels.length === 1 ? "" : "s"}</p>
-          <Link
-            href="/dashboard/chat/briefing"
-            className="brut-press brut-focus inline-flex h-9 items-center border-[3px] border-ink bg-paper px-3.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink shadow-brut-sm"
-          >
-            Weekly Briefing
-          </Link>
-          <Link
-            href="/dashboard/chat/intelligence"
-            className="brut-press brut-focus inline-flex h-9 items-center border-[3px] border-ink bg-brut-yellow px-3.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink shadow-brut"
-          >
-            Chat Intelligence &rarr;
-          </Link>
-        </div>
+        <p className="text-xs font-medium text-gray-600">Last {c.rangeDays} days · {c.channels.length} channel{c.channels.length === 1 ? "" : "s"}</p>
       </header>
 
       {/* Headline figures — all sourced from the WhatsApp Chat + Voice Note workflow. */}

@@ -67,12 +67,6 @@ export default async function VoicePage({
             {cycle.isCurrent ? "Current cycle" : cycle.label} · {v.perAgent.length} agent{v.perAgent.length === 1 ? "" : "s"}
           </p>
           <CyclePicker active={cycle.key} />
-          <Link
-            href={`/dashboard/voice/intelligence${cycle.isCurrent ? "" : `?cycle=${cycle.key}`}`}
-            className="brut-press brut-focus inline-flex h-9 items-center border-[3px] border-ink bg-brut-yellow px-3.5 text-[11px] font-bold uppercase tracking-[0.06em] text-ink shadow-brut"
-          >
-            AI Voice Intelligence &rarr;
-          </Link>
         </div>
       </header>
 

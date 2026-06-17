@@ -7,7 +7,15 @@ import { usePathname } from "next/navigation";
 import { signOut } from "@/app/(auth)/actions";
 import { VoiceMarkLine } from "@/components/marketing/product-marks";
 
-type NavItem = { label: string; href: string; icon: ReactNode; group: "primary" | "account" };
+type NavGroup = "main" | "intelligence" | "briefing" | "account";
+type NavItem = {
+  label: string;
+  href: string;
+  icon: ReactNode;
+  group: NavGroup;
+  /** Match only the exact path (for parents whose sub-pages are listed separately). */
+  exact?: boolean;
+};
 
 /* Square-cap line icons, matching the brutalist stroke of the menu glyphs. */
 const ico = (path: ReactNode) => (
@@ -25,19 +33,40 @@ const ico = (path: ReactNode) => (
   </svg>
 );
 
+const voiceMark = <VoiceMarkLine className="h-5 w-5 shrink-0" />;
+const chartIcon = ico(<path d="M3 20h18M6 20v-5M11 20V8M16 20v-10" />);
+const sparkIcon = ico(<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />);
+
+/* Section labels for the grouped rail. */
+const GROUPS: { key: NavGroup; label: string }[] = [
+  { key: "main", label: "Main" },
+  { key: "intelligence", label: "Intelligence" },
+  { key: "briefing", label: "AI Weekly Briefing" },
+  { key: "account", label: "Account" },
+];
+
 const NAV_ITEMS: NavItem[] = [
-  { label: "Overview", href: "/dashboard", group: "primary", icon: ico(<><path d="M4 13h7V4H4zM13 20h7v-9h-7zM13 4v3h7V4zM4 17v3h7v-3z" /></>) },
-  { label: "Chat", href: "/dashboard/chat", group: "primary", icon: ico(<path d="M4 4h16v11H8l-4 4z" />) },
-  { label: "Voice", href: "/dashboard/voice", group: "primary", icon: <VoiceMarkLine className="h-5 w-5 shrink-0" /> },
+  // Main — the two products + the org overview.
+  { label: "Overview", href: "/dashboard", group: "main", exact: true, icon: ico(<><path d="M4 13h7V4H4zM13 20h7v-9h-7zM13 4v3h7V4zM4 17v3h7v-3z" /></>) },
+  { label: "Chat", href: "/dashboard/chat", group: "main", exact: true, icon: ico(<path d="M4 4h16v11H8l-4 4z" />) },
+  { label: "Voice", href: "/dashboard/voice", group: "main", exact: true, icon: voiceMark },
+  // Intelligence — booking/call analytics per product.
+  { label: "Chat Intelligence", href: "/dashboard/chat/intelligence", group: "intelligence", icon: chartIcon },
+  { label: "AI Voice Intelligence", href: "/dashboard/voice/intelligence", group: "intelligence", icon: chartIcon },
+  // AI Weekly Briefing — the Monday-morning LLM read per product.
+  { label: "Chat Briefing", href: "/dashboard/chat/briefing", group: "briefing", icon: sparkIcon },
+  { label: "Voice Briefing", href: "/dashboard/voice/briefing", group: "briefing", icon: sparkIcon },
+  // Account.
   { label: "Billing", href: "/dashboard/billing", group: "account", icon: ico(<><path d="M3 6h18v12H3z" /><path d="M3 10h18" /></>) },
   { label: "Team", href: "/dashboard/team", group: "account", icon: ico(<><path d="M3 20a5 5 0 0110 0M8 4a3 3 0 110 6 3 3 0 010-6Z" /><path d="M15 20a5 5 0 015-5M16 5a3 3 0 110 6" /></>) },
   { label: "Support", href: "/dashboard/support", group: "account", icon: ico(<><path d="M4 5h16v11H7l-3 3z" /><path d="M9 9h6M9 12h4" /></>) },
 ];
 
-/** True when `href` is the active route (exact for /dashboard, prefix otherwise). */
-function isActive(pathname: string, href: string): boolean {
-  if (href === "/dashboard") return pathname === "/dashboard";
-  return pathname === href || pathname.startsWith(`${href}/`);
+/** True when an item is the active route. Parents with listed sub-pages match
+ *  exactly; leaves match exact-or-prefix so deeper routes still highlight them. */
+function isActive(pathname: string, item: NavItem): boolean {
+  if (item.exact) return pathname === item.href;
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
 // Shared focus style for the ink sidebar, a hard paper outline.
@@ -70,7 +99,7 @@ export function DashboardShell({ orgName, children, notifications }: { orgName: 
   const renderItems = (items: NavItem[], compact: boolean) => (
     <ul className="space-y-1">
       {items.map((item) => {
-        const active = isActive(pathname, item.href);
+        const active = isActive(pathname, item);
         return (
           <li key={item.href}>
             <Link
@@ -93,65 +122,25 @@ export function DashboardShell({ orgName, children, notifications }: { orgName: 
     </ul>
   );
 
-  const briefingActive = isActive(pathname, "/dashboard/voice/briefing");
-  const briefingIcon = (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0" aria-hidden="true">
-      <path d="M12 2l2.4 7.1L22 12l-7.6 2.9L12 22l-2.4-7.1L2 12l7.6-2.9z" fill="currentColor" stroke="#0a0a0a" strokeWidth={1.5} strokeLinejoin="miter" />
-    </svg>
-  );
-
-  /* Featured AI Weekly Briefing entry: a brutalist nav button wearing a yellow
-     "Every Monday morning" ribbon clipped to its top edge. */
-  const briefingNav = (compact: boolean) =>
-    compact ? (
-      <Link
-        href="/dashboard/voice/briefing"
-        aria-current={briefingActive ? "page" : undefined}
-        title="AI Weekly Briefing · every Monday morning"
-        onClick={() => setDrawerOpen(false)}
-        className={`relative flex items-center justify-center border-2 px-2 py-2.5 ${DARK_FOCUS} ${
-          briefingActive ? "border-ink bg-brut-yellow text-ink shadow-brut-sm" : "border-brut-yellow text-brut-yellow hover:bg-gray-800"
-        }`}
-      >
-        {briefingIcon}
-        <span className="sr-only">AI Weekly Briefing</span>
-        <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 h-2 w-2 border border-ink bg-brut-yellow" />
-      </Link>
-    ) : (
-      <div className="relative pt-2.5">
-        <span
-          aria-hidden="true"
-          className="absolute -top-0.5 left-2 z-10 -rotate-1 border-2 border-ink bg-brut-yellow px-1.5 py-0.5 text-[8px] font-extrabold uppercase leading-none tracking-[0.06em] text-ink shadow-brut-sm"
-        >
-          Every Monday morning
-        </span>
-        <Link
-          href="/dashboard/voice/briefing"
-          aria-current={briefingActive ? "page" : undefined}
-          onClick={() => setDrawerOpen(false)}
-          className={`flex items-center gap-3 border-2 px-3 py-2.5 text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,color] duration-150 ${DARK_FOCUS} ${
-            briefingActive
-              ? "border-ink bg-brut-yellow text-ink shadow-brut-sm"
-              : "border-brut-yellow bg-gray-900 text-paper hover:bg-gray-800"
-          }`}
-        >
-          {briefingIcon}
-          <span>AI Weekly Briefing</span>
-        </Link>
-      </div>
-    );
-
+  /* Grouped rail: Main / Intelligence / AI Weekly Briefing / Account. When the
+     desktop rail is collapsed, the section labels drop to thin ink dividers so
+     the groups stay legible as icon clusters. */
   const navLinks = (compact: boolean) => (
     <div className="space-y-5">
-      <div>
-        {!compact && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">Products</p>}
-        {renderItems(NAV_ITEMS.filter((i) => i.group === "primary"), compact)}
-        {briefingNav(compact)}
-      </div>
-      <div>
-        {!compact && <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">Account</p>}
-        {renderItems(NAV_ITEMS.filter((i) => i.group === "account"), compact)}
-      </div>
+      {GROUPS.map((g, i) => {
+        const items = NAV_ITEMS.filter((it) => it.group === g.key);
+        if (items.length === 0) return null;
+        return (
+          <div key={g.key}>
+            {compact ? (
+              i > 0 ? <div aria-hidden="true" className="mx-2 mb-2 border-t-2 border-gray-800" /> : null
+            ) : (
+              <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-500">{g.label}</p>
+            )}
+            {renderItems(items, compact)}
+          </div>
+        );
+      })}
     </div>
   );
 
