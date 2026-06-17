@@ -65,3 +65,60 @@ export function packExpiry(startIso: string, validityDays: number): string {
   d.setUTCDate(d.getUTCDate() + validityDays);
   return d.toISOString().slice(0, 10);
 }
+
+/** Admin edit of an existing custom plan — the economic fields only. */
+export const editCustomPlanSchema = z.object({
+  plan_name: z.string().trim().min(1, "Plan name is required."),
+  monthly_call_allowance: z.coerce.number().int().min(0),
+  included_agents: z.coerce.number().int().min(0),
+  plan_price_gbp: z.coerce.number().min(0),
+  extra_credit_price_gbp: z.coerce.number().min(0),
+  validity_days: z.coerce.number().int().positive("Validity must be at least 1 day."),
+});
+
+export type EditCustomPlanInput = z.infer<typeof editCustomPlanSchema>;
+
+export interface CustomPlanUpdate {
+  custom: {
+    plan_name: string;
+    monthly_call_allowance: number;
+    included_agents: number;
+    plan_price_gbp: number;
+    extra_credit_price_gbp: number;
+    validity_days: number;
+    expires_at: string;
+    updated_at: string;
+  };
+  voice: { monthly_call_allowance: number; included_agents: number; monthly_price_gbp: number };
+  monthlyPrice: number;
+}
+
+/**
+ * Pure builder for a custom-plan edit: shapes the custom_plans patch (recomputing
+ * expires_at from the original start date), the mirrored voice_subscriptions
+ * patch, and the tenant's combined monthly price (voice + any existing chat).
+ */
+export function buildCustomPlanUpdate(
+  input: EditCustomPlanInput,
+  ctx: { startsAt: string | null; chatMonthlyGbp: number | null },
+): CustomPlanUpdate {
+  const base = ctx.startsAt ?? new Date().toISOString().slice(0, 10);
+  return {
+    custom: {
+      plan_name: input.plan_name,
+      monthly_call_allowance: input.monthly_call_allowance,
+      included_agents: input.included_agents,
+      plan_price_gbp: input.plan_price_gbp,
+      extra_credit_price_gbp: input.extra_credit_price_gbp,
+      validity_days: input.validity_days,
+      expires_at: packExpiry(base, input.validity_days),
+      updated_at: new Date().toISOString(),
+    },
+    voice: {
+      monthly_call_allowance: input.monthly_call_allowance,
+      included_agents: input.included_agents,
+      monthly_price_gbp: input.plan_price_gbp,
+    },
+    monthlyPrice: input.plan_price_gbp + (ctx.chatMonthlyGbp ?? 0),
+  };
+}
