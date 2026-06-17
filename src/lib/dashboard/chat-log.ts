@@ -17,6 +17,8 @@ export interface ChatConversationLogRow {
   channel: string;
   outcome: string;
   viaVoice: boolean;
+  /** True when a WhatsApp voice note was captured for this journey (playable). */
+  hasVoiceNote: boolean;
   summary: string | null;
   startedAt: string;
   endedAt: string | null;
@@ -35,6 +37,8 @@ export interface ChatBookingLogRow {
   vehicleType: string | null;
   passengers: number | null;
   fare: string | null;
+  distance: number | null;
+  distanceUnit: string | null;
   pickupAt: string | null;
   pickupTimeMode: string | null;
   driverNote: string | null;
@@ -74,7 +78,7 @@ export async function getChatConversations(
   const { data: convos } = await supabase
     .from("conversations")
     .select(
-      "id, customer_handle, customer_name, outcome, via_voice, summary, started_at, ended_at, channel_id",
+      "id, customer_handle, customer_name, outcome, via_voice, voice_note_path, summary, started_at, ended_at, channel_id",
     )
     .eq("tenant_id", tenantId)
     .gte("started_at", since)
@@ -115,6 +119,7 @@ export async function getChatConversations(
       channel: (r.channel_id ? channelType.get(r.channel_id as string) : undefined) ?? "whatsapp",
       outcome: (r.outcome as string) ?? "unknown",
       viaVoice: Boolean(r.via_voice),
+      hasVoiceNote: Boolean(r.voice_note_path),
       summary: (r.summary as string) ?? null,
       startedAt: r.started_at as string,
       endedAt: (r.ended_at as string) ?? null,
@@ -134,9 +139,12 @@ export async function getChatBookings(
   const { data } = await supabase
     .from("bookings")
     .select(
-      "id, dispatch_ref, status, passenger_name, customer_handle, pickup_address, destination_address, vehicle_type, passenger_count, fare, currency, pickup_at_utc, pickup_time_mode, driver_note, summary, created_at, updated_at",
+      "id, dispatch_ref, status, passenger_name, customer_handle, pickup_address, destination_address, vehicle_type, passenger_count, fare, currency, distance, distance_unit, pickup_at_utc, pickup_time_mode, driver_note, summary, created_at, updated_at",
     )
     .eq("tenant_id", tenantId)
+    // The Chat bookings feed shows only the rides the bot acted on: booked
+    // (confirmed), modified, cancelled — never dispatch lifecycle states.
+    .in("status", ["confirmed", "modified", "cancelled"])
     .gte("created_at", since)
     .order("created_at", { ascending: false })
     .limit(1500);
@@ -152,6 +160,8 @@ export async function getChatBookings(
     vehicleType: (b.vehicle_type as string) ?? null,
     passengers: (b.passenger_count as number) ?? null,
     fare: formatFare(b.fare, b.currency),
+    distance: b.distance != null && Number.isFinite(Number(b.distance)) ? Number(b.distance) : null,
+    distanceUnit: (b.distance_unit as string)?.trim() || null,
     pickupAt: (b.pickup_at_utc as string) ?? null,
     pickupTimeMode: (b.pickup_time_mode as string) ?? null,
     driverNote: (b.driver_note as string) ?? null,

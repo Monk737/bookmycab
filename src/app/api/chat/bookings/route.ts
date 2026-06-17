@@ -63,6 +63,8 @@ export async function POST(req: Request) {
     p_driver_note: d.driver_note ?? null,
     p_raw: (d.raw ?? null) as never,
     p_summary: d.summary ?? null,
+    p_distance: d.distance ?? null,
+    p_distance_unit: d.distance_unit ?? null,
   });
   if (error) {
     console.error("record_chat_booking failed", error);

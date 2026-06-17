@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { LogShell } from "@/components/dashboard/voice/log-shell";
 import { localDateKey, fmtDateTime, fmtPickup } from "@/lib/voice/format";
-import { chatOutcomeLabel, channelLabel } from "@/lib/dashboard/chat-format";
+import { chatOutcomeLabel, channelLabel, bookingStatusLabel, formatDistance } from "@/lib/dashboard/chat-format";
 import { ChatDetailDrawer, type ChatDrawerItem } from "./chat-detail-drawer";
 import type { ChatConversationLogRow, ChatBookingLogRow } from "@/lib/dashboard/chat-log";
 
@@ -19,6 +19,7 @@ const OUTCOME_FILL: Record<string, string> = {
 
 const STATUS_FILL: Record<string, string> = {
   confirmed: "bg-brut-lime",
+  modified: "bg-brut-violet",
   dispatched: "bg-brut-cyan",
   completed: "bg-brut-violet",
   cancelled: "bg-brut-red",
@@ -64,7 +65,7 @@ function ConversationBody(c: ChatConversationLogRow) {
       {d ? (
         <p className="truncate text-sm text-gray-600">{d}</p>
       ) : (
-        <p className="text-sm text-gray-400">No transcript summary — open to view the conversation.</p>
+        <p className="text-sm text-gray-400">Summary pending — open to view the journey.</p>
       )}
     </div>
   );
@@ -105,13 +106,15 @@ export function ConversationsLog({ items }: { items: ChatConversationLogRow[] })
 /* --------------------------------- Bookings ------------------------------- */
 
 function BookingBody(b: ChatBookingLogRow) {
+  const distanceLine = formatDistance(b.distance, b.distanceUnit);
+  const bookingDigest = digest(b.summary);
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
         <span className={`h-3 w-3 shrink-0 border-2 border-ink ${STATUS_FILL[b.status] ?? "bg-gray-300"}`} aria-hidden="true" />
         {b.ref ? <span className="font-mono text-xs font-bold tabular-nums text-ink">#{b.ref}</span> : null}
         <span className="border-2 border-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.06em] text-ink">
-          {b.status.replace("_", " ")}
+          {bookingStatusLabel(b.status)}
         </span>
         {b.passengerName ? <span className="text-sm font-bold text-ink">{b.passengerName}</span> : null}
         {b.fare ? <span className="font-mono text-xs font-bold tabular-nums text-ink">{b.fare}</span> : null}
@@ -121,8 +124,10 @@ function BookingBody(b: ChatBookingLogRow) {
         {b.pickup ?? "—"} <span className="text-gray-400">&rarr;</span> {b.destination ?? "—"}
         {b.passengers != null ? <span className="text-gray-500"> &middot; {b.passengers} pax</span> : null}
         {b.vehicleType ? <span className="text-gray-500"> &middot; {b.vehicleType}</span> : null}
+        {distanceLine ? <span className="text-gray-500"> &middot; {distanceLine}</span> : null}
         <span className="text-gray-500"> &middot; {b.pickupTimeMode === "asap" ? "ASAP" : b.pickupAt ? fmtPickup(b.pickupAt) : "time TBC"}</span>
       </p>
+      {bookingDigest ? <p className="truncate text-sm text-gray-500">{bookingDigest}</p> : null}
     </div>
   );
 }

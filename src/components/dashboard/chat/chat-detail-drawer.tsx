@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { fmtDateTime, fmtPickup } from "@/lib/voice/format";
-import { chatOutcomeLabel, channelLabel } from "@/lib/dashboard/chat-format";
+import { chatOutcomeLabel, channelLabel, bookingStatusLabel, formatDistance } from "@/lib/dashboard/chat-format";
 import type { ChatConversationLogRow, ChatBookingLogRow } from "@/lib/dashboard/chat-log";
 
 const OUTCOME_BADGE: Record<string, string> = {
@@ -17,6 +17,7 @@ const OUTCOME_BADGE: Record<string, string> = {
 
 const STATUS_BADGE: Record<string, string> = {
   confirmed: "bg-brut-lime",
+  modified: "bg-brut-violet",
   dispatched: "bg-brut-cyan",
   completed: "bg-brut-violet",
   cancelled: "bg-brut-red",
@@ -37,12 +38,52 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-/** The bot's verbatim reply card (emojis + line breaks preserved). */
-function CardText({ text }: { text: string }) {
+/** Plain-language summary of what the customer did this journey (emojis + line
+ *  breaks preserved). Not a transcript of text messages. */
+function SummaryCard({ text }: { text: string }) {
   return (
     <div className="border-[3px] border-ink bg-brut-yellow/20 p-3">
-      <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-ink/70">What the customer saw</p>
+      <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-ink/70">What the customer did</p>
       <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-ink">{text}</pre>
+    </div>
+  );
+}
+
+/** Pulls a signed URL for the conversation's voice note and renders a player. */
+function VoiceNotePlayer({ conversationId }: { conversationId: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let alive = true;
+    setState("loading");
+    fetch(`/api/chat/voice-note/${conversationId}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d: { url: string }) => {
+        if (!alive) return;
+        setUrl(d.url);
+        setState("ready");
+      })
+      .catch(() => {
+        if (alive) setState("error");
+      });
+    return () => {
+      alive = false;
+    };
+  }, [conversationId]);
+
+  return (
+    <div className="border-[3px] border-ink bg-brut-cyan/15 p-3">
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-ink/70">Voice note</p>
+      {state === "loading" ? (
+        <p className="text-sm text-gray-500">Loading the recording…</p>
+      ) : state === "error" || !url ? (
+        <p className="text-sm text-gray-500">The voice note isn&rsquo;t available.</p>
+      ) : (
+        <audio controls preload="none" src={url} className="w-full">
+          <track kind="captions" />
+        </audio>
+      )}
     </div>
   );
 }
@@ -67,7 +108,7 @@ export function ChatDetailDrawer({ item, onClose }: { item: ChatDrawerItem | nul
   const isConv = item.kind === "conversation";
   const badge = isConv ? item.row.outcome : item.row.status;
   const badgeCls = isConv ? OUTCOME_BADGE[badge] ?? "bg-gray-200" : STATUS_BADGE[badge] ?? "bg-gray-200";
-  const badgeLabel = isConv ? chatOutcomeLabel(badge) : badge.replace("_", " ");
+  const badgeLabel = isConv ? chatOutcomeLabel(badge) : bookingStatusLabel(badge);
   const title = isConv ? item.row.who : item.row.passengerName || item.row.contact || "Booking";
 
   return (
@@ -110,21 +151,23 @@ export function ChatDetailDrawer({ item, onClose }: { item: ChatDrawerItem | nul
                 <Field label="Ended" value={item.row.endedAt ? fmtDateTime(item.row.endedAt) : "—"} />
                 <Field label="Booking" value={item.row.bookingRef ? <span className="font-mono font-bold">#{item.row.bookingRef}</span> : "—"} />
               </dl>
-              {item.row.summary ? <CardText text={item.row.summary} /> : (
-                <p className="py-4 text-center text-sm text-gray-500">No summary captured for this conversation.</p>
+              {item.row.summary ? <SummaryCard text={item.row.summary} /> : (
+                <p className="py-4 text-center text-sm text-gray-500">No summary captured for this conversation yet.</p>
               )}
+              {item.row.hasVoiceNote ? <VoiceNotePlayer conversationId={item.row.id} /> : null}
             </>
           ) : (
             <>
               <dl>
                 <Field label="Reference" value={item.row.ref ? <span className="font-mono font-bold">#{item.row.ref}</span> : "—"} />
-                <Field label="Status" value={item.row.status.replace("_", " ")} />
+                <Field label="Status" value={bookingStatusLabel(item.row.status)} />
                 <Field label="Passenger" value={item.row.passengerName ?? "—"} />
                 <Field label="Contact" value={item.row.contact ? <span className="font-mono">{item.row.contact}</span> : "—"} />
                 <Field label="Passengers" value={item.row.passengers != null ? `${item.row.passengers}` : "—"} />
                 <Field label="Vehicle" value={item.row.vehicleType ?? "—"} />
                 <Field label="Pickup" value={item.row.pickup ?? "—"} />
                 <Field label="Destination" value={item.row.destination ?? "—"} />
+                <Field label="Distance" value={formatDistance(item.row.distance, item.row.distanceUnit) ?? "—"} />
                 <Field
                   label="Pickup time"
                   value={item.row.pickupTimeMode === "asap" ? "ASAP" : item.row.pickupAt ? fmtPickup(item.row.pickupAt) : "—"}
@@ -136,7 +179,7 @@ export function ChatDetailDrawer({ item, onClose }: { item: ChatDrawerItem | nul
                   <Field label="Updated" value={fmtDateTime(item.row.updatedAt)} />
                 ) : null}
               </dl>
-              {item.row.summary ? <CardText text={item.row.summary} /> : null}
+              {item.row.summary ? <SummaryCard text={item.row.summary} /> : null}
             </>
           )}
         </div>

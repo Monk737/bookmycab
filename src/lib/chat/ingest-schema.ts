@@ -40,9 +40,12 @@ export const chatConversationSchema = z.object({
   /** True when this journey involved a WhatsApp voice note (analytics only). */
   via_voice: z.boolean().optional(),
   language: z.string().max(12).optional(),
-  /** The bot's own reply card text for this outcome, stored verbatim so the
-   *  dashboard drawer shows exactly what the customer saw. */
+  /** A plain-language summary of what the customer DID this journey (their
+   *  actions/asks), composed by the workflow. Not a transcript of text messages. */
   summary: z.string().max(8000).optional(),
+  /** Storage object path of the decisive WhatsApp voice note, when one was sent
+   *  (private bucket chat-voice-notes). The dashboard signs it on demand. */
+  voice_note_path: z.string().max(512).optional(),
 });
 
 export type ChatConversationBody = z.infer<typeof chatConversationSchema>;
@@ -91,9 +94,13 @@ export const chatBookingSchema = z.object({
   pickup_at: z.string().optional(),
   pickup_time_mode: z.string().max(20).optional(),
   driver_note: z.string().max(2000).optional(),
+  /** Trip distance from the dispatch quote (AutoCab outward.distance). */
+  distance: z.number().nonnegative().optional(),
+  /** Unit for `distance` (AutoCab measurement, e.g. "Miles"). Defaults to Miles. */
+  distance_unit: z.string().max(16).optional(),
   /** Full dispatch response, stored verbatim for audit. */
   raw: z.unknown().optional(),
-  /** The bot's own booking-card text, stored verbatim for the detail drawer. */
+  /** A plain-language summary of what the customer DID for this booking. */
   summary: z.string().max(8000).optional(),
 });
 
