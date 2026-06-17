@@ -11,6 +11,7 @@ import { writeAudit } from "@/lib/admin/audit";
 import { sendEmail } from "@/lib/email/resend";
 import { automationCreatedEmail, tenantWelcomeEmail } from "@/lib/email/templates";
 import { VOICE_IGNITION_SPEC } from "@/lib/billing/pricing";
+import { editCustomPlanSchema, buildCustomPlanUpdate } from "@/lib/billing/custom-plan";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
 export type ActionState = {
@@ -906,4 +907,74 @@ export async function forceDeleteAutomation(
   });
 
   revalidatePath(`/admin/tenants/${tenantId}`);
+}
+
+/**
+ * Edit an existing tenant's CUSTOM plan economics (admin only). Updates the
+ * custom_plans row, mirrors allowance/agents/price into voice_subscriptions, and
+ * keeps tenants.monthly_price (the MRR source of truth) in sync. The new
+ * extra_credit_price_gbp takes effect immediately for the tenant's next top-up
+ * (the credit-checkout route reads it live). No-op for non-custom tenants.
+ */
+export async function updateCustomPlan(
+  tenantId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const claims = await requireStaff();
+  const client = serviceClient();
+
+  const parsed = editCustomPlanSchema.safeParse({
+    plan_name: formData.get("plan_name"),
+    monthly_call_allowance: formData.get("monthly_call_allowance"),
+    included_agents: formData.get("included_agents"),
+    plan_price_gbp: formData.get("plan_price_gbp"),
+    extra_credit_price_gbp: formData.get("extra_credit_price_gbp"),
+    validity_days: formData.get("validity_days"),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
+  }
+
+  const { data: existing } = await client
+    .from("custom_plans")
+    .select("starts_at, chat_monthly_gbp")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (!existing) {
+    return { fieldErrors: {}, formError: "This tenant has no custom plan to edit." };
+  }
+
+  const update = buildCustomPlanUpdate(parsed.data, {
+    startsAt: (existing.starts_at as string | null) ?? null,
+    chatMonthlyGbp: existing.chat_monthly_gbp == null ? null : Number(existing.chat_monthly_gbp),
+  });
+
+  const { error: cpErr } = await client.from("custom_plans").update(update.custom).eq("tenant_id", tenantId);
+  if (cpErr) {
+    console.error("updateCustomPlan: custom_plans update failed", cpErr);
+    return { fieldErrors: {}, formError: "Could not update the custom plan. Please try again." };
+  }
+
+  // Mirror the voice economics so the call pool + dashboard reflect the edit.
+  await client.from("voice_subscriptions").update(update.voice).eq("tenant_id", tenantId);
+  await client.from("tenants").update({ monthly_price: update.monthlyPrice }).eq("id", tenantId);
+
+  const audited = await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "tenant.custom_plan_update",
+    targetType: "tenant",
+    targetId: tenantId,
+    metadata: {
+      plan_name: parsed.data.plan_name,
+      monthly_call_allowance: parsed.data.monthly_call_allowance,
+      extra_credit_price_gbp: parsed.data.extra_credit_price_gbp,
+      plan_price_gbp: parsed.data.plan_price_gbp,
+    },
+  });
+  if (!audited) console.error("audit write failed for tenant.custom_plan_update", { tenantId });
+
+  revalidatePath(`/admin/tenants/${tenantId}`);
+  return { fieldErrors: {}, formError: null, ok: true };
 }
