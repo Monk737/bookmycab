@@ -8,8 +8,10 @@ import { env } from "@/env";
  * `writeAudit` so the audit contract lives in one place.
  */
 export type AuditEntry = {
-  /** UUID of the staff user performing the action. */
-  actorUserId: string;
+  /** UUID of the user performing the action, or null for system / webhook-driven
+   *  actions (e.g. billing-driven automation pause/resume). The column is a
+   *  nullable FK, so null is a valid actor. */
+  actorUserId: string | null;
   /** Tenant the action targets, when applicable (null for platform-wide actions). */
   tenantId?: string | null;
   /** Required machine-readable action verb, e.g. "tenant.provision". */
