@@ -5,7 +5,7 @@ import { blockIfDemo } from "@/lib/demo/session";
 import { getStripe } from "@/lib/billing/stripe";
 import { getBillingOverview } from "@/lib/dashboard/billing-queries";
 import { createClient } from "@/lib/supabase/server";
-import { resolveTopupAmount } from "@/lib/billing/credit";
+import { resolveTopupAmount, creditsForGbpAt, CREDIT_UNIT_GBP } from "@/lib/billing/credit";
 import { applyDiscount } from "@/lib/admin/coupons";
 import { buildCreditCheckoutParams } from "@/lib/billing/credit-checkout";
 
@@ -40,9 +40,27 @@ export async function POST(req: Request, ctx: { params: Promise<{ orgId: string 
   const r = resolveTopupAmount({ packId, customGbp });
   if (!r.ok) return badRequest(r.error);
 
+  // Load tenant's custom overage rate (if any). A missing row means base rate.
+  const supabase = await createClient();
+  const { data: customPlanRow } = await supabase
+    .from("custom_plans")
+    .select("extra_credit_price_gbp")
+    .eq("tenant_id", orgId)
+    .maybeSingle();
+  const rawCustomPrice = Number((customPlanRow as { extra_credit_price_gbp?: unknown } | null)?.extra_credit_price_gbp);
+  const unitGbp = rawCustomPrice > 0 ? rawCustomPrice : CREDIT_UNIT_GBP;
+
+  // For ad-hoc custom GBP amounts, recompute credits at the tenant's unit rate.
+  // Pack selections carry their own fixed credit counts — never recompute those.
+  const finalCredits = packId ? r.credits : creditsForGbpAt(r.gbp, unitGbp);
+
+  // Per-credit price recorded in the ledger: a pack's effective rate
+  // (price ÷ credits), otherwise the tenant's ad-hoc unit rate — so the audited
+  // unit price always matches what was actually charged.
+  const ledgerUnitGbp = packId && r.credits > 0 ? r.gbp / r.credits : unitGbp;
+
   let finalGbp = r.gbp;
   if (couponCode) {
-    const supabase = await createClient();
     const { data, error } = await supabase.rpc("validate_coupon", {
       p_code: couponCode,
       p_applies_to: "credit",
@@ -74,9 +92,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ orgId: string 
       orgId,
       origin: new URL(req.url).origin,
       gbp: r.gbp,
-      credits: r.credits,
+      credits: finalCredits,
       finalGbp,
       couponCode,
+      unitGbp: ledgerUnitGbp,
     });
     const session = await getStripe().checkout.sessions.create(params);
     return NextResponse.json({ url: session.url });

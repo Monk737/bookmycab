@@ -15,6 +15,7 @@ export type BuildCard = {
   engineerEmail: string | null;
   targetGoLive: string | null;
   buildNotes: string | null;
+  invoicePaid: boolean;
 };
 
 function formatDate(value: string | null): string {
@@ -164,14 +165,21 @@ function Card({ card }: { card: BuildCard }) {
         )}
 
         {card.buildStage === "UAT" && (
-          <button
-            type="button"
-            onClick={handleGoLive}
-            disabled={pending}
-            className="cursor-pointer bg-brut-lime px-2 py-1.5 text-xs font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {pending ? "Working…" : "Go Live"}
-          </button>
+          <>
+            {!card.invoicePaid && (
+              <p className="border-2 border-ink bg-brut-red/15 px-2 py-1.5 text-center font-mono text-[10px] font-medium uppercase tracking-wider text-brut-red-deep">
+                ⚠ Invoice unpaid
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={handleGoLive}
+              disabled={pending}
+              className="cursor-pointer bg-brut-lime px-2 py-1.5 text-xs font-medium text-white outline-none transition-colors hover:bg-brut-lime focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pending ? "Working…" : card.invoicePaid ? "Go Live" : "Go Live anyway"}
+            </button>
+          </>
         )}
       </div>
     </article>

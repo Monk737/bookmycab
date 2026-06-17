@@ -6,6 +6,8 @@ import { periodBounds } from "@/lib/entitlements/meter";
 import { getStripe } from "@/lib/billing/stripe";
 import { sendEmail } from "@/lib/email/resend";
 import { paymentFailedEmail, paymentReceivedEmail } from "@/lib/email/templates";
+import { del } from "@/lib/redis/cache";
+import { automationCacheKey } from "@/lib/webhooks/resolver";
 import type { Currency } from "@/lib/marketing/pricing";
 
 /** The narrow slice of the Supabase client the reset helper needs. Kept minimal
@@ -57,8 +59,9 @@ export function buildResetVoiceCallPool(
   };
 }
 
-/** Unit price of a single voice top-up credit, in micros (£0.90 → 900,000). */
-const TOPUP_UNIT_PRICE_MICROS = 900_000;
+/** Unit price of a single voice top-up credit, in micros (base £2 → 2,000,000).
+ *  Custom-plan top-ups pass their own price via session metadata. */
+const TOPUP_UNIT_PRICE_MICROS = 2_000_000;
 
 /**
  * Build the credit top-up grant operation against a Supabase-like client. On a
@@ -71,7 +74,7 @@ const TOPUP_UNIT_PRICE_MICROS = 900_000;
 export function buildGrantTopupCredits(
   db: SupabaseLike,
 ): BillingDeps["grantTopupCredits"] {
-  return async ({ sessionId, paymentIntentId, tenantId, credits, couponCode }) => {
+  return async ({ sessionId, paymentIntentId, tenantId, credits, couponCode, unitPriceMicros }) => {
     // Idempotency: the ledger is append-only, so we cannot upsert-on-conflict.
     // A SELECT on the payment-intent id catches a re-delivered webhook.
     const { data: existing, error: lookupErr } = await db
@@ -86,7 +89,7 @@ export function buildGrantTopupCredits(
       tenant_id: tenantId,
       delta: credits,
       reason: "topup_purchase",
-      unit_price_micros: TOPUP_UNIT_PRICE_MICROS,
+      unit_price_micros: unitPriceMicros ?? TOPUP_UNIT_PRICE_MICROS,
       currency: "GBP",
       stripe_payment_intent_id: paymentIntentId,
     });
@@ -157,6 +160,34 @@ export function buildBillingDeps(): BillingDeps {
         .update(out.update)
         .eq("stripe_subscription_id", out.stripe_subscription_id);
       if (error) throw new Error(`updateNewModelSubscription failed: ${error.message}`);
+
+      // A chat subscription status change drives the chat billing gate, which is
+      // read from the cached resolver record. Invalidate that cache for the
+      // tenant's chat automations so a lapse/renewal takes effect promptly
+      // instead of after the ≤5-min TTL. Best-effort: a Redis blip must not fail
+      // the webhook (the gate still corrects itself when the TTL expires).
+      if (out.table === "chat_subscriptions") {
+        try {
+          const { data: sub } = await db
+            .from("chat_subscriptions")
+            .select("tenant_id")
+            .eq("stripe_subscription_id", out.stripe_subscription_id)
+            .maybeSingle();
+          const tenantId = (sub as { tenant_id?: string } | null)?.tenant_id;
+          if (tenantId) {
+            const { data: autos } = await db
+              .from("automations")
+              .select("id")
+              .eq("tenant_id", tenantId)
+              .neq("type", "Voice");
+            await Promise.all(
+              ((autos ?? []) as Array<{ id: string }>).map((a) => del(automationCacheKey(a.id))),
+            );
+          }
+        } catch (err) {
+          console.error("updateNewModelSubscription: chat resolver-cache invalidation failed", err);
+        }
+      }
     },
 
     resetVoiceCallPool: buildResetVoiceCallPool(db),
@@ -207,6 +238,41 @@ export function buildBillingDeps(): BillingDeps {
       const recipients = [env.RESEND_FROM_EMAIL];
       if (info.customerEmail) recipients.push(info.customerEmail);
       await sendEmail({ to: recipients, subject: body.subject, html: body.html, text: body.text });
+    },
+
+    async grantCustomPackPool(stripeInvoiceId) {
+      // Find the tenant whose activation invoice this is.
+      const { data: fee } = await db
+        .from("setup_fees").select("tenant_id").eq("stripe_invoice_id", stripeInvoiceId).maybeSingle();
+      const tenantId = (fee as { tenant_id?: string } | null)?.tenant_id;
+      if (!tenantId) return;
+      const { data: plan } = await db
+        .from("custom_plans")
+        .select("billing_mode, monthly_call_allowance, starts_at, expires_at")
+        .eq("tenant_id", tenantId).maybeSingle();
+      const p = plan as { billing_mode: string; monthly_call_allowance: number; starts_at: string | null; expires_at: string | null } | null;
+      if (!p || p.billing_mode !== "one_time") return; // recurring handled by resetVoiceCallPool
+      const start = p.starts_at ?? new Date().toISOString().slice(0, 10);
+      const end = p.expires_at ?? start;
+      // INSERT-ONLY: a re-delivered invoice.paid is a no-op.
+      const { error } = await db.from("usage_counters").upsert(
+        { tenant_id: tenantId, feature_key: "voice_calls", period_start: start, period_end: end, used: 0, limit_amount: p.monthly_call_allowance },
+        { onConflict: "tenant_id,feature_key,period_start", ignoreDuplicates: true },
+      );
+      if (error) throw new Error(`grantCustomPackPool failed: ${error.message}`);
+    },
+
+    async enableAutopayRenewals({ customerId }) {
+      const stripe = getStripe();
+      const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 100 });
+      for (const sub of subs.data) {
+        // Only our product subscriptions; skip non-BookMyCab subs + any already
+        // auto-charging.
+        const product = sub.metadata?.product;
+        if (product !== "chat" && product !== "voice") continue;
+        if (sub.collection_method === "charge_automatically") continue;
+        await stripe.subscriptions.update(sub.id, { collection_method: "charge_automatically" });
+      }
     },
 
     async sendPaymentReceivedEmail(info) {

@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   CREDIT_PACKS,
   MIN_TOPUP_GBP,
-  creditsForGbp,
+  creditsForGbpAt,
   validateCustomTopup,
 } from "@/lib/billing/credit";
 
@@ -16,6 +16,9 @@ interface CreditTopupProps {
   remainingCalls: number;
   /** Monthly plan call allowance. */
   allowance: number;
+  /** The tenant's effective per-credit rate (GBP). Custom-plan tenants pass
+   *  their own rate; omit/undefined uses the base £2 rate. */
+  unitGbp?: number;
 }
 
 export function CreditTopup({
@@ -23,6 +26,7 @@ export function CreditTopup({
   balance,
   remainingCalls,
   allowance,
+  unitGbp,
 }: CreditTopupProps) {
   const [coupon, setCoupon] = useState("");
   const [customGbp, setCustomGbp] = useState("");
@@ -31,8 +35,9 @@ export function CreditTopup({
 
   const customNum = customGbp === "" ? NaN : Number(customGbp);
   const customValidation = customGbp === "" ? null : validateCustomTopup(customNum);
-  const customCredits =
-    customValidation?.ok ? customValidation.credits : Number.isFinite(customNum) ? creditsForGbp(customNum) : 0;
+  // Preview the credit count at the tenant's effective rate so it matches what
+  // the server actually grants (custom rate for custom plans, base £2 otherwise).
+  const customCredits = Number.isFinite(customNum) ? creditsForGbpAt(customNum, unitGbp) : 0;
 
   async function startCheckout(payload: { packId?: string; customGbp?: number }) {
     setError(null);

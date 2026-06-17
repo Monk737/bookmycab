@@ -7,6 +7,11 @@ export type ResolvedAutomation = {
   tenantId: string;
   status: string; // building | uat | live | stopped | error
   engineWebhookUrl: string | null;
+  /** Tenant's chat subscription status (active | paused | cancelled), or null
+   *  when the tenant has no chat_subscriptions row. Drives the chat billing gate
+   *  in the webhook gateway. Cached with the rest of the record (≤ TTL staleness;
+   *  the billing webhook invalidates this on a status change for prompt resume). */
+  chatSubStatus: string | null;
 };
 
 /** Service-role read: the gateway is unauthenticated, RLS would block it. */
@@ -20,11 +25,21 @@ export async function loadAutomationFromDb(
     .eq("id", automationId)
     .maybeSingle();
   if (!data) return null;
+
+  // The tenant's chat subscription status (one row per tenant). Fetched only on
+  // a resolver cache miss, so it stays off the per-message hot path.
+  const { data: chatSub } = await supabase
+    .from("chat_subscriptions")
+    .select("status")
+    .eq("tenant_id", data.tenant_id)
+    .maybeSingle();
+
   return {
     automationId: data.id,
     tenantId: data.tenant_id,
     status: data.status,
     engineWebhookUrl: data.engine_webhook_url,
+    chatSubStatus: (chatSub?.status as string | null) ?? null,
   };
 }
 

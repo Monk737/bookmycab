@@ -221,7 +221,7 @@ export function voiceUsageLowEmail(args: {
     heading: `Your call plan is running low`,
     paragraphs: [
       `Hi ${args.tenantName}, you've used most of this month's AI Voice call allowance.`,
-      `When the plan is used up, calls keep being answered on pay-as-you-go credit at £0.90 per call. You can top up in advance to stay ahead.`,
+      `When the plan is used up, calls keep being answered on your pay-as-you-go credit. You can top up in advance to stay ahead.`,
     ],
     facts: [
       ["Calls remaining", `${args.remaining}`],
@@ -284,5 +284,32 @@ export function paymentFailedEmail(args: {
     ...(args.invoiceUrl
       ? { cta: { label: "Update your payment method", url: args.invoiceUrl } }
       : { note: "Please contact your BookMyCab account manager to resolve this." }),
+  });
+}
+
+/**
+ * Activation invoice: the first invoice (setup + first period) a tenant must
+ * pay before their automation goes live. CTA → the Stripe hosted invoice.
+ */
+export function activationInvoiceEmail(args: {
+  tenantName: string;
+  planLabel: string;
+  amountMajor: number;
+  currency: Currency;
+  invoiceUrl: string;
+}): EmailBody {
+  const amount = formatPrice(args.currency, args.amountMajor);
+  return render(`Your BookMyCab invoice is ready, ${args.tenantName} (${amount})`, {
+    heading: `Your BookMyCab invoice is ready`,
+    paragraphs: [
+      `Thanks for choosing BookMyCab, ${args.tenantName}. Your ${args.planLabel} plan is set up and ready.`,
+      `To activate your automation, please settle the invoice below. As soon as it's paid, our team takes your automation live, you don't need to do anything else.`,
+    ],
+    facts: [
+      ["Plan", args.planLabel],
+      ["Amount due", amount],
+    ],
+    cta: { label: "Pay your invoice", url: args.invoiceUrl },
+    note: "This is a one-time setup plus your first billing period. Future invoices follow your normal cycle.",
   });
 }

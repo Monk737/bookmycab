@@ -10,7 +10,8 @@ import { requireStaff } from "@/lib/admin/guard";
 import { writeAudit } from "@/lib/admin/audit";
 import { sendEmail } from "@/lib/email/resend";
 import { automationCreatedEmail, tenantWelcomeEmail } from "@/lib/email/templates";
-import { VOICE_PLAN_SPEC, VOICE_PRICE_GBP, type NewTierKey } from "@/lib/billing/pricing";
+import { VOICE_IGNITION_SPEC } from "@/lib/billing/pricing";
+import { editCustomPlanSchema, buildCustomPlanUpdate } from "@/lib/billing/custom-plan";
 
 /** Form-state shape shared by the detail-page forms (mirrors the new-tenant form). */
 export type ActionState = {
@@ -24,7 +25,6 @@ const INVITE_ROLES = ["Owner", "Admin", "Viewer"] as const;
 const DISPATCH_ADAPTERS = ["autocab", "icabbi", "cordic"] as const;
 const AUTOMATION_TYPES = ["Booking", "Support", "Driver", "Custom", "Voice"] as const;
 const CHANNEL_TYPES = ["whatsapp", "telegram", "messenger", "instagram", "widget"] as const;
-const VOICE_TIERS = ["ignition", "in_motion", "full_throttle"] as const;
 
 function serviceClient() {
   return createSupabaseJS(
@@ -558,8 +558,6 @@ const createAutomationSchema = z
     phone_number: optionalText,
     channel_type: z.enum(CHANNEL_TYPES).optional(),
     channel_handle: optionalText,
-    // Only used when adding a Voice agent to a tenant with no voice plan yet.
-    voice_tier: z.enum(VOICE_TIERS).optional(),
     // Engine wiring (Voice): the tenant's cloned n8n workflow + Vapi assistant.
     engine_workflow_id: optionalText,
     vapi_assistant_id: optionalText,
@@ -684,7 +682,6 @@ export async function createAutomation(
     phone_number: formData.get("phone_number") ?? undefined,
     channel_type: formData.get("channel_type") || undefined,
     channel_handle: formData.get("channel_handle") ?? undefined,
-    voice_tier: formData.get("voice_tier") || undefined,
     engine_workflow_id: formData.get("engine_workflow_id") ?? undefined,
     vapi_assistant_id: formData.get("vapi_assistant_id") ?? undefined,
     voice_note_workflow_id: formData.get("voice_note_workflow_id") ?? undefined,
@@ -705,21 +702,16 @@ export async function createAutomation(
       .eq("tenant_id", tenantId)
       .maybeSingle();
     if (!existingVoice) {
-      if (!data.voice_tier) {
-        return {
-          fieldErrors: { voice_tier: ["Pick a voice plan tier (this tenant has no voice plan yet)."] },
-          formError: null,
-        };
-      }
-      const tier = data.voice_tier as NewTierKey;
-      const spec = VOICE_PLAN_SPEC[tier];
+      // Adding voice to a tenant with no voice plan provisions the base AI Voice
+      // Ignition plan (1,000 calls / 1 agent). Bespoke allowances are set via a
+      // Custom plan at tenant creation, not here.
       const { start, end } = currentMonthBounds();
       const { error: subErr } = await client.from("voice_subscriptions").insert({
         tenant_id: tenantId,
-        plan_tier: tier,
-        monthly_call_allowance: spec.callAllowance,
-        included_agents: spec.includedAgents,
-        monthly_price_gbp: VOICE_PRICE_GBP[tier],
+        plan_tier: "ignition",
+        monthly_call_allowance: VOICE_IGNITION_SPEC.callAllowance,
+        included_agents: VOICE_IGNITION_SPEC.includedAgents,
+        monthly_price_gbp: VOICE_IGNITION_SPEC.priceGbp,
         status: "active",
         current_period_start: start,
         current_period_end: end,
@@ -915,4 +907,80 @@ export async function forceDeleteAutomation(
   });
 
   revalidatePath(`/admin/tenants/${tenantId}`);
+}
+
+/**
+ * Edit an existing tenant's CUSTOM plan economics (admin only). Updates the
+ * custom_plans row, mirrors allowance/agents/price into voice_subscriptions, and
+ * keeps tenants.monthly_price (the MRR source of truth) in sync. The new
+ * extra_credit_price_gbp takes effect immediately for the tenant's next top-up
+ * (the credit-checkout route reads it live). No-op for non-custom tenants.
+ */
+export async function updateCustomPlan(
+  tenantId: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const claims = await requireStaff();
+  const client = serviceClient();
+
+  const parsed = editCustomPlanSchema.safeParse({
+    plan_name: formData.get("plan_name"),
+    monthly_call_allowance: formData.get("monthly_call_allowance"),
+    included_agents: formData.get("included_agents"),
+    plan_price_gbp: formData.get("plan_price_gbp"),
+    extra_credit_price_gbp: formData.get("extra_credit_price_gbp"),
+    validity_days: formData.get("validity_days"),
+  });
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]>, formError: null };
+  }
+
+  const { data: existing } = await client
+    .from("custom_plans")
+    .select("starts_at, chat_monthly_gbp, includes_voice, includes_chat")
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+  if (!existing) {
+    return { fieldErrors: {}, formError: "This tenant has no custom plan to edit." };
+  }
+
+  const update = buildCustomPlanUpdate(parsed.data, {
+    startsAt: (existing.starts_at as string | null) ?? null,
+    chatMonthlyGbp: existing.chat_monthly_gbp == null ? null : Number(existing.chat_monthly_gbp),
+    // includes_voice defaults to true in the schema; treat a missing flag as voice-inclusive.
+    includesVoice: existing.includes_voice !== false,
+    includesChat: Boolean(existing.includes_chat),
+  });
+
+  const { error: cpErr } = await client.from("custom_plans").update(update.custom).eq("tenant_id", tenantId);
+  if (cpErr) {
+    console.error("updateCustomPlan: custom_plans update failed", cpErr);
+    return { fieldErrors: {}, formError: "Could not update the custom plan. Please try again." };
+  }
+
+  // Mirror the voice economics so the call pool + dashboard reflect the edit
+  // (only when the plan actually has a voice product).
+  if (update.voice) {
+    await client.from("voice_subscriptions").update(update.voice).eq("tenant_id", tenantId);
+  }
+  await client.from("tenants").update({ monthly_price: update.monthlyPrice }).eq("id", tenantId);
+
+  const audited = await writeAudit({
+    actorUserId: claims.sub,
+    tenantId,
+    action: "tenant.custom_plan_update",
+    targetType: "tenant",
+    targetId: tenantId,
+    metadata: {
+      plan_name: parsed.data.plan_name,
+      monthly_call_allowance: parsed.data.monthly_call_allowance,
+      extra_credit_price_gbp: parsed.data.extra_credit_price_gbp,
+      plan_price_gbp: parsed.data.plan_price_gbp,
+    },
+  });
+  if (!audited) console.error("audit write failed for tenant.custom_plan_update", { tenantId });
+
+  revalidatePath(`/admin/tenants/${tenantId}`);
+  return { fieldErrors: {}, formError: null, ok: true };
 }

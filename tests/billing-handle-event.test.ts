@@ -11,6 +11,8 @@ function deps(over: Partial<BillingDeps> = {}): BillingDeps {
     sendPaymentFailedEmail: vi.fn(async () => {}),
     grantTopupCredits: vi.fn(async () => {}),
     setDefaultPaymentMethod: vi.fn(async () => {}),
+    enableAutopayRenewals: vi.fn(async () => {}),
+    grantCustomPackPool: vi.fn(async () => {}),
     ...over,
   };
 }
@@ -68,7 +70,10 @@ describe("handleStripeEvent", () => {
     expect(res.action).toBe("setup_fee.paid");
   });
 
-  it("does not mark a setup fee for a subscription invoice.paid", async () => {
+  it("a plain subscription renewal invoice.paid does not grant a pack pool", async () => {
+    // A renewal invoice is not a tracked activation invoice, so markSetupFeePaid
+    // (the lookup) returns null → no pack-pool grant → falls through to the
+    // subscription receipt/reset path (reset returns false here → logged).
     const ev = {
       id: "evt_3",
       type: "invoice.paid",
@@ -83,10 +88,40 @@ describe("handleStripeEvent", () => {
         },
       },
     } as unknown as Stripe.Event;
-    const d = deps();
+    const d = deps({ markSetupFeePaid: vi.fn(async () => null) });
     const res = await handleStripeEvent(ev, d);
-    expect(d.markSetupFeePaid).not.toHaveBeenCalled();
+    expect(d.markSetupFeePaid).toHaveBeenCalledWith("in_2");
+    expect(d.grantCustomPackPool).not.toHaveBeenCalled();
     expect(res.action).toBe("logged");
+  });
+
+  it("marks the setup fee paid on a RECURRING activation invoice (subscription invoice) and still resets the pool", async () => {
+    // The recurring activation invoice carries a subscription pointer (setup fee
+    // folded into the first subscription invoice). markSetupFeePaid must still
+    // settle it, and the voice pool reset must still run.
+    const ev = {
+      id: "evt_act",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_act",
+          parent: {
+            type: "subscription_details",
+            quote_details: null,
+            subscription_details: { subscription: "sub_123" },
+          },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps({
+      markSetupFeePaid: vi.fn(async () => ({ tenantName: "Speedy Cabs", currency: "GBP" as const })),
+      grantCustomPackPool: vi.fn(async () => {}),
+      resetVoiceCallPool: vi.fn(async () => true),
+    });
+    const res = await handleStripeEvent(ev, d);
+    expect(d.markSetupFeePaid).toHaveBeenCalledWith("in_act");
+    expect(d.grantCustomPackPool).toHaveBeenCalledWith("in_act");
+    expect(res.action).toBe("voice_pool.reset");
   });
 
   it("emails on invoice.payment_failed but never suspends", async () => {
@@ -130,6 +165,7 @@ describe("handleStripeEvent", () => {
       tenantId: "t1",
       credits: 50,
       couponCode: undefined,
+      unitPriceMicros: undefined,
     });
     expect(res.action).toBe("topup_credits.granted");
   });
@@ -154,6 +190,7 @@ describe("handleStripeEvent", () => {
       tenantId: "t2",
       credits: 10,
       couponCode: "SAVE20",
+      unitPriceMicros: undefined,
     });
     expect(res.action).toBe("topup_credits.granted");
   });
@@ -195,6 +232,54 @@ describe("handleStripeEvent", () => {
     const res = await handleStripeEvent(ev, d);
     expect(d.setDefaultPaymentMethod).toHaveBeenCalledWith({ customerId: "cus_2", setupIntentId: "seti_2" });
     expect(res.action).toBe("autopay.enabled");
+  });
+
+  it("autopay setup sets the default PM AND enables auto-charge on renewals", async () => {
+    const ev = {
+      id: "evt_autopay2",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_autopay2",
+          metadata: { reason: "autopay_setup", tenant_id: "tnt-1" },
+          setup_intent: "si_1",
+          customer: "cus_1",
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps({
+      setDefaultPaymentMethod: vi.fn(async () => {}),
+      enableAutopayRenewals: vi.fn(async () => {}),
+    });
+    const res = await handleStripeEvent(ev, d);
+    expect(d.setDefaultPaymentMethod).toHaveBeenCalledWith({ customerId: "cus_1", setupIntentId: "si_1" });
+    expect(d.enableAutopayRenewals).toHaveBeenCalledWith({ customerId: "cus_1" });
+    expect(res.action).toBe("autopay.enabled");
+  });
+
+  it("passes credit_unit_micros from session metadata as unitPriceMicros to grantTopupCredits", async () => {
+    const ev = {
+      id: "evt_topup_custom",
+      type: "checkout.session.completed",
+      data: {
+        object: {
+          id: "cs_custom",
+          payment_intent: "pi_custom",
+          metadata: { reason: "topup_purchase", tenant_id: "t3", credits: "20", credit_unit_micros: "750000" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const d = deps();
+    const res = await handleStripeEvent(ev, d);
+    expect(d.grantTopupCredits).toHaveBeenCalledWith({
+      sessionId: "cs_custom",
+      paymentIntentId: "pi_custom",
+      tenantId: "t3",
+      credits: 20,
+      couponCode: undefined,
+      unitPriceMicros: 750000,
+    });
+    expect(res.action).toBe("topup_credits.granted");
   });
 
   it("ignores a checkout.session.completed that is not a top-up purchase", async () => {
@@ -287,12 +372,14 @@ describe("handleStripeEvent", () => {
       },
     } as unknown as Stripe.Event;
     const resetVoiceCallPool = vi.fn(async () => true);
-    const d = deps({ resetVoiceCallPool });
+    // A voice renewal isn't a tracked activation invoice, so the markSetupFeePaid
+    // lookup returns null → no pack-pool grant → pool reset is the only effect.
+    const d = deps({ resetVoiceCallPool, markSetupFeePaid: vi.fn(async () => null) });
     const res = await handleStripeEvent(ev, d);
     expect(resetVoiceCallPool).toHaveBeenCalledWith({
       stripeSubscriptionId: "sub_voice",
     });
-    expect(d.markSetupFeePaid).not.toHaveBeenCalled();
+    expect(d.grantCustomPackPool).not.toHaveBeenCalled();
     expect(res.action).toBe("voice_pool.reset");
   });
 
@@ -317,6 +404,36 @@ describe("handleStripeEvent", () => {
     const res = await handleStripeEvent(ev, d);
     expect(d.resetVoiceCallPool).toHaveBeenCalledOnce();
     expect(res.action).toBe("logged");
+  });
+
+  it("invoice.paid for a one-time activation pack marks the fee paid AND grants the pack pool", async () => {
+    const calls: string[] = [];
+    const d = deps({
+      markSetupFeePaid: async (id: string) => {
+        calls.push(`mark:${id}`);
+        return { tenantName: "X", currency: "GBP" as const };
+      },
+      grantCustomPackPool: async (id: string) => {
+        calls.push(`pool:${id}`);
+      },
+    });
+    const ev = {
+      id: "evt_pack1",
+      type: "invoice.paid",
+      data: {
+        object: {
+          id: "in_pack1",
+          parent: null,
+          amount_paid: 200000,
+          currency: "gbp",
+          metadata: { kind: "activation_pack" },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const res = await handleStripeEvent(ev, d);
+    expect(res.action).toBe("setup_fee.paid");
+    expect(calls).toContain("mark:in_pack1");
+    expect(calls).toContain("pool:in_pack1");
   });
 });
 
@@ -407,9 +524,36 @@ describe("grantTopupCredits (dep contract)", () => {
       tenant_id: "t1",
       delta: 50,
       reason: "topup_purchase",
-      unit_price_micros: 900000,
+      unit_price_micros: 2000000,
       currency: "GBP",
       stripe_payment_intent_id: "pi_1",
+    });
+  });
+
+  it("uses custom unitPriceMicros in the credit_ledger insert when provided", async () => {
+    const insert = vi.fn(() => ({ error: null }));
+    const ledgerMaybeSingle = vi.fn(async () => ({ data: null, error: null }));
+    const db = {
+      from: vi.fn((table: string) => {
+        if (table === "credit_ledger") {
+          return {
+            select: () => ({ eq: () => ({ maybeSingle: ledgerMaybeSingle }) }),
+            insert,
+          };
+        }
+        throw new Error(`unexpected table ${table}`);
+      }),
+    };
+    const { buildGrantTopupCredits } = await import("@/lib/billing/webhook-deps");
+    const grant = buildGrantTopupCredits(db as never);
+    await grant({ sessionId: "cs_2", paymentIntentId: "pi_2", tenantId: "t2", credits: 20, couponCode: undefined, unitPriceMicros: 750000 });
+    expect(insert).toHaveBeenCalledWith({
+      tenant_id: "t2",
+      delta: 20,
+      reason: "topup_purchase",
+      unit_price_micros: 750000,
+      currency: "GBP",
+      stripe_payment_intent_id: "pi_2",
     });
   });
 

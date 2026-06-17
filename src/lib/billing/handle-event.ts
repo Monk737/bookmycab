@@ -50,17 +50,27 @@ export interface BillingDeps {
   /** Grant voice top-up credits to `credit_ledger` for a completed credit
    *  top-up Checkout session. INSERT-ONLY + idempotent on
    *  `stripe_payment_intent_id` (the ledger is append-only). Best-effort coupon
-   *  redemption when `couponCode` is present. */
+   *  redemption when `couponCode` is present. When `unitPriceMicros` is
+   *  provided (from session metadata), the ledger row records that unit price
+   *  instead of the global default. */
   grantTopupCredits(args: {
     sessionId: string;
     paymentIntentId: string;
     tenantId: string;
     credits: number;
     couponCode: string | undefined;
+    unitPriceMicros?: number;
   }): Promise<void>;
   /** Set the payment method captured by an autopay-setup Checkout session as the
    *  customer's default for invoices, so subscription renewals auto-charge. */
   setDefaultPaymentMethod(args: { customerId: string; setupIntentId: string }): Promise<void>;
+  /** After autopay setup, switch the customer's BookMyCab subscriptions to
+   *  `charge_automatically` so renewals auto-charge the saved default card. */
+  enableAutopayRenewals(args: { customerId: string }): Promise<void>;
+  /** For a paid one-time custom pack invoice, open the prepaid call pool for the
+   *  pack's validity window (idempotent). No-op when the tenant has no one-time
+   *  custom plan. */
+  grantCustomPackPool(stripeInvoiceId: string): Promise<void>;
 }
 
 export interface StripeEventResult {
@@ -102,8 +112,19 @@ export async function handleStripeEvent(
 
     case "invoice.paid": {
       const invoice = event.data.object as Stripe.Invoice;
-      if (classifyInvoice(invoice) === "setup" && invoice.id) {
-        await deps.markSetupFeePaid(invoice.id);
+      // Settle a tracked activation invoice (setup fee + first period). This is a
+      // no-op (markSetupFeePaid returns null) when the invoice isn't a tracked
+      // setup/activation invoice, so it's safe to attempt for EVERY paid invoice.
+      // It MUST run before the subscription branch: the recurring activation
+      // invoice carries a subscription pointer (classifyInvoice → "subscription")
+      // because the setup fee is folded into the first subscription invoice, so
+      // gating on classifyInvoice === "setup" alone would never mark it paid.
+      const settled = invoice.id ? await deps.markSetupFeePaid(invoice.id) : null;
+      if (settled && invoice.id) await deps.grantCustomPackPool(invoice.id);
+
+      // A pure setup / one-time-pack invoice (no subscription pointer) is fully
+      // handled once the fee is settled.
+      if (classifyInvoice(invoice) === "setup") {
         return { action: "setup_fee.paid" };
       }
       // Subscription cycle payment, send the customer a receipt (best-effort;
@@ -159,6 +180,7 @@ export async function handleStripeEvent(
         const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
         if (!setupIntentId || !customerId) return { action: "skipped" };
         await deps.setDefaultPaymentMethod({ customerId, setupIntentId });
+        await deps.enableAutopayRenewals({ customerId });
         return { action: "autopay.enabled" };
       }
 
@@ -175,12 +197,15 @@ export async function handleStripeEvent(
       // positive integer), but never grant a non-finite/non-positive amount.
       const credits = Number(session.metadata.credits);
       if (!Number.isInteger(credits) || credits <= 0) return { action: "skipped" };
+      const rawUnitMicros = Number(session.metadata.credit_unit_micros);
+      const unitPriceMicros = Number.isFinite(rawUnitMicros) && rawUnitMicros > 0 ? rawUnitMicros : undefined;
       await deps.grantTopupCredits({
         sessionId: session.id,
         paymentIntentId,
         tenantId: session.metadata.tenant_id,
         credits,
         couponCode: session.metadata.coupon_code || undefined,
+        unitPriceMicros,
       });
       return { action: "topup_credits.granted" };
     }

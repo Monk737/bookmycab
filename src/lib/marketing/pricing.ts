@@ -6,11 +6,11 @@
  * EUR/USD figures shown on the page are derived at render time from live FX
  * rates (see ./fx.ts) via convert()/priceFor(); they are never stored here.
  *
- * Two products, sold standalone or together:
- *   1. Chat — WhatsApp Chat + Voice Note, priced by fleet size.
- *   2. AI Voice Booking — priced by monthly call allowance.
- *   3. Double Decker — Mix & Match: any Voice tier (full price) + any Chat tier
- *      (chat discounted). Not a fixed tier list; composed at selection time.
+ * Two fixed plans:
+ *   1. WhatsApp Booking Suite — chat + voice note, £499/mo.
+ *   2. AI Voice Booking "Ignition" — 1000 calls, £1999/mo.
+ * Custom "Full Throttle" plans have no fixed numbers and are quoted on a
+ * discovery call, then configured per tenant in the admin console.
  */
 
 export type Currency = "GBP" | "EUR" | "USD";
@@ -20,135 +20,30 @@ export const CURRENCIES = ["GBP", "EUR", "USD"] as const satisfies readonly Curr
 /** Prices are authored in this currency; everything else is derived. */
 export const BASE_CURRENCY: Currency = "GBP";
 
-export type TierKey = "ignition" | "in_motion" | "full_throttle";
-
 /* ----------------------------------------------------------------------------
-   1. CHAT — WhatsApp Chat + Voice Note
+   THE TWO FIXED PLANS (GBP, monthly excl. VAT). The Custom "Full Throttle"
+   plan has no fixed numbers — it is quoted on a discovery call and configured
+   per tenant in the admin console.
    -------------------------------------------------------------------------- */
 
-export interface ChatTier {
-  key: TierKey;
-  name: string;
-  fleet: string;
-  /** GBP/month. Every chat tier now has a fixed price. */
-  priceGbp: number;
-  /** Optional note shown under the fleet line (e.g. Full Throttle's 2nd bot). */
-  note?: string;
-  featured?: boolean;
-}
-
-export const CHAT_TIERS: ChatTier[] = [
-  {
-    key: "ignition",
-    name: "Ignition",
-    fleet: "Up to 50 drivers / fleet",
-    priceGbp: 599,
-  },
-  {
-    key: "in_motion",
-    name: "In Motion",
-    fleet: "51–100 drivers / fleet",
-    priceGbp: 999,
-    featured: true,
-  },
-  {
-    key: "full_throttle",
-    name: "Full Throttle",
-    fleet: "101+ drivers / fleet",
-    priceGbp: 1299,
-    note: "Optional 2nd WhatsApp chatbot",
-  },
-];
-
-/** One-time Chat agent setup fee, GBP. */
-export const CHAT_SETUP_FEE_GBP = 1000;
-
-/* ----------------------------------------------------------------------------
-   2. AI VOICE BOOKING
-   -------------------------------------------------------------------------- */
-
-export interface VoiceTier {
-  key: TierKey;
-  name: string;
-  callsPerMonth: number;
-  priceGbp: number;
-  /** Human-readable agent/number configuration, e.g. "1 number · 1 agent". */
-  config: string;
-  featured?: boolean;
-}
-
-export const VOICE_TIERS: VoiceTier[] = [
-  {
-    key: "ignition",
-    name: "Ignition",
-    callsPerMonth: 1500,
-    priceGbp: 1299,
-    config: "1 number · 1 agent",
-  },
-  {
-    key: "in_motion",
-    name: "In Motion",
-    callsPerMonth: 2250,
-    priceGbp: 1799,
-    config: "2 numbers · 2 agents",
-    featured: true,
-  },
-  {
-    key: "full_throttle",
-    name: "Full Throttle",
-    callsPerMonth: 3000,
-    priceGbp: 2199,
-    config: "2 numbers · 2 agents",
-  },
-];
-
-/** One-time AI Voice agent setup fees, GBP. */
-export const VOICE_SETUP_GBP = {
-  oneAgent: 1000,
-  twoAgents: 1500,
-  secondAgentAddOn: 500,
+/** 1. WhatsApp Booking Suite — WhatsApp Chatbot + Voice Note. */
+export const CHAT_SUITE = {
+  name: "WhatsApp Booking Suite",
+  blurb: "WhatsApp Chatbot + Voice Note. One bot that books by text or voice note and writes the job straight to dispatch.",
+  priceGbp: 499,
+  setupGbp: 999,
 } as const;
 
-/* ----------------------------------------------------------------------------
-   3. DOUBLE DECKER (Mix & Match: any Voice tier + any Chat tier)
-
-   The bundle is composed at selection time: the chosen AI Voice tier keeps its
-   full price, and the chosen Chat tier is discounted by a fixed GBP amount that
-   grows with the chat tier. There is no fixed bundle-tier list.
-   -------------------------------------------------------------------------- */
-
-/** GBP knocked off the Chat tier's monthly price when bundled with Voice. */
-export const BUNDLE_CHAT_DISCOUNT_GBP: Record<TierKey, number> = {
-  ignition: 100,
-  in_motion: 200,
-  full_throttle: 300,
-};
-
-/** A chat tier's discounted monthly price inside a Double Decker bundle. */
-export function bundleChatPriceGbp(chatTier: TierKey): number {
-  const chat = CHAT_TIERS.find((t) => t.key === chatTier);
-  const full = chat ? chat.priceGbp : 0;
-  return full - BUNDLE_CHAT_DISCOUNT_GBP[chatTier];
-}
-
-/** Total monthly bundle price: full voice price + discounted chat price. */
-export function bundleTotalGbp(voiceTier: TierKey, chatTier: TierKey): number {
-  const voice = VOICE_TIERS.find((t) => t.key === voiceTier);
-  return (voice ? voice.priceGbp : 0) + bundleChatPriceGbp(chatTier);
-}
-
-/** One-time Chat + AI Voice bundle setup fees, GBP. */
-export const BUNDLE_SETUP_GBP = {
-  oneVoiceAgent: 1500,
-  twoVoiceAgents: 2000,
+/** 2a. AI Voice Booking — Ignition (the only fixed voice plan). */
+export const VOICE_IGNITION = {
+  name: "Ignition",
+  callsPerMonth: 1000,
+  priceGbp: 1999,
+  setupGbp: 999,
 } as const;
 
-/* ----------------------------------------------------------------------------
-   EXTRA VOICE CREDIT
-   -------------------------------------------------------------------------- */
-
-/** Pay-as-you-go voice credit, GBP per call (1 credit = £0.90). */
-export const EXTRA_CALL_PRICE_GBP = 0.9;
+/** Pay-as-you-go base voice credit, £2 per call (custom plans override this). */
+export const EXTRA_CALL_PRICE_GBP = 2;
 
 /* ----------------------------------------------------------------------------
    FORMAT / CONVERT HELPERS

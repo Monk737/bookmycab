@@ -17,6 +17,7 @@ type AutomationRow = {
   assigned_engineer: string | null;
   target_go_live: string | null;
   build_notes: string | null;
+  tenant_id: string | null;
   tenants: { name: string } | { name: string }[] | null;
 };
 
@@ -38,7 +39,7 @@ export default async function BuildQueuePage() {
   const { data, error } = await serviceClient
     .from("automations")
     .select(
-      "id, name, type, status, build_stage, assigned_engineer, target_go_live, build_notes, tenants(name)",
+      "id, name, type, status, build_stage, assigned_engineer, target_go_live, build_notes, tenant_id, tenants(name)",
     )
     .order("target_go_live", { ascending: true, nullsFirst: false });
 
@@ -49,6 +50,22 @@ export default async function BuildQueuePage() {
     serviceClient,
     automations.map((a) => a.assigned_engineer),
   );
+
+  // Map tenant → activation invoice paid? (soft Go-Live signal). A bypassed
+  // tenant or one with a paid setup fee counts as paid.
+  const tenantIds = Array.from(new Set(automations.map((a) => a.tenant_id).filter(Boolean))) as string[];
+  const paidByTenant = new Map<string, boolean>();
+  if (tenantIds.length > 0) {
+    const [{ data: fees }, { data: tens }] = await Promise.all([
+      serviceClient.from("setup_fees").select("tenant_id, paid_at").in("tenant_id", tenantIds),
+      serviceClient.from("tenants").select("id, billing_bypass").in("id", tenantIds),
+    ]);
+    const bypass = new Set(((tens ?? []) as Array<{ id: string; billing_bypass?: boolean }>).filter((t) => t.billing_bypass).map((t) => t.id));
+    for (const id of tenantIds) paidByTenant.set(id, bypass.has(id));
+    for (const f of (fees ?? []) as Array<{ tenant_id: string; paid_at: string | null }>) {
+      if (f.paid_at) paidByTenant.set(f.tenant_id, true);
+    }
+  }
 
   const cards: BuildCard[] = automations.map((a) => ({
     id: a.id,
@@ -62,6 +79,7 @@ export default async function BuildQueuePage() {
       : null,
     targetGoLive: a.target_go_live,
     buildNotes: a.build_notes,
+    invoicePaid: a.tenant_id ? (paidByTenant.get(a.tenant_id) ?? false) : true,
   }));
 
   return (

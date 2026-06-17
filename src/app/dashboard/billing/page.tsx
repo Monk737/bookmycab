@@ -8,6 +8,7 @@ import { periodBounds } from "@/lib/entitlements/meter";
 import { CreditTopup } from "@/components/dashboard/credit-topup";
 import { PortalButton } from "./portal-button";
 import { AutopayButton } from "./autopay-button";
+import { getOpenInvoices, getAutopayEnabled } from "@/lib/dashboard/open-invoices";
 import Link from "next/link";
 
 const TZ = "Europe/London";
@@ -67,6 +68,8 @@ export default async function BillingPage({
   const { credit, autopay } = await searchParams;
   const b = await getBillingOverview(claims.tenant_id);
   const voiceCredit = await getVoiceCreditPanel(claims.tenant_id);
+  const openInvoices = b.stripeCustomerId ? await getOpenInvoices(b.stripeCustomerId) : [];
+  const autopayOn = b.stripeCustomerId ? await getAutopayEnabled(b.stripeCustomerId) : false;
 
   type InvoiceRow = {
     id: string;
@@ -101,6 +104,7 @@ export default async function BillingPage({
     chat: "Chat",
     voice: "AI Voice",
     double_decker: "Double Decker",
+    custom: "Custom plan",
   };
 
   return (
@@ -128,12 +132,24 @@ export default async function BillingPage({
         </p>
       )}
 
+      {b.activationInvoiceUrl && !b.setupFee?.paidAt && (
+        <a
+          href={b.activationInvoiceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block border-[3px] border-ink bg-brut-yellow p-4 text-sm font-bold text-ink shadow-brut-sm hover:bg-ink hover:text-paper"
+        >
+          Your activation invoice is ready — click to pay and go live →
+        </a>
+      )}
+
       {voiceCredit && (
         <CreditTopup
           orgId={claims.tenant_id}
           balance={voiceCredit.balance}
           remainingCalls={voiceCredit.remainingCalls}
           allowance={voiceCredit.allowance}
+          unitGbp={b.custom?.extraCreditPriceGbp}
         />
       )}
 
@@ -182,6 +198,18 @@ export default async function BillingPage({
                       <td className="px-3 py-2 text-gray-700">{tierLabel(b.products.voice.tier)}</td>
                       <td className="px-3 py-2 text-gray-600">{b.products.voice.allowance.toLocaleString("en-GB")} calls / month</td>
                       <td className="px-3 py-2 text-right font-mono font-bold tabular-nums text-ink">{formatCurrency(b.products.voice.monthlyGbp, "GBP")}</td>
+                    </tr>
+                  )}
+                  {b.custom && (
+                    <tr>
+                      <td className="px-3 py-2 font-bold text-ink">Custom</td>
+                      <td className="px-3 py-2 text-gray-700">{b.custom.planName}</td>
+                      <td className="px-3 py-2 text-gray-600">
+                        {b.custom.callAllowance.toLocaleString("en-GB")} calls
+                        {b.custom.billingMode === "one_time" ? ` · valid ${b.custom.validityDays} days` : " / period"} ·
+                        overage £{b.custom.extraCreditPriceGbp.toFixed(2)}/call
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono font-bold tabular-nums text-ink">{formatCurrency(b.custom.planPriceGbp, "GBP")}</td>
                     </tr>
                   )}
                   <tr className="bg-gray-50">
@@ -296,6 +324,30 @@ export default async function BillingPage({
         </p>
       </section>
 
+      {openInvoices.length > 0 && (
+        <section aria-labelledby="open-inv-heading" className="space-y-3">
+          <h2 id="open-inv-heading" className="font-mono text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Invoices to pay
+          </h2>
+          <div className="divide-y-2 divide-gray-100 border-[3px] border-ink bg-paper">
+            {openInvoices.map((inv) => (
+              <div key={inv.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="font-mono font-bold tabular-nums text-ink">{formatCurrency(inv.amountGbp, "GBP")}</p>
+                  <p className="text-xs text-gray-500">{inv.dueDate ? `Due ${inv.dueDate}` : "Due now"}</p>
+                </div>
+                {inv.hostedUrl && (
+                  <a href={inv.hostedUrl} target="_blank" rel="noopener noreferrer"
+                    className="border-2 border-ink bg-brut-yellow px-4 py-2 text-sm font-bold uppercase text-ink hover:bg-ink hover:text-paper">
+                    Pay now
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Actions */}
       <section
         aria-labelledby="actions-heading"
@@ -312,7 +364,11 @@ export default async function BillingPage({
           <PortalButton orgId={claims.tenant_id} />
         </div>
         <p className="text-sm text-gray-600">
-          <span className="font-medium text-ink">Set up autopay</span> to save a card for your prepaid monthly subscription, or use the portal to update an existing one.
+          {autopayOn ? (
+            <><span className="font-medium text-ink">Autopay is on.</span> Your monthly subscription auto-charges your saved card each cycle.</>
+          ) : (
+            <><span className="font-medium text-ink">Set up autopay</span> to auto-charge your monthly subscription, or pay each invoice above. Use the portal to manage your card.</>
+          )}
         </p>
         <p className="text-sm text-gray-600">
           Need to change your plan or add an automation?{" "}
