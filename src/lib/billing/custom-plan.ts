@@ -89,20 +89,26 @@ export interface CustomPlanUpdate {
     expires_at: string;
     updated_at: string;
   };
-  voice: { monthly_call_allowance: number; included_agents: number; monthly_price_gbp: number };
+  /** Mirrored voice_subscriptions patch — null when the plan has no voice product. */
+  voice: { monthly_call_allowance: number; included_agents: number; monthly_price_gbp: number } | null;
   monthlyPrice: number;
 }
 
 /**
  * Pure builder for a custom-plan edit: shapes the custom_plans patch (recomputing
  * expires_at from the original start date), the mirrored voice_subscriptions
- * patch, and the tenant's combined monthly price (voice + any existing chat).
+ * patch, and the tenant's combined monthly price. The plan's product flags drive
+ * the money: a non-voice plan contributes no voice price (and no voice mirror),
+ * a non-chat plan contributes no chat price — so tenants.monthly_price can never
+ * be overstated for a single-product custom plan.
  */
 export function buildCustomPlanUpdate(
   input: EditCustomPlanInput,
-  ctx: { startsAt: string | null; chatMonthlyGbp: number | null },
+  ctx: { startsAt: string | null; chatMonthlyGbp: number | null; includesVoice: boolean; includesChat: boolean },
 ): CustomPlanUpdate {
   const base = ctx.startsAt ?? new Date().toISOString().slice(0, 10);
+  const voicePart = ctx.includesVoice ? input.plan_price_gbp : 0;
+  const chatPart = ctx.includesChat ? (ctx.chatMonthlyGbp ?? 0) : 0;
   return {
     custom: {
       plan_name: input.plan_name,
@@ -114,11 +120,13 @@ export function buildCustomPlanUpdate(
       expires_at: packExpiry(base, input.validity_days),
       updated_at: new Date().toISOString(),
     },
-    voice: {
-      monthly_call_allowance: input.monthly_call_allowance,
-      included_agents: input.included_agents,
-      monthly_price_gbp: input.plan_price_gbp,
-    },
-    monthlyPrice: input.plan_price_gbp + (ctx.chatMonthlyGbp ?? 0),
+    voice: ctx.includesVoice
+      ? {
+          monthly_call_allowance: input.monthly_call_allowance,
+          included_agents: input.included_agents,
+          monthly_price_gbp: input.plan_price_gbp,
+        }
+      : null,
+    monthlyPrice: voicePart + chatPart,
   };
 }

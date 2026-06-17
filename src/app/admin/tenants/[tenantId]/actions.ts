@@ -938,7 +938,7 @@ export async function updateCustomPlan(
 
   const { data: existing } = await client
     .from("custom_plans")
-    .select("starts_at, chat_monthly_gbp")
+    .select("starts_at, chat_monthly_gbp, includes_voice, includes_chat")
     .eq("tenant_id", tenantId)
     .maybeSingle();
   if (!existing) {
@@ -948,6 +948,9 @@ export async function updateCustomPlan(
   const update = buildCustomPlanUpdate(parsed.data, {
     startsAt: (existing.starts_at as string | null) ?? null,
     chatMonthlyGbp: existing.chat_monthly_gbp == null ? null : Number(existing.chat_monthly_gbp),
+    // includes_voice defaults to true in the schema; treat a missing flag as voice-inclusive.
+    includesVoice: existing.includes_voice !== false,
+    includesChat: Boolean(existing.includes_chat),
   });
 
   const { error: cpErr } = await client.from("custom_plans").update(update.custom).eq("tenant_id", tenantId);
@@ -956,8 +959,11 @@ export async function updateCustomPlan(
     return { fieldErrors: {}, formError: "Could not update the custom plan. Please try again." };
   }
 
-  // Mirror the voice economics so the call pool + dashboard reflect the edit.
-  await client.from("voice_subscriptions").update(update.voice).eq("tenant_id", tenantId);
+  // Mirror the voice economics so the call pool + dashboard reflect the edit
+  // (only when the plan actually has a voice product).
+  if (update.voice) {
+    await client.from("voice_subscriptions").update(update.voice).eq("tenant_id", tenantId);
+  }
   await client.from("tenants").update({ monthly_price: update.monthlyPrice }).eq("id", tenantId);
 
   const audited = await writeAudit({

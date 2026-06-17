@@ -15,7 +15,9 @@ export function buildCreditCheckoutParams(args: {
   credits: number;
   finalGbp: number;
   couponCode?: string;
-  /** Tenant's custom per-call overage rate (GBP). Defaults to base £0.90. */
+  /** Per-credit unit price (GBP) recorded in the ledger. Custom tenants pass
+   *  their overage rate; pack purchases pass the pack's effective per-credit
+   *  price. Defaults to the base rate (£2) when omitted. */
   unitGbp?: number;
 }): Stripe.Checkout.SessionCreateParams {
   const unit = (args.unitGbp && args.unitGbp > 0) ? args.unitGbp : CREDIT_UNIT_GBP;

@@ -54,6 +54,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ orgId: string 
   // Pack selections carry their own fixed credit counts — never recompute those.
   const finalCredits = packId ? r.credits : creditsForGbpAt(r.gbp, unitGbp);
 
+  // Per-credit price recorded in the ledger: a pack's effective rate
+  // (price ÷ credits), otherwise the tenant's ad-hoc unit rate — so the audited
+  // unit price always matches what was actually charged.
+  const ledgerUnitGbp = packId && r.credits > 0 ? r.gbp / r.credits : unitGbp;
+
   let finalGbp = r.gbp;
   if (couponCode) {
     const { data, error } = await supabase.rpc("validate_coupon", {
@@ -90,7 +95,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ orgId: string 
       credits: finalCredits,
       finalGbp,
       couponCode,
-      unitGbp,
+      unitGbp: ledgerUnitGbp,
     });
     const session = await getStripe().checkout.sessions.create(params);
     return NextResponse.json({ url: session.url });

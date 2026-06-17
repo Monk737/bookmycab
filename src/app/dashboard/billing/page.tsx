@@ -149,6 +149,7 @@ export default async function BillingPage({
           balance={voiceCredit.balance}
           remainingCalls={voiceCredit.remainingCalls}
           allowance={voiceCredit.allowance}
+          unitGbp={b.custom?.extraCreditPriceGbp}
         />
       )}
 

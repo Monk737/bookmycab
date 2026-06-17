@@ -26,7 +26,7 @@ describe("editCustomPlanSchema", () => {
 describe("buildCustomPlanUpdate", () => {
   it("builds custom + voice updates and a combined monthly price (voice-only)", () => {
     const input = editCustomPlanSchema.parse(valid);
-    const out = buildCustomPlanUpdate(input, { startsAt: "2026-06-17", chatMonthlyGbp: null });
+    const out = buildCustomPlanUpdate(input, { startsAt: "2026-06-17", chatMonthlyGbp: null, includesVoice: true, includesChat: false });
     expect(out.custom).toMatchObject({
       plan_name: "Airport Pack v2",
       monthly_call_allowance: 6000,
@@ -39,9 +39,15 @@ describe("buildCustomPlanUpdate", () => {
     expect(out.voice).toEqual({ monthly_call_allowance: 6000, included_agents: 4, monthly_price_gbp: 5200 });
     expect(out.monthlyPrice).toBe(5200);
   });
-  it("adds existing chat monthly into the combined monthly price", () => {
+  it("adds existing chat monthly into the combined monthly price (voice + chat)", () => {
     const input = editCustomPlanSchema.parse(valid);
-    const out = buildCustomPlanUpdate(input, { startsAt: null, chatMonthlyGbp: 499 });
+    const out = buildCustomPlanUpdate(input, { startsAt: null, chatMonthlyGbp: 499, includesVoice: true, includesChat: true });
     expect(out.monthlyPrice).toBe(5699);
+  });
+  it("non-voice custom plan: no voice mirror, monthly price excludes the plan price", () => {
+    const input = editCustomPlanSchema.parse(valid);
+    const out = buildCustomPlanUpdate(input, { startsAt: null, chatMonthlyGbp: 499, includesVoice: false, includesChat: true });
+    expect(out.voice).toBeNull();
+    expect(out.monthlyPrice).toBe(499); // chat only — plan_price_gbp not added
   });
 });
