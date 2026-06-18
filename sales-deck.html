@@ -51,10 +51,11 @@
   .lead{font-size:clamp(1rem, 2.4vw, 1.45rem); font-weight:600; line-height:1.5;}
   .body{font-size:clamp(.9rem, 2vw, 1.05rem); line-height:1.5;}
 
-  /* ---- Wordmark ---- */
-  .wordmark{display:inline-flex; align-items:center; gap:.5rem;}
-  .wordmark .blk{display:inline-block; width:.85em; height:.85em; background:var(--yellow); border:3px solid var(--ink); box-shadow:var(--brut-sm);}
-  .wordmark .txt{font-family:"Stalinist One",sans-serif; font-size:clamp(.85rem,2.6vw,1.05rem); letter-spacing:.02em; line-height:1; padding-top:.12em;}
+  /* ---- Wordmark (matches the bookmycab.io header logo exactly:
+         "BookMyCab" in Stalinist One + a small yellow square to its right) ---- */
+  .wordmark{display:inline-flex; align-items:center;}
+  .wordmark .txt{font-family:"Stalinist One",sans-serif; font-size:clamp(.85rem,2.6vw,1.05rem); letter-spacing:-.02em; line-height:1; padding-top:.12em;}
+  .wordmark .blk{display:inline-block; width:.7em; height:.7em; margin-left:.32em; background:var(--yellow); border:2px solid var(--ink);}
 
   /* ---- Deck shell ---- */
   .deck{position:relative; width:100vw; height:100vh; height:100dvh; overflow:hidden;}
@@ -80,7 +81,7 @@
   .topbar .txt{color:var(--ink); transition:color .4s ease;}
   .topbar .blk{transition:border-color .4s ease, box-shadow .4s ease;}
   .topbar.on-dark .txt{color:var(--paper);}
-  .topbar.on-dark .blk{border-color:var(--paper); box-shadow:2px 2px 0 0 rgba(255,255,255,.9);}
+  .topbar.on-dark .blk{border-color:var(--paper);}
   .nav{position:fixed; bottom:max(14px, env(safe-area-inset-bottom)); right:var(--pad); z-index:45; display:flex; gap:10px;}
   .navbtn{width:clamp(40px,11vw,46px); height:clamp(40px,11vw,46px); border:3px solid var(--ink); background:var(--paper); box-shadow:var(--brut); cursor:pointer; font-size:1.3rem; font-weight:800; line-height:1; display:flex; align-items:center; justify-content:center; transition:transform .1s, box-shadow .1s;}
   .navbtn:hover{transform:translate(-2px,-2px); box-shadow:var(--brut-lg);}
@@ -272,7 +273,7 @@
 <div class="progress" id="progress" style="width:9%"></div>
 
 <div class="topbar" id="topbar">
-  <div class="wordmark"><span class="blk"></span><span class="txt">BOOKMYCAB</span></div>
+  <div class="wordmark"><span class="txt">BookMyCab</span><span class="blk"></span></div>
 </div>
 
 <div class="deck" id="deck">
@@ -685,14 +686,14 @@
   <!-- ================= SLIDE 11 — CLOSE ================= -->
   <section class="slide" data-theme="dark" style="background:var(--ink); color:var(--paper);">
     <div class="slide-inner" style="text-align:center;">
-      <div class="reveal wordmark" style="--d:0; justify-content:center; margin-bottom:1.2rem;"><span class="blk"></span><span class="txt" style="color:var(--paper); font-size:clamp(1rem,3vw,1.4rem);">BOOKMYCAB</span></div>
+      <div class="reveal wordmark" style="--d:0; justify-content:center; margin-bottom:1.2rem;"><span class="txt" style="color:var(--paper); font-size:clamp(1rem,3vw,1.4rem);">BookMyCab</span><span class="blk" style="border-color:var(--paper);"></span></div>
       <h2 class="reveal h-hero" style="--d:1; color:var(--paper);">Let's catch the fares you're <span style="color:var(--yellow);">losing tonight.</span></h2>
       <p class="reveal lead" style="--d:2; color:var(--g300); max-width:640px; margin:1.4rem auto 0;">Book a 15-minute discovery call. We'll scope your fleet, your call volume and your dispatch, then show the agent take a live booking. No slides.</p>
       <div class="reveal" style="--d:3; margin-top:clamp(1.6rem,4vh,2.4rem); display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
         <a class="btn" href="https://cal.com/bookmycab/Discovery">Book a discovery call →</a>
         <a class="btn secondary" href="https://bookmycab.io">See the live demo</a>
       </div>
-      <p class="reveal mono" style="--d:4; margin-top:clamp(1.6rem,4vh,2.4rem); color:var(--g400); font-size:.82rem;">BookMyCab by FlowMo AI LTD · hello@bookmycab.com</p>
+      <p class="reveal mono" style="--d:4; margin-top:clamp(1.6rem,4vh,2.4rem); color:var(--g400); font-size:.82rem;">BookMyCab by FlowMo AI LTD · team@bookmycab.io</p>
     </div>
     <div class="reveal ticker" style="--d:5; position:absolute; bottom:0; left:0; right:0;">
       <div class="track">
