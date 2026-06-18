@@ -392,7 +392,7 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
             />
             <Metric label="Saving / day" value={money(voice.savingPerDay)} sub="vs a staffed line" />
             <Metric
-              label="Calls answered"
+              label="Calls answered / Month"
               value={`${voice.monthlyCalls}`}
               sub={
                 voice.extraCalls > 0
