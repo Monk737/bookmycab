@@ -5,126 +5,119 @@ import {
   convert,
   formatPrice,
   CHAT_SUITE,
+  VOICE_IGNITION,
   type Currency,
 } from "@/lib/marketing/pricing";
 import { CurrencyToggle } from "@/components/marketing/currency-toggle";
 
 /* ---------------------------------------------------------------------------
-   Industry-average assumptions. Two honest levers drive the model:
+   Two separate calculators behind a tab. Both are driven by the one number an
+   operator actually knows — how many booking calls / enquiries they handle a
+   day — and use conservative industry averages so the figures stay believable.
 
-   1. Fleet size  → WhatsApp Chat value. Every typed and voice-note booking the
-      bot handles is dispatcher time saved off the desk.
-   2. Missed calls / day → AI Voice value. The calls that ring out today (engaged
-      tone, after-hours, nobody free) get answered and booked instead of lost to
-      the firm down the road. The agent picks up everything, so the only honest
-      question is "how many calls slip through now?", not "how often does it work?".
+   WhatsApp Booking Suite → the bot takes routine bookings off the desk (staff
+   time saved) and captures the odd job that would otherwise slip away by phone.
+
+   AI Voice Booking → the agent answers every call 24/7: it recovers the fares
+   that ring out today and replaces the cost of a person sat on the phones.
    --------------------------------------------------------------------------- */
-const BOOKINGS_PER_DRIVER_MONTH = 240;
-const DISPATCH_MIN_SAVED_PER_BOOKING = 1.5;
-// Of the calls that ring out today, the share the AI Voice agent answers and
-// turns into a confirmed booking. It picks up every one; not every caller books.
-const VOICE_BOOK_RATE = 0.7;
+
+// Shared
+const STAFF_RATE_GBP = 12; // a person answering the phones / desk, per hour
 const DAYS_PER_MONTH = 30;
-// GBP base; converted to the selected currency via the live FX rate.
-const STAFF_RATE_GBP = 12;
 
-type Tier = { name: string; monthlyGbp: number };
+// WhatsApp Booking Suite levers
+const WA_BOT_DEFLECTION = 0.45; // share of enquiries the bot fully handles itself
+const WA_MIN_PER_BOOKING = 3; // staff minutes saved on each booking the bot takes
+const WA_CAPTURE_SHARE = 0.05; // extra jobs won by message that a busy line loses
 
-function planFor(): Tier {
-  return { name: CHAT_SUITE.name, monthlyGbp: CHAT_SUITE.priceGbp };
-}
+// AI Voice Booking levers
+const VOICE_MISSED_SHARE = 0.22; // calls that ring out today (engaged, after-hours)
+const VOICE_BOOK_RATE = 0.7; // answered calls that turn into a confirmed booking
+const VOICE_HANDLE_MIN = 4; // staff minutes to answer and book one call by hand
 
-function compute(
-  drivers: number,
+type Tab = "chat" | "voice";
+
+function computeChat(
+  enquiriesPerDay: number,
   avgFare: number,
-  missedCallsPerDay: number,
   currency: Currency,
   rates: Record<Currency, number>,
 ) {
-  // WhatsApp Chat side: dispatcher time the bot takes off the desk.
-  const bookings = drivers * BOOKINGS_PER_DRIVER_MONTH;
-  const hoursSaved = (bookings * DISPATCH_MIN_SAVED_PER_BOOKING) / 60;
+  const monthlyEnquiries = enquiriesPerDay * DAYS_PER_MONTH;
+  const automated = monthlyEnquiries * WA_BOT_DEFLECTION;
+  const hoursSaved = (automated * WA_MIN_PER_BOOKING) / 60;
   const staffRate = convert(STAFF_RATE_GBP, currency, rates);
   const staffCostSaved = hoursSaved * staffRate;
 
-  // AI Voice side: missed calls answered and booked, times the fare.
-  const voiceBookings = missedCallsPerDay * VOICE_BOOK_RATE * DAYS_PER_MONTH;
-  const voiceRevenue = voiceBookings * avgFare;
+  const capturedBookings = monthlyEnquiries * WA_CAPTURE_SHARE;
+  const capturedRevenue = capturedBookings * avgFare;
 
-  const tier = planFor();
-  const planMonthly = convert(tier.monthlyGbp, currency, rates);
-  const monthlyValue = staffCostSaved + voiceRevenue;
+  const planMonthly = convert(CHAT_SUITE.priceGbp, currency, rates);
+  const monthlyValue = staffCostSaved + capturedRevenue;
   const netMonthly = monthlyValue - planMonthly;
-  const annualNet = netMonthly * 12;
   const setup = convert(CHAT_SUITE.setupGbp, currency, rates);
   const dailyNet = netMonthly / 30;
   const paybackDays = dailyNet > 0 ? Math.ceil(setup / dailyNet) : null;
 
   return {
-    hoursSaved: Math.round(hoursSaved),
+    automated: Math.round(automated),
     staffCostSaved: Math.round(staffCostSaved),
-    voiceBookings: Math.round(voiceBookings),
-    voiceRevenue: Math.round(voiceRevenue),
-    tierName: tier.name,
+    capturedBookings: Math.round(capturedBookings),
+    capturedRevenue: Math.round(capturedRevenue),
+    planName: CHAT_SUITE.name,
     planMonthly,
     netMonthly: Math.round(netMonthly),
-    annualNet: Math.round(annualNet),
+    annualNet: Math.round(netMonthly * 12),
     setup,
     paybackDays,
   };
 }
 
-function FleetSlider({
-  id,
-  drivers,
-  onChange,
-  caption,
-}: {
-  id: string;
-  drivers: number;
-  onChange: (n: number) => void;
-  caption: string;
-}) {
-  return (
-    <div className="border-[3px] border-ink bg-paper p-5 shadow-brut-sm sm:p-6">
-      <div className="flex items-end justify-between gap-4">
-        <label htmlFor={id} className="text-sm font-bold uppercase tracking-[0.06em] text-gray-600">
-          Fleet size
-        </label>
-        <span className="font-display text-3xl font-extrabold leading-none tabular-nums text-ink sm:text-4xl">
-          {drivers}
-          <span className="ml-2 align-baseline text-sm font-bold uppercase tracking-[0.04em] text-gray-500">
-            drivers
-          </span>
-        </span>
-      </div>
-      <input
-        id={id}
-        type="range"
-        min={5}
-        max={200}
-        step={1}
-        value={drivers}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-4 h-2.5 w-full cursor-pointer appearance-none border-2 border-ink bg-canvas focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-ink"
-        style={{ accentColor: "#ffd400" }}
-      />
-      <div className="mt-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-[0.06em] text-gray-500">
-        <span>5 drivers</span>
-        <span className="border-2 border-ink bg-brut-yellow px-2 py-0.5 text-ink">{caption}</span>
-        <span>200</span>
-      </div>
-    </div>
-  );
+function computeVoice(
+  callsPerDay: number,
+  avgFare: number,
+  currency: Currency,
+  rates: Record<Currency, number>,
+) {
+  const monthlyCalls = callsPerDay * DAYS_PER_MONTH;
+  const missed = monthlyCalls * VOICE_MISSED_SHARE;
+  const recoveredBookings = missed * VOICE_BOOK_RATE;
+  const recoveredRevenue = recoveredBookings * avgFare;
+
+  const handleHours = (monthlyCalls * VOICE_HANDLE_MIN) / 60;
+  const staffRate = convert(STAFF_RATE_GBP, currency, rates);
+  const staffCostReplaced = handleHours * staffRate;
+
+  const planMonthly = convert(VOICE_IGNITION.priceGbp, currency, rates);
+  const monthlyValue = recoveredRevenue + staffCostReplaced;
+  const netMonthly = monthlyValue - planMonthly;
+  const setup = convert(VOICE_IGNITION.setupGbp, currency, rates);
+  const dailyNet = netMonthly / 30;
+  const paybackDays = dailyNet > 0 ? Math.ceil(setup / dailyNet) : null;
+
+  return {
+    monthlyCalls: Math.round(monthlyCalls),
+    recoveredBookings: Math.round(recoveredBookings),
+    recoveredRevenue: Math.round(recoveredRevenue),
+    staffCostReplaced: Math.round(staffCostReplaced),
+    planName: `AI Voice · ${VOICE_IGNITION.name}`,
+    planMonthly,
+    netMonthly: Math.round(netMonthly),
+    annualNet: Math.round(netMonthly * 12),
+    setup,
+    paybackDays,
+  };
 }
 
-function MiniSlider({
+function Slider({
   id,
   label,
   value,
   min,
   max,
   step,
+  unit,
   onChange,
   format,
 }: {
@@ -134,17 +127,23 @@ function MiniSlider({
   min: number;
   max: number;
   step: number;
+  unit?: string;
   onChange: (n: number) => void;
-  format: (n: number) => string;
+  format?: (n: number) => string;
 }) {
   return (
     <div className="border-[3px] border-ink bg-paper p-5 shadow-brut-sm sm:p-6">
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-end justify-between gap-4">
         <label htmlFor={id} className="text-sm font-bold uppercase tracking-[0.06em] text-gray-600">
           {label}
         </label>
-        <span className="border-2 border-ink bg-brut-yellow px-2 py-0.5 font-mono text-sm font-bold tabular-nums text-ink">
-          {format(value)}
+        <span className="font-display text-3xl font-extrabold leading-none tabular-nums text-ink sm:text-4xl">
+          {format ? format(value) : value}
+          {unit ? (
+            <span className="ml-2 align-baseline text-sm font-bold uppercase tracking-[0.04em] text-gray-500">
+              {unit}
+            </span>
+          ) : null}
         </span>
       </div>
       <input
@@ -162,15 +161,7 @@ function MiniSlider({
   );
 }
 
-function Metric({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-}) {
+function Metric({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
     <div className="bg-paper p-5 sm:p-6">
       <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-600">{label}</p>
@@ -202,17 +193,55 @@ function DarkMetric({
   );
 }
 
+function TabButton({
+  active,
+  onClick,
+  children,
+  controls,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  controls: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      aria-controls={controls}
+      onClick={onClick}
+      className={
+        "border-2 border-ink px-4 py-2 text-xs font-bold uppercase tracking-[0.06em] transition-colors focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-brut-yellow " +
+        (active ? "bg-brut-yellow text-ink" : "bg-paper text-gray-600 hover:bg-canvas")
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
 export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
-  const fleetId = useId();
-  const fareId = useId();
-  const missedId = useId();
+  const chatPanelId = useId();
+  const voicePanelId = useId();
+  const enquiriesId = useId();
+  const chatFareId = useId();
+  const callsId = useId();
+  const voiceFareId = useId();
 
+  const [tab, setTab] = useState<Tab>("chat");
   const [currency, setCurrency] = useState<Currency>("GBP");
-  const [drivers, setDrivers] = useState(20);
-  const [avgFare, setAvgFare] = useState(18);
-  const [missedCalls, setMissedCalls] = useState(6);
 
-  const r = compute(drivers, avgFare, missedCalls, currency, rates);
+  // WhatsApp tab inputs
+  const [enquiries, setEnquiries] = useState(60);
+  const [chatFare, setChatFare] = useState(18);
+
+  // AI Voice tab inputs
+  const [calls, setCalls] = useState(33);
+  const [voiceFare, setVoiceFare] = useState(18);
+
+  const chat = computeChat(enquiries, chatFare, currency, rates);
+  const voice = computeVoice(calls, voiceFare, currency, rates);
   const money = (n: number) => formatPrice(currency, Math.max(0, n));
 
   return (
@@ -224,79 +253,140 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
             ROI calculator
           </p>
           <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-tight text-paper">
-            What WhatsApp Chat + AI Voice put back on the meter
+            {tab === "chat"
+              ? "What WhatsApp Booking takes off the desk"
+              : "What AI Voice puts back on the meter"}
           </p>
         </div>
         <CurrencyToggle value={currency} onChange={setCurrency} />
       </div>
 
-      <div className="p-6 sm:p-8">
-        {/* Inputs: fleet (the Chat lever) on the left; fare and missed calls
-            (the AI Voice levers) stacked on the right. */}
-        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-          <FleetSlider
-            id={fleetId}
-            drivers={drivers}
-            onChange={setDrivers}
-            caption={`${r.tierName} · ${money(r.planMonthly)}/mo`}
-          />
-          <div className="grid gap-4">
-            <MiniSlider
-              id={fareId}
+      {/* Tabs */}
+      <div role="tablist" aria-label="ROI calculator" className="flex flex-wrap gap-2 border-b-[3px] border-ink bg-canvas px-6 py-4 sm:px-8">
+        <TabButton active={tab === "chat"} onClick={() => setTab("chat")} controls={chatPanelId}>
+          WhatsApp Booking Suite
+        </TabButton>
+        <TabButton active={tab === "voice"} onClick={() => setTab("voice")} controls={voicePanelId}>
+          AI Voice Booking
+        </TabButton>
+      </div>
+
+      {/* WHATSAPP PANEL */}
+      {tab === "chat" && (
+        <div id={chatPanelId} role="tabpanel" className="p-6 sm:p-8">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Slider
+              id={enquiriesId}
+              label="Booking enquiries / day"
+              value={enquiries}
+              min={15}
+              max={500}
+              step={5}
+              unit="a day"
+              onChange={setEnquiries}
+            />
+            <Slider
+              id={chatFareId}
               label="Average fare"
-              value={avgFare}
+              value={chatFare}
               min={5}
               max={80}
               step={1}
-              onChange={setAvgFare}
+              onChange={setChatFare}
               format={(n) => money(n)}
             />
-            <MiniSlider
-              id={missedId}
-              label="Calls missed / day"
-              value={missedCalls}
-              min={0}
-              max={60}
-              step={1}
-              onChange={setMissedCalls}
-              format={(n) => `${n}`}
+          </div>
+
+          <div
+            className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <Metric label="Bookings automated" value={`${chat.automated}`} sub="handled by the bot / mo" />
+            <Metric label="Staff cost saved" value={money(chat.staffCostSaved)} sub="desk time, per month" />
+            <Metric label="Extra jobs captured" value={`${chat.capturedBookings}`} sub="won by message / mo" />
+            <Metric label="Captured fare value" value={money(chat.capturedRevenue)} sub="per month" />
+          </div>
+
+          <div className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
+            <DarkMetric label="Your plan" value={money(chat.planMonthly)} sub={`${chat.planName}, /mo`} />
+            <DarkMetric label="Net monthly benefit" value={money(chat.netMonthly)} accent />
+            <DarkMetric label="Annual net benefit" value={money(chat.annualNet)} accent />
+            <DarkMetric
+              label="Setup paid back in"
+              value={chat.paybackDays === null ? "n/a" : `${chat.paybackDays} day${chat.paybackDays === 1 ? "" : "s"}`}
+              sub={`on ${money(chat.setup)} setup`}
             />
           </div>
-        </div>
 
-        {/* Where the value comes from: two cards for the WhatsApp Chat side
-            (dispatcher time) and two for the AI Voice side (missed calls booked). */}
-        <div
-          className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <Metric label="Dispatcher hours saved" value={`${r.hoursSaved} hrs`} sub="WhatsApp Chat, per month" />
-          <Metric label="Staff cost saved" value={money(r.staffCostSaved)} sub="WhatsApp Chat, per month" />
-          <Metric label="AI Voice bookings won" value={`${r.voiceBookings}`} sub="missed calls booked / mo" />
-          <Metric label="AI Voice fare revenue" value={money(r.voiceRevenue)} sub="per month" />
+          <p className="mt-5 text-xs leading-relaxed text-gray-500">
+            Based on industry averages: the bot fully handles {Math.round(WA_BOT_DEFLECTION * 100)}% of
+            booking enquiries on its own, saving {WA_MIN_PER_BOOKING} min of desk time each at{" "}
+            {money(convert(STAFF_RATE_GBP, currency, rates))}/hr, and wins another{" "}
+            {Math.round(WA_CAPTURE_SHARE * 100)}% as jobs a busy phone line would have lost. An estimate,
+            not a quote.
+          </p>
         </div>
+      )}
 
-        {/* Bottom line, dark band */}
-        <div className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
-          <DarkMetric label="Your plan" value={`${money(r.planMonthly)}`} sub={`${r.tierName}, /mo`} />
-          <DarkMetric label="Net monthly benefit" value={money(r.netMonthly)} accent />
-          <DarkMetric label="Annual net benefit" value={money(r.annualNet)} accent />
-          <DarkMetric
-            label="Setup paid back in"
-            value={r.paybackDays === null ? "n/a" : `${r.paybackDays} day${r.paybackDays === 1 ? "" : "s"}`}
-            sub={`on ${money(r.setup)} setup`}
-          />
+      {/* AI VOICE PANEL */}
+      {tab === "voice" && (
+        <div id={voicePanelId} role="tabpanel" className="p-6 sm:p-8">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Slider
+              id={callsId}
+              label="Calls received / day"
+              value={calls}
+              min={20}
+              max={120}
+              step={1}
+              unit="a day"
+              onChange={setCalls}
+            />
+            <Slider
+              id={voiceFareId}
+              label="Average fare"
+              value={voiceFare}
+              min={5}
+              max={80}
+              step={1}
+              onChange={setVoiceFare}
+              format={(n) => money(n)}
+            />
+          </div>
+
+          <div
+            className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <Metric label="Calls answered" value={`${voice.monthlyCalls}`} sub="every one, 24/7 / mo" />
+            <Metric label="Missed fares recovered" value={`${voice.recoveredBookings}`} sub="bookings won back / mo" />
+            <Metric label="Recovered fare revenue" value={money(voice.recoveredRevenue)} sub="per month" />
+            <Metric label="Phone-desk cost replaced" value={money(voice.staffCostReplaced)} sub="staff time, per month" />
+          </div>
+
+          <div className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
+            <DarkMetric label="Your plan" value={money(voice.planMonthly)} sub={`${voice.planName}, /mo`} />
+            <DarkMetric label="Net monthly benefit" value={money(voice.netMonthly)} accent />
+            <DarkMetric label="Annual net benefit" value={money(voice.annualNet)} accent />
+            <DarkMetric
+              label="Setup paid back in"
+              value={voice.paybackDays === null ? "n/a" : `${voice.paybackDays} day${voice.paybackDays === 1 ? "" : "s"}`}
+              sub={`on ${money(voice.setup)} setup`}
+            />
+          </div>
+
+          <p className="mt-5 text-xs leading-relaxed text-gray-500">
+            Based on industry averages: {Math.round(VOICE_MISSED_SHARE * 100)}% of calls ring out today
+            (engaged, after-hours, nobody free), the agent answers them all and books{" "}
+            {Math.round(VOICE_BOOK_RATE * 100)}% of those it recovers, and it replaces{" "}
+            {VOICE_HANDLE_MIN} min of staff handling per call at{" "}
+            {money(convert(STAFF_RATE_GBP, currency, rates))}/hr. Plan shown is Ignition; a Full Throttle
+            pack scales past it. An estimate, not a quote.
+          </p>
         </div>
-
-        <p className="mt-5 text-xs leading-relaxed text-gray-500">
-          Based on industry averages: {BOOKINGS_PER_DRIVER_MONTH} bookings per
-          driver a month, {DISPATCH_MIN_SAVED_PER_BOOKING} min of dispatcher time
-          saved per booking, {money(convert(STAFF_RATE_GBP, currency, rates))}/hr staff rate, and the
-          AI Voice agent booking {Math.round(VOICE_BOOK_RATE * 100)}% of the calls that ring out
-          today across {DAYS_PER_MONTH} days. An estimate, not a quote.
-        </p>
-      </div>
+      )}
     </div>
   );
 }

@@ -16,6 +16,11 @@ import { Badge } from "@/components/marketing/ui/badge";
 
 type Rates = Record<Currency, number>;
 
+/** What an always-on human phone agent costs, and the hours in a 24/7 month —
+ *  used to show Ignition's true £/hr against a person on the desk. */
+const HUMAN_HOURLY_GBP = 12;
+const HOURS_PER_MONTH_24_7 = 730;
+
 /**
  * Stateful pricing block. Owns the selected currency, renders the toggle once,
  * then two product sections: the WhatsApp Booking Suite (one fixed price) and
@@ -139,10 +144,53 @@ export function PricingSections({ rates }: { rates: Rates }) {
                 Customised pack
               </p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Your call volume, agents, validity and rates — scoped on a discovery call and built to fit.
+                Busy firms hit 1,000 calls fast. When you outgrow Ignition, Full
+                Throttle is scoped to your exact volume — and the more calls you
+                book, the <span className="font-bold text-ink">less you pay per call</span>.
+                Talk to us for better per-call pricing.
               </p>
               <div className="mt-5 border-t-2 border-ink/15 pt-4">
-                <DiscoveryCta size="md" className="w-full" label="Book a discovery call" />
+                <DiscoveryCta size="md" className="w-full" label="Contact us for better pricing" />
+              </div>
+            </div>
+          </div>
+
+          {/* Human desk vs AI Voice — Ignition's true £/hr of always-on cover. */}
+          <div className="bg-ink px-6 py-6 sm:px-8">
+            <p className="text-xs font-bold uppercase tracking-[0.1em] text-brut-yellow">
+              Human desk vs AI Voice
+            </p>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-300">
+              Ignition answers up to {VOICE_IGNITION.callsPerMonth.toLocaleString("en-US")} calls a
+              month, around the clock, for {priceFor(VOICE_IGNITION.priceGbp, currency, rates)}. That
+              works out at just{" "}
+              <span className="font-bold text-paper">
+                {priceFor(VOICE_IGNITION.priceGbp / HOURS_PER_MONTH_24_7, currency, rates, 2)}/hr
+              </span>{" "}
+              of always-on cover — a person on the phones costs{" "}
+              {priceFor(HUMAN_HOURLY_GBP, currency, rates, 2)}/hr and clocks off at the end of their
+              shift.
+            </p>
+            <div className="mt-4 grid gap-[3px] border-2 border-paper/20 sm:grid-cols-2">
+              <div className="bg-gray-900 p-4 sm:p-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-gray-400">
+                  Human agent
+                </p>
+                <p className="mt-1 font-display text-3xl font-extrabold tabular-nums text-paper">
+                  {priceFor(HUMAN_HOURLY_GBP, currency, rates, 2)}
+                  <span className="ml-1 text-sm font-medium text-gray-400">/hr</span>
+                </p>
+                <p className="mt-1 text-xs font-medium text-gray-500">One shift, one line at a time.</p>
+              </div>
+              <div className="bg-brut-yellow p-4 sm:p-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink/70">
+                  Your AI Voice agent
+                </p>
+                <p className="mt-1 font-display text-3xl font-extrabold tabular-nums text-ink">
+                  {priceFor(VOICE_IGNITION.priceGbp / HOURS_PER_MONTH_24_7, currency, rates, 2)}
+                  <span className="ml-1 text-sm font-medium text-ink/70">/hr</span>
+                </p>
+                <p className="mt-1 text-xs font-medium text-ink/80">24/7, every call at once.</p>
               </div>
             </div>
           </div>

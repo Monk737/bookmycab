@@ -65,8 +65,8 @@ export default async function PricingPage() {
               See the price pay for itself
             </h2>
             <p className="mt-3 text-base leading-relaxed text-gray-700">
-              Slide in your own numbers. This is the revenue an always-on bot
-              puts back, set against what the plan costs.
+              Slide in your own numbers. Switch between WhatsApp Booking and AI
+              Voice to see what each puts back, set against what the plan costs.
             </p>
           </div>
           <PricingRoi rates={rates} />
