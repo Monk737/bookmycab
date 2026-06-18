@@ -84,9 +84,10 @@ function computeVoice(
 ) {
   const monthlyCalls = callsPerDay * DAYS_PER_MONTH;
 
-  // Compare against a single human agent answering the line 24/7 — 24 paid
-  // agent-hours a day at the chosen rate.
-  const humanCostPerDay = HOURS_PER_DAY * agentRate;
+  // One person can't answer a busy 100+/day line around the clock; past that you
+  // need a second seat, so the human bill doubles. Below it, a single seat.
+  const seats = callsPerDay >= VOICE_CUSTOM_PLAN_CALLS ? 2 : 1;
+  const humanCostPerDay = seats * HOURS_PER_DAY * agentRate;
   const humanCostPerMonth = humanCostPerDay * DAYS_PER_MONTH;
 
   // Plan cost: Ignition's base covers up to 1,000 calls/mo. Every call beyond
@@ -113,6 +114,7 @@ function computeVoice(
 
   return {
     monthlyCalls: Math.round(monthlyCalls),
+    seats,
     humanCostPerDay: Math.round(humanCostPerDay),
     aiCostPerDay: Math.round(aiCostPerDay),
     aiHourly,
@@ -401,7 +403,7 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
             <Metric
               label="Human cost / day"
               value={money(voice.humanCostPerDay)}
-              sub="1 agent answering 24/7"
+              sub={`${voice.seats} agent${voice.seats === 1 ? "" : "s"} answering 24/7`}
             />
             <Metric
               label="AI agent cost / day"
@@ -444,8 +446,10 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
           </div>
 
           <p className="mt-5 text-xs leading-relaxed text-gray-500">
-            Answering one extension around the clock with one person means paying for{" "}
-            {HOURS_PER_DAY} agent-hours a day at {money(agentRate)}/hr. {VOICE_IGNITION.name} includes{" "}
+            Answering this line around the clock with people means paying for{" "}
+            {voice.seats * HOURS_PER_DAY} agent-hours a day ({voice.seats} agent
+            {voice.seats === 1 ? "" : "s"} at {money(agentRate)}/hr; a busy {VOICE_CUSTOM_PLAN_CALLS}+
+            calls-a-day line needs a second seat). {VOICE_IGNITION.name} includes{" "}
             {voice.includedCalls.toLocaleString()} calls a month; every call above that bills at a fixed{" "}
             {moneyHr(voice.extraCallPrice)} per call, added to the base plan — so the AI&rsquo;s cost rises
             with volume, working out at {moneyHr(voice.aiHourly)}/hr all-in here while it still answers every

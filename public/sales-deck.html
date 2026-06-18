@@ -915,8 +915,10 @@
   // ---- AI Voice Booking calculation (computeVoice) ----
   function computeVoice(calls,rate,c){
     const monthlyCalls=calls*DAYS;
-    // One human agent answering the line 24/7 — 24 paid agent-hours a day.
-    const humanPerDay=HOURS_PER_DAY*rate;
+    // One person can't answer a busy 100+/day line 24/7 — past that you need a
+    // second seat, so the human bill doubles. Below it, a single seat.
+    const seats=calls>=100?2:1;
+    const humanPerDay=seats*HOURS_PER_DAY*rate;
     const humanPerMonth=humanPerDay*DAYS;
     // Ignition base covers 1,000 calls/mo; calls above that bill at £2 each.
     const planBase=conv(IGN.price,c);
@@ -934,7 +936,7 @@
     const setup=conv(IGN.setup,c);
     const dailyNet=net/30;
     const pay=dailyNet>0?Math.ceil(setup/dailyNet):null;
-    return {monthlyCalls:Math.round(monthlyCalls), humanPerDay:Math.round(humanPerDay),
+    return {monthlyCalls:Math.round(monthlyCalls), seats, humanPerDay:Math.round(humanPerDay),
             aiPerDay:Math.round(aiPerDay), aiHourly, savePerDay:Math.round(savePerDay),
             planBase:Math.round(planBase), includedCalls, extraCalls:Math.round(extraCalls),
             extraCallPrice, extraCost:Math.round(extraCost),
@@ -978,7 +980,7 @@
     $('lblRate').textContent=money(rate);
     const v=computeVoice(calls,rate,CUR);
     $('v_human').textContent=money(v.humanPerDay);
-    $('v_humanSub').textContent='1 agent answering 24/7';
+    $('v_humanSub').textContent=v.seats+' agent'+(v.seats===1?'':'s')+' answering 24/7';
     $('v_ai').textContent=money(v.aiPerDay);
     $('v_aiSub').textContent=v.extraCalls>0
       ? moneyHr(v.aiHourly)+'/hr incl. £2/call credit'
@@ -997,8 +999,9 @@
     $('v_annual').textContent=money(v.annual);
     $('v_pay').textContent=payText(v.pay);
     $('v_paySub').textContent='on '+money(v.setup)+' setup';
-    $('voiceFoot').textContent='Answering one extension around the clock with one person means paying for '
-      +HOURS_PER_DAY+' agent-hours a day at '+money(rate)+'/hr. Ignition includes '
+    $('voiceFoot').textContent='Answering this line around the clock with people means paying for '
+      +(v.seats*HOURS_PER_DAY)+' agent-hours a day ('+v.seats+' agent'+(v.seats===1?'':'s')+' at '
+      +money(rate)+'/hr; a busy 100+ calls-a-day line needs a second seat). Ignition includes '
       +v.includedCalls.toLocaleString('en-US')+' calls a month; every call above that bills at a fixed '
       +moneyHr(v.extraCallPrice)+' per call, added to the base plan — so the AI’s cost rises with volume, '
       +'working out at '+moneyHr(v.aiHourly)+'/hr all-in here while it still answers every call at once. '
