@@ -16,10 +16,10 @@ import { Badge } from "@/components/marketing/ui/badge";
 
 type Rates = Record<Currency, number>;
 
-/** What an always-on human phone agent costs, and the hours in a 24/7 month —
- *  used to show Ignition's true £/hr against a person on the desk. */
-const HUMAN_HOURLY_GBP = 12;
-const HOURS_PER_MONTH_24_7 = 730;
+/** What an always-on human phone agent costs vs Ignition's effective £/hr of
+ *  always-on cover — used to show the agent against a person on the desk. */
+const HUMAN_HOURLY_GBP = 13;
+const AI_VOICE_HOURLY_GBP = 2.77;
 
 /**
  * Stateful pricing block. Owns the selected currency, renders the toggle once,
@@ -144,13 +144,13 @@ export function PricingSections({ rates }: { rates: Rates }) {
                 Customised pack
               </p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Busy firms hit 1,000 calls fast. When you outgrow Ignition, Full
-                Throttle is scoped to your exact volume — and the more calls you
-                book, the <span className="font-bold text-ink">less you pay per call</span>.
-                Talk to us for better per-call pricing.
+                Busy firms hit 1,000 calls fast. When you outgrow Ignition,
+                we&apos;ll <span className="font-bold text-ink">tailor a plan to cover
+                your monthly volume</span> — scoped on a discovery call and built
+                around how your firm runs.
               </p>
               <div className="mt-5 border-t-2 border-ink/15 pt-4">
-                <DiscoveryCta size="md" className="w-full" label="Contact us for better pricing" />
+                <DiscoveryCta size="md" className="w-full" label="Tailor your plan" />
               </div>
             </div>
           </div>
@@ -162,10 +162,10 @@ export function PricingSections({ rates }: { rates: Rates }) {
             </p>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-300">
               Ignition answers up to {VOICE_IGNITION.callsPerMonth.toLocaleString("en-US")} calls a
-              month, around the clock, for {priceFor(VOICE_IGNITION.priceGbp, currency, rates)}. That
-              works out at just{" "}
+              month, around the clock, for {priceFor(VOICE_IGNITION.priceGbp, currency, rates)}. That&apos;s
+              the equivalent of just{" "}
               <span className="font-bold text-paper">
-                {priceFor(VOICE_IGNITION.priceGbp / HOURS_PER_MONTH_24_7, currency, rates, 2)}/hr
+                {priceFor(AI_VOICE_HOURLY_GBP, currency, rates, 2)}/hr
               </span>{" "}
               of always-on cover — a person on the phones costs{" "}
               {priceFor(HUMAN_HOURLY_GBP, currency, rates, 2)}/hr and clocks off at the end of their
@@ -187,7 +187,7 @@ export function PricingSections({ rates }: { rates: Rates }) {
                   Your AI Voice agent
                 </p>
                 <p className="mt-1 font-display text-3xl font-extrabold tabular-nums text-ink">
-                  {priceFor(VOICE_IGNITION.priceGbp / HOURS_PER_MONTH_24_7, currency, rates, 2)}
+                  {priceFor(AI_VOICE_HOURLY_GBP, currency, rates, 2)}
                   <span className="ml-1 text-sm font-medium text-ink/70">/hr</span>
                 </p>
                 <p className="mt-1 text-xs font-medium text-ink/80">24/7, every call at once.</p>

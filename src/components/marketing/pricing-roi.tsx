@@ -31,10 +31,13 @@ const WA_BOT_DEFLECTION = 0.45; // share of enquiries the bot fully handles itse
 const WA_MIN_PER_BOOKING = 3; // staff minutes saved on each booking the bot takes
 const WA_CAPTURE_SHARE = 0.05; // extra jobs won by message that a busy line loses
 
-// AI Voice Booking levers
-const VOICE_MISSED_SHARE = 0.22; // calls that ring out today (engaged, after-hours)
-const VOICE_BOOK_RATE = 0.7; // answered calls that turn into a confirmed booking
-const VOICE_HANDLE_MIN = 4; // staff minutes to answer and book one call by hand
+// AI Voice Booking levers — a straight cost comparison, agent vs human desk.
+const HOURS_PER_DAY = 24; // the line answered around the clock
+const AI_VOICE_HOURLY_GBP = 2.77; // Ignition's effective £/hr of always-on cover
+const DEFAULT_AGENT_RATE_GBP = 13; // typical fully-loaded phone agent, per hour
+// Calls one human seat can realistically answer over 24h (5-min handle time,
+// ~60% utilisation). Past this you need another seat to answer them all.
+const HUMAN_SEAT_CALLS_PER_DAY = 170;
 
 type Tab = "chat" | "voice";
 
@@ -76,31 +79,36 @@ function computeChat(
 
 function computeVoice(
   callsPerDay: number,
-  avgFare: number,
+  agentRate: number,
   currency: Currency,
   rates: Record<Currency, number>,
 ) {
   const monthlyCalls = callsPerDay * DAYS_PER_MONTH;
-  const missed = monthlyCalls * VOICE_MISSED_SHARE;
-  const recoveredBookings = missed * VOICE_BOOK_RATE;
-  const recoveredRevenue = recoveredBookings * avgFare;
 
-  const handleHours = (monthlyCalls * VOICE_HANDLE_MIN) / 60;
-  const staffRate = convert(STAFF_RATE_GBP, currency, rates);
-  const staffCostReplaced = handleHours * staffRate;
+  // To answer every call around the clock with people, you need at least one
+  // seat staffed 24/7; busy volumes need more seats running in parallel.
+  const seats = Math.max(1, Math.ceil(callsPerDay / HUMAN_SEAT_CALLS_PER_DAY));
+  const humanCostPerDay = seats * HOURS_PER_DAY * agentRate;
+  const humanCostPerMonth = humanCostPerDay * DAYS_PER_MONTH;
+
+  // The agent covers the same 24 hours for Ignition's effective hourly rate.
+  const aiHourly = convert(AI_VOICE_HOURLY_GBP, currency, rates);
+  const aiCostPerDay = HOURS_PER_DAY * aiHourly;
+  const savingPerDay = humanCostPerDay - aiCostPerDay;
 
   const planMonthly = convert(VOICE_IGNITION.priceGbp, currency, rates);
-  const monthlyValue = recoveredRevenue + staffCostReplaced;
-  const netMonthly = monthlyValue - planMonthly;
+  const netMonthly = humanCostPerMonth - planMonthly;
   const setup = convert(VOICE_IGNITION.setupGbp, currency, rates);
   const dailyNet = netMonthly / 30;
   const paybackDays = dailyNet > 0 ? Math.ceil(setup / dailyNet) : null;
 
   return {
     monthlyCalls: Math.round(monthlyCalls),
-    recoveredBookings: Math.round(recoveredBookings),
-    recoveredRevenue: Math.round(recoveredRevenue),
-    staffCostReplaced: Math.round(staffCostReplaced),
+    seats,
+    humanCostPerDay: Math.round(humanCostPerDay),
+    aiCostPerDay: Math.round(aiCostPerDay),
+    aiHourly,
+    savingPerDay: Math.round(savingPerDay),
     planName: `AI Voice · ${VOICE_IGNITION.name}`,
     planMonthly,
     netMonthly: Math.round(netMonthly),
@@ -227,7 +235,7 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
   const enquiriesId = useId();
   const chatFareId = useId();
   const callsId = useId();
-  const voiceFareId = useId();
+  const agentRateId = useId();
 
   const [tab, setTab] = useState<Tab>("chat");
   const [currency, setCurrency] = useState<Currency>("GBP");
@@ -237,12 +245,14 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
   const [chatFare, setChatFare] = useState(18);
 
   // AI Voice tab inputs
-  const [calls, setCalls] = useState(33);
-  const [voiceFare, setVoiceFare] = useState(18);
+  const [calls, setCalls] = useState(120);
+  const [agentRate, setAgentRate] = useState(DEFAULT_AGENT_RATE_GBP);
 
   const chat = computeChat(enquiries, chatFare, currency, rates);
-  const voice = computeVoice(calls, voiceFare, currency, rates);
+  const voice = computeVoice(calls, agentRate, currency, rates);
   const money = (n: number) => formatPrice(currency, Math.max(0, n));
+  // Hourly rates need pence; whole-pound rounding would turn £2.77 into £3.
+  const moneyHr = (n: number) => formatPrice(currency, Math.max(0, n), { decimals: 2 });
 
   return (
     <div className="border-[3px] border-ink bg-paper shadow-brut-xl">
@@ -255,7 +265,7 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
           <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-tight text-paper">
             {tab === "chat"
               ? "What WhatsApp Booking takes off the desk"
-              : "What AI Voice puts back on the meter"}
+              : "An always-on agent vs a staffed phone line"}
           </p>
         </div>
         <CurrencyToggle value={currency} onChange={setCurrency} />
@@ -335,22 +345,22 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <Slider
               id={callsId}
-              label="Calls received / day"
+              label="24-hour calls on one extension"
               value={calls}
               min={20}
-              max={120}
-              step={1}
+              max={500}
+              step={5}
               unit="a day"
               onChange={setCalls}
             />
             <Slider
-              id={voiceFareId}
-              label="Average fare"
-              value={voiceFare}
-              min={5}
-              max={80}
+              id={agentRateId}
+              label="Agent cost per hour"
+              value={agentRate}
+              min={8}
+              max={25}
               step={1}
-              onChange={setVoiceFare}
+              onChange={setAgentRate}
               format={(n) => money(n)}
             />
           </div>
@@ -360,16 +370,24 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
             aria-live="polite"
             aria-atomic="true"
           >
-            <Metric label="Calls answered" value={`${voice.monthlyCalls}`} sub="every one, 24/7 / mo" />
-            <Metric label="Missed fares recovered" value={`${voice.recoveredBookings}`} sub="bookings won back / mo" />
-            <Metric label="Recovered fare revenue" value={money(voice.recoveredRevenue)} sub="per month" />
-            <Metric label="Phone-desk cost replaced" value={money(voice.staffCostReplaced)} sub="staff time, per month" />
+            <Metric
+              label="Human cost / day"
+              value={money(voice.humanCostPerDay)}
+              sub={`${voice.seats} agent${voice.seats === 1 ? "" : "s"} answering 24/7`}
+            />
+            <Metric
+              label="AI agent cost / day"
+              value={money(voice.aiCostPerDay)}
+              sub={`${moneyHr(voice.aiHourly)}/hr, always on`}
+            />
+            <Metric label="Saving / day" value={money(voice.savingPerDay)} sub="vs a staffed line" />
+            <Metric label="Calls answered" value={`${voice.monthlyCalls}`} sub="every one, never engaged / mo" />
           </div>
 
           <div className="mt-4 grid gap-[3px] overflow-hidden border-[3px] border-ink bg-ink sm:grid-cols-2 lg:grid-cols-4">
             <DarkMetric label="Your plan" value={money(voice.planMonthly)} sub={`${voice.planName}, /mo`} />
-            <DarkMetric label="Net monthly benefit" value={money(voice.netMonthly)} accent />
-            <DarkMetric label="Annual net benefit" value={money(voice.annualNet)} accent />
+            <DarkMetric label="Net monthly saving" value={money(voice.netMonthly)} accent />
+            <DarkMetric label="Annual net saving" value={money(voice.annualNet)} accent />
             <DarkMetric
               label="Setup paid back in"
               value={voice.paybackDays === null ? "n/a" : `${voice.paybackDays} day${voice.paybackDays === 1 ? "" : "s"}`}
@@ -378,12 +396,11 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
           </div>
 
           <p className="mt-5 text-xs leading-relaxed text-gray-500">
-            Based on industry averages: {Math.round(VOICE_MISSED_SHARE * 100)}% of calls ring out today
-            (engaged, after-hours, nobody free), the agent answers them all and books{" "}
-            {Math.round(VOICE_BOOK_RATE * 100)}% of those it recovers, and it replaces{" "}
-            {VOICE_HANDLE_MIN} min of staff handling per call at{" "}
-            {money(convert(STAFF_RATE_GBP, currency, rates))}/hr. Plan shown is Ignition; a Full Throttle
-            pack scales past it. An estimate, not a quote.
+            Answering one extension around the clock with people means paying for{" "}
+            {HOURS_PER_DAY} agent-hours a day per seat at {money(agentRate)}/hr
+            — one seat covers up to {HUMAN_SEAT_CALLS_PER_DAY} calls a day, busier lines need more. The AI
+            agent covers the same 24 hours for {moneyHr(voice.aiHourly)}/hr and answers every call at once,
+            so none ring out. An estimate, not a quote.
           </p>
         </div>
       )}
