@@ -563,7 +563,7 @@
       <div class="roi-panel reveal" style="--d:4;" id="panel-chat">
         <div class="two">
           <div class="roi-input">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>Booking enquiries / day</label><span class="val" id="lblEnq">60</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>Bookings / Day</label><span class="val" id="lblEnq">60</span></div>
             <input type="range" id="iEnq" min="15" max="500" step="5" value="60">
           </div>
           <div class="roi-input">
@@ -594,7 +594,7 @@
             <input type="range" id="iCalls" min="20" max="500" step="5" value="120">
           </div>
           <div class="roi-input">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>Agent cost per hour</label><span class="val" id="lblRate">£13</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>Human agent cost per hour</label><span class="val" id="lblRate">£13</span></div>
             <input type="range" id="iRate" min="5" max="25" step="1" value="13">
           </div>
         </div>
@@ -602,10 +602,10 @@
           <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Human cost / day</p><p class="stat mono" id="v_human">—</p><p class="msub" id="v_humanSub">—</p></div>
           <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">AI agent cost / day</p><p class="stat mono" id="v_ai">—</p><p class="msub" id="v_aiSub">—</p></div>
           <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Saving / day</p><p class="stat mono" id="v_save">—</p><p class="msub">vs a staffed line</p></div>
-          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Calls answered</p><p class="stat mono" id="v_calls">—</p><p class="msub">every one, never engaged / mo</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Calls answered</p><p class="stat mono" id="v_calls">—</p><p class="msub" id="v_callsSub">—</p></div>
         </div>
         <div class="ink-bed m4 dark" style="margin-top:var(--gap);">
-          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Your plan</p><p class="stat mono" id="v_plan" style="color:var(--paper);">—</p><p class="msub">AI Voice · Ignition, /mo</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Your plan</p><p class="stat mono" id="v_plan" style="color:var(--paper);">—</p><p class="msub" id="v_planSub">AI Voice · Ignition, /mo</p></div>
           <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Net monthly saving</p><p class="stat mono" id="v_net" style="color:var(--yellow);">—</p></div>
           <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Annual net saving</p><p class="stat mono" id="v_annual" style="color:var(--yellow);">—</p></div>
           <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Setup paid back in</p><p class="stat mono" id="v_pay" style="color:var(--paper);">—</p><p class="msub" id="v_paySub"></p></div>
@@ -866,6 +866,8 @@
   // The two fixed plans (GBP, monthly excl. VAT) — pricing.ts.
   const CHAT={price:499, setup:999};
   const IGN ={calls:1000, price:1999, setup:999};
+  // Fixed pay-as-you-go credit, £2 per call above the plan — pricing.ts.
+  const EXTRA_CALL=2;
   // Human desk vs Ignition's effective £/hr — pricing-sections.tsx.
   const HUMAN_HOURLY=13, AI_VOICE_HOURLY=2.77;
 
@@ -874,7 +876,7 @@
   // WhatsApp Booking Suite levers.
   const WA_DEFLECT=0.45, WA_MIN=3, WA_CAP=0.05;
   // AI Voice levers.
-  const HOURS_PER_DAY=24, HUMAN_SEAT=170;
+  const HOURS_PER_DAY=24;
 
   let CUR='GBP';
   const conv=(gbp,c)=>gbp*(FX[c]||1);
@@ -909,25 +911,33 @@
   // ---- AI Voice Booking calculation (computeVoice) ----
   function computeVoice(calls,rate,c){
     const monthlyCalls=calls*DAYS;
-    const seats=Math.max(1,Math.ceil(calls/HUMAN_SEAT));
-    const humanPerDay=seats*HOURS_PER_DAY*rate;
+    // One human agent answering the line 24/7 — 24 paid agent-hours a day.
+    const humanPerDay=HOURS_PER_DAY*rate;
     const humanPerMonth=humanPerDay*DAYS;
     const aiHourly=conv(AI_VOICE_HOURLY,c);
     const aiPerDay=HOURS_PER_DAY*aiHourly;
     const savePerDay=humanPerDay-aiPerDay;
-    const plan=conv(IGN.price,c);
+    // Ignition base covers 1,000 calls/mo; calls above that bill at £2 each.
+    const planBase=conv(IGN.price,c);
+    const includedCalls=IGN.calls;
+    const extraCalls=Math.max(0,monthlyCalls-includedCalls);
+    const extraCallPrice=conv(EXTRA_CALL,c);
+    const extraCost=extraCalls*extraCallPrice;
+    const plan=planBase+extraCost;
     const net=humanPerMonth-plan;
     const setup=conv(IGN.setup,c);
     const dailyNet=net/30;
     const pay=dailyNet>0?Math.ceil(setup/dailyNet):null;
-    return {monthlyCalls:Math.round(monthlyCalls), seats, humanPerDay:Math.round(humanPerDay),
+    return {monthlyCalls:Math.round(monthlyCalls), humanPerDay:Math.round(humanPerDay),
             aiPerDay:Math.round(aiPerDay), aiHourly, savePerDay:Math.round(savePerDay),
-            plan, net:Math.round(net), annual:Math.round(net*12), setup, pay};
+            planBase:Math.round(planBase), includedCalls, extraCalls:Math.round(extraCalls),
+            extraCallPrice, extraCost:Math.round(extraCost),
+            plan:Math.round(plan), net:Math.round(net), annual:Math.round(net*12), setup, pay};
   }
 
   const payText=p=>p===null?'n/a':(p+' day'+(p===1?'':'s'));
 
-  let roiTab='chat';
+  let roiTab='voice';
   function renderRoi(){
     const isChat=roiTab==='chat';
     $('roiTitle').textContent=isChat
@@ -962,20 +972,27 @@
     $('lblRate').textContent=money(rate);
     const v=computeVoice(calls,rate,CUR);
     $('v_human').textContent=money(v.humanPerDay);
-    $('v_humanSub').textContent=v.seats+' agent'+(v.seats===1?'':'s')+' answering 24/7';
+    $('v_humanSub').textContent='1 agent answering 24/7';
     $('v_ai').textContent=money(v.aiPerDay);
     $('v_aiSub').textContent=moneyHr(v.aiHourly)+'/hr, always on';
     $('v_save').textContent=money(v.savePerDay);
     $('v_calls').textContent=v.monthlyCalls.toLocaleString('en-US');
+    $('v_callsSub').textContent=v.extraCalls>0
+      ? v.includedCalls.toLocaleString('en-US')+' included + '+v.extraCalls.toLocaleString('en-US')+' extra / mo'
+      : 'within '+v.includedCalls.toLocaleString('en-US')+' included / mo';
     $('v_plan').textContent=money(v.plan);
+    $('v_planSub').textContent=v.extraCalls>0
+      ? money(v.planBase)+' base + '+money(v.extraCost)+' credit ('+v.extraCalls.toLocaleString('en-US')+' × '+moneyHr(v.extraCallPrice)+'), /mo'
+      : 'AI Voice · Ignition, /mo';
     $('v_net').textContent=money(v.net);
     $('v_annual').textContent=money(v.annual);
     $('v_pay').textContent=payText(v.pay);
     $('v_paySub').textContent='on '+money(v.setup)+' setup';
-    $('voiceFoot').textContent='Answering one extension around the clock with people means paying for '
-      +HOURS_PER_DAY+' agent-hours a day per seat at '+money(rate)+'/hr. One seat covers up to '
-      +HUMAN_SEAT+' calls a day, busier lines need more. The AI agent covers the same 24 hours for '
-      +moneyHr(v.aiHourly)+'/hr and answers every call at once, so none ring out. An estimate, not a quote.';
+    $('voiceFoot').textContent='Answering one extension around the clock with one person means paying for '
+      +HOURS_PER_DAY+' agent-hours a day at '+money(rate)+'/hr. The AI agent covers the same 24 hours for '
+      +moneyHr(v.aiHourly)+'/hr and answers every call at once, so none ring out. Ignition includes '
+      +v.includedCalls.toLocaleString('en-US')+' calls a month; every call above that bills at a fixed '
+      +moneyHr(v.extraCallPrice)+' per call, added to the base plan. An estimate, not a quote.';
   }
 
   function renderPricing(){
