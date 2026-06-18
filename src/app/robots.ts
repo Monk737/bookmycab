@@ -19,6 +19,9 @@ export default function robots(): MetadataRoute.Robots {
         "/accept-invite",
         "/forgot-password",
         "/reset-password",
+        // Private, URL-only sales deck — keep it out of the index.
+        "/sales-deck",
+        "/sales-deck.html",
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,

@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>BookMyCab — The pitch deck for taxi &amp; private-hire firms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Stalinist+One&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================================
+     BookMyCab — Neo-Brutalism sales deck (fully responsive).
+     Tokens from DESIGN.md / globals.css.
+     Strategy: each slide is a flex column that CENTERS its content when
+     there's room, and SCROLLS internally when there isn't. Everything
+     sizes in fluid clamp() + min()/vw units, with explicit stacks at
+     narrow widths and short heights. dvh keeps mobile browser bars honest.
+     ===================================================================== */
+  :root{
+    --ink:#0a0a0a; --paper:#ffffff; --canvas:#f4f3ec;
+    --g100:#ededec; --g200:#dcdcda; --g300:#c2c2bf; --g400:#9a9a96;
+    --g500:#6f6f6b; --g600:#4f4f4c; --g700:#383836; --g900:#131312;
+    --yellow:#ffd400; --blue:#2f6bff; --lime:#c6f24e; --pink:#ff7ac0;
+    --red:#ff5247; --violet:#b794ff; --cyan:#5fd9e8; --orange:#ff8a3c;
+    --blue-deep:#1d3fd6;
+    --brut:4px 4px 0 0 var(--ink);
+    --brut-lg:6px 6px 0 0 var(--ink);
+    --brut-xl:10px 10px 0 0 var(--ink);
+    --brut-sm:2px 2px 0 0 var(--ink);
+    /* fluid scale tokens */
+    --pad: clamp(1.1rem, 4vw, 4.5rem);
+    --gap: clamp(12px, 1.6vw, 18px);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{height:100%;}
+  body{
+    min-height:100%;
+    background:var(--canvas); color:var(--ink);
+    font-family:"Urbanist",ui-sans-serif,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+  }
+  .logo-font{font-family:"Stalinist One",sans-serif;}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums;}
+  h1,h2,h3{font-family:"Urbanist",sans-serif; font-weight:800; line-height:1.0; letter-spacing:-0.02em; text-wrap:balance;}
+  .eyebrow{font-weight:700; font-size:clamp(.66rem,1.6vw,.72rem); letter-spacing:.12em; text-transform:uppercase;}
+
+  /* fluid headline helpers */
+  .h-hero{font-size:clamp(2.1rem, 8.5vw, 5.5rem); text-transform:uppercase; line-height:1;}
+  .h-1{font-size:clamp(1.7rem, 6vw, 3.6rem); text-transform:uppercase; line-height:1.02;}
+  .h-2{font-size:clamp(1.45rem, 5vw, 3rem); text-transform:uppercase; line-height:1.04;}
+  .lead{font-size:clamp(1rem, 2.4vw, 1.45rem); font-weight:600; line-height:1.5;}
+  .body{font-size:clamp(.9rem, 2vw, 1.05rem); line-height:1.5;}
+
+  /* ---- Wordmark ---- */
+  .wordmark{display:inline-flex; align-items:center; gap:.5rem;}
+  .wordmark .blk{display:inline-block; width:.85em; height:.85em; background:var(--yellow); border:3px solid var(--ink); box-shadow:var(--brut-sm);}
+  .wordmark .txt{font-family:"Stalinist One",sans-serif; font-size:clamp(.85rem,2.6vw,1.05rem); letter-spacing:.02em; line-height:1; padding-top:.12em;}
+
+  /* ---- Deck shell ---- */
+  .deck{position:relative; width:100vw; height:100vh; height:100dvh; overflow:hidden;}
+  .slide{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:clamp(3.2rem,7vh,4.5rem) var(--pad) clamp(4.2rem,9vh,5.5rem);
+    opacity:0; visibility:hidden; transform:translateX(40px);
+    transition:opacity .5s ease, transform .5s ease;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  .slide.active{opacity:1; visibility:visible; transform:none;}
+  .slide.prev{transform:translateX(-40px);}
+  .slide-inner{width:100%; max-width:1180px; margin-inline:auto; flex:0 0 auto;}
+
+  /* ---- Reveal stagger ---- */
+  .reveal{opacity:0; transform:translateY(16px); transition:opacity .55s ease, transform .55s ease;}
+  .slide.active .reveal{opacity:1; transform:none; transition-delay:calc(var(--d,0) * 100ms);}
+
+  /* ---- Chrome ---- */
+  .progress{position:fixed; top:0; left:0; height:6px; background:var(--yellow); border-bottom:2px solid var(--ink); z-index:50; transition:width .45s ease;}
+  .topbar{position:fixed; top:max(12px, env(safe-area-inset-top)); right:var(--pad); z-index:45;}
+  .topbar .txt{color:var(--ink); transition:color .4s ease;}
+  .topbar .blk{transition:border-color .4s ease, box-shadow .4s ease;}
+  .topbar.on-dark .txt{color:var(--paper);}
+  .topbar.on-dark .blk{border-color:var(--paper); box-shadow:2px 2px 0 0 rgba(255,255,255,.9);}
+  .nav{position:fixed; bottom:max(14px, env(safe-area-inset-bottom)); right:var(--pad); z-index:45; display:flex; gap:10px;}
+  .navbtn{width:clamp(40px,11vw,46px); height:clamp(40px,11vw,46px); border:3px solid var(--ink); background:var(--paper); box-shadow:var(--brut); cursor:pointer; font-size:1.3rem; font-weight:800; line-height:1; display:flex; align-items:center; justify-content:center; transition:transform .1s, box-shadow .1s;}
+  .navbtn:hover{transform:translate(-2px,-2px); box-shadow:var(--brut-lg);}
+  .navbtn:active{transform:translate(2px,2px); box-shadow:var(--brut-sm);}
+  .navbtn.primary{background:var(--yellow);}
+  .counter{position:fixed; bottom:max(20px, calc(env(safe-area-inset-bottom) + 6px)); left:var(--pad); z-index:45; font-weight:800; font-size:.78rem; letter-spacing:.05em; border:3px solid var(--ink); background:var(--paper); padding:.4rem .6rem; box-shadow:var(--brut-sm);}
+  .dots{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:45; display:flex; gap:7px;}
+  .dot{width:12px; height:12px; border:2px solid var(--ink); background:var(--paper); cursor:pointer; transition:background .2s;}
+  .dot.on{background:var(--yellow);}
+
+  /* ---- Building blocks ---- */
+  .card{background:var(--paper); border:3px solid var(--ink); box-shadow:var(--brut); padding:clamp(1rem,2.4vw,1.5rem);}
+  .badge{display:inline-block; border:2px solid var(--ink); background:var(--yellow); color:var(--ink); font-weight:700; font-size:clamp(.62rem,1.6vw,.72rem); letter-spacing:.08em; text-transform:uppercase; padding:.3rem .55rem; box-shadow:var(--brut-sm);}
+  .pill{display:inline-flex; align-items:center; gap:.4rem; border:2px solid var(--ink); background:var(--paper); font-weight:700; font-size:clamp(.7rem,1.8vw,.8rem); padding:.35rem .6rem; box-shadow:var(--brut-sm);}
+  .ink-bed{background:var(--ink); display:grid; gap:3px; border:3px solid var(--ink); overflow:hidden;}
+  .ink-bed > *{background:var(--paper);}
+  .btn{display:inline-flex; align-items:center; gap:.5rem; border:3px solid var(--ink); background:var(--yellow); color:var(--ink); font-weight:800; font-size:clamp(.9rem,2.2vw,1rem); padding:.8rem 1.4rem; box-shadow:var(--brut); cursor:pointer; text-decoration:none; transition:transform .1s, box-shadow .1s;}
+  .btn:hover{transform:translate(-2px,-2px); box-shadow:var(--brut-lg);}
+  .btn.secondary{background:var(--paper);}
+  .stat{font-family:"Urbanist"; font-weight:800; letter-spacing:-0.03em; line-height:.95;}
+
+  /* responsive grids */
+  .grid{display:grid; gap:var(--gap);}
+  .auto-3{grid-template-columns:repeat(3,1fr);}
+  .auto-fit{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+  .auto-fit-sm{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}
+
+  /* Ticker */
+  .ticker{overflow:hidden; border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); background:var(--ink);}
+  .ticker .track{display:flex; white-space:nowrap; padding:.55rem 0; animation:scroll 22s linear infinite; color:var(--yellow); font-weight:800; text-transform:uppercase; letter-spacing:.04em; font-size:clamp(.8rem,2vw,.95rem);}
+  @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+
+  /* Phone / chat */
+  .phone{width:min(330px,86vw); border:3px solid var(--ink); background:var(--paper); box-shadow:var(--brut-xl); margin-inline:auto;}
+  .phone .top{background:var(--ink); color:var(--paper); padding:.65rem .9rem; display:flex; align-items:center; gap:.55rem; font-weight:700; font-size:.92rem;}
+  .phone .top .av{width:28px; height:28px; background:var(--yellow); border:2px solid var(--paper); flex:none;}
+  .thread{padding:.9rem; display:flex; flex-direction:column; gap:.55rem; background:#efeee7;}
+  .msg{max-width:86%; border:2px solid var(--ink); padding:.5rem .65rem; font-size:clamp(.78rem,2vw,.86rem); line-height:1.35; box-shadow:var(--brut-sm); opacity:0; transform:translateY(10px) scale(.97); transition:opacity .35s ease, transform .35s ease;}
+  .msg.show{opacity:1; transform:none;}
+  .msg.them{align-self:flex-start; background:var(--paper);}
+  .msg.me{align-self:flex-end; background:var(--yellow);}
+  .msg .lbl{font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--g500); margin-bottom:.15rem;}
+  .voicenote{display:flex; align-items:center; gap:.5rem;}
+  .voicenote .wave{flex:1; height:16px; background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px); opacity:.6;}
+  .quote-card{border:2px solid var(--ink); background:var(--paper); box-shadow:var(--brut-sm);}
+  .quote-card .h{background:var(--ink); color:var(--yellow); font-weight:700; font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; padding:.28rem .5rem;}
+  .quote-card .row{display:flex; justify-content:space-between; gap:.5rem; padding:.28rem .5rem; font-size:.78rem; border-top:1px solid var(--g200);}
+  .dispatch-row{display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; border:3px solid var(--ink); background:var(--lime); padding:.55rem .75rem; box-shadow:var(--brut-sm); font-weight:700; font-size:clamp(.74rem,1.9vw,.82rem);}
+
+  /* feature rows */
+  .feat-row{display:flex; gap:.75rem; align-items:flex-start;}
+  .feat-row .ic{flex:none; width:36px; height:36px; border:3px solid var(--ink); display:flex; align-items:center; justify-content:center; font-weight:800; box-shadow:var(--brut-sm);}
+
+  /* ---- AI Voice slide: stat tiles + animated live call ---- */
+  .vstat{border:3px solid var(--ink); background:var(--paper); box-shadow:var(--brut-sm); padding:.7rem .8rem;}
+  .vstat .n{font-family:"Urbanist"; font-weight:800; letter-spacing:-.02em; font-size:clamp(1.4rem,4.6vw,2.1rem); line-height:1; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .vstat .l{font-size:.62rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--g500); margin-top:.35rem;}
+  .call-panel{border:3px solid var(--ink); background:#efeee7; box-shadow:8px 8px 0 0 var(--cyan);}
+  .call-panel .ch{display:flex; align-items:center; gap:.55rem; background:var(--ink); color:var(--paper); border-bottom:3px solid var(--ink); padding:.65rem .9rem;}
+  .dot-live{width:11px; height:11px; border-radius:50%; background:var(--lime); animation:pulse 1.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.35; transform:scale(.65);}}
+  .wave-eq{display:flex; align-items:center; gap:5px; height:42px; padding:.85rem 1rem .35rem;}
+  .wave-eq span{flex:1; max-width:9px; min-height:6px; background:var(--cyan); border:1px solid var(--ink); animation:eq 1.05s ease-in-out infinite;}
+  @keyframes eq{0%,100%{height:16%;} 50%{height:100%;}}
+  .vline{display:flex; gap:.55rem; padding:.32rem 1rem; font-size:clamp(.78rem,2vw,.86rem);}
+  .vline .who{flex:none; width:46px; padding-top:.12rem; font-size:.58rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase;}
+  .vline.agent .who{color:var(--blue-deep);}
+  .vline.caller .who{color:var(--g600);}
+  .vline .said{color:var(--ink);}
+  .vconfirm{display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin:.55rem 1rem 1rem; border:2px solid var(--ink); background:var(--lime); color:var(--ink); font-weight:800; padding:.55rem .8rem; font-size:clamp(.8rem,2vw,.9rem);}
+
+  /* ---- Dashboard slide: animated command centre (a bright product screen
+     popping on the dark marketing slide) ---- */
+  .dash{background:var(--canvas); border:3px solid var(--ink); box-shadow:var(--brut-xl);}
+  .dash-head{display:flex; align-items:center; gap:.5rem; background:var(--ink); color:var(--paper); padding:.55rem .8rem; font-weight:700; font-size:.85rem;}
+  .dash-head .av{width:22px; height:22px; background:var(--yellow); border:2px solid var(--paper); flex:none;}
+  .dash-head .live{display:inline-flex; align-items:center; gap:.35rem; margin-left:auto; font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--lime);}
+  .dash-kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:2px; background:var(--ink); border-bottom:3px solid var(--ink);}
+  .dash-kpis .k{background:var(--paper); padding:.5rem .55rem;}
+  .dash-kpis .k .n{font-family:"Urbanist"; font-weight:800; font-size:clamp(.95rem,2.9vw,1.3rem); letter-spacing:-.02em; line-height:1; font-variant-numeric:tabular-nums;}
+  .dash-kpis .k .l{font-size:.54rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--g500); margin-top:.25rem; line-height:1.15;}
+  .barchart{display:flex; align-items:flex-end; gap:5px; height:62px; padding:.7rem .8rem .45rem;}
+  .bar{flex:1; background:var(--blue); border:1px solid var(--ink); transform:scaleY(0); transform-origin:bottom; transition:transform .7s cubic-bezier(.2,.8,.2,1);}
+  .slide.active .bar{transform:scaleY(1);}
+  .bar-cap{display:flex; justify-content:space-between; padding:0 .8rem .5rem; font-size:.56rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--g500);}
+  .feed-h{display:flex; justify-content:space-between; padding:.38rem .8rem; background:var(--g100); border-top:3px solid var(--ink); font-size:.56rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--g600);}
+  .job{display:grid; grid-template-columns:auto 1fr auto; gap:.55rem; align-items:center; padding:.42rem .8rem; border-top:2px solid var(--ink); background:var(--paper);}
+  .job .t{font-family:"JetBrains Mono"; font-size:.64rem; color:var(--g500);}
+  .job .r{font-weight:700; font-size:clamp(.72rem,1.9vw,.82rem);}
+  .job .r .f{color:var(--g500); font-weight:500;}
+  .job .s{border:2px solid var(--ink); font-size:.58rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:.1rem .38rem; color:var(--ink); white-space:nowrap;}
+  .job.new{animation:dropin .5s ease;}
+  @keyframes dropin{0%{opacity:0; transform:translateY(-10px); background:var(--lime);} 60%{background:var(--lime);} 100%{opacity:1; transform:none; background:var(--paper);}}
+  .briefing{border:2px solid var(--ink); background:var(--violet); color:var(--ink); padding:.7rem .85rem; box-shadow:5px 5px 0 0 var(--ink);}
+
+  /* ROI */
+  .roi-grid{display:grid; gap:var(--gap); grid-template-columns:1.15fr 1fr;}
+  .roi-input{border:3px solid var(--ink); background:var(--paper); box-shadow:var(--brut-sm); padding:.85rem 1rem;}
+  .roi-input label{font-weight:700; font-size:clamp(.68rem,1.7vw,.74rem); letter-spacing:.05em; text-transform:uppercase; color:var(--g600);}
+  .roi-input .val{font-family:"JetBrains Mono"; font-weight:700; border:2px solid var(--ink); background:var(--yellow); padding:.1rem .45rem; font-variant-numeric:tabular-nums; font-size:.85rem;}
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:10px; background:var(--canvas); border:2px solid var(--ink); margin-top:.6rem; cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; background:var(--yellow); border:3px solid var(--ink); cursor:pointer;}
+  input[type=range]::-moz-range-thumb{width:18px; height:18px; background:var(--yellow); border:3px solid var(--ink); cursor:pointer;}
+  .chk{display:inline-flex; align-items:center; gap:.45rem; font-weight:700; font-size:clamp(.78rem,1.9vw,.85rem); cursor:pointer; border:3px solid var(--ink); padding:.45rem .7rem; box-shadow:var(--brut-sm); background:var(--paper);}
+  .chk input{width:18px; height:18px; accent-color:#ffd400;}
+  .chk.on{background:var(--yellow);}
+  .roi-values{grid-template-columns:1fr 1fr; align-content:start;}
+  .roi-bottom{grid-template-columns:repeat(4,1fr);}
+  .roi-cell{padding:clamp(.8rem,2vw,1.1rem);}
+  .roi-cell .stat{font-size:clamp(1.3rem,4vw,1.8rem);}
+  .roi-values .roi-cell .stat{font-size:clamp(1.2rem,3.6vw,1.7rem);}
+
+  /* ---- Currency toggle (mirrors the website's GBP/EUR/USD switch) ---- */
+  .cur-toggle{display:inline-flex; border:3px solid var(--ink); box-shadow:var(--brut-sm); background:var(--paper);}
+  .cur-toggle button{border:0; border-left:2px solid var(--ink); background:var(--paper); color:var(--g600); font-family:"Urbanist",sans-serif; font-weight:800; font-size:.74rem; letter-spacing:.04em; padding:.42rem .72rem; cursor:pointer; line-height:1;}
+  .cur-toggle button:first-child{border-left:0;}
+  .cur-toggle button.on{background:var(--yellow); color:var(--ink);}
+
+  /* ---- Tabbed ROI calculator (faithful port of pricing-roi.tsx) ---- */
+  .roi-head{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; background:var(--ink); border:3px solid var(--ink); padding:.75rem 1rem;}
+  .roi-head .eyebrow{color:var(--yellow);}
+  .roi-head .roi-title{font-family:"Urbanist",sans-serif; font-weight:800; font-size:clamp(.98rem,2.5vw,1.25rem); text-transform:uppercase; letter-spacing:-.01em; color:var(--paper); margin-top:.25rem; line-height:1.12;}
+  .roi-tabs{display:flex; flex-wrap:wrap; gap:8px; margin-top:var(--gap);}
+  .tabbtn{border:3px solid var(--ink); background:var(--paper); color:var(--g600); font-family:"Urbanist",sans-serif; font-weight:800; font-size:clamp(.72rem,1.9vw,.82rem); text-transform:uppercase; letter-spacing:.04em; padding:.5rem .85rem; box-shadow:var(--brut-sm); cursor:pointer; transition:transform .1s, box-shadow .1s;}
+  .tabbtn:hover{transform:translate(-2px,-2px); box-shadow:var(--brut);}
+  .tabbtn.on{background:var(--yellow); color:var(--ink);}
+  .roi-panel{margin-top:var(--gap);}
+  .two{display:grid; gap:var(--gap); grid-template-columns:1fr 1fr;}
+  .ink-bed.m4{grid-template-columns:repeat(4,1fr);}
+  .ink-bed.dark > *{background:var(--g900);}
+  .roi-cell .mlabel{font-size:.58rem;}
+  .roi-cell .msub{font-size:.66rem; color:var(--g500); margin-top:.12rem;}
+  .roi-foot{margin-top:.85rem; font-size:.7rem; line-height:1.55; color:var(--g500); max-width:900px;}
+
+  /* =================== RESPONSIVE BREAKPOINTS =================== */
+
+  /* Tablet / small laptop */
+  @media (max-width:900px){
+    .auto-3{grid-template-columns:1fr 1fr;}
+    .roi-grid{grid-template-columns:1fr;}
+    .roi-bottom{grid-template-columns:1fr 1fr;}
+    .ink-bed.m4{grid-template-columns:1fr 1fr;}
+  }
+
+  /* Phones */
+  @media (max-width:640px){
+    .slide{justify-content:flex-start; padding-top:clamp(3.4rem,12vh,4.5rem);}
+    .auto-3{grid-template-columns:1fr;}
+    .auto-fit, .auto-fit-sm{grid-template-columns:1fr;}
+    .roi-values{grid-template-columns:1fr 1fr;}
+    .two{grid-template-columns:1fr;}
+    .dots{display:none;}
+    .counter{font-size:.72rem;}
+    /* stack the two-column chat + roi layouts */
+    .two-col{grid-template-columns:1fr !important;}
+    .two-col .order-first{order:-1;}
+  }
+
+  /* Very small phones */
+  @media (max-width:380px){
+    .roi-values{grid-template-columns:1fr;}
+    .roi-bottom{grid-template-columns:1fr;}
+    .ink-bed.m4{grid-template-columns:1fr;}
+  }
+
+  /* Landscape phones / short windows: tighten everything, allow scroll */
+  @media (max-height:560px){
+    .slide{justify-content:flex-start; padding-top:clamp(2.6rem,9vh,3.4rem); padding-bottom:clamp(3.4rem,9vh,4.4rem);}
+    .h-hero{font-size:clamp(1.8rem,7vh,3rem);}
+    .h-1{font-size:clamp(1.5rem,6vh,2.4rem);}
+    .h-2{font-size:clamp(1.3rem,5.5vh,2rem);}
+    .card{padding:.85rem 1rem;}
+    .ticker{display:none;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .slide,.reveal,.msg{transition:none !important;}
+    .reveal{opacity:1 !important; transform:none !important;}
+    .ticker .track{animation:none;}
+    .wave-eq span{animation:none !important; height:55% !important;}
+    .dot-live{animation:none !important;}
+    .bar{transition:none !important; transform:scaleY(1) !important;}
+    .job.new{animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress" style="width:9%"></div>
+
+<div class="topbar" id="topbar">
+  <div class="wordmark"><span class="blk"></span><span class="txt">BOOKMYCAB</span></div>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- ================= SLIDE 1 — TITLE ================= -->
+  <section class="slide active">
+    <div class="slide-inner" style="text-align:center;">
+      <div class="reveal" style="--d:0"><span class="badge">For taxi &amp; private-hire firms</span></div>
+      <h1 class="reveal h-hero" style="--d:1; margin:clamp(1rem,3vh,1.6rem) 0 0;">
+        Stop losing<br>fares to a<br><span style="background:var(--yellow); border:4px solid var(--ink); box-shadow:var(--brut); padding:0 .3rem; display:inline-block; line-height:1.05;">ringing phone.</span>
+      </h1>
+      <p class="reveal lead" style="--d:2; max-width:760px; margin:clamp(1.2rem,3vh,1.8rem) auto 0;">
+        An AI voice agent and a WhatsApp bot that answer every call and message, quote your fares, and drop the job straight into your dispatch. 24/7.
+      </p>
+      <div class="reveal" style="--d:3; margin-top:clamp(1.4rem,3vh,2.4rem); display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <span class="pill">📞 AI Voice Agent</span>
+        <span class="pill">💬 WhatsApp Suite</span>
+        <span class="pill">⚙ AutoCab · iCabbi · Cordic</span>
+      </div>
+      <p class="reveal mono" style="--d:4; margin-top:clamp(1.4rem,3vh,2.6rem); color:var(--g500); font-size:.82rem;">Arrow keys, swipe, or the buttons to move.</p>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 2 — THE PROBLEM ================= -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="reveal" style="--d:0"><span class="eyebrow" style="color:var(--red);">The leak</span></div>
+      <h2 class="reveal h-1" style="--d:1; margin:.6rem 0 1.4rem;">How many bookings did you miss last night?</h2>
+      <div class="grid auto-3 reveal" style="--d:2;">
+        <div class="card" style="background:var(--red);">
+          <div class="stat" style="font-size:clamp(2rem,7vw,2.6rem);">2am</div>
+          <p style="font-weight:700; margin-top:.4rem;">Calls ring out</p>
+          <p class="body" style="margin-top:.3rem;">The desk is dark. The airport run books with the firm down the road.</p>
+        </div>
+        <div class="card" style="background:var(--orange);">
+          <div class="stat" style="font-size:clamp(2rem,7vw,2.6rem);">1am</div>
+          <p style="font-weight:700; margin-top:.4rem;">Engaged tone</p>
+          <p class="body" style="margin-top:.3rem;">Saturday chucking-out rush. Every line busy, fares walk.</p>
+        </div>
+        <div class="card" style="background:var(--violet);">
+          <div class="stat" style="font-size:clamp(2rem,7vw,2.6rem);">⏱</div>
+          <p style="font-weight:700; margin-top:.4rem;">WhatsApp left on read</p>
+          <p class="body" style="margin-top:.3rem;">A message that sat too long. They booked an app instead.</p>
+        </div>
+      </div>
+      <p class="reveal lead" style="--d:3; margin-top:1.6rem; max-width:780px;">
+        Every missed call and ignored message is a job that went to someone else. You already paid for the marketing that made that phone ring. The leak is at the point of answer.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 3 — THE FIX ================= -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="reveal" style="--d:0"><span class="eyebrow" style="color:var(--blue-deep);">The fix · three steps</span></div>
+      <h2 class="reveal h-1" style="--d:1; margin:.6rem 0 1.6rem;">It plugs in behind what you already run.</h2>
+      <div class="ink-bed auto-3 reveal" style="--d:2;">
+        <div style="padding:clamp(1.1rem,2.6vw,1.6rem);">
+          <div class="badge" style="background:var(--blue);">Step 1</div>
+          <h3 style="font-size:clamp(1.15rem,3vw,1.4rem); margin:.7rem 0 .5rem;">A call or message lands</h3>
+          <p class="body">Phone line, WhatsApp, web widget. The agent answers on the first ring, day or night, under your firm's name.</p>
+        </div>
+        <div style="padding:clamp(1.1rem,2.6vw,1.6rem);">
+          <div class="badge" style="background:var(--yellow);">Step 2</div>
+          <h3 style="font-size:clamp(1.15rem,3vw,1.4rem); margin:.7rem 0 .5rem;">It takes the booking</h3>
+          <p class="body">Pickup, destination, time, vehicle. A natural British voice quotes your fare and confirms, asking only what it needs.</p>
+        </div>
+        <div style="padding:clamp(1.1rem,2.6vw,1.6rem);">
+          <div class="badge" style="background:var(--lime);">Step 3</div>
+          <h3 style="font-size:clamp(1.15rem,3vw,1.4rem); margin:.7rem 0 .5rem;">It hits your dispatch</h3>
+          <p class="body">The confirmed job drops into AutoCab, iCabbi or Cordic. Your drivers and controllers carry on exactly as today.</p>
+        </div>
+      </div>
+      <p class="reveal" style="--d:3; margin-top:1.4rem; font-weight:700; font-size:clamp(.95rem,2.2vw,1.05rem);">No new app for your customers. No new screen for your team. Nothing to install.</p>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 4 — AI VOICE ================= -->
+  <section class="slide" id="slide-voice">
+    <div class="slide-inner">
+      <div class="reveal" style="--d:0"><span class="badge" style="background:var(--cyan);">Product 01 · AI Voice</span></div>
+      <h2 class="reveal h-1" style="--d:1; margin:.6rem 0 .4rem;">The voice agent that answers every call.</h2>
+      <p class="reveal lead" style="--d:2; color:var(--g600); max-width:740px; margin-bottom:clamp(1rem,2.6vh,1.5rem);">Point your booking number at it and it picks up on the first ring. It greets the caller under your firm's name, takes the job in a normal conversation, reads the fare back, and writes it to dispatch. It sounds like your best controller, on shift forever.</p>
+
+      <div class="grid two-col" style="grid-template-columns:1fr minmax(290px,430px); gap:clamp(18px,3.4vw,40px); align-items:start;">
+        <!-- LEFT: live stats + features -->
+        <div>
+          <div class="grid reveal" style="--d:3; grid-template-columns:repeat(3,1fr); gap:10px;">
+            <div class="vstat"><div class="n"><span data-count="318">0</span></div><div class="l">Calls answered<br>last night</div></div>
+            <div class="vstat"><div class="n"><span data-count="100" data-suffix="%">0</span></div><div class="l">Picked up on<br>the first ring</div></div>
+            <div class="vstat"><div class="n"><span data-prefix="£" data-count="612">0</span></div><div class="l">Fares kept off<br>the rival</div></div>
+          </div>
+
+          <div class="grid reveal" style="--d:4; grid-template-columns:1fr 1fr; gap:11px; margin-top:13px;">
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--cyan);">
+              <div class="feat-row"><div class="ic" style="background:var(--cyan);">1</div><div><h3 style="font-size:clamp(.98rem,2.4vw,1.1rem);">One ring, 24/7</h3><p class="body" style="color:var(--g600); margin-top:.25rem;">3am or your busiest Saturday. No engaged tone, no fare lost to the rank.</p></div></div>
+            </div>
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--yellow);">
+              <div class="feat-row"><div class="ic" style="background:var(--yellow);">2</div><div><h3 style="font-size:clamp(.98rem,2.4vw,1.1rem);">Your best controller</h3><p class="body" style="color:var(--g600); margin-top:.25rem;">A natural British voice, quoting your fares, asking only what it needs.</p></div></div>
+            </div>
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--pink);">
+              <div class="feat-row"><div class="ic" style="background:var(--pink);">3</div><div><h3 style="font-size:clamp(.98rem,2.4vw,1.1rem);">The hours nobody wants</h3><p class="body" style="color:var(--g600); margin-top:.25rem;">The 2am chucking-out rush and the dead-of-night airport run.</p></div></div>
+            </div>
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--lime);">
+              <div class="feat-row"><div class="ic" style="background:var(--lime);">4</div><div><h3 style="font-size:clamp(.98rem,2.4vw,1.1rem);">Overflow &amp; after-hours</h3><p class="body" style="color:var(--g600); margin-top:.25rem;">When the line is jammed or the desk is dark, it picks up the rest.</p></div></div>
+            </div>
+          </div>
+
+          <div class="reveal" style="--d:5; margin-top:13px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="pill">⚡ Live the same day</span>
+            <span class="pill">🇬🇧 Natural British voice</span>
+            <span class="pill">⚙ Writes to AutoCab</span>
+          </div>
+        </div>
+
+        <!-- RIGHT: animated live call -->
+        <div class="reveal order-first" style="--d:3;">
+          <div class="call-panel">
+            <div class="ch"><span class="dot-live"></span><div style="font-weight:700; font-size:.9rem;">Live call · 02:14</div><div class="mono" style="margin-left:auto; color:var(--g400); font-size:.78rem;">00:38</div></div>
+            <div class="wave-eq" aria-hidden="true">
+              <span style="animation-delay:-.00s"></span><span style="animation-delay:-.42s"></span><span style="animation-delay:-.18s"></span><span style="animation-delay:-.55s"></span><span style="animation-delay:-.30s"></span><span style="animation-delay:-.62s"></span><span style="animation-delay:-.10s"></span><span style="animation-delay:-.48s"></span><span style="animation-delay:-.24s"></span><span style="animation-delay:-.58s"></span><span style="animation-delay:-.36s"></span><span style="animation-delay:-.14s"></span>
+            </div>
+            <div class="vline agent reveal" style="--d:6"><span class="who">Agent</span><span class="said">"Good evening, BookMyCab. Where can we take you?"</span></div>
+            <div class="vline caller reveal" style="--d:7"><span class="who">Caller</span><span class="said">"Heathrow T5, picking up from 14 Bridge Street, soon as you can."</span></div>
+            <div class="vline agent reveal" style="--d:8"><span class="who">Agent</span><span class="said">"A saloon's eight minutes away, that run's £48. Shall I book it?"</span></div>
+            <div class="vline caller reveal" style="--d:9"><span class="who">Caller</span><span class="said">"Go on then, cheers."</span></div>
+            <div class="vconfirm reveal" style="--d:10">✓ Booked to AutoCab · BMC-4827 <span class="mono">£48.00</span></div>
+          </div>
+          <p class="reveal mono" style="--d:11; margin:.6rem 2px 0; color:var(--g500); font-size:.7rem; text-align:center;">A real call flow. No human on the line.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 5 — WHATSAPP ================= -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="reveal" style="--d:0"><span class="badge" style="background:var(--lime);">Product 02</span></div>
+      <h2 class="reveal h-1" style="--d:1; margin:.7rem 0 .4rem;">The WhatsApp Booking Suite</h2>
+      <p class="reveal lead" style="--d:2; color:var(--g600); max-width:720px; margin-bottom:1.6rem;">One bot that books by text <em>or</em> voice note, on the channel your customers already use every day.</p>
+      <div class="grid auto-fit-sm reveal" style="--d:3;">
+        <div class="card">
+          <div class="feat-row"><div class="ic" style="background:var(--lime);">✓</div><div><h3 style="font-size:clamp(1.05rem,2.6vw,1.15rem);">Text or voice note</h3><p class="body" style="color:var(--g600); margin-top:.3rem;">A quick-reply tap, a typed address, or a voice note from a noisy street all turn into the same clean booking.</p></div></div>
+        </div>
+        <div class="card">
+          <div class="feat-row"><div class="ic" style="background:var(--yellow);">£</div><div><h3 style="font-size:clamp(1.05rem,2.6vw,1.15rem);">Quotes &amp; confirms in chat</h3><p class="body" style="color:var(--g600); margin-top:.3rem;">Your fare shown, one tap to confirm, the job in dispatch. All inside the conversation the customer started.</p></div></div>
+        </div>
+        <div class="card">
+          <div class="feat-row"><div class="ic" style="background:var(--blue); color:var(--paper);">∞</div><div><h3 style="font-size:clamp(1.05rem,2.6vw,1.15rem);">One history with the calls</h3><p class="body" style="color:var(--g600); margin-top:.3rem;">Phones one week, messages the next: one customer record to you, not two threads to stitch together.</p></div></div>
+        </div>
+      </div>
+      <p class="reveal" style="--d:4; margin-top:1.4rem; font-weight:700; font-size:clamp(.95rem,2.2vw,1.05rem);">Built on WhatsApp Business. Nothing for your customer to download.</p>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 6 — LIVE BOOKING ================= -->
+  <section class="slide" id="slide-chat" style="background:var(--canvas);">
+    <div class="slide-inner">
+      <div class="grid two-col" style="grid-template-columns:1fr minmax(280px,auto); align-items:center; gap:clamp(20px,4vw,40px);">
+        <div>
+          <div class="reveal" style="--d:0"><span class="eyebrow" style="color:var(--pink);">Watch it work</span></div>
+          <h2 class="reveal h-2" style="--d:1; margin:.6rem 0 1rem;">A real booking, start to finish.</h2>
+          <p class="reveal body" style="--d:2; max-width:440px; color:var(--g600);">A customer fires off a voice note from a noisy kerbside. Watch the agent transcribe it, quote the fare, confirm, and write the job to AutoCab. No human touched it.</p>
+          <div class="reveal" style="--d:3; margin-top:1.2rem;">
+            <div class="dispatch-row" id="dispatchRow" style="opacity:0; transition:opacity .4s;">
+              ⚙ <span>Written to AutoCab</span> · <span class="mono">BMC-4827</span> · <span class="mono">CONFIRMED</span>
+            </div>
+          </div>
+        </div>
+        <div class="reveal order-first" style="--d:2;">
+          <div class="phone">
+            <div class="top"><div class="av"></div><div>BookMyCab Assistant<br><span style="font-weight:500; font-size:.68rem; color:var(--g300);">online</span></div></div>
+            <div class="thread" id="thread">
+              <div class="msg me"><div class="lbl">Customer · voice note</div><div class="voicenote">▶ <div class="wave"></div><span class="mono">0:09</span></div></div>
+              <div class="msg them"><div class="lbl">Transcribed</div>"Need a cab from 14 Bridge Street to Heathrow Terminal 5, half five tomorrow morning."</div>
+              <div class="msg them"><div class="lbl">Quote</div>
+                <div class="quote-card">
+                  <div class="h">Your fare</div>
+                  <div class="row"><span>14 Bridge St → LHR T5</span></div>
+                  <div class="row"><span>05:30, saloon</span><span class="mono" style="font-weight:700;">£48.00</span></div>
+                </div>
+                <div style="margin-top:.4rem;">Shall I book it?</div>
+              </div>
+              <div class="msg me">Yes please 👍</div>
+              <div class="msg them"><div class="lbl">Confirmed</div>Booked. Driver assigned, ref <b class="mono">BMC-4827</b>. See you at 05:30.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 7 — DASHBOARD ================= -->
+  <section class="slide" id="slide-dash">
+    <div class="slide-inner">
+      <div class="reveal" style="--d:0"><span class="badge" style="background:var(--violet);">Your command centre</span></div>
+      <h2 class="reveal h-1" style="--d:1; margin:.6rem 0 .4rem;">It doesn't just book. It tells you what's happening.</h2>
+      <p class="reveal lead" style="--d:2; color:var(--g600); max-width:740px; margin:.7rem 0 clamp(1rem,2.4vh,1.4rem);">Every call and chat is transcribed, scored and saved against the customer. The bookings stream in live, the near-misses get chased, and on Monday you get the whole week in plain English.</p>
+
+      <div class="grid two-col" style="grid-template-columns:1fr minmax(300px,440px); gap:clamp(18px,3.4vw,40px); align-items:start;">
+        <!-- LEFT: the features operators want -->
+        <div>
+          <div class="grid reveal" style="--d:4; grid-template-columns:1fr 1fr; gap:11px;">
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--lime);">
+              <h3 style="font-size:clamp(1rem,2.5vw,1.12rem);">Fares won back, in pounds</h3>
+              <p class="body" style="color:var(--g600); margin-top:.3rem;">It flags the calls that nearly slipped, chases them, and totals exactly what it recovered for you.</p>
+            </div>
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--cyan);">
+              <h3 style="font-size:clamp(1rem,2.5vw,1.12rem);">Graded &amp; self-tuning</h3>
+              <p class="body" style="color:var(--g600); margin-top:.3rem;">Every call scored for caller mood and outcome. It even drafts its own script tweaks for you to approve.</p>
+            </div>
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--orange);">
+              <h3 style="font-size:clamp(1rem,2.5vw,1.12rem);">Search &amp; replay anything</h3>
+              <p class="body" style="color:var(--g600); margin-top:.3rem;">Open any job, read the transcript or listen back. Filter to a day, search a name or a route in seconds.</p>
+            </div>
+            <div class="card" style="box-shadow:5px 5px 0 0 var(--yellow);">
+              <h3 style="font-size:clamp(1rem,2.5vw,1.12rem);">Busiest-hour heatmap</h3>
+              <p class="body" style="color:var(--g600); margin-top:.3rem;">See exactly when the calls land, so you know when you were short and where fares were leaking.</p>
+            </div>
+          </div>
+
+          <div class="briefing reveal" style="--d:5; margin-top:13px;">
+            <div style="font-weight:800; font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; display:flex; align-items:center; gap:.4rem;">📋 The Monday briefing</div>
+            <p style="font-weight:600; font-size:clamp(.84rem,2vw,.95rem); margin-top:.35rem; line-height:1.4;">"Bookings up 8% on last week. You missed 14 calls Friday 11pm–1am, worth about £340. Try adding a second agent line for the weekend rush."</p>
+          </div>
+        </div>
+
+        <!-- RIGHT: the animated command centre -->
+        <div class="reveal order-first" style="--d:3;">
+          <div class="dash">
+            <div class="dash-head"><span class="av"></span>BookMyCab · Live<span class="live"><span class="dot-live"></span>Live</span></div>
+            <div class="dash-kpis">
+              <div class="k"><div class="n"><span data-count="1284">0</span></div><div class="l">Bookings<br>this week</div></div>
+              <div class="k"><div class="n"><span data-prefix="£" data-count="3940">0</span></div><div class="l">Fares won<br>back</div></div>
+              <div class="k"><div class="n"><span data-count="2107">0</span></div><div class="l">Calls &amp;<br>chats</div></div>
+              <div class="k"><div class="n"><span data-count="4.6" data-decimals="1" data-suffix="/5">0</span></div><div class="l">Call<br>quality</div></div>
+            </div>
+            <div class="barchart" aria-hidden="true">
+              <div class="bar" style="height:38%; transition-delay:.05s"></div>
+              <div class="bar" style="height:60%; transition-delay:.10s"></div>
+              <div class="bar" style="height:48%; transition-delay:.15s"></div>
+              <div class="bar" style="height:82%; transition-delay:.20s"></div>
+              <div class="bar" style="height:64%; transition-delay:.25s"></div>
+              <div class="bar" style="height:96%; transition-delay:.30s; background:var(--yellow);"></div>
+              <div class="bar" style="height:72%; transition-delay:.35s"></div>
+            </div>
+            <div class="bar-cap"><span>Bookings by hour</span><span>Peak 11pm</span></div>
+            <div class="feed-h"><span>Live jobs</span><span>Status</span></div>
+            <div id="dashFeed">
+              <div class="job"><span class="t">02:14</span><span class="r">Rank → LHR T5 <span class="f">£48</span></span><span class="s" style="background:var(--yellow)">Booked</span></div>
+              <div class="job"><span class="t">02:11</span><span class="r">High St → Gatwick <span class="f">£72</span></span><span class="s" style="background:var(--lime)">Won back</span></div>
+              <div class="job"><span class="t">02:08</span><span class="r">Station → Watford <span class="f">£21</span></span><span class="s" style="background:var(--cyan)">Dispatched</span></div>
+            </div>
+          </div>
+          <p class="reveal mono" style="--d:11; margin:.6rem 2px 0; color:var(--g500); font-size:.7rem; text-align:center;">Live feed. New jobs land as they happen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 8 — ROI (tabbed, mirrors /pricing) ================= -->
+  <section class="slide" id="slide-roi">
+    <div class="slide-inner">
+      <div class="reveal" style="--d:0"><span class="eyebrow" style="color:var(--blue-deep);">The money · drag the sliders</span></div>
+      <h2 class="reveal h-2" style="--d:1; margin:.5rem 0 1.1rem;">See the price pay for itself.</h2>
+
+      <!-- Header strip + currency toggle -->
+      <div class="reveal roi-head" style="--d:2;">
+        <div>
+          <p class="eyebrow">ROI calculator</p>
+          <p class="roi-title" id="roiTitle">What WhatsApp Booking takes off the desk</p>
+        </div>
+        <div class="cur-toggle" data-cur-toggle>
+          <button type="button" data-cur="GBP" class="on">GBP £</button>
+          <button type="button" data-cur="EUR">EUR €</button>
+          <button type="button" data-cur="USD">USD $</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="roi-tabs reveal" style="--d:3;">
+        <button type="button" class="tabbtn on" data-tab="chat">WhatsApp Booking Suite</button>
+        <button type="button" class="tabbtn" data-tab="voice">AI Voice Booking</button>
+      </div>
+
+      <!-- CHAT PANEL -->
+      <div class="roi-panel reveal" style="--d:4;" id="panel-chat">
+        <div class="two">
+          <div class="roi-input">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>Booking enquiries / day</label><span class="val" id="lblEnq">60</span></div>
+            <input type="range" id="iEnq" min="15" max="500" step="5" value="60">
+          </div>
+          <div class="roi-input">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>Average fare</label><span class="val" id="lblChatFare">£18</span></div>
+            <input type="range" id="iChatFare" min="5" max="80" step="1" value="18">
+          </div>
+        </div>
+        <div class="ink-bed m4" style="margin-top:var(--gap);" aria-live="polite">
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Bookings automated</p><p class="stat mono" id="c_automated">—</p><p class="msub">handled by the bot / mo</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Staff cost saved</p><p class="stat mono" id="c_staff">—</p><p class="msub">desk time, per month</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Extra jobs captured</p><p class="stat mono" id="c_capB">—</p><p class="msub">won by message / mo</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Captured fare value</p><p class="stat mono" id="c_capR">—</p><p class="msub">per month</p></div>
+        </div>
+        <div class="ink-bed m4 dark" style="margin-top:var(--gap);">
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Your plan</p><p class="stat mono" id="c_plan" style="color:var(--paper);">—</p><p class="msub">WhatsApp Booking Suite, /mo</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Net monthly benefit</p><p class="stat mono" id="c_net" style="color:var(--yellow);">—</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Annual net benefit</p><p class="stat mono" id="c_annual" style="color:var(--yellow);">—</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Setup paid back in</p><p class="stat mono" id="c_pay" style="color:var(--paper);">—</p><p class="msub" id="c_paySub"></p></div>
+        </div>
+        <p class="roi-foot" id="chatFoot"></p>
+      </div>
+
+      <!-- VOICE PANEL -->
+      <div class="roi-panel reveal" style="--d:4;" id="panel-voice" hidden>
+        <div class="two">
+          <div class="roi-input">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>24-hour calls on one extension</label><span class="val" id="lblCalls">120</span></div>
+            <input type="range" id="iCalls" min="20" max="500" step="5" value="120">
+          </div>
+          <div class="roi-input">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>Agent cost per hour</label><span class="val" id="lblRate">£13</span></div>
+            <input type="range" id="iRate" min="5" max="25" step="1" value="13">
+          </div>
+        </div>
+        <div class="ink-bed m4" style="margin-top:var(--gap);" aria-live="polite">
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Human cost / day</p><p class="stat mono" id="v_human">—</p><p class="msub" id="v_humanSub">—</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">AI agent cost / day</p><p class="stat mono" id="v_ai">—</p><p class="msub" id="v_aiSub">—</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Saving / day</p><p class="stat mono" id="v_save">—</p><p class="msub">vs a staffed line</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g600);">Calls answered</p><p class="stat mono" id="v_calls">—</p><p class="msub">every one, never engaged / mo</p></div>
+        </div>
+        <div class="ink-bed m4 dark" style="margin-top:var(--gap);">
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Your plan</p><p class="stat mono" id="v_plan" style="color:var(--paper);">—</p><p class="msub">AI Voice · Ignition, /mo</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Net monthly saving</p><p class="stat mono" id="v_net" style="color:var(--yellow);">—</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Annual net saving</p><p class="stat mono" id="v_annual" style="color:var(--yellow);">—</p></div>
+          <div class="roi-cell"><p class="eyebrow mlabel" style="color:var(--g400);">Setup paid back in</p><p class="stat mono" id="v_pay" style="color:var(--paper);">—</p><p class="msub" id="v_paySub"></p></div>
+        </div>
+        <p class="roi-foot" id="voiceFoot"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 9 — PRICING (mirrors /pricing) ================= -->
+  <section class="slide" id="slide-pricing" style="background:var(--canvas);">
+    <div class="slide-inner">
+      <div class="reveal" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; --d:0;">
+        <span class="eyebrow" style="color:var(--blue-deep);">Simple pricing · all plans /mo · excl. VAT · prices in <span id="pCur">GBP</span></span>
+        <div class="cur-toggle" data-cur-toggle>
+          <button type="button" data-cur="GBP" class="on">GBP £</button>
+          <button type="button" data-cur="EUR">EUR €</button>
+          <button type="button" data-cur="USD">USD $</button>
+        </div>
+      </div>
+      <h2 class="reveal h-1" style="--d:1; margin:.5rem 0 .4rem;">One price each. No surprises.</h2>
+      <p class="reveal mono" id="pNote" style="--d:1; font-size:.72rem; color:var(--g500); margin-bottom:1.1rem; min-height:1em;"></p>
+      <div class="grid auto-fit-sm" style="align-items:stretch;">
+        <div class="reveal card" style="--d:2; display:flex; flex-direction:column;">
+          <span class="badge" style="background:var(--lime);">WhatsApp Booking Suite</span>
+          <p class="stat" style="font-size:clamp(2.4rem,8vw,3rem); margin:1rem 0 0;"><span id="pChat">£499</span><span style="font-size:1rem; font-weight:700; color:var(--g500);">/mo</span></p>
+          <p class="mono" style="font-size:.78rem; color:var(--g500);">+ <span id="pChatSetup">£999</span> one-time setup</p>
+          <p class="body" style="margin-top:1rem; flex:1;">Chatbot + voice note. One bot that books by text or voice and writes the job straight to dispatch.</p>
+        </div>
+        <div class="reveal card" style="--d:3; display:flex; flex-direction:column; box-shadow:var(--brut-xl); position:relative;">
+          <div style="position:absolute; top:-14px; right:-8px;" class="badge">Most popular</div>
+          <span class="badge" style="background:var(--cyan);">AI Voice — Ignition</span>
+          <p class="stat" style="font-size:clamp(2.4rem,8vw,3rem); margin:1rem 0 0;"><span id="pVoice">£1,999</span><span style="font-size:1rem; font-weight:700; color:var(--g500);">/mo</span></p>
+          <p class="mono" style="font-size:.78rem; color:var(--g500);">1,000 calls / mo · + <span id="pVoiceSetup">£999</span> one-time setup</p>
+          <p class="body" style="margin-top:1rem; flex:1;">The AI voice agent on your booking line. Answers, quotes, confirms, and writes to dispatch on every call.</p>
+        </div>
+        <div class="reveal card" style="--d:4; display:flex; flex-direction:column; background:var(--ink); color:var(--paper);">
+          <span class="badge" style="background:var(--yellow);">Full Throttle</span>
+          <p class="stat" style="font-size:clamp(2.4rem,8vw,3rem); margin:1rem 0 0; color:var(--paper);">Custom</p>
+          <p class="mono" style="font-size:.78rem; color:var(--g400);">scoped on a discovery call</p>
+          <p class="body" style="margin-top:1rem; color:var(--g300); flex:1;">Busy firms hit 1,000 calls fast. When you outgrow Ignition we tailor a pack to your monthly volume, built around how your firm runs.</p>
+        </div>
+      </div>
+
+      <!-- Human desk vs AI Voice — Ignition's true £/hr of always-on cover -->
+      <div class="reveal ink-bed" style="--d:5; grid-template-columns:1fr 1fr; margin-top:var(--gap);">
+        <div class="roi-cell" style="background:var(--g900);">
+          <p class="eyebrow mlabel" style="color:var(--g400);">Human agent</p>
+          <p class="stat mono" style="color:var(--paper);"><span id="pHuman">£13.00</span><span style="font-size:.9rem; font-weight:600; color:var(--g400);">/hr</span></p>
+          <p class="msub">One shift, one line at a time.</p>
+        </div>
+        <div class="roi-cell" style="background:var(--yellow);">
+          <p class="eyebrow mlabel" style="color:var(--g700);">Your AI Voice agent</p>
+          <p class="stat mono" style="color:var(--ink);"><span id="pAi">£2.77</span><span style="font-size:.9rem; font-weight:600; color:var(--g700);">/hr</span></p>
+          <p class="msub" style="color:var(--g700);">24/7, every call at once.</p>
+        </div>
+      </div>
+
+      <p class="reveal" style="--d:6; margin-top:1.1rem; font-weight:700; font-size:clamp(.9rem,2.1vw,1rem);">Your telco, WhatsApp and dispatch providers you pay directly. Cancel any time, rolling monthly.</p>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 10 — OWNERSHIP ================= -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="reveal" style="--d:0"><span class="eyebrow" style="color:var(--blue-deep);">It's yours</span></div>
+      <h2 class="reveal h-1" style="--d:1; margin:.5rem 0 1.5rem;">Built around you. And only you.</h2>
+      <div class="grid auto-fit reveal" style="--d:2;">
+        <div class="card" style="background:var(--yellow);"><h3 style="font-size:clamp(1.05rem,2.6vw,1.15rem);">Live the same day</h3><p class="body" style="margin-top:.4rem;">Point your booking number at it and it picks up. No long build, no new screen for your team.</p></div>
+        <div class="card"><h3 style="font-size:clamp(1.05rem,2.6vw,1.15rem);">Every rider stays yours</h3><p class="body" style="margin-top:.4rem;">Numbers, history and data stay on your list, never ours. Connected by you, billed to you, kept by you.</p></div>
+        <div class="card"><h3 style="font-size:clamp(1.05rem,2.6vw,1.15rem);">Export any time</h3><p class="body" style="margin-top:.4rem;">Bookings and history export whenever you ask. Your data walks with you.</p></div>
+        <div class="card" style="background:var(--lime);"><h3 style="font-size:clamp(1.05rem,2.6vw,1.15rem);">No lock-in</h3><p class="body" style="margin-top:.4rem;">Cancel and the door is open. We earn the next month every month.</p></div>
+      </div>
+      <p class="reveal" style="--d:3; margin-top:1.6rem; font-weight:700; font-size:clamp(1rem,2.6vw,1.2rem); max-width:760px;">Never a template clone. Your fares, your zones, your airport runs, wired to the dispatch system you already use.</p>
+    </div>
+  </section>
+
+  <!-- ================= SLIDE 11 — CLOSE ================= -->
+  <section class="slide" data-theme="dark" style="background:var(--ink); color:var(--paper);">
+    <div class="slide-inner" style="text-align:center;">
+      <div class="reveal wordmark" style="--d:0; justify-content:center; margin-bottom:1.2rem;"><span class="blk"></span><span class="txt" style="color:var(--paper); font-size:clamp(1rem,3vw,1.4rem);">BOOKMYCAB</span></div>
+      <h2 class="reveal h-hero" style="--d:1; color:var(--paper);">Let's catch the fares you're <span style="color:var(--yellow);">losing tonight.</span></h2>
+      <p class="reveal lead" style="--d:2; color:var(--g300); max-width:640px; margin:1.4rem auto 0;">Book a 15-minute discovery call. We'll scope your fleet, your call volume and your dispatch, then show the agent take a live booking. No slides.</p>
+      <div class="reveal" style="--d:3; margin-top:clamp(1.6rem,4vh,2.4rem); display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
+        <a class="btn" href="https://cal.com/bookmycab/Discovery">Book a discovery call →</a>
+        <a class="btn secondary" href="https://bookmycab.io">See the live demo</a>
+      </div>
+      <p class="reveal mono" style="--d:4; margin-top:clamp(1.6rem,4vh,2.4rem); color:var(--g400); font-size:.82rem;">BookMyCab by FlowMo AI LTD · hello@bookmycab.com</p>
+    </div>
+    <div class="reveal ticker" style="--d:5; position:absolute; bottom:0; left:0; right:0;">
+      <div class="track">
+        <span style="padding-right:2.5rem;">24/7 ANSWERING · NEVER MISS A FARE · YOUR FARES, YOUR VOICE · AUTOCAB · ICABBI · CORDIC · NO LOCK-IN · LIVE TODAY ·</span>
+        <span style="padding-right:2.5rem;">24/7 ANSWERING · NEVER MISS A FARE · YOUR FARES, YOUR VOICE · AUTOCAB · ICABBI · CORDIC · NO LOCK-IN · LIVE TODAY ·</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Chrome -->
+<div class="counter"><b id="cNow">01</b> / <span id="cTot">11</span></div>
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button class="navbtn" id="prev" aria-label="Previous">‹</button>
+  <button class="navbtn primary" id="next" aria-label="Next">›</button>
+</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let idx = 0;
+  const progress = document.getElementById('progress');
+  const cNow = document.getElementById('cNow');
+  const dotsWrap = document.getElementById('dots');
+  document.getElementById('cTot').textContent = String(total).padStart(2,'0');
+
+  slides.forEach((_,i)=>{
+    const d=document.createElement('div'); d.className='dot'+(i===0?' on':'');
+    d.addEventListener('click',()=>go(i)); dotsWrap.appendChild(d);
+  });
+  const dots = Array.from(dotsWrap.children);
+
+  function go(n){
+    n = Math.max(0, Math.min(total-1, n));
+    slides.forEach((s,i)=>{
+      s.classList.toggle('active', i===n);
+      s.classList.toggle('prev', i<n);
+      if(i===n) s.scrollTop = 0;
+    });
+    dots.forEach((d,i)=>d.classList.toggle('on', i===n));
+    idx=n;
+    cNow.textContent=String(n+1).padStart(2,'0');
+    progress.style.width=(((n+1)/total)*100)+'%';
+    document.getElementById('topbar').classList.toggle('on-dark', slides[n].dataset.theme==='dark');
+    if(slides[n].id==='slide-chat') playChat(); else resetChat();
+    if(slides[n].id==='slide-voice') playVoice(); else resetVoice();
+    if(slides[n].id==='slide-dash') playDash(); else resetDash();
+  }
+
+  document.getElementById('next').addEventListener('click',()=>go(idx+1));
+  document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+  window.addEventListener('keydown',(e)=>{
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}
+    else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}
+    else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(total-1);}
+  });
+
+  // touch swipe — ignore mostly-vertical gestures so inner scroll still works
+  let tx=0, ty=0;
+  const deck=document.getElementById('deck');
+  deck.addEventListener('touchstart',e=>{tx=e.touches[0].clientX; ty=e.touches[0].clientY;},{passive:true});
+  deck.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
+    if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.4){ dx<0?go(idx+1):go(idx-1); }
+  },{passive:true});
+
+  // wheel — let tall slides scroll internally first
+  let wlock=false;
+  deck.addEventListener('wheel',(e)=>{
+    const s=slides[idx];
+    if(s.scrollHeight>s.clientHeight+4){
+      const atTop=s.scrollTop<=0, atBot=s.scrollTop+s.clientHeight>=s.scrollHeight-1;
+      if(!(atTop&&e.deltaY<0)&&!(atBot&&e.deltaY>0)) return;
+    }
+    if(wlock) return; if(Math.abs(e.deltaY)<20) return;
+    wlock=true; e.deltaY>0?go(idx+1):go(idx-1); setTimeout(()=>wlock=false,650);
+  },{passive:true});
+
+  // ---- Chat animation ----
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let chatTimers=[];
+  function resetChat(){
+    chatTimers.forEach(t=>clearTimeout(t)); chatTimers=[];
+    document.querySelectorAll('#thread .msg').forEach(m=>m.classList.remove('show'));
+    const dr=document.getElementById('dispatchRow'); if(dr) dr.style.opacity='0';
+  }
+  function playChat(){
+    resetChat();
+    const msgs=document.querySelectorAll('#thread .msg');
+    if(reduce){ msgs.forEach(m=>m.classList.add('show')); document.getElementById('dispatchRow').style.opacity='1'; return; }
+    msgs.forEach((m,i)=>chatTimers.push(setTimeout(()=>m.classList.add('show'), 500 + i*950)));
+    chatTimers.push(setTimeout(()=>{const dr=document.getElementById('dispatchRow'); if(dr) dr.style.opacity='1';}, 500 + msgs.length*950 + 250));
+  }
+
+  // ---- AI Voice slide: count-up stats ----
+  const voiceStats = Array.from(document.querySelectorAll('#slide-voice [data-count]'));
+  let voiceTimer=null;
+  function setStat(el, val){
+    const pre=el.dataset.prefix||'', suf=el.dataset.suffix||'', dec=+(el.dataset.decimals||0);
+    el.textContent = pre + Number(val).toLocaleString('en-GB',{minimumFractionDigits:dec,maximumFractionDigits:dec}) + suf;
+  }
+  function resetVoice(){
+    if(voiceTimer) clearTimeout(voiceTimer);
+    voiceStats.forEach(el=>setStat(el,0));
+  }
+  function animateStat(el){
+    const target=+el.dataset.count;
+    if(reduce){ setStat(el,target); return; }
+    const dur=1100, start=performance.now();
+    (function tick(t){
+      const p=Math.min(1,(t-start)/dur), e=1-Math.pow(1-p,3); // easeOutCubic
+      setStat(el, target*e);
+      if(p<1) requestAnimationFrame(tick);
+    })(start);
+  }
+  function playVoice(){
+    resetVoice();
+    voiceTimer=setTimeout(()=>voiceStats.forEach(animateStat), 450);
+  }
+
+  // ---- Dashboard slide: count-up KPIs + live booking feed ----
+  const dashStats = Array.from(document.querySelectorAll('#slide-dash [data-count]'));
+  const dashFeed  = document.getElementById('dashFeed');
+  const dashFeedInit = dashFeed ? dashFeed.innerHTML : '';
+  const FEED=[
+    {r:'High St → Gatwick', f:'£72', s:'Won back', c:'var(--lime)'},
+    {r:'Quay St → Stansted', f:'£95', s:'Quoted', c:'var(--orange)'},
+    {r:'The Grange → City Centre', f:'£12', s:'Booked', c:'var(--yellow)'},
+    {r:'Airport → Mill Road', f:'£39', s:'Won back', c:'var(--lime)'},
+    {r:'Park Lane → Hospital', f:'£14', s:'Dispatched', c:'var(--cyan)'},
+    {r:'Rank → Luton', f:'£58', s:'Booked', c:'var(--yellow)'},
+    {r:'Market Sq → Heathrow T2', f:'£51', s:'Won back', c:'var(--lime)'},
+  ];
+  let dashTimer=null, feedIdx=0;
+  function nowHM(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+  function addJob(){
+    if(!dashFeed) return;
+    const f=FEED[feedIdx++ % FEED.length];
+    const el=document.createElement('div');
+    el.className='job new';
+    el.innerHTML='<span class="t">'+nowHM()+'</span><span class="r">'+f.r+' <span class="f">'+f.f+'</span></span><span class="s" style="background:'+f.c+'">'+f.s+'</span>';
+    dashFeed.prepend(el);
+    while(dashFeed.children.length>5) dashFeed.lastElementChild.remove();
+  }
+  function resetDash(){
+    if(dashTimer){ clearInterval(dashTimer); dashTimer=null; }
+    dashStats.forEach(el=>setStat(el,0));
+    if(dashFeed) dashFeed.innerHTML=dashFeedInit;
+    feedIdx=0;
+  }
+  function playDash(){
+    resetDash();
+    setTimeout(()=>dashStats.forEach(animateStat), 400);
+    if(!reduce){ dashTimer=setInterval(addJob, 2300); }
+  }
+
+  // ====================================================================
+  // PRICING + ROI — faithful port of the live /pricing page.
+  //   src/lib/marketing/pricing.ts · fx.ts · pricing-roi.tsx · pricing-sections.tsx
+  // ====================================================================
+  const $=id=>document.getElementById(id);
+
+  // FX fallback snapshot (GBP base) — matches FX_FALLBACK in fx.ts.
+  const FX={GBP:1, EUR:1.18, USD:1.27};
+  const SYM={GBP:'£', EUR:'€', USD:'$'};
+
+  // The two fixed plans (GBP, monthly excl. VAT) — pricing.ts.
+  const CHAT={price:499, setup:999};
+  const IGN ={calls:1000, price:1999, setup:999};
+  // Human desk vs Ignition's effective £/hr — pricing-sections.tsx.
+  const HUMAN_HOURLY=13, AI_VOICE_HOURLY=2.77;
+
+  // Shared ROI levers — pricing-roi.tsx.
+  const STAFF_RATE=12, DAYS=30;
+  // WhatsApp Booking Suite levers.
+  const WA_DEFLECT=0.45, WA_MIN=3, WA_CAP=0.05;
+  // AI Voice levers.
+  const HOURS_PER_DAY=24, HUMAN_SEAT=170;
+
+  let CUR='GBP';
+  const conv=(gbp,c)=>gbp*(FX[c]||1);
+  function fmt(c,amt,dec){
+    dec=dec||0;
+    const safe=(Number.isFinite(amt)&&amt>0)?amt:0;
+    return SYM[c]+safe.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+  }
+  const priceFor=(gbp,c,dec)=>fmt(c,conv(gbp,c),dec);
+  const money  =n=>fmt(CUR,Math.max(0,n));
+  const moneyHr=n=>fmt(CUR,Math.max(0,n),2);
+  const pct=n=>Math.round(n*100);
+
+  // ---- WhatsApp Booking Suite calculation (computeChat) ----
+  function computeChat(enq,fare,c){
+    const monthly=enq*DAYS;
+    const automated=monthly*WA_DEFLECT;
+    const hoursSaved=automated*WA_MIN/60;
+    const staffCostSaved=hoursSaved*conv(STAFF_RATE,c);
+    const capB=monthly*WA_CAP;
+    const capR=capB*fare;
+    const plan=conv(CHAT.price,c);
+    const net=(staffCostSaved+capR)-plan;
+    const setup=conv(CHAT.setup,c);
+    const dailyNet=net/30;
+    const pay=dailyNet>0?Math.ceil(setup/dailyNet):null;
+    return {automated:Math.round(automated), staffCostSaved:Math.round(staffCostSaved),
+            capB:Math.round(capB), capR:Math.round(capR), plan, net:Math.round(net),
+            annual:Math.round(net*12), setup, pay};
+  }
+
+  // ---- AI Voice Booking calculation (computeVoice) ----
+  function computeVoice(calls,rate,c){
+    const monthlyCalls=calls*DAYS;
+    const seats=Math.max(1,Math.ceil(calls/HUMAN_SEAT));
+    const humanPerDay=seats*HOURS_PER_DAY*rate;
+    const humanPerMonth=humanPerDay*DAYS;
+    const aiHourly=conv(AI_VOICE_HOURLY,c);
+    const aiPerDay=HOURS_PER_DAY*aiHourly;
+    const savePerDay=humanPerDay-aiPerDay;
+    const plan=conv(IGN.price,c);
+    const net=humanPerMonth-plan;
+    const setup=conv(IGN.setup,c);
+    const dailyNet=net/30;
+    const pay=dailyNet>0?Math.ceil(setup/dailyNet):null;
+    return {monthlyCalls:Math.round(monthlyCalls), seats, humanPerDay:Math.round(humanPerDay),
+            aiPerDay:Math.round(aiPerDay), aiHourly, savePerDay:Math.round(savePerDay),
+            plan, net:Math.round(net), annual:Math.round(net*12), setup, pay};
+  }
+
+  const payText=p=>p===null?'n/a':(p+' day'+(p===1?'':'s'));
+
+  let roiTab='chat';
+  function renderRoi(){
+    const isChat=roiTab==='chat';
+    $('roiTitle').textContent=isChat
+      ? 'What WhatsApp Booking takes off the desk'
+      : 'An always-on agent vs a staffed phone line';
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('on',b.dataset.tab===roiTab));
+    $('panel-chat').hidden=!isChat;
+    $('panel-voice').hidden=isChat;
+
+    // CHAT
+    const enq=+$('iEnq').value, chatFare=+$('iChatFare').value;
+    $('lblEnq').textContent=enq;
+    $('lblChatFare').textContent=money(chatFare);
+    const ch=computeChat(enq,chatFare,CUR);
+    $('c_automated').textContent=ch.automated.toLocaleString('en-US');
+    $('c_staff').textContent=money(ch.staffCostSaved);
+    $('c_capB').textContent=ch.capB.toLocaleString('en-US');
+    $('c_capR').textContent=money(ch.capR);
+    $('c_plan').textContent=money(ch.plan);
+    $('c_net').textContent=money(ch.net);
+    $('c_annual').textContent=money(ch.annual);
+    $('c_pay').textContent=payText(ch.pay);
+    $('c_paySub').textContent='on '+money(ch.setup)+' setup';
+    $('chatFoot').textContent='Based on industry averages: the bot fully handles '+pct(WA_DEFLECT)
+      +'% of booking enquiries on its own, saving '+WA_MIN+' min of desk time each at '
+      +money(conv(STAFF_RATE,CUR))+'/hr, and wins another '+pct(WA_CAP)
+      +'% as jobs a busy phone line would have lost. An estimate, not a quote.';
+
+    // VOICE
+    const calls=+$('iCalls').value, rate=+$('iRate').value;
+    $('lblCalls').textContent=calls;
+    $('lblRate').textContent=money(rate);
+    const v=computeVoice(calls,rate,CUR);
+    $('v_human').textContent=money(v.humanPerDay);
+    $('v_humanSub').textContent=v.seats+' agent'+(v.seats===1?'':'s')+' answering 24/7';
+    $('v_ai').textContent=money(v.aiPerDay);
+    $('v_aiSub').textContent=moneyHr(v.aiHourly)+'/hr, always on';
+    $('v_save').textContent=money(v.savePerDay);
+    $('v_calls').textContent=v.monthlyCalls.toLocaleString('en-US');
+    $('v_plan').textContent=money(v.plan);
+    $('v_net').textContent=money(v.net);
+    $('v_annual').textContent=money(v.annual);
+    $('v_pay').textContent=payText(v.pay);
+    $('v_paySub').textContent='on '+money(v.setup)+' setup';
+    $('voiceFoot').textContent='Answering one extension around the clock with people means paying for '
+      +HOURS_PER_DAY+' agent-hours a day per seat at '+money(rate)+'/hr. One seat covers up to '
+      +HUMAN_SEAT+' calls a day, busier lines need more. The AI agent covers the same 24 hours for '
+      +moneyHr(v.aiHourly)+'/hr and answers every call at once, so none ring out. An estimate, not a quote.';
+  }
+
+  function renderPricing(){
+    $('pCur').textContent=CUR;
+    $('pChat').textContent=priceFor(CHAT.price,CUR);
+    $('pChatSetup').textContent=priceFor(CHAT.setup,CUR);
+    $('pVoice').textContent=priceFor(IGN.price,CUR);
+    $('pVoiceSetup').textContent=priceFor(IGN.setup,CUR);
+    $('pHuman').textContent=priceFor(HUMAN_HOURLY,CUR,2);
+    $('pAi').textContent=priceFor(AI_VOICE_HOURLY,CUR,2);
+    $('pNote').textContent = CUR==='GBP' ? '' :
+      CUR+' figures are indicative, converted from GBP at today’s rate. Billing is in GBP (£).';
+  }
+
+  function setCurrency(c){
+    CUR=c;
+    document.querySelectorAll('[data-cur-toggle] button').forEach(b=>b.classList.toggle('on',b.dataset.cur===c));
+    renderRoi(); renderPricing();
+  }
+  document.querySelectorAll('[data-cur-toggle] button').forEach(b=>{
+    b.addEventListener('click',()=>setCurrency(b.dataset.cur));
+  });
+  document.querySelectorAll('.tabbtn').forEach(b=>{
+    b.addEventListener('click',()=>{ roiTab=b.dataset.tab; renderRoi(); });
+  });
+  ['iEnq','iChatFare','iCalls','iRate'].forEach(id=>$(id).addEventListener('input',renderRoi));
+  renderRoi(); renderPricing();
+
+  go(0);
+})();
+</script>
+</body>
+</html>
