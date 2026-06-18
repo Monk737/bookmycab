@@ -34,8 +34,9 @@ const WA_CAPTURE_SHARE = 0.05; // extra jobs won by message that a busy line los
 
 // AI Voice Booking levers — a straight cost comparison, agent vs human desk.
 const HOURS_PER_DAY = 24; // the line answered around the clock
-const AI_VOICE_HOURLY_GBP = 2.77; // Ignition's effective £/hr of always-on cover
 const DEFAULT_AGENT_RATE_GBP = 13; // typical fully-loaded phone agent, per hour
+// Past this daily volume, pay-as-you-go credit gets pricey — nudge to a custom plan.
+const VOICE_CUSTOM_PLAN_CALLS = 100;
 
 type Tab = "chat" | "voice";
 
@@ -88,11 +89,6 @@ function computeVoice(
   const humanCostPerDay = HOURS_PER_DAY * agentRate;
   const humanCostPerMonth = humanCostPerDay * DAYS_PER_MONTH;
 
-  // The agent covers the same 24 hours for Ignition's effective hourly rate.
-  const aiHourly = convert(AI_VOICE_HOURLY_GBP, currency, rates);
-  const aiCostPerDay = HOURS_PER_DAY * aiHourly;
-  const savingPerDay = humanCostPerDay - aiCostPerDay;
-
   // Plan cost: Ignition's base covers up to 1,000 calls/mo. Every call beyond
   // that bills at the fixed £2 pay-as-you-go credit price; the bill is the base
   // plan plus that extra credit.
@@ -102,6 +98,13 @@ function computeVoice(
   const extraCallPrice = convert(EXTRA_CALL_PRICE_GBP, currency, rates);
   const extraCost = extraCalls * extraCallPrice;
   const planMonthly = planBase + extraCost;
+
+  // The AI's daily cost tracks the real plan total (base + any £2/call credit),
+  // so it climbs once calls pass the 1,000 included — it is never a flat figure.
+  // Within the plan this lands at Ignition's effective always-on rate (~£2.77/hr).
+  const aiCostPerDay = planMonthly / DAYS_PER_MONTH;
+  const aiHourly = aiCostPerDay / HOURS_PER_DAY;
+  const savingPerDay = humanCostPerDay - aiCostPerDay;
 
   const netMonthly = humanCostPerMonth - planMonthly;
   const setup = convert(VOICE_IGNITION.setupGbp, currency, rates);
@@ -352,6 +355,21 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
       {/* AI VOICE PANEL */}
       {tab === "voice" && (
         <div id={voicePanelId} role="tabpanel" className="p-6 sm:p-8">
+          {calls >= VOICE_CUSTOM_PLAN_CALLS && (
+            <div
+              role="status"
+              className="mb-4 flex items-start gap-3 border-[3px] border-ink bg-brut-yellow p-4 shadow-brut-sm"
+            >
+              <span aria-hidden className="font-display text-lg font-extrabold leading-none text-ink">
+                ★
+              </span>
+              <p className="text-sm font-bold leading-snug text-ink">
+                Handling {VOICE_CUSTOM_PLAN_CALLS}+ calls a day? Our team can build you a custom plan
+                that&rsquo;s better value than pay-as-you-go credit — let&rsquo;s tailor the right package
+                for your volume.
+              </p>
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Slider
               id={callsId}
@@ -388,7 +406,11 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
             <Metric
               label="AI agent cost / day"
               value={money(voice.aiCostPerDay)}
-              sub={`${moneyHr(voice.aiHourly)}/hr, always on`}
+              sub={
+                voice.extraCalls > 0
+                  ? `${moneyHr(voice.aiHourly)}/hr incl. £2/call credit`
+                  : `${moneyHr(voice.aiHourly)}/hr, always on`
+              }
             />
             <Metric label="Saving / day" value={money(voice.savingPerDay)} sub="vs a staffed line" />
             <Metric
@@ -423,11 +445,11 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
 
           <p className="mt-5 text-xs leading-relaxed text-gray-500">
             Answering one extension around the clock with one person means paying for{" "}
-            {HOURS_PER_DAY} agent-hours a day at {money(agentRate)}/hr. The AI agent covers the same 24
-            hours for {moneyHr(voice.aiHourly)}/hr and answers every call at once, so none ring out.{" "}
-            {VOICE_IGNITION.name} includes {voice.includedCalls.toLocaleString()} calls a month; every call
-            above that bills at a fixed {moneyHr(voice.extraCallPrice)} per call, added to the base plan. An
-            estimate, not a quote.
+            {HOURS_PER_DAY} agent-hours a day at {money(agentRate)}/hr. {VOICE_IGNITION.name} includes{" "}
+            {voice.includedCalls.toLocaleString()} calls a month; every call above that bills at a fixed{" "}
+            {moneyHr(voice.extraCallPrice)} per call, added to the base plan — so the AI&rsquo;s cost rises
+            with volume, working out at {moneyHr(voice.aiHourly)}/hr all-in here while it still answers every
+            call at once. An estimate, not a quote.
           </p>
         </div>
       )}

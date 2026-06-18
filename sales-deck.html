@@ -588,6 +588,10 @@
 
       <!-- VOICE PANEL -->
       <div class="roi-panel reveal" style="--d:4;" id="panel-voice" hidden>
+        <div id="voiceRibbon" hidden style="display:flex; align-items:flex-start; gap:.6rem; border:3px solid var(--ink); background:var(--yellow); box-shadow:var(--brut-sm); padding:.85rem 1rem; margin-bottom:var(--gap);">
+          <span aria-hidden="true" style="font-family:'Urbanist',sans-serif; font-weight:800; line-height:1;">★</span>
+          <p style="margin:0; font-weight:700; font-size:.82rem; line-height:1.4; color:var(--ink);">Handling 100+ calls a day? Our team can build you a custom plan that’s better value than pay-as-you-go credit — let’s tailor the right package for your volume.</p>
+        </div>
         <div class="two">
           <div class="roi-input">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;"><label>24-hour calls on one extension</label><span class="val" id="lblCalls">120</span></div>
@@ -914,9 +918,6 @@
     // One human agent answering the line 24/7 — 24 paid agent-hours a day.
     const humanPerDay=HOURS_PER_DAY*rate;
     const humanPerMonth=humanPerDay*DAYS;
-    const aiHourly=conv(AI_VOICE_HOURLY,c);
-    const aiPerDay=HOURS_PER_DAY*aiHourly;
-    const savePerDay=humanPerDay-aiPerDay;
     // Ignition base covers 1,000 calls/mo; calls above that bill at £2 each.
     const planBase=conv(IGN.price,c);
     const includedCalls=IGN.calls;
@@ -924,6 +925,11 @@
     const extraCallPrice=conv(EXTRA_CALL,c);
     const extraCost=extraCalls*extraCallPrice;
     const plan=planBase+extraCost;
+    // AI daily cost tracks the real plan total (base + £2/call credit), so it
+    // climbs with volume — never a flat figure. Within plan ≈ £2.77/hr.
+    const aiPerDay=plan/DAYS;
+    const aiHourly=aiPerDay/HOURS_PER_DAY;
+    const savePerDay=humanPerDay-aiPerDay;
     const net=humanPerMonth-plan;
     const setup=conv(IGN.setup,c);
     const dailyNet=net/30;
@@ -974,8 +980,11 @@
     $('v_human').textContent=money(v.humanPerDay);
     $('v_humanSub').textContent='1 agent answering 24/7';
     $('v_ai').textContent=money(v.aiPerDay);
-    $('v_aiSub').textContent=moneyHr(v.aiHourly)+'/hr, always on';
+    $('v_aiSub').textContent=v.extraCalls>0
+      ? moneyHr(v.aiHourly)+'/hr incl. £2/call credit'
+      : moneyHr(v.aiHourly)+'/hr, always on';
     $('v_save').textContent=money(v.savePerDay);
+    $('voiceRibbon').hidden = calls < 100;
     $('v_calls').textContent=v.monthlyCalls.toLocaleString('en-US');
     $('v_callsSub').textContent=v.extraCalls>0
       ? v.includedCalls.toLocaleString('en-US')+' included + '+v.extraCalls.toLocaleString('en-US')+' extra / mo'
@@ -989,10 +998,11 @@
     $('v_pay').textContent=payText(v.pay);
     $('v_paySub').textContent='on '+money(v.setup)+' setup';
     $('voiceFoot').textContent='Answering one extension around the clock with one person means paying for '
-      +HOURS_PER_DAY+' agent-hours a day at '+money(rate)+'/hr. The AI agent covers the same 24 hours for '
-      +moneyHr(v.aiHourly)+'/hr and answers every call at once, so none ring out. Ignition includes '
+      +HOURS_PER_DAY+' agent-hours a day at '+money(rate)+'/hr. Ignition includes '
       +v.includedCalls.toLocaleString('en-US')+' calls a month; every call above that bills at a fixed '
-      +moneyHr(v.extraCallPrice)+' per call, added to the base plan. An estimate, not a quote.';
+      +moneyHr(v.extraCallPrice)+' per call, added to the base plan — so the AI’s cost rises with volume, '
+      +'working out at '+moneyHr(v.aiHourly)+'/hr all-in here while it still answers every call at once. '
+      +'An estimate, not a quote.';
   }
 
   function renderPricing(){
