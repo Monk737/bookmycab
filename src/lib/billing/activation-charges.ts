@@ -21,8 +21,8 @@ export function planActivationCharges(args: {
 }): ActivationPlan {
   if (args.billingMode === "one_time") {
     const oneTimeLines: ActivationPlan["oneTimeLines"] = [];
-    if (args.chat) oneTimeLines.push({ label: "BookMyCab — WhatsApp Suite", amountGbp: args.chat.monthly_price_gbp });
-    if (args.voice) oneTimeLines.push({ label: "BookMyCab — AI Voice pack", amountGbp: args.voice.monthly_price_gbp });
+    if (args.chat) oneTimeLines.push({ label: "BookMyCab, WhatsApp Suite", amountGbp: args.chat.monthly_price_gbp });
+    if (args.voice) oneTimeLines.push({ label: "BookMyCab, AI Voice pack", amountGbp: args.voice.monthly_price_gbp });
     return { mode: "one_time", setupGbp: args.setupGbp, subscriptions: [], oneTimeLines };
   }
   const subscriptions: ActivationPlan["subscriptions"] = [];

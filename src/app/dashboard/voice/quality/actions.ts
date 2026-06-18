@@ -148,7 +148,7 @@ export async function runPromptDetection(): Promise<PromptActionState> {
   revalidatePath("/dashboard/voice/quality");
   if (res.drafted > 0) return { ok: true, message: `${res.drafted} suggestion${res.drafted === 1 ? "" : "s"} ready to review.` };
   if (res.skipped.includes("no_gemini_key") || res.skipped.includes("no_vapi_key"))
-    return { ok: true, message: "Prompt tuning isn't configured yet — contact FlowMo." };
+    return { ok: true, message: "Prompt tuning isn't configured yet, contact FlowMo." };
   return { ok: true, message: "No new tuning suggestions right now." };
 }
 

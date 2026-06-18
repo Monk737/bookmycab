@@ -154,7 +154,7 @@ export function PromptRequestBoard({ requests, revisions }: { requests: PromptSu
           <span className="border-2 border-ink bg-paper px-2 py-0.5 font-mono text-xs font-bold tabular-nums text-ink">{requests.length}</span>
         </header>
         {requests.length === 0 ? (
-          <p className="px-5 py-12 text-center text-sm text-gray-600">No open prompt-tuning suggestions right now — the daily sweep auto-detects them and tenants can raise their own.</p>
+          <p className="px-5 py-12 text-center text-sm text-gray-600">No open prompt-tuning suggestions right now, the daily sweep auto-detects them and tenants can raise their own.</p>
         ) : (
           <ul className="space-y-4 p-4">{requests.map((s) => <RequestCard key={s.id} s={s} />)}</ul>
         )}

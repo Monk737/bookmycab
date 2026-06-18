@@ -65,7 +65,7 @@ function ConversationBody(c: ChatConversationLogRow) {
       {d ? (
         <p className="truncate text-sm text-gray-600">{d}</p>
       ) : (
-        <p className="text-sm text-gray-400">Summary pending — open to view the journey.</p>
+        <p className="text-sm text-gray-400">Summary pending, open to view the journey.</p>
       )}
     </div>
   );
@@ -96,7 +96,7 @@ export function ConversationsLog({ items }: { items: ChatConversationLogRow[] })
         )}
         searchPlaceholder="Search name, number, outcome…"
         emptyLabel="No conversations on this day."
-        noneLabel="No conversations yet. Each WhatsApp chat your bot handles — typed or by voice note — lands here."
+        noneLabel="No conversations yet. Each WhatsApp chat your bot handles, typed or by voice note, lands here."
       />
       <ChatDetailDrawer item={active} onClose={() => setActive(null)} />
     </>

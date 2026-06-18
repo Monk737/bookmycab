@@ -67,7 +67,7 @@ export default async function PlansPage() {
 
       <div className="flex flex-col gap-6">
         {/* 1. WhatsApp Booking Suite */}
-        <CatalogCard accent="bg-brut-cyan" title="WhatsApp Booking Suite — Chatbot + Voice Note">
+        <CatalogCard accent="bg-brut-cyan" title="WhatsApp Booking Suite, Chatbot + Voice Note">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50"><tr><Th>Plan</Th><Th right>Monthly</Th><Th right>Setup (one-time)</Th></tr></thead>
             <tbody className="divide-y-2 divide-gray-100">
@@ -96,7 +96,7 @@ export default async function PlansPage() {
         </CatalogCard>
 
         {/* 3. Custom (Full Throttle) */}
-        <CatalogCard accent="bg-brut-yellow" title="Custom (Full Throttle) — configured per tenant">
+        <CatalogCard accent="bg-brut-yellow" title="Custom (Full Throttle), configured per tenant">
           <p className="px-3 py-3 text-sm text-gray-700">
             After a discovery call, set everything on the New Tenant form under <span className="font-bold">Commercial model → Custom</span>:
             plan name, number of calls, price per call, number of agents, setup fee, pack validity, and per-call extra-credit (overage) pricing.
@@ -106,7 +106,7 @@ export default async function PlansPage() {
 
         {/* Feature packaging (entitlements) — legacy reference */}
         <section>
-          <SectionTitle sub="Legacy entitlement reference. The two-product dashboards no longer gate on these flags — the voice call pool is driven by voice_subscriptions + usage_counters, not plan_features. Kept for the metered-feature catalogue.">
+          <SectionTitle sub="Legacy entitlement reference. The two-product dashboards no longer gate on these flags, the voice call pool is driven by voice_subscriptions + usage_counters, not plan_features. Kept for the metered-feature catalogue.">
             Feature packaging
           </SectionTitle>
           <div className="overflow-x-auto border-[3px] border-ink bg-paper shadow-brut">

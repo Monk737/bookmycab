@@ -20,8 +20,8 @@ const DISPATCH_ADAPTERS = [
 ] as const;
 
 const PLAN_TYPES: { value: PlanType; label: string }[] = [
-  { value: "whatsapp_suite", label: "WhatsApp Booking Suite — £499/mo" },
-  { value: "voice_ignition", label: "AI Voice — Ignition (1,000 calls, £1,999/mo)" },
+  { value: "whatsapp_suite", label: "WhatsApp Booking Suite, £499/mo" },
+  { value: "voice_ignition", label: "AI Voice, Ignition (1,000 calls, £1,999/mo)" },
   { value: "custom", label: "Custom (Full Throttle)" },
 ];
 

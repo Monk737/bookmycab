@@ -67,7 +67,7 @@ export function DemandHeatmap({
                 return (
                   <div
                     key={h}
-                    title={`${WD_LABEL[i]} ${hourLabel(h)} — ${n} call${n === 1 ? "" : "s"}`}
+                    title={`${WD_LABEL[i]} ${hourLabel(h)}, ${n} call${n === 1 ? "" : "s"}`}
                     className={`aspect-square border border-ink/15 ${cellClass(n, max)}`}
                   />
                 );

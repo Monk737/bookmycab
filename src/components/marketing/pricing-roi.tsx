@@ -357,7 +357,7 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
               id={agentRateId}
               label="Agent cost per hour"
               value={agentRate}
-              min={8}
+              min={5}
               max={25}
               step={1}
               onChange={setAgentRate}
@@ -397,8 +397,8 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
 
           <p className="mt-5 text-xs leading-relaxed text-gray-500">
             Answering one extension around the clock with people means paying for{" "}
-            {HOURS_PER_DAY} agent-hours a day per seat at {money(agentRate)}/hr
-            — one seat covers up to {HUMAN_SEAT_CALLS_PER_DAY} calls a day, busier lines need more. The AI
+            {HOURS_PER_DAY} agent-hours a day per seat at {money(agentRate)}/hr.
+            One seat covers up to {HUMAN_SEAT_CALLS_PER_DAY} calls a day, busier lines need more. The AI
             agent covers the same 24 hours for {moneyHr(voice.aiHourly)}/hr and answers every call at once,
             so none ring out. An estimate, not a quote.
           </p>

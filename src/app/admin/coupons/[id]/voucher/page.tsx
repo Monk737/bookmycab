@@ -82,7 +82,7 @@ export default async function VoucherPage({ params }: { params: Promise<{ id: st
 
           {c.percent_off === 100 ? (
             <p className="mt-5 text-xs font-bold uppercase tracking-[0.08em] text-ink">
-              Comps setup + subscription in full — no card required
+              Comps setup + subscription in full, no card required
             </p>
           ) : null}
         </div>

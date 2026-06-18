@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   CHAT_SUITE,
   VOICE_IGNITION,
-  EXTRA_CALL_PRICE_GBP,
   priceFor,
   type Currency,
 } from "@/lib/marketing/pricing";
@@ -57,7 +56,7 @@ export function PricingSections({ rates }: { rates: Rates }) {
                 {CHAT_SUITE.name}
               </h3>
               <p className="mt-1 max-w-2xl text-sm leading-relaxed text-gray-700 sm:text-base">
-                Includes WhatsApp Chatbot + Voice Note. One simple price — books by text or voice note and writes the job straight to dispatch.
+                Includes WhatsApp Chatbot + Voice Note. One simple price, books by text or voice note and writes the job straight to dispatch.
               </p>
             </div>
           </div>
@@ -146,7 +145,7 @@ export function PricingSections({ rates }: { rates: Rates }) {
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
                 Busy firms hit 1,000 calls fast. When you outgrow Ignition,
                 we&apos;ll <span className="font-bold text-ink">tailor a plan to cover
-                your monthly volume</span> — scoped on a discovery call and built
+                your monthly volume</span>, scoped on a discovery call and built
                 around how your firm runs.
               </p>
               <div className="mt-5 border-t-2 border-ink/15 pt-4">
@@ -167,7 +166,7 @@ export function PricingSections({ rates }: { rates: Rates }) {
               <span className="font-bold text-paper">
                 {priceFor(AI_VOICE_HOURLY_GBP, currency, rates, 2)}/hr
               </span>{" "}
-              of always-on cover — a person on the phones costs{" "}
+              of always-on cover, a person on the phones costs{" "}
               {priceFor(HUMAN_HOURLY_GBP, currency, rates, 2)}/hr and clocks off at the end of their
               shift.
             </p>
@@ -200,22 +199,6 @@ export function PricingSections({ rates }: { rates: Rates }) {
             <DiscoveryCta size="md" />
           </div>
         </div>
-      </div>
-
-      {/* EXTRA VOICE CREDIT (base) */}
-      <div className="mt-12 border-[3px] border-ink bg-brut-yellow px-6 py-6 shadow-brut sm:flex sm:items-center sm:justify-between">
-        <div>
-          <p className="font-display text-lg font-extrabold uppercase tracking-tight text-ink">Extra voice credit</p>
-          <p className="mt-1 text-sm font-medium text-ink/80">
-            Top up any time. Charged per call, not per minute. 1 credit = one call.
-          </p>
-        </div>
-        <p className="mt-3 shrink-0 sm:mt-0">
-          <span className="font-display text-3xl font-extrabold tabular-nums text-ink">
-            {priceFor(EXTRA_CALL_PRICE_GBP, currency, rates, 2)}
-          </span>
-          <span className="ml-1 text-sm font-bold uppercase tracking-[0.06em] text-ink/70">/ call</span>
-        </p>
       </div>
     </div>
   );

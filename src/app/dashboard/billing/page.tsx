@@ -139,7 +139,7 @@ export default async function BillingPage({
           rel="noopener noreferrer"
           className="block border-[3px] border-ink bg-brut-yellow p-4 text-sm font-bold text-ink shadow-brut-sm hover:bg-ink hover:text-paper"
         >
-          Your activation invoice is ready — click to pay and go live →
+          Your activation invoice is ready, click to pay and go live →
         </a>
       )}
 

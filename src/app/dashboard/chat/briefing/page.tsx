@@ -62,7 +62,7 @@ export default async function ChatBriefingPage() {
           </span>
         </div>
         <p className="mt-3 max-w-prose text-sm leading-relaxed text-gray-600">
-          A plain-language read of your WhatsApp chatbot week — what changed, what cost you bookings, and one fix to try.
+          A plain-language read of your WhatsApp chatbot week, what changed, what cost you bookings, and one fix to try.
           Written fresh every Monday over the previous seven days of chats and bookings.
         </p>
       </header>

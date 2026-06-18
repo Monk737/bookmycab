@@ -145,12 +145,12 @@ export function SentimentPanel({ s }: { s: SentimentData }) {
               {s.trend.map((d) => {
                 const sum = d.positive + d.neutral + d.negative;
                 if (sum === 0) {
-                  return <div key={d.date} className="flex-1" title={`${shortDay(d.date)} — no scored calls`}><div className="h-px w-full bg-gray-200" /></div>;
+                  return <div key={d.date} className="flex-1" title={`${shortDay(d.date)}, no scored calls`}><div className="h-px w-full bg-gray-200" /></div>;
                 }
                 return (
                   <div
                     key={d.date}
-                    title={`${shortDay(d.date)} — ${d.positive} positive · ${d.neutral} neutral · ${d.negative} negative`}
+                    title={`${shortDay(d.date)}, ${d.positive} positive · ${d.neutral} neutral · ${d.negative} negative`}
                     className="flex flex-1 flex-col justify-end border border-ink/20"
                     style={{ height: `${Math.max(8, (sum / tMax) * 100)}%` }}
                   >

@@ -572,7 +572,7 @@ export default async function TenantDetailPage({
         {voiceAgents.length > 0 && (
           <div className="mt-4 border-[3px] border-ink bg-paper p-5">
             <h3 className="font-display text-sm font-extrabold uppercase tracking-tight text-ink">
-              Engine wiring — AI Voice
+              Engine wiring, AI Voice
             </h3>
             <p className="mt-1 text-xs text-gray-500">
               Paste these values into the <span className="font-mono">Analytics Tenant Config</span> node
@@ -622,12 +622,12 @@ export default async function TenantDetailPage({
         {chatAutomations.length > 0 && (
           <div className="mt-4 border-[3px] border-ink bg-paper p-5">
             <h3 className="font-display text-sm font-extrabold uppercase tracking-tight text-ink">
-              Engine wiring — Chat (WhatsApp)
+              Engine wiring, Chat (WhatsApp)
             </h3>
             <p className="mt-1 text-xs text-gray-500">
               Paste these values into the <span className="font-mono">BMC Chat Config</span> node of the
               tenant&rsquo;s cloned WhatsApp Chat workflow (the same values serve the paired Voice-Note twin).
-              Conversations and bookings — chat <em>and</em> voice note — then mirror into this tenant&rsquo;s
+              Conversations and bookings, chat <em>and</em> voice note, then mirror into this tenant&rsquo;s
               dashboard automatically. No phone numbers, no call credit: a voice note is a transcribed
               WhatsApp message, not a call.
             </p>

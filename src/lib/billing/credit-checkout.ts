@@ -31,7 +31,7 @@ export function buildCreditCheckoutParams(args: {
         price_data: {
           currency: "gbp",
           unit_amount: minorUnits(args.finalGbp),
-          product_data: { name: `AI Voice credit — ${args.credits} calls` },
+          product_data: { name: `AI Voice credit, ${args.credits} calls` },
         },
       },
     ],

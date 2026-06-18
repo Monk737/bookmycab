@@ -30,7 +30,7 @@ export function buildNewSetupInvoiceItemParams(args: {
     customer: args.customerId,
     amount: minorUnits(args.setupGbp),
     currency: "gbp",
-    description: "BookMyCab — one-time setup fee",
+    description: "BookMyCab, one-time setup fee",
     metadata: { tenant_id: args.tenantId },
   };
 }

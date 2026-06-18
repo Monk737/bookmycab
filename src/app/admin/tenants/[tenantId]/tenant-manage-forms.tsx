@@ -380,7 +380,7 @@ export function AddAutomationForm({ tenantId, hasVoicePlan }: { tenantId: string
               <div className="flex flex-col gap-1.5 border-[3px] border-ink bg-brut-yellow/10 px-4 py-3">
                 <p className="text-sm font-medium text-ink">Provisions the AI Voice Ignition plan</p>
                 <p className="text-xs text-gray-600">
-                  1,000 calls / 1 agent, £1,999/mo. This tenant has no voice plan yet — adding an agent provisions Ignition and unlocks the AI Voice dashboard. For a bespoke allowance, set up a Custom plan at tenant creation instead.
+                  1,000 calls / 1 agent, £1,999/mo. This tenant has no voice plan yet, adding an agent provisions Ignition and unlocks the AI Voice dashboard. For a bespoke allowance, set up a Custom plan at tenant creation instead.
                 </p>
               </div>
             )}
