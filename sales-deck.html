@@ -915,9 +915,9 @@
   // ---- AI Voice Booking calculation (computeVoice) ----
   function computeVoice(calls,rate,c){
     const monthlyCalls=calls*DAYS;
-    // One person can't answer a busy 100+/day line 24/7 — past that you need a
-    // second seat, so the human bill doubles. Below it, a single seat.
-    const seats=calls>=100?2:1;
+    // A single 24/7 seat covers up to ~100 calls a day; every additional 100
+    // calls a day needs another agent, so the human bill steps up a seat at a time.
+    const seats=1+Math.floor(calls/100);
     const humanPerDay=seats*HOURS_PER_DAY*rate;
     const humanPerMonth=humanPerDay*DAYS;
     // Ignition base covers 1,000 calls/mo; calls above that bill at £2 each.
@@ -1001,7 +1001,7 @@
     $('v_paySub').textContent='on '+money(v.setup)+' setup';
     $('voiceFoot').textContent='Answering this line around the clock with people means paying for '
       +(v.seats*HOURS_PER_DAY)+' agent-hours a day ('+v.seats+' agent'+(v.seats===1?'':'s')+' at '
-      +money(rate)+'/hr; a busy 100+ calls-a-day line needs a second seat). Ignition includes '
+      +money(rate)+'/hr; a 24/7 line needs another seat for every 100 calls a day). Ignition includes '
       +v.includedCalls.toLocaleString('en-US')+' calls a month; every call above that bills at a fixed '
       +moneyHr(v.extraCallPrice)+' per call, added to the base plan — so the AI’s cost rises with volume, '
       +'working out at '+moneyHr(v.aiHourly)+'/hr all-in here while it still answers every call at once. '

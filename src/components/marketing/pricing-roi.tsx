@@ -84,9 +84,9 @@ function computeVoice(
 ) {
   const monthlyCalls = callsPerDay * DAYS_PER_MONTH;
 
-  // One person can't answer a busy 100+/day line around the clock; past that you
-  // need a second seat, so the human bill doubles. Below it, a single seat.
-  const seats = callsPerDay >= VOICE_CUSTOM_PLAN_CALLS ? 2 : 1;
+  // A single 24/7 seat covers up to ~100 calls a day; every additional 100 calls
+  // a day needs another agent, so the human bill steps up a seat at a time.
+  const seats = 1 + Math.floor(callsPerDay / VOICE_CUSTOM_PLAN_CALLS);
   const humanCostPerDay = seats * HOURS_PER_DAY * agentRate;
   const humanCostPerMonth = humanCostPerDay * DAYS_PER_MONTH;
 
@@ -448,8 +448,8 @@ export function PricingRoi({ rates }: { rates: Record<Currency, number> }) {
           <p className="mt-5 text-xs leading-relaxed text-gray-500">
             Answering this line around the clock with people means paying for{" "}
             {voice.seats * HOURS_PER_DAY} agent-hours a day ({voice.seats} agent
-            {voice.seats === 1 ? "" : "s"} at {money(agentRate)}/hr; a busy {VOICE_CUSTOM_PLAN_CALLS}+
-            calls-a-day line needs a second seat). {VOICE_IGNITION.name} includes{" "}
+            {voice.seats === 1 ? "" : "s"} at {money(agentRate)}/hr; a 24/7 line needs another seat for
+            every {VOICE_CUSTOM_PLAN_CALLS} calls a day). {VOICE_IGNITION.name} includes{" "}
             {voice.includedCalls.toLocaleString()} calls a month; every call above that bills at a fixed{" "}
             {moneyHr(voice.extraCallPrice)} per call, added to the base plan — so the AI&rsquo;s cost rises
             with volume, working out at {moneyHr(voice.aiHourly)}/hr all-in here while it still answers every
