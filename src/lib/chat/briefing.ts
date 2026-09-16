@@ -171,10 +171,14 @@ const SYSTEM = [
   "The recommendation must be one concrete action tied to the data (for example: a high share of quotes that never booked suggests the quote-to-confirm step needs a nudge).",
 ].join(" ");
 
-/** Generate + persist the chat briefing for one tenant. Best-effort; never throws. */
+/**
+ * Generate + persist the chat briefing for one tenant. Best-effort; never throws.
+ * Returns the stored briefing (same shape the dashboard renders) so the weekly
+ * n8n cron can email exactly what the tenant sees.
+ */
 export async function generateChatBriefingForTenant(
   tenantId: string,
-): Promise<{ ok: boolean; skipped?: string; error?: string }> {
+): Promise<{ ok: boolean; skipped?: string; error?: string; briefing?: ChatBriefing }> {
   if (!env.GEMINI_API_KEY) return { ok: false, skipped: "no_api_key" };
 
   const db = createSupabaseJS(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
@@ -219,21 +223,25 @@ export async function generateChatBriefingForTenant(
     return { ok: false, error: String((e as Error)?.message ?? e).slice(0, 300) };
   }
 
-  const { error: upErr } = await db.from("chat_briefings").upsert(
-    {
-      tenant_id: tenantId,
-      period_start: metrics.weekStart,
-      period_end: metrics.weekEnd,
-      headline: parsed.headline.slice(0, 300),
-      narrative: parsed.narrative.slice(0, 4000),
-      recommendation: (parsed.recommendation ?? "").slice(0, 1000) || null,
-      metrics,
-      model: env.BRIEFING_MODEL,
-    },
-    { onConflict: "tenant_id,period_start" },
-  );
+  const { data: saved, error: upErr } = await db
+    .from("chat_briefings")
+    .upsert(
+      {
+        tenant_id: tenantId,
+        period_start: metrics.weekStart,
+        period_end: metrics.weekEnd,
+        headline: parsed.headline.slice(0, 300),
+        narrative: parsed.narrative.slice(0, 4000),
+        recommendation: (parsed.recommendation ?? "").slice(0, 1000) || null,
+        metrics,
+        model: env.BRIEFING_MODEL,
+      },
+      { onConflict: "tenant_id,period_start" },
+    )
+    .select(BRIEFING_COLS)
+    .single();
   if (upErr) return { ok: false, error: upErr.message };
-  return { ok: true };
+  return { ok: true, briefing: toBriefing(saved as BriefingRow) };
 }
 
 /** Generate chat briefings for every tenant with conversations in the last week. */
