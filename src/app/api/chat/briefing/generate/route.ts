@@ -15,7 +15,8 @@ export const maxDuration = 300;
  * the chat mirror uses); point a weekly cron (n8n Schedule Trigger) at it.
  *
  * Scope: POST `{ tenant_id }` to generate only that tenant (per-tenant cloned
- * cron). Omit the body to sweep every active tenant (single platform cron).
+ * cron); the response carries the stored `briefing` so the cron can email it.
+ * Omit the body to sweep every active tenant (single platform cron).
  * Idempotent: re-running in the same week upserts.
  */
 export async function POST(req: Request) {
