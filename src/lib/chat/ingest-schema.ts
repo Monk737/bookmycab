@@ -42,7 +42,7 @@ export const chatConversationSchema = z.object({
   language: z.string().max(12).optional(),
   /** A plain-language summary of what the customer DID this journey (their
    *  actions/asks), composed by the workflow. Not a transcript of text messages. */
-  summary: z.string().max(8000).optional(),
+  summary: z.string().max(20000).optional(),
   /** Storage object path of the decisive WhatsApp voice note, when one was sent
    *  (private bucket chat-voice-notes). The dashboard signs it on demand. */
   voice_note_path: z.string().max(512).optional(),
@@ -101,7 +101,7 @@ export const chatBookingSchema = z.object({
   /** Full dispatch response, stored verbatim for audit. */
   raw: z.unknown().optional(),
   /** A plain-language summary of what the customer DID for this booking. */
-  summary: z.string().max(8000).optional(),
+  summary: z.string().max(20000).optional(),
 });
 
 export type ChatBookingBody = z.infer<typeof chatBookingSchema>;
