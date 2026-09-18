@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+// Google Analytics (GA4). Set here in the root layout so every route in the
+// app — marketing, dashboard, admin, auth, demo — is measured exactly once.
+const GA_MEASUREMENT_ID = "G-VX0BJVXELQ";
 
 // Primary: Urbanist, self-hosted. Carries body, UI and headings (hierarchy by
 // weight). Static per-weight woff2 from urbanist-fonts/, copied into ./fonts.
@@ -68,6 +73,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${urbanist.variable} ${jetbrainsMono.variable} ${stalinistOne.variable}`}
     >
       <body>{children}</body>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', '${GA_MEASUREMENT_ID}');
+        `}
+      </Script>
     </html>
   );
 }
