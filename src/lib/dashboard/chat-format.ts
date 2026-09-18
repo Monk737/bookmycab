@@ -52,3 +52,20 @@ export function formatDistance(distance: number | null, unit: string | null): st
   const u = (unit ?? "miles").toLowerCase();
   return `${distance.toFixed(1)} ${u}`;
 }
+
+/**
+ * Chat booking pickup time. `pickup_at_utc` is a real UTC instant (timestamptz), so it is
+ * shown on the UK clock the customer chose — unlike voice's `fmtPickup`, which takes a
+ * tz-less wall-clock string and would show the raw UTC digits (an hour early in BST).
+ */
+export function fmtChatPickup(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-GB", {
+    timeZone: "Europe/London",
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

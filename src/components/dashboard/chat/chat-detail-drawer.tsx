@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fmtDateTime, fmtPickup } from "@/lib/voice/format";
-import { chatOutcomeLabel, channelLabel, bookingStatusLabel, formatDistance } from "@/lib/dashboard/chat-format";
+import { fmtDateTime } from "@/lib/voice/format";
+import { chatOutcomeLabel, channelLabel, bookingStatusLabel, formatDistance, fmtChatPickup } from "@/lib/dashboard/chat-format";
 import type { ChatConversationLogRow, ChatBookingLogRow } from "@/lib/dashboard/chat-log";
 
 const OUTCOME_BADGE: Record<string, string> = {
@@ -170,7 +170,7 @@ export function ChatDetailDrawer({ item, onClose }: { item: ChatDrawerItem | nul
                 <Field label="Distance" value={formatDistance(item.row.distance, item.row.distanceUnit) ?? "—"} />
                 <Field
                   label="Pickup time"
-                  value={item.row.pickupTimeMode === "asap" ? "ASAP" : item.row.pickupAt ? fmtPickup(item.row.pickupAt) : "—"}
+                  value={item.row.pickupTimeMode === "asap" ? "ASAP" : item.row.pickupAt ? fmtChatPickup(item.row.pickupAt) : "—"}
                 />
                 <Field label="Fare" value={item.row.fare ?? "—"} />
                 <Field label="Driver note" value={item.row.driverNote ?? "—"} />

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { LogShell } from "@/components/dashboard/voice/log-shell";
-import { localDateKey, fmtDateTime, fmtPickup } from "@/lib/voice/format";
-import { chatOutcomeLabel, channelLabel, bookingStatusLabel, formatDistance } from "@/lib/dashboard/chat-format";
+import { localDateKey, fmtDateTime } from "@/lib/voice/format";
+import { chatOutcomeLabel, channelLabel, bookingStatusLabel, formatDistance, fmtChatPickup } from "@/lib/dashboard/chat-format";
 import { ChatDetailDrawer, type ChatDrawerItem } from "./chat-detail-drawer";
 import type { ChatConversationLogRow, ChatBookingLogRow } from "@/lib/dashboard/chat-log";
 
@@ -125,7 +125,7 @@ function BookingBody(b: ChatBookingLogRow) {
         {b.passengers != null ? <span className="text-gray-500"> &middot; {b.passengers} pax</span> : null}
         {b.vehicleType ? <span className="text-gray-500"> &middot; {b.vehicleType}</span> : null}
         {distanceLine ? <span className="text-gray-500"> &middot; {distanceLine}</span> : null}
-        <span className="text-gray-500"> &middot; {b.pickupTimeMode === "asap" ? "ASAP" : b.pickupAt ? fmtPickup(b.pickupAt) : "time TBC"}</span>
+        <span className="text-gray-500"> &middot; {b.pickupTimeMode === "asap" ? "ASAP" : b.pickupAt ? fmtChatPickup(b.pickupAt) : "time TBC"}</span>
       </p>
       {bookingDigest ? <p className="truncate text-sm text-gray-500">{bookingDigest}</p> : null}
     </div>
